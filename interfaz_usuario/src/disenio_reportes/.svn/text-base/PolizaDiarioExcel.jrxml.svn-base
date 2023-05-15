@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="PolizaDiarioExcel"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="612"
+		 pageHeight="792"
+		 columnWidth="556"
+		 columnSpacing="0"
+		 leftMargin="28"
+		 rightMargin="28"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="no_poliza_diario" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[select * from (
+select 1 as orden,c.no_poliza_diario,c.fecha_inicio,c.fecha_fin,formato,no_poliza,id_poliza,valor,null as haber, nombre 
+from sis_poliza a, sis_partida2_vw b, sis_poliza_diario c
+where a.id_partida=b.id_partida
+and valor >0
+and a.no_poliza_diario=c.no_poliza_diario
+and c.no_poliza_diario=$P{no_poliza_diario}
+union
+select 1 as orden,c.no_poliza_diario,c.fecha_inicio,c.fecha_fin,formato,no_poliza,id_poliza,null,valor as haber, nombre
+from sis_poliza a, sis_partida2_vw b, sis_poliza_diario c, sis_ajuste_partida d
+where a.id_partida=b.id_partida
+and d.id_partida=a.id_partida
+and a.no_poliza_diario=c.no_poliza_diario
+and c.no_poliza_diario=$P{no_poliza_diario}
+and d.id_ajuste<>7
+and valor <=0
+union
+select 1 as orden,c.no_poliza_diario,c.fecha_inicio,c.fecha_fin,formato,no_poliza,id_poliza,null,valor as haber, nombre
+from sis_poliza a, sis_partida2_vw b, sis_poliza_diario c
+where a.id_partida=b.id_partida
+and valor <0
+and a.no_poliza_diario=c.no_poliza_diario
+and c.no_poliza_diario=$P{no_poliza_diario}
+and not exists(
+    select 1 from sis_ajuste_partida d
+    where d.id_partida=b.id_partida
+)
+union
+select 2,null,null,null,
+case 
+ when total_des<monto then 
+   case 
+    when (judicial='SI') then
+    deudor.deu_jud
+    when por_unidad='SI' and judicial='NO' then
+    deudor.deu_uni
+    when por_unidad='NO' and judicial='NO' then
+    deudor.deu_dep
+   end
+ else
+   case 
+    when (judicial='SI') then
+    deudor.acre_jud
+    when por_unidad='SI' and judicial='NO' then
+    deudor.acre_uni
+    when por_unidad='NO' and judicial='NO' then
+    deudor.acre_dep
+   end   
+end as partida_deudor,
+detalle2.registro_empleado as no_poliza,null,null,detalle2.valorAplicado,sis_pkg_util.getnompartida_deu(deudor.nombre,deudor.nombreDep,detalle2.por_unidad,detalle2.judicial, case when total_des<monto then 0 else 1 end)
+from (
+select detalle1.*,deu.id_programa,deu.id_dependencia,deu.id_unidad,monto,por_unidad,judicial,
+(
+select nvl(abs(sum(b1.valor_aplicado)),0)
+from sis_nomina a1, 
+sis_det_calculo_ajuste b1, sis_ajuste_empleado c1
+where a1.id_nomina=b1.id_nomina
+and c1.registro_empleado=a1.registro_empleado
+and c1.id_correlativo=b1.correlativo
+and c1.id_ajuste=b1.id_ajuste
+and a1.registro_empleado=detalle1.registro_empleado
+and b1.id_ajuste=detalle1.id_ajuste
+and c1.id_solicitud=detalle1.id_solicitud
+and a1.id_proceso<detalle1.id_proceso
+) as total_des
+from 
+(
+SELECT A.ID_AJUSTE,SUM(VALOR_APLICADO) as valorAplicado,B.REGISTRO_EMPLEADO, C.ID_SOLICITUD,B.ID_PROCESO
+FROM SIS_DET_CALCULO_AJUSTE A, SIS_NOMINA B,SIS_AJUSTE_EMPLEADO C
+WHERE A.ID_NOMINA=B.ID_NOMINA
+AND C.ID_AJUSTE=A.ID_AJUSTE
+AND C.REGISTRO_EMPLEADO=B.REGISTRO_EMPLEADO
+AND C.ID_CORRELATIVO=A.CORRELATIVO
+AND C.ID_AJUSTE=7
+and exists(
+    select 1 
+        from SIS_POLIZA D, SIS_POLIZA_DIARIO E,SIS_PROCESO F,SIS_PROCESO G, SIS_PROCESO_PAGO_DET H 
+        where D.NO_POLIZA_DIARIO=E.NO_POLIZA_DIARIO
+        AND F.ID_PROCESO=D.ID_PROCESO
+        AND G.ID_PROCESO=F.PROCESO_PADRE
+        AND G.ID_PROCESO=H.ID_PROCESO 
+        and B.ID_PROCESO=H.ID_PROCESO_NOMINA 
+        AND E.NO_POLIZA_DIARIO=$P{no_poliza_diario}
+)
+GROUP BY A.ID_AJUSTE,B.REGISTRO_EMPLEADO,C.ID_SOLICITUD,B.ID_PROCESO
+) detalle1, sis_deudor deu 
+where detalle1.id_solicitud=deu.id_solicitud
+) detalle2, sis_partida_deudor deudor
+where deudor.id_programa=detalle2.id_programa
+and deudor.id_dependencia=detalle2.id_dependencia
+and deudor.id_unidad=detalle2.id_unidad
+union
+select 2,null,null,null,
+p.formato partida_deudor,
+detalle1.registro_empleado no_poliza,null,null,detalle1.valorAplicado, p.nombre
+from
+(
+SELECT A.ID_AJUSTE,SUM(VALOR_APLICADO) as valorAplicado,B.REGISTRO_EMPLEADO, C.ID_SOLICITUD,B.ID_PROCESO
+FROM SIS_AJUSTE_EMPLEADO C, SIS_NOMINA B, SIS_DET_CALCULO_AJUSTE A
+WHERE 
+C.ID_AJUSTE=A.ID_AJUSTE
+AND C.REGISTRO_EMPLEADO=B.REGISTRO_EMPLEADO
+AND C.ID_CORRELATIVO=A.CORRELATIVO
+AND A.ID_NOMINA=B.ID_NOMINA
+AND A.ID_AJUSTE=7
+AND exists(
+    select 1 
+        from SIS_POLIZA D, SIS_POLIZA_DIARIO E,SIS_PROCESO F,SIS_PROCESO G, SIS_PROCESO_PAGO_DET H 
+        where D.NO_POLIZA_DIARIO=E.NO_POLIZA_DIARIO
+        AND F.ID_PROCESO=D.ID_PROCESO
+        AND G.ID_PROCESO=F.PROCESO_PADRE
+        AND G.ID_PROCESO=H.ID_PROCESO 
+        and B.ID_PROCESO=H.ID_PROCESO_NOMINA 
+        AND E.NO_POLIZA_DIARIO=$P{no_poliza_diario}
+)
+GROUP BY A.ID_AJUSTE,B.REGISTRO_EMPLEADO,C.ID_SOLICITUD,B.ID_PROCESO
+) detalle1, sis_ajuste_partida ap, sis_partida2_vw p
+where detalle1.id_ajuste = ap.id_ajuste and
+ap.id_partida = p.id_partida
+)
+order by orden, no_poliza, formato]]></queryString>
+
+	<field name="ORDEN" class="java.math.BigDecimal"/>
+	<field name="NO_POLIZA_DIARIO" class="java.math.BigDecimal"/>
+	<field name="FECHA_INICIO" class="java.sql.Timestamp"/>
+	<field name="FECHA_FIN" class="java.sql.Timestamp"/>
+	<field name="FORMATO" class="java.lang.String"/>
+	<field name="NO_POLIZA" class="java.math.BigDecimal"/>
+	<field name="ID_POLIZA" class="java.math.BigDecimal"/>
+	<field name="VALOR" class="java.math.BigDecimal"/>
+	<field name="HABER" class="java.math.BigDecimal"/>
+	<field name="NOMBRE" class="java.lang.String"/>
+
+	<variable name="SumaDependencia" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{VALOR}]]></variableExpression>
+	</variable>
+	<variable name="suma_debe" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{VALOR}]]></variableExpression>
+	</variable>
+	<variable name="suma_haber" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{HABER}]]></variableExpression>
+	</variable>
+	<variable name="Minimo_poliza" class="java.math.BigDecimal" resetType="Report" calculation="Lowest">
+		<variableExpression><![CDATA[$F{NO_POLIZA}]]></variableExpression>
+	</variable>
+	<variable name="Maximo_poliza" class="java.math.BigDecimal" resetType="Report" calculation="Highest">
+		<variableExpression><![CDATA[$F{ID_POLIZA}!=null?$F{NO_POLIZA}:new BigDecimal(0)]]></variableExpression>
+	</variable>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="12"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="0"
+						y="0"
+						width="100"
+						height="12"
+						key="staticText-1"/>
+					<box></box>
+					<textElement>
+						<font fontName="Arial" pdfFontName="Courier-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[PARTIDA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="100"
+						y="0"
+						width="198"
+						height="12"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Arial" pdfFontName="Courier-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[NOMBRE DE LA CUENTA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="373"
+						y="0"
+						width="88"
+						height="12"
+						key="staticText-4"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" pdfFontName="Courier-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[DEBE]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="461"
+						y="0"
+						width="88"
+						height="12"
+						key="staticText-5"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" pdfFontName="Courier-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[HABER]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="298"
+						y="0"
+						width="75"
+						height="12"
+						key="staticText-9"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" pdfFontName="Courier-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Ref]]></text>
+				</staticText>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="12"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="0"
+						width="100"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font fontName="Arial" pdfFontName="Courier" size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{FORMATO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="100"
+						y="0"
+						width="198"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font fontName="Arial" pdfFontName="Courier" size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="373"
+						y="0"
+						width="88"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" pdfFontName="Courier" size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{VALOR}.abs()]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="298"
+						y="0"
+						width="75"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" pdfFontName="Courier" size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{ID_POLIZA}==null?"ID " + $F{NO_POLIZA}.toString():$F{NO_POLIZA}.toString()]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="461"
+						y="0"
+						width="88"
+						height="12"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" pdfFontName="Courier" size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{HABER}.abs()]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="12"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="373"
+						y="0"
+						width="88"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" pdfFontName="Courier" size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{suma_debe}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="461"
+						y="0"
+						width="88"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" pdfFontName="Courier" size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{suma_haber}.abs()]]></textFieldExpression>
+				</textField>
+			</band>
+		</summary>
+</jasperReport>

@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="consul_partidaSICOIN_vw"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   ComponentClass="enlace_datos.consultas.gestiones.horas_extras.consul_partidaSICOIN_vwImpl"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="pIdDependencia"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="pAnio"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="pIdPartida"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select scuenta.id_cuenta_contable id_partida_egresos,  to_char(to_date(:pAnio,'yyyy'), 'yyyy')||'.'||scuenta.partida_sicoin formato_sicoin
+    from sicoin_cuenta_contable_view scuenta
+    inner join sis_dependencia dp on dp.codigo_sicoin = scuenta.auxiliar1
+    where 
+    dp.id_dependencia = :pIdDependencia 
+    and exists (SELECT 1 FROM PARTIDA WHERE ID_PARTIDA = :pIdPartida and d1 = 2 and d2=1 and d3d4 = 16 )
+    and scuenta.tipo = 2 and scuenta.division = 1 and scuenta.subdivision = 1 and scuenta.cuenta = 3 and scuenta.subcuenta1 = 1
+    union
+select sic.id_partida_egresos,  to_char(to_date(:pAnio,'yyyy'), 'yyyy')||'.'||sic.partida formato_sicoin
+    from sicoin_partida_egresos_view sic
+    inner join sis_dependencia dp on dp.codigo_sicoin = sic.unidad_ejecutora
+    where 
+    dp.id_dependencia = :pIdDependencia
+    and not exists (SELECT 1 FROM PARTIDA WHERE ID_PARTIDA = :pIdPartida and d1 = 2 and d2=1 and d3d4 = 16 )
+    and sic.renglon in (41,42)
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="IdPartidaEgresos"
+      IsPersistent="false"
+      IsNotNull="true"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_PARTIDA_EGRESOS"
+      Expression="ID_PARTIDA_EGRESOS"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FormatoSicoin"
+      IsPersistent="false"
+      Precision="135"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="FORMATO_SICOIN"
+      Expression="FORMATO_SICOIN"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="135" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

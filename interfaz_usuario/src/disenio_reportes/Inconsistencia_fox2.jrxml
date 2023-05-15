@@ -1,0 +1,493 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="Inconsistencia_fox2"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="708"
+		 pageHeight="792"
+		 columnWidth="648"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="true">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="SUBREPORT_DIR" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA["C:\\ireportCompiledFiles\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="pIdProceso" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pProcesoFox" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="pUsuario" isForPrompting="true" class="java.lang.String"/>
+	<queryString><![CDATA[select * from (
+select d.*,
+sis_util_report_pkg.GET_INCOSISTENCIA_DESCUENTOS(d.regper,$P{pIdProceso}) as dif,
+(select substr(partida,3,2)
+from sis_nominafox
+where regper=d.regper
+and procesonomina =$P{pProcesoFox}
+and rownum<=1
+)partida,
+empl.nombrecompleto
+from (
+select 
+nf.regper, 
+sum(nf.sumsuel) as nominalfox,
+sum(SUMSUEL-(nf.liquido+d1+d3+d7+d9+d10+d12+d19))as DESC1,
+sum(nf.liquido+d1+d3+d7+d9+d10+d12+d19+nf.BONO_SAL)as liquidofox,
+sum(nf.bono_sal) as bonofox,
+sum(n.nominal) as nominalSIS,
+sum(n.liquido) as liquidoSIS,
+sum(n.total_bono) as bonosalSIS,
+sum(n.total_descuento) as descSIS
+from sis_nominafox nf,
+sis_nomina n
+where n.registro_empleado=nf.REGPER
+and n.numero_plaza=nf.PLAZA
+and n.id_puesto=nf.COD_CLAS
+and id_proceso=$P{pIdProceso}
+and nf.procesonomina =$P{pProcesoFox}
+group by nf.regper
+)d,sis_empleado_vw empl
+where liquidofox<>liquidosis
+and empl.registro_empleado=d.regper
+)
+where dif like '%D04%'
+order by partida]]></queryString>
+
+	<field name="REGPER" class="java.math.BigDecimal"/>
+	<field name="NOMINALFOX" class="java.math.BigDecimal"/>
+	<field name="DESC1" class="java.math.BigDecimal"/>
+	<field name="LIQUIDOFOX" class="java.math.BigDecimal"/>
+	<field name="BONOFOX" class="java.math.BigDecimal"/>
+	<field name="NOMINALSIS" class="java.math.BigDecimal"/>
+	<field name="LIQUIDOSIS" class="java.math.BigDecimal"/>
+	<field name="BONOSALSIS" class="java.math.BigDecimal"/>
+	<field name="DESCSIS" class="java.math.BigDecimal"/>
+	<field name="DIF" class="java.lang.String"/>
+	<field name="PARTIDA" class="java.lang.String"/>
+	<field name="NOMBRECOMPLETO" class="java.lang.String"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="79"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="170"
+						y="52"
+						width="63"
+						height="20"
+						key="staticText-1"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Nominal]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="239"
+						y="53"
+						width="66"
+						height="20"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Liquido]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="309"
+						y="52"
+						width="54"
+						height="20"
+						key="staticText-3"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Bono]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="484"
+						y="52"
+						width="50"
+						height="20"
+						key="staticText-4"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Liquido]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="425"
+						y="51"
+						width="50"
+						height="20"
+						key="staticText-5"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Nominal]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="544"
+						y="52"
+						width="50"
+						height="20"
+						key="staticText-6"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Bono]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="176"
+						y="28"
+						width="232"
+						height="20"
+						key="staticText-7"/>
+					<box>					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+</box>
+					<textElement textAlignment="Center">
+						<font/>
+					</textElement>
+				<text><![CDATA[FOX]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="426"
+						y="28"
+						width="217"
+						height="20"
+						key="staticText-8"/>
+					<box>					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+</box>
+					<textElement textAlignment="Center">
+						<font/>
+					</textElement>
+				<text><![CDATA[SIS]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="372"
+						y="53"
+						width="40"
+						height="20"
+						key="staticText-9"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font/>
+					</textElement>
+				<text><![CDATA[Desc]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="605"
+						y="52"
+						width="40"
+						height="20"
+						key="staticText-10"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font/>
+					</textElement>
+				<text><![CDATA[Desc]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="256"
+						y="0"
+						width="232"
+						height="20"
+						key="staticText-11"/>
+					<box>					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+</box>
+					<textElement textAlignment="Center">
+						<font/>
+					</textElement>
+				<text><![CDATA[REPORTE DE INCONSISTENCIAS]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="77"
+						width="640"
+						height="0"
+						key="line-2"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="45"
+						y="52"
+						width="70"
+						height="20"
+						key="staticText-12"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Registro]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="2"
+						y="52"
+						width="40"
+						height="20"
+						key="staticText-13"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Unidad]]></text>
+				</staticText>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="60"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="##0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="45"
+						y="0"
+						width="70"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{REGPER}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="170"
+						y="0"
+						width="63"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{NOMINALFOX}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="239"
+						y="0"
+						width="66"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{LIQUIDOFOX}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="309"
+						y="0"
+						width="54"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{BONOFOX}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="425"
+						y="0"
+						width="50"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{NOMINALSIS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="484"
+						y="0"
+						width="50"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{LIQUIDOSIS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="544"
+						y="0"
+						width="50"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{BONOSALSIS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="170"
+						y="15"
+						width="470"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement rotation="None">
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{DIF}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,#00.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="372"
+						y="0"
+						width="40"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DESC1}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,#00.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="605"
+						y="0"
+						width="40"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DESCSIS}]]></textFieldExpression>
+				</textField>
+				<line direction="TopDown">
+					<reportElement
+						x="2"
+						y="55"
+						width="638"
+						height="4"
+						key="line-1"
+						positionType="Float"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<subreport  isUsingCache="true">
+					<reportElement
+						x="176"
+						y="33"
+						width="390"
+						height="20"
+						key="subreport-1"
+						positionType="Float"/>
+					<subreportParameter  name="pProceso">
+						<subreportParameterExpression><![CDATA[$P{pIdProceso}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pRegistro">
+						<subreportParameterExpression><![CDATA[$F{REGPER}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="ProcesoFox">
+						<subreportParameterExpression><![CDATA[$P{pProcesoFox}]]></subreportParameterExpression>
+					</subreportParameter>
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<subreportExpression  class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "Inconsistencia_fox2_subreport0.jasper"]]></subreportExpression>
+				</subreport>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="2"
+						y="0"
+						width="40"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PARTIDA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="15"
+						width="170"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRECOMPLETO}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="44"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="133"
+						y="2"
+						width="391"
+						height="15"
+						key="staticText-14"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[LISTADO DE PLAZAS QUE SALIERON SOLO EN UNO DE LOS SISTEMAS]]></text>
+				</staticText>
+			</band>
+		</summary>
+</jasperReport>

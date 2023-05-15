@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="audit_sueldo_excl"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="612"
+		 pageHeight="1008"
+		 columnWidth="572"
+		 columnSpacing="0"
+		 leftMargin="20"
+		 rightMargin="20"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="varDep" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pFiltro" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA[" and nn.NOMINAL -n.NOMINAL <> 0"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="mes" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pAnio" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[select  Extract (year from SysDate)+1 AnioActual, nvl(n.NOMINAL,0) as uno, nn.NOMINAL as dos,nn.ID_CONTRATO, p.FORMATO2 as partida, nn.NUMERO_PLAZA, e.registro_empleado, e.CUI,
+e.NOMBRECOMPLETO as empleado, nn.NOMINAL - nvl(n.NOMINAL,0) as Diferencia,
+sis_pkg_util.GETNUMERO_MES($P{mes}) as mes_act, sis_pkg_util.GETNUMERO_MES($P{mes} -1) as mes_ant,d.NOMBRE,pronn.ID_PROCESO
+from  sis_partida_vw p, sis_dependencia d,sis_empleado_vw e, sis_proceso pronn,
+sis_estado estado, sis_nomina nn left outer join ( select aux.id_partida, aux.id_puesto, aux.NUMERO_PLAZA,aux.CORRELATIVO, aux.REGISTRO_EMPLEADO, aux.NOMINAL as nominal
+from sis_nomina aux, sis_proceso pron where pron.ID_PROCESO = aux.ID_PROCESO and pron.TIPOPROCESO = 1 and aux.PERIODO = $P{mes}-1 and aux.ANIO = $P{pAnio} and pron.ID_ESTADO = 44 ) n on n.ID_PARTIDA = nn.ID_PARTIDA 
+and n.NUMERO_PLAZA = nn.NUMERO_PLAZA 
+and n.ID_PUESTO = nn.ID_PUESTO and n.CORRELATIVO = nn.CORRELATIVO and n.REGISTRO_EMPLEADO = nn.REGISTRO_EMPLEADO 
+where 
+nn.PERIODO = $P{mes}
+and nn.ID_PARTIDA = p.ID_PARTIDA
+and p.ID_DEPENDENCIA = d.ID_DEPENDENCIA
+and d.ID_DEPENDENCIA = $P{varDep}
+and nn.REGISTRO_EMPLEADO = e.REGISTRO_EMPLEADO
+and pronn.ID_PROCESO = nn.ID_PROCESO
+and pronn.ID_ESTADO = estado.ID_ESTADO
+and estado.NOMBRE = 'APROBADO'
+and pronn.TIPOPROCESO = 1
+and nn.ANIO = $P{pAnio}
+$P!{pFiltro}
+order by p.FORMATO2 asc, nn.NUMERO_PLAZA asc]]></queryString>
+
+	<field name="ANIOACTUAL" class="java.math.BigDecimal"/>
+	<field name="UNO" class="java.math.BigDecimal"/>
+	<field name="DOS" class="java.math.BigDecimal"/>
+	<field name="ID_CONTRATO" class="java.math.BigDecimal"/>
+	<field name="PARTIDA" class="java.lang.String"/>
+	<field name="NUMERO_PLAZA" class="java.math.BigDecimal"/>
+	<field name="REGISTRO_EMPLEADO" class="java.math.BigDecimal"/>
+	<field name="CUI" class="java.lang.String"/>
+	<field name="EMPLEADO" class="java.lang.String"/>
+	<field name="DIFERENCIA" class="java.math.BigDecimal"/>
+	<field name="MES_ACT" class="java.lang.String"/>
+	<field name="MES_ANT" class="java.lang.String"/>
+	<field name="NOMBRE" class="java.lang.String"/>
+	<field name="ID_PROCESO" class="java.math.BigDecimal"/>
+
+	<variable name="sumUno" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{UNO}]]></variableExpression>
+	</variable>
+	<variable name="sumDos" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{DOS}]]></variableExpression>
+	</variable>
+	<variable name="diferencia" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{DIFERENCIA}]]></variableExpression>
+	</variable>
+		<background>
+			<band height="1"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="74"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="164"
+						y="8"
+						width="261"
+						height="21"
+						key="staticText-1"/>
+					<box></box>
+					<textElement>
+						<font size="14" isBold="true"/>
+					</textElement>
+				<text><![CDATA[DIFERENCIA DE SALARIOS]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="110"
+						y="46"
+						width="315"
+						height="16"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRE}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="2"
+						y="46"
+						width="108"
+						height="16"
+						key="staticText-12"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[DEPENDENCIA:]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="164"
+						y="29"
+						width="261"
+						height="17"
+						key="textField-7"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["MES DE " + $F{MES_ACT}+ " " +$P{pAnio}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="62"
+						width="73"
+						height="12"
+						key="staticText-3"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<text><![CDATA[PARTIDA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="73"
+						y="62"
+						width="37"
+						height="12"
+						key="staticText-4"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<text><![CDATA[PLAZA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="110"
+						y="62"
+						width="64"
+						height="12"
+						key="staCUI">
+							<printWhenExpression><![CDATA[new Boolean($F{ANIOACTUAL}.compareTo(new BigDecimal(2017))>= 0 )]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="9"/>
+					</textElement>
+				<text><![CDATA[CUI]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="174"
+						y="62"
+						width="182"
+						height="12"
+						key="staticText-7"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<text><![CDATA[EMPLEADO]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="356"
+						y="62"
+						width="74"
+						height="12"
+						key="textField-5"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{MES_ANT}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="511"
+						y="62"
+						width="55"
+						height="12"
+						key="staticText-9"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<text><![CDATA[DIFERENCIA]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="435"
+						y="62"
+						width="76"
+						height="12"
+						key="textField-6"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{MES_ACT}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="110"
+						y="62"
+						width="64"
+						height="12"
+						key="staRegistorEmpleado">
+							<printWhenExpression><![CDATA[new Boolean($F{ANIOACTUAL}.compareTo(new BigDecimal(2017))< 0 )]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="9"/>
+					</textElement>
+				<text><![CDATA[Registro empl]]></text>
+				</staticText>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="15"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="1"
+						width="73"
+						height="14"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PARTIDA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="73"
+						y="1"
+						width="37"
+						height="14"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{NUMERO_PLAZA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="110"
+						y="1"
+						width="64"
+						height="14"
+						key="txtCUI">
+							<printWhenExpression><![CDATA[new Boolean($F{ANIOACTUAL}.compareTo(new BigDecimal(2017))>= 0 )]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{CUI}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="174"
+						y="1"
+						width="182"
+						height="14"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{EMPLEADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern=" #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="356"
+						y="1"
+						width="74"
+						height="14"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{UNO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="435"
+						y="1"
+						width="76"
+						height="14"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DOS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern=" #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="511"
+						y="1"
+						width="55"
+						height="14"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DIFERENCIA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="110"
+						y="1"
+						width="64"
+						height="14"
+						key="txtRegistroEmpleado">
+							<printWhenExpression><![CDATA[new Boolean($F{ANIOACTUAL}.compareTo(new BigDecimal(2017))< 0 )]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{REGISTRO_EMPLEADO}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="16"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern=" #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="506"
+						y="1"
+						width="60"
+						height="15"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{diferencia}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="425"
+						y="1"
+						width="81"
+						height="15"
+						key="textField-2"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{sumDos}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="346"
+						y="1"
+						width="79"
+						height="15"
+						key="textField-3"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{sumUno}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="293"
+						y="1"
+						width="53"
+						height="15"
+						key="staticText-13"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[TOTAL]]></text>
+				</staticText>
+			</band>
+		</summary>
+</jasperReport>

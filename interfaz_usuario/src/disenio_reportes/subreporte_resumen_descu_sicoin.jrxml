@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="subreporte_descuento_sicoin2"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="595"
+		 pageHeight="842"
+		 columnWidth="535"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="30"
+		 topMargin="0"
+		 bottomMargin="15"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pIdProceso" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pIdUnidad" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[SELECT * FROM (select u.unidad_ejecutora id_unidad, u.NOMBRE_UNIDAD_EJECUTORA unidad_ejecutora, des.id_ajuste, des.ajuste, des.cod_desc_sicoin, abs(sum(valor_aplicado)) VALOR_APLICADO
+from (select nm.id_puesto, nm.plaza, nm.correlativo, nm.id_partida, aj.id_ajuste, aj.nombre ajuste, aj.cod_desc_sicoin, sum(ca.VALOR_APLICADO) valor_aplicado
+from (select n.id_nomina,  n.id_puesto, n.numero_plaza plaza, n.correlativo,
+case when (n.id_partida_egreso is null or n.id_partida_egreso = n.id_partida ) then n.id_partida 
+     else 0 end id_partida
+, n.total_Bono, n.total_descuento
+from sis_nomina n  
+inner join sis_pago pg on pg.id_nomina = n.id_nomina
+inner join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where n.id_proceso = $P{pIdProceso}
+and (n.id_partida_egreso is null or n.id_partida_egreso = n.id_partida) 
+and doc.ID_TIPO_DOCUMENTO = 2
+and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)
+) nm
+inner join sis_det_calculo_ajuste ca on ca.id_nomina = nm.id_nomina
+inner join sis_ajuste aj on aj.id_ajuste = ca.id_ajuste
+group by nm.id_puesto, nm.plaza, nm.correlativo, nm.id_partida, aj.id_ajuste, aj.nombre, aj.cod_desc_sicoin ) des
+inner join sis_plaza pl on pl.id_puesto = des.id_puesto
+                       and pl.correlativo = des.correlativo
+                       and pl.numero_plaza = des.plaza
+                       and pl.id_partida = des.id_partida
+inner join SICOIN_PARTIDA_EGRESOS s on s.ID_PARTIDA_EGRESOS = pl.id_partida_sicoin     
+inner join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora
+where u.unidad_ejecutora = $P{pIdUnidad}
+group by u.unidad_ejecutora , u.NOMBRE_UNIDAD_EJECUTORA , des.id_ajuste, des.ajuste, des.cod_desc_sicoin
+UNION --PARA LAS PARTIDA_EGRESO
+select u.unidad_ejecutora , u.NOMBRE_UNIDAD_EJECUTORA ,  des.id_ajuste,  des.ajuste, des.cod_desc_sicoin, sum(valor_aplicado) VALOR_APLICADO
+from (select nm.id_puesto, nm.plaza, nm.correlativo, nm.id_partida, aj.id_ajuste, aj.nombre ajuste, aj.cod_desc_sicoin, sum(ca.VALOR_APLICADO) valor_aplicado
+from (select n.id_nomina,  n.id_puesto, n.numero_plaza plaza, n.correlativo,
+case when (n.id_partida_egreso is not null and n.id_partida_egreso <> n.id_partida )  then n.id_partida_egreso
+     else 1 end id_partida
+, n.total_Bono, n.total_descuento
+from sis_nomina n  
+inner join sis_pago pg on pg.id_nomina = n.id_nomina
+inner join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where n.id_proceso = $P{pIdProceso}
+and (n.id_partida_egreso is not null and n.id_partida_egreso <> n.id_partida) 
+and doc.ID_TIPO_DOCUMENTO = 2
+and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)
+) nm
+inner join sis_det_calculo_ajuste ca on ca.id_nomina = nm.id_nomina
+inner join sis_ajuste aj on aj.id_ajuste = ca.id_ajuste
+group by nm.id_puesto, nm.plaza, nm.correlativo, nm.id_partida, aj.id_ajuste, aj.nombre, aj.cod_desc_sicoin ) des
+inner join PARTIDA PT on PT.ID_PARTIDA = DES.ID_PARTIDA
+inner join SICOIN_PARTIDA_EGRESOS s on s.ID_PARTIDA_EGRESOS = PT.ID_PARTIDA_EGRESOS  
+inner join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora
+where u.unidad_ejecutora = $P{pIdUnidad}
+group by u.unidad_ejecutora , u.NOMBRE_UNIDAD_EJECUTORA ,  des.id_ajuste, des.ajuste, des.cod_desc_sicoin)
+where id_ajuste <> 27
+ORDER BY AJUSTE]]></queryString>
+
+	<field name="ID_UNIDAD" class="java.math.BigDecimal"/>
+	<field name="UNIDAD_EJECUTORA" class="java.lang.String"/>
+	<field name="ID_AJUSTE" class="java.math.BigDecimal"/>
+	<field name="AJUSTE" class="java.lang.String"/>
+	<field name="COD_DESC_SICOIN" class="java.math.BigDecimal"/>
+	<field name="VALOR_APLICADO" class="java.math.BigDecimal"/>
+
+	<sortField name="AJUSTE" />
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="28"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="0"
+						y="1"
+						width="565"
+						height="14"
+						key="staticText-1"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="11" isBold="true" isUnderline="false"/>
+					</textElement>
+				<text><![CDATA[RESUMEN DE DESCUENTOS]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="52"
+						y="15"
+						width="412"
+						height="13"
+						key="staticText-2"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[DESCUENTO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="472"
+						y="15"
+						width="93"
+						height="12"
+						key="staticText-4"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[TOTAL]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="27"
+						width="565"
+						height="0"
+						key="line-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="4"
+						y="6"
+						width="48"
+						height="22"
+						key="staticText-5"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[CODIGO SICOIN]]></text>
+				</staticText>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="12"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="52"
+						y="0"
+						width="412"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{AJUSTE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="472"
+						y="0"
+						width="93"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{VALOR_APLICADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4"
+						y="0"
+						width="48"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{COD_DESC_SICOIN}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="5"  isSplitAllowed="true" >
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="2"
+						width="565"
+						height="0"
+						key="line-2"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

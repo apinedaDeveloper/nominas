@@ -1,0 +1,195 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="Sis_unidades_liquidacion_vw"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   RowClass="enlace_datos.consultas.procesos.Sis_unidades_liquidacion_vwRowImpl"
+   ComponentClass="enlace_datos.consultas.procesos.Sis_unidades_liquidacion_vwImpl"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isCodegen" Value="true" />
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="pUsuario"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <Variable
+      Name="pIdDep"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="pIdProceso"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="pIdLiquidacion"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select unE.ID_PROGRAMA,unE.ID_DEPENDENCIA,unE.ID_UNIDAD,unE.NOMBRE, unE.ID_PROGRAMA ||'.'||trim(to_char(unE.ID_DEPENDENCIA,'00')) || '.' || unE.ID_UNIDAD as formato 
+from sis_unidad_ejecutora unE
+where 
+unE.id_dependencia=:pIdDep
+and exists
+(
+    select 1 from usuario_unidad un, partida part
+    where un.usuario=:pUsuario
+    and tipo_usuario='TRABAJADOR'
+    and sysdate between un.VIGENCIA_DE and nvl(un.VIGENCIA_A,sysdate)
+    and part.id_partida=un.id_partida
+    and part.d1=4	
+        and 
+        (
+        une.id_programa=part.d1||part.d2
+        and unE.id_dependencia=part.d3d4        
+        and part.d5 is not null
+        and unE.id_unidad=part.d5||part.d6||part.d7
+            or(
+            une.id_programa=part.d1||part.d2
+            and unE.id_dependencia=part.d3d4            
+            and part.d5 is null
+            and part.d6 is null
+            and part.d7 is null
+            )
+        )
+)
+and exists(
+select 1 from sis_pago pg, 
+ sis_nomina nom
+   left outer join partida parte on parte.id_partida=nom.id_partida_egreso,
+ partida prt, sis_documento_banco docb
+where pg.id_proceso= (case when :pIdLiquidacion is null then :pIdProceso else null end)
+and docb.id_documento_banco=pg.id_documento_banco
+and (docb.ID_LIQUIDACION is null)
+and nom.id_nomina=pg.id_nomina
+and prt.id_partida=(case when parte.d9d10 is not null and parte.d9d10 in (41,42) then nom.id_partida_egreso else nom.id_partida end) 
+and une.ID_PROGRAMA=to_number(prt.d1||prt.d2)
+and une.id_dependencia=prt.d3d4
+and une.ID_UNIDAD=to_number(prt.D5||prt.d6||prt.d7)
+)
+union
+select unE.ID_PROGRAMA,unE.ID_DEPENDENCIA,unE.ID_UNIDAD,unE.NOMBRE, unE.ID_PROGRAMA ||'.'||trim(to_char(unE.ID_DEPENDENCIA,'00')) || '.' || unE.ID_UNIDAD as formato 
+from sis_unidad_ejecutora unE
+where 
+unE.id_dependencia=:pIdDep
+and exists
+(
+    select 1 from usuario_unidad un, partida part
+    where un.usuario=:pUsuario
+    and tipo_usuario='TRABAJADOR'
+    and sysdate between un.VIGENCIA_DE and nvl(un.VIGENCIA_A,sysdate)
+    and part.id_partida=un.id_partida
+    and part.d1=4	
+        and 
+        (
+        une.id_programa=part.d1||part.d2
+        and unE.id_dependencia=part.d3d4        
+        and part.d5 is not null
+        and unE.id_unidad=part.d5||part.d6||part.d7
+            or(
+            une.id_programa=part.d1||part.d2
+            and unE.id_dependencia=part.d3d4            
+            and part.d5 is null
+            and part.d6 is null
+            and part.d7 is null
+            )
+        )
+)
+and exists(
+select 1 from sis_pago pg, sis_liquidacion lq,
+ sis_nomina nom
+   left outer join partida parte on parte.id_partida=nom.id_partida_egreso,
+ partida prt, sis_documento_banco docb
+where pg.id_proceso=lq.id_proceso
+and lq.id_liquidacion = :pIdLiquidacion
+and docb.id_documento_banco=pg.id_documento_banco
+and (docb.ID_LIQUIDACION is null or docb.id_liquidacion = :pIdLiquidacion)
+and nom.id_nomina=pg.id_nomina
+and prt.id_partida=(case when parte.d9d10 is not null and parte.d9d10 in (41,42) then nom.id_partida_egreso else nom.id_partida end) 
+and une.ID_PROGRAMA=to_number(prt.d1||prt.d2)
+and une.id_dependencia=prt.d3d4
+and une.ID_UNIDAD=to_number(prt.D5||prt.d6||prt.d7)
+)
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="IdPrograma"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="6"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_PROGRAMA"
+      Expression="ID_PROGRAMA"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdDependencia"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="5"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_DEPENDENCIA"
+      Expression="ID_DEPENDENCIA"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdUnidad"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="8"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_UNIDAD"
+      Expression="ID_UNIDAD"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nombre"
+      IsPersistent="false"
+      Precision="250"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBRE"
+      Expression="NOMBRE"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="250" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Formato"
+      IsPersistent="false"
+      Precision="85"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="FORMATO"
+      Expression="FORMATO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="85" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

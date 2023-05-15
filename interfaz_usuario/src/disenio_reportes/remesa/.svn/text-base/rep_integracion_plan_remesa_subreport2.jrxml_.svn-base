@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="rep_integracion_plan_remesa_subreport2"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="535"
+		 pageHeight="802"
+		 columnWidth="535"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<queryString><![CDATA[select  
+nomina,
+regimen,
+sum(b.valor_aplicado2) as descontado
+from
+(
+select 
+datos.*,
+round(abs(VALOR_APLICADO2)/decode((nominal),0,1,(nominal)),4) *100 as PORCENTAJE
+from (
+select  sn.id_nomina, SN.SUELDO_BASE, SN.COMPL_SALARIAL, SN.ESCALAFON,
+nvl((
+    select sum(valor_aplicado*-1)
+    from
+    SIS_DET_CALCULO_AJUSTE AJ,
+    SIS_AJUSTE AJT
+    where
+    AJ.ID_NOMINA=SN.ID_NOMINA
+    AND AJT.ID_AJUSTE=AJ.ID_AJUSTE
+    and ajt.id_ajuste=24
+     and (AJ.VALOR_APLICADO*-1)>0
+    ),0) as valor_aplicado2,
+    sn.nominal,
+    decode (part.id_programa,45,'4.5','4.1') as regimen,
+    to_char(nvl(sn.anio_periodo,sn.correlativo)) as nomina
+from 
+    SIS_NOMINA SN,
+    SIS_PAGO SP ,
+    SIS_DOCUMENTO_BANCO SDB,
+    SIS_PARTIDA PART 
+WHERE 
+SN.ID_NOMINA=SP.ID_NOMINA AND
+SP.ID_DOCUMENTO_BANCO=SDB.ID_DOCUMENTO_BANCO 
+AND PART.ID_PARTIDA=SN.ID_PARTIDA
+--AND TRUNC(sdb.FECHA_EMISION) BETWEEN to_date(:pFechaInicio,'DD/MM/YYYY') and to_date(:pFechaFin,'DD/MM/YYYY')
+AND TRUNC(sdb.FECHA_EMISION) BETWEEN to_date(sysdate,'DD/MM/YYYY') and to_date(sysdate,'DD/MM/YYYY')
+)datos       
+where valor_aplicado2>0
+) B
+where porcentaje=10.58
+group by nomina,regimen
+order by regimen,nomina]]></queryString>
+
+	<field name="NOMINA" class="java.lang.String"/>
+	<field name="REGIMEN" class="java.lang.String"/>
+	<field name="DESCONTADO" class="java.math.BigDecimal"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="20"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="19"  isSplitAllowed="true" >
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="17"
+						width="535"
+						height="0"
+						forecolor="#808080"
+						key="line"
+						positionType="FixRelativeToBottom"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.25" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

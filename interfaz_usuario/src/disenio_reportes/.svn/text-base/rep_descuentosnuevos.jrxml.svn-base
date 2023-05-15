@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="rep_descuentosnuevos"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="935"
+		 pageHeight="612"
+		 columnWidth="933"
+		 columnSpacing="0"
+		 leftMargin="1"
+		 rightMargin="1"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="f1" isForPrompting="true" class="java.util.Date"/>
+	<parameter name="f2" isForPrompting="true" class="java.util.Date"/>
+	<parameter name="depen" isForPrompting="true" class="java.lang.Integer"/>
+	<queryString><![CDATA[select DISTINCT 
+Case When Extract(year from ajusteE.FECHA_inicio) < 2017
+Then To_Char(ajusteE.registro_empleado)
+Else Case when To_Number(to_char(ajusteE.Fecha_inicio,'yyyymm')) < 201807
+     Then Trim(To_Char(cui,'9999G99999G9999','NLS_NUMERIC_CHARACTERS= '', '''))
+     Else Trim(To_Char(cui,'9999G99999G9999','NLS_NUMERIC_CHARACTERS= '', '''))||'<br>'||ajusteE.Registro_empleado
+     End
+End Reg_CUI
+, ajusteE.ID_AJUSTE,'DE '||ajusteE.FECHA_INICIO||' A '||ajusteE.FECHA_FIN VIGENCIA
+,ajusteE.REGISTRO_EMPLEADO,ajusteE.PORCENTAJE,ajusteE.VALOR,ajusteE.ESTADO,
+empleado.SUBPROGRAMA,ajuste.NOMBRE descuento,
+empleado.nombre1||' '|| empleado.NOMBRE2||' '|| empleado.APELLIDO1||' '|| empleado.APELLIDO2 nombre_empleado,
+ue.NOMBRE uejecutora,part2.id_partida partid, dependen.NOMBRE nombredepen,
+contrato.NUMERO_PLAZA,puesto.NOMBRE nombreplaza,ue.id_unidad unidad,
+ue.id_dependencia dependencia
+from siif.SIS_AJUSTE_EMPLEADO ajusteE, siif.sis_empleado empleado,
+siif.SIS_AJUSTE ajuste, SIIF.SIS_CONTRATO CONTRATO,
+SIIF.PARTIDA PART2, siif.SIS_UNIDAD_EJECUTORA ue,
+siif.SIS_DEPENDENCIA dependen, siif.SIS_PUESTO puesto,
+siif.SIS_VARIACION_NOMINA vnomina, siif.SIS_VARIACION_DET_AJUSTE vndet
+where trunc(ajusteE.FECHA_inicio ) between $P{f1} and $P{f2}  and
+ajusteE.REGISTRO_EMPLEADO = empleado.REGISTRO_EMPLEADO  and
+ajusteE.ID_AJUSTE = ajuste.ID_AJUSTE AND
+ajustee.REGISTRO_EMPLEADO = contrato.REGISTRO_EMPLEADO  and
+contrato.ESTATUS = 4 AND CONTRATO.CORRELATIVO =EXTRACT(YEAR FROM SYSDATE) AND
+CONTRATO.ID_PARTIDA = PART2.ID_PARTIDA  and
+PART2.D3D4 = UE.ID_DEPENDENCIA AND
+TO_NUMBER(D1||D2)= UE.ID_PROGRAMA AND TO_NUMBER(D5||D6||D7)= UE.ID_UNIDAD and
+ue.id_dependencia = $P{depen} and
+ue.ID_DEPENDENCIA = dependen.ID_DEPENDENCIA  and
+contrato.ID_PUESTO = puesto.ID_PUESTO   and
+ajustee.estado='A' and
+vnomina.REGISTRO_EMPLEADO=ajustee.REGISTRO_EMPLEADO  and
+vnomina.ID_VARIACION_NOMINA = vndet.ID_VARIACION_NOMINA and
+vndet.ID_AJUSTE = ajustee.ID_AJUSTE and vnomina.ID_ESTADO=134
+order by dependencia,unidad,ajusteE.registro_empleado]]></queryString>
+
+	<field name="REG_CUI" class="java.lang.String"/>
+	<field name="ID_AJUSTE" class="java.math.BigDecimal"/>
+	<field name="VIGENCIA" class="java.lang.String"/>
+	<field name="REGISTRO_EMPLEADO" class="java.math.BigDecimal"/>
+	<field name="PORCENTAJE" class="java.math.BigDecimal"/>
+	<field name="VALOR" class="java.math.BigDecimal"/>
+	<field name="ESTADO" class="java.lang.String"/>
+	<field name="SUBPROGRAMA" class="java.math.BigDecimal"/>
+	<field name="DESCUENTO" class="java.lang.String"/>
+	<field name="NOMBRE_EMPLEADO" class="java.lang.String"/>
+	<field name="UEJECUTORA" class="java.lang.String"/>
+	<field name="PARTID" class="java.math.BigDecimal"/>
+	<field name="NOMBREDEPEN" class="java.lang.String"/>
+	<field name="NUMERO_PLAZA" class="java.math.BigDecimal"/>
+	<field name="NOMBREPLAZA" class="java.lang.String"/>
+	<field name="UNIDAD" class="java.math.BigDecimal"/>
+	<field name="DEPENDENCIA" class="java.math.BigDecimal"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="48"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="272"
+						y="3"
+						width="432"
+						height="10"
+						key="staticText-1"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+				<text><![CDATA[UNIVERSIDAD DE SAN CARLOS DE GUATEMALA]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="782"
+						y="3"
+						width="120"
+						height="10"
+						key="textField-27"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Página "+$V{PAGE_NUMBER}.toString()]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="272"
+						y="16"
+						width="432"
+						height="10"
+						key="staticText-2"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+				<text><![CDATA[NUEVOS DESCUENTOS APLICADOS]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="272"
+						y="34"
+						width="432"
+						height="11"
+						key="textField-31"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["DEPENDENCIA :  "+$F{NOMBREDEPEN}]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="71"  isSplitAllowed="true" >
+				<rectangle>
+					<reportElement
+						x="17"
+						y="41"
+						width="903"
+						height="30"
+						key="rectangle-2"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="84"
+						y="41"
+						width="201"
+						height="30"
+						key="textField-10"/>
+					<box>					<leftPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["NOMPRE EMPLEADO"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="710"
+						y="41"
+						width="86"
+						height="30"
+						key="textField-13"/>
+					<box>					<rightPen lineWidth="0.5"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["VIGENCIA"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="797"
+						y="41"
+						width="65"
+						height="30"
+						key="textField-17"/>
+					<box>					<rightPen lineWidth="0.0"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["VALOR "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="864"
+						y="41"
+						width="55"
+						height="30"
+						key="textField-26"/>
+					<box>					<leftPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["PORCENTAJE"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="532"
+						y="41"
+						width="177"
+						height="30"
+						key="textField-30"/>
+					<box>					<rightPen lineWidth="0.5"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["DESCUENTO APLICADO"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="17"
+						y="18"
+						width="453"
+						height="11"
+						key="textField-32"/>
+					<box></box>
+					<textElement>
+						<font fontName="Arial" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["UNIDAD EJECUTORA : "+$F{UEJECUTORA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="288"
+						y="41"
+						width="213"
+						height="30"
+						key="textField-35"/>
+					<box>					<leftPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["NOMPRE DEL PUESTO Y NO. DE PLAZA"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="501"
+						y="41"
+						width="26"
+						height="30"
+						key="textField-36"/>
+					<box>					<leftPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["NO.  "+
+"PLAZA"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="18"
+						y="41"
+						width="64"
+						height="30"
+						key="txtCUI"/>
+					<box>					<rightPen lineWidth="0.0"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["CUI/RegPer."]]></textFieldExpression>
+				</textField>
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="22"  isSplitAllowed="true" >
+				<rectangle>
+					<reportElement
+						x="17"
+						y="0"
+						width="903"
+						height="22"
+						key="rectangle-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="18"
+						y="0"
+						width="64"
+						height="21"
+						key="txtReg_CUI"/>
+					<box>					<rightPen lineWidth="0.0"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="html">
+						<font fontName="Times New Roman" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{REG_CUI}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="84"
+						y="0"
+						width="201"
+						height="21"
+						key="textField-2"/>
+					<box leftPadding="2">					<leftPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+</box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRE_EMPLEADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="Q #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="797"
+						y="0"
+						width="65"
+						height="21"
+						key="textField-4"/>
+					<box>					<rightPen lineWidth="0.0"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{VALOR}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="710"
+						y="0"
+						width="86"
+						height="21"
+						key="textField-6"/>
+					<box>					<rightPen lineWidth="0.5"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{VIGENCIA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="864"
+						y="0"
+						width="50"
+						height="21"
+						key="textField-25"/>
+					<box>					<leftPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.0"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{PORCENTAJE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="532"
+						y="0"
+						width="177"
+						height="21"
+						key="textField-29"
+						stretchType="RelativeToBandHeight"/>
+					<box>					<rightPen lineWidth="0.5"/>
+</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{DESCUENTO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="288"
+						y="0"
+						width="213"
+						height="21"
+						key="textField-33"/>
+					<box>					<rightPen lineWidth="0.5"/>
+</box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBREPLAZA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="501"
+						y="0"
+						width="26"
+						height="21"
+						key="textField-34"/>
+					<box>					<rightPen lineWidth="0.5"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{NUMERO_PLAZA}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

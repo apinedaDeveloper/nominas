@@ -1,0 +1,401 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="resumen_nomina_sueldos"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="693"
+		 pageHeight="585"
+		 columnWidth="693"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pIdProceso" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[select 
+id_dependencia,
+dependencia_nombre,
+tipo_nomina,
+mes,
+to_char(sysdate,'dd/mm/yyyy') as fecha_emision, 
+sum(SUELDO_BASE) as sueldo_base,
+sum(ESCALAFON) as escalafon,
+sum(COMPL_SALARIAL) as compl_salarial,
+sum(TOTAL_BONO) as total_bono,
+sum(NOMINAL) as nominal,
+sum(TOTAL_DESCUENTO) as total_descuento,
+sum(liq) as liquido
+from
+(
+select 
+case when sis_nomina.id_partida_egreso is not null and part.d9d10 in (41,42) then
+  part.d3d4 else sis_dependencia.ID_DEPENDENCIA end as id_dependencia,
+case when sis_nomina.id_partida_egreso is not null and part.d9d10 in (41,42) then
+  dep.nombre else sis_dependencia.NOMBRE end as dependencia_nombre,
+sis_nomina.SUELDO_BASE,
+sis_nomina.ESCALAFON,
+sis_nomina.COMPL_SALARIAL,
+sis_nomina.TOTAL_BONO,
+sis_nomina.NOMINAL,
+sis_nomina.TOTAL_DESCUENTO,
+(sis_nomina.NOMINAL-sis_nomina.TOTAL_DESCUENTO+sis_nomina.TOTAL_BONO) as liq,
+(select a.nombre from sis_periodo a,sis_proceso b where b.periodo=a.id_periodo and b.id_proceso=$P{pIdProceso}) as mes,
+(select '** RESUMEN '||c.nombre || ' ' ||a.nombre||' '||b.anio from sis_periodo a, sis_proceso b, sis_tipo_proceso c where b.periodo=a.id_periodo and b.id_proceso=$P{pIdProceso} and c.id_tipoproceso=b.tipoproceso)  AS tipo_nomina
+from sis_nomina inner join sis_partida on sis_nomina.ID_PARTIDA=sis_partida.ID_PARTIDA 
+inner join sis_dependencia on sis_partida.ID_DEPENDENCIA=sis_dependencia.ID_DEPENDENCIA
+inner join sis_periodo on sis_periodo.ID_PERIODO=sis_nomina.PERIODO 
+left outer join partida part on part.id_partida=sis_nomina.id_partida_egreso 
+left outer join sis_dependencia dep on dep.id_dependencia=part.d3d4
+where sis_nomina.id_proceso=$P{pIdProceso}
+)
+group by id_dependencia,dependencia_nombre,tipo_nomina,mes
+order by id_dependencia]]></queryString>
+
+	<field name="ID_DEPENDENCIA" class="java.math.BigDecimal"/>
+	<field name="DEPENDENCIA_NOMBRE" class="java.lang.String"/>
+	<field name="TIPO_NOMINA" class="java.lang.String"/>
+	<field name="MES" class="java.lang.String"/>
+	<field name="FECHA_EMISION" class="java.lang.String"/>
+	<field name="SUELDO_BASE" class="java.math.BigDecimal"/>
+	<field name="ESCALAFON" class="java.math.BigDecimal"/>
+	<field name="COMPL_SALARIAL" class="java.math.BigDecimal"/>
+	<field name="TOTAL_BONO" class="java.math.BigDecimal"/>
+	<field name="NOMINAL" class="java.math.BigDecimal"/>
+	<field name="TOTAL_DESCUENTO" class="java.math.BigDecimal"/>
+	<field name="LIQUIDO" class="java.math.BigDecimal"/>
+
+	<variable name="salto_de_pagina" class="java.lang.String" resetType="None" calculation="Nothing">
+		<variableExpression><![CDATA[new String(new char[]{12})]]></variableExpression>
+	</variable>
+	<variable name="cadena_de_impresion" class="java.lang.String" resetType="None" calculation="Nothing">
+		<variableExpression><![CDATA[new String(new char[]{27,48,27,67,68,27,80,18,15})]]></variableExpression>
+	</variable>
+	<variable name="total_sueldo_base" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{SUELDO_BASE}]]></variableExpression>
+	</variable>
+	<variable name="total_escalafon" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{ESCALAFON}]]></variableExpression>
+	</variable>
+	<variable name="total_complemento_salarial" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{COMPL_SALARIAL}]]></variableExpression>
+	</variable>
+	<variable name="total_bono" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{TOTAL_BONO}]]></variableExpression>
+	</variable>
+	<variable name="total_nominal" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{NOMINAL}]]></variableExpression>
+	</variable>
+	<variable name="total_descuento" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{TOTAL_DESCUENTO}]]></variableExpression>
+	</variable>
+	<variable name="total_liquido" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{LIQUIDO}]]></variableExpression>
+	</variable>
+	<variable name="salto_linea" class="java.lang.String" resetType="None" calculation="Nothing">
+		<variableExpression><![CDATA[new String(new char[]{120,13,10,120})]]></variableExpression>
+	</variable>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="121"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="600"
+						y="20"
+						width="80"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{MES}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="45"
+						width="100"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{FECHA_EMISION}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="421"
+						y="33"
+						width="199"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Courier New" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{TIPO_NOMINA}]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="22"  isSplitAllowed="false" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="29"
+						y="0"
+						width="19"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Courier New" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ID_DEPENDENCIA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="52"
+						y="0"
+						width="251"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Courier New" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{DEPENDENCIA_NOMBRE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="180"
+						y="0"
+						width="80"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{SUELDO_BASE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="241"
+						y="0"
+						width="65"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ESCALAFON}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="290"
+						y="0"
+						width="60"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{COMPL_SALARIAL}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="349"
+						y="0"
+						width="70"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_BONO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="393"
+						y="0"
+						width="80"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{NOMINAL}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="498"
+						y="0"
+						width="80"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_DESCUENTO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="561"
+						y="0"
+						width="80"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{LIQUIDO}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="21"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="180"
+						y="8"
+						width="80"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{total_sueldo_base}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="226"
+						y="8"
+						width="80"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{total_escalafon}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="270"
+						y="8"
+						width="80"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{total_complemento_salarial}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="339"
+						y="8"
+						width="80"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{total_bono}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="393"
+						y="8"
+						width="80"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{total_nominal}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="498"
+						y="8"
+						width="80"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{total_descuento}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="561"
+						y="8"
+						width="80"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{total_liquido}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="60"
+						y="8"
+						width="80"
+						height="12"
+						key="staticText-1"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="10"/>
+					</textElement>
+				<text><![CDATA[*Total General*]]></text>
+				</staticText>
+			</band>
+		</summary>
+</jasperReport>

@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="sub2_reporte_liquidacion_nomina"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="608"
+		 pageHeight="650"
+		 columnWidth="608"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="id_liquidacion" isForPrompting="true" class="java.lang.Integer"/>
+	<queryString><![CDATA[select
+sis_documento_banco.NUM_DOC_FISICO,
+(select sis_tipo_documento.NOMBREABR from sis_tipo_documento  where
+sis_tipo_documento.id_tipo_documento=sis_documento_banco.id_tipo_documento
+) tipo_doc,
+(select sis_banco.NOMBREABR from sis_banco
+where sis_banco.id_banco=sis_documento_banco.id_banco) 
+nombrebanco,
+(select sum(sis_nomina.nominal) from sis_pago,sis_nomina
+where sis_pago.ID_NOMINA=sis_nomina.id_nomina and sis_pago.ID_DOCUMENTO_BANCO=sis_documento_banco.id_documento_banco
+and sis_documento_banco.id_proceso=sis_pago.id_proceso) 
+nominal_documento,
+(select sum(sis_nomina.total_bono) from sis_pago,sis_nomina
+where sis_pago.ID_NOMINA=sis_nomina.id_nomina and sis_pago.ID_DOCUMENTO_BANCO=sis_documento_banco.id_documento_banco
+and sis_documento_banco.id_proceso=sis_pago.id_proceso) 
+bono_documento,
+sis_documento_banco.valor,
+(select distinct sis_nomina.registro_empleado
+from sis_nomina,sis_pago
+where sis_nomina.id_nomina=sis_pago.ID_NOMINA
+and sis_pago.ID_DOCUMENTO_BANCO=sis_documento_banco.id_documento_banco)
+registro_empleado,
+(select distinct sis_empleado_vw.NOMBRECOMPLETO 
+from sis_empleado_vw,sis_nomina,sis_pago 
+where 
+sis_empleado_vw.registro_empleado=sis_nomina.registro_empleado 
+and sis_pago.ID_NOMINA=sis_nomina.id_nomina
+and sis_pago.ID_DOCUMENTO_BANCO=sis_documento_banco.id_documento_banco
+) nombre,
+(select sis_motivo_anulacion.ID_MOTIVO_ANULACION from sis_motivo_anulacion,sis_doc_pago_anulado 
+WHERE sis_motivo_anulacion.ID_MOTIVO_ANULACION=sis_doc_pago_anulado.ID_MOTIVO_ANULACION
+AND sis_doc_pago_anulado.id_doc_pago=sis_documento_banco.id_documento_banco) 
+motivo
+from sis_documento_banco
+where sis_documento_banco.id_liquidacion=$P{id_liquidacion}
+and sis_documento_banco.fecha_anulacion is not null]]></queryString>
+
+	<field name="NUM_DOC_FISICO" class="java.math.BigDecimal"/>
+	<field name="TIPO_DOC" class="java.lang.String"/>
+	<field name="NOMBREBANCO" class="java.lang.String"/>
+	<field name="NOMINAL_DOCUMENTO" class="java.math.BigDecimal"/>
+	<field name="BONO_DOCUMENTO" class="java.math.BigDecimal"/>
+	<field name="VALOR" class="java.math.BigDecimal"/>
+	<field name="REGISTRO_EMPLEADO" class="java.math.BigDecimal"/>
+	<field name="NOMBRE" class="java.lang.String"/>
+	<field name="MOTIVO" class="java.math.BigDecimal"/>
+
+	<variable name="contador" class="java.lang.Integer" resetType="Report" calculation="Count">
+		<variableExpression><![CDATA[$F{NUM_DOC_FISICO}]]></variableExpression>
+	</variable>
+	<variable name="suma_nominal" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{NOMINAL_DOCUMENTO}]]></variableExpression>
+	</variable>
+	<variable name="suma_liquido" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{VALOR}]]></variableExpression>
+	</variable>
+	<variable name="suma_bono" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{BONO_DOCUMENTO}]]></variableExpression>
+	</variable>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="10"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3"
+						y="0"
+						width="20"
+						height="10"
+						key="textField-1"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.Integer"><![CDATA[$V{contador}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0;-###0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="25"
+						y="0"
+						width="45"
+						height="10"
+						key="textField-2"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{NUM_DOC_FISICO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="76"
+						y="0"
+						width="23"
+						height="10"
+						key="textField-3"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{TIPO_DOC}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="100"
+						y="0"
+						width="25"
+						height="10"
+						key="textField-4"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBREBANCO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="127"
+						y="0"
+						width="49"
+						height="10"
+						key="textField-5"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{NOMINAL_DOCUMENTO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="218"
+						y="0"
+						width="63"
+						height="10"
+						key="textField-6"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{VALOR}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="287"
+						y="0"
+						width="46"
+						height="10"
+						key="textField-7"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{REGISTRO_EMPLEADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="335"
+						y="0"
+						width="172"
+						height="10"
+						key="textField-8"/>
+					<box></box>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="Courier New" size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="512"
+						y="0"
+						width="37"
+						height="10"
+						key="textField-9"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{MOTIVO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="189"
+						y="0"
+						width="42"
+						height="10"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{BONO_DOCUMENTO}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

@@ -1,0 +1,174 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="contrato_desc_y_bonos"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="numContrato"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select * from (
+select a.id_ajuste,b.id_tipoajuste,a.nombre,opcional,nivel,sis_pkg_calculos.GETVALORAJUSTEP(c.id_contrato,a.id_ajuste,c.fecha_inicio) as calculado
+,c.fecha_inicio,nvl(c.fecha_fin,c.fecha_inicio+1) as fecha_fin,b.operacion,decode(b.operacion,'D','DESCUENTO','I','BONO','ISD','BONO') as nomOperacion
+from sis_ajuste a,sis_tipo_ajuste b,sis_ajuste_contrato c
+where
+a.id_tipoajuste=b.id_tipoajuste
+and c.id_ajuste=a.id_ajuste
+and c.id_contrato=:numContrato
+and c.estado='A'
+and a.id_ajuste not in(1,4,19,3,7,9,10,12,30)
+and id_proceso is null
+union
+select a.id_ajuste,c.id_tipoajuste,d.nombre,d.opcional,d.nivel,sis_pkg_calculos.GETVALORAJUSTEP(b.id_contrato,a.id_ajuste,b.fecha_inicio) as calculado
+,a.fecha_inicio,nvl(a.fecha_fin,a.fecha_inicio+1) as fecha_fin,c.operacion,decode(c.operacion,'D','DESCUENTO','I','BONO','ISD','BONO') as nomOperacion 
+from sis_ajuste_empleado a,sis_contrato b,sis_tipo_ajuste c,sis_ajuste d
+where b.registro_empleado=a.registro_empleado
+and c.id_tipoajuste=d.id_tipoajuste
+and a.id_ajuste=d.id_ajuste
+and b.id_contrato=:numContrato
+and a.estado='A'
+and d.id_ajuste not in(1,4,19,3,7,9,10,12,30,43,44,45,46,47)
+and id_proceso is null
+)
+--where fecha_posesion between fecha_inicio and fecha_fin
+order by operacion,nombre
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="IdAjuste"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_AJUSTE"
+      Expression="ID_AJUSTE"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdTipoajuste"
+      IsPersistent="false"
+      Precision="3"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_TIPOAJUSTE"
+      Expression="ID_TIPOAJUSTE"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nombre"
+      IsPersistent="false"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBRE"
+      Expression="NOMBRE"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Opcional"
+      IsPersistent="false"
+      Precision="2"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="OPCIONAL"
+      Expression="OPCIONAL"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="2" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nivel"
+      IsPersistent="false"
+      Precision="2"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NIVEL"
+      Expression="NIVEL"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="2" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Calculado"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="CALCULADO"
+      Expression="CALCULADO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaInicio"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_INICIO"
+      Expression="FECHA_INICIO"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaFin"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_FIN"
+      Expression="FECHA_FIN"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Operacion"
+      IsPersistent="false"
+      Precision="3"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="OPERACION"
+      Expression="OPERACION"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="3" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomoperacion"
+      IsPersistent="false"
+      Precision="9"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMOPERACION"
+      Expression="NOMOPERACION"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="9" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

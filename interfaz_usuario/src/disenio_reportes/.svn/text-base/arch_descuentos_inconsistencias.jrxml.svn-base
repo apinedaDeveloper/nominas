@@ -1,0 +1,456 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="arch_descuentos_inconsistencias"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="1008"
+		 pageHeight="612"
+		 columnWidth="951"
+		 columnSpacing="0"
+		 leftMargin="28"
+		 rightMargin="29"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pIdCargaArchivoDatos" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pAnio" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pPeriodo" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[select 
+Case when c.anio < 2017 
+Then To_Char(e.registro_empleado)
+Else Case When c.anio <= 2018 and c.periodo < 7 
+     Then e.cui
+     Else e.cui||'<br>'||e.registro_empleado
+     End
+End Reg_CUI
+, c.periodo, c.anio, c.id_proceso
+, e.registro_empleado, e.cui, e.nombrecompleto, a.id_ajuste, aj.nombre nombre_descuento, 
+    a.valor total_a_descontar, nvl(d.total_descontado,0)*-1 total_descuento,
+    a.valor + nvl(d.total_descontado,0) saldo_x_descontar,
+    p.no_prestamo,
+    (select SIS_PKG_UTIL.getNumero_mes($P{pPeriodo}) from dual) as nombre_mes,
+    (select o.nombre from sis_origen_carga_archivo o, sis_carga_archivo_datos c 
+     where c.id_origen_carga_archivo = o.id_origen_carga_archivo and c.id_carga_archivo_datos = $P{pIdCargaArchivoDatos}
+     ) as nombre_banco,
+    case 
+    when nvl(d.total_descontado,0) = 0 then 
+	case when (select sis_pkg_util.verificaContratoPrestamo($P{pPeriodo},$P{pAnio},a.registro_empleado) from dual) = 'INACTIVO' THEN 'NO ACTIVO EN MAESTRO DE SUELDOS'
+	else 'MONTO DESCONTADO INCOMPLETO'
+	end
+    when a.valor + nvl(d.total_descontado,0) <> 0  then 'MONTO DESCONTADO INCOMPLETO'         
+    end as motivo_inconsistencia
+from( Select sn.registro_empleado, sdca.id_ajuste,  sdca.correlativo, 
+	  sum(sdca.valor_aplicado) total_descontado
+	from sis_proceso proc, sis_det_calculo_ajuste sdca, sis_nomina sn,
+	    sis_pago sp, sis_documento_banco sdb, sis_remesa sr
+	where proc.id_estado in (44,53) and sn.id_proceso=proc.id_proceso and
+	    sn.id_tipo_nomina <>20 and sdca.origen = 'E' and
+	    sdca.ID_NOMINA=sn.ID_NOMINA and sp.ID_NOMINA=sn.ID_NOMINA  and
+	    sdb.ID_DOCUMENTO_BANCO=sp.ID_DOCUMENTO_BANCO and
+            sr.periodo = $P{pPeriodo} and to_number(ltrim(to_char(sr.fecha_inicio,'rrrr'))) =  $P{pAnio} and
+            sdb.id_remesa = sr.id_remesa
+	group by sn.registro_empleado, sdca.id_ajuste, sdca.correlativo    
+    ) d, sis_ajuste aj, sis_empleado_vw e, sis_archivo_prestamo p,
+    sis_ajuste_empleado a, sis_carga_archivo_datos c
+where (a.valor + nvl(d.total_descontado,0)) > 0 and
+    a.id_correlativo = d.correlativo(+) and a.id_ajuste = d.id_ajuste(+) and
+    a.registro_empleado = d.registro_empleado(+) and aj.id_ajuste = a.id_ajuste and
+    a.registro_empleado = e.registro_empleado and p.id_archivo_prestamo = a.id_archivo_prestamo and
+    p.cod_prestamo = a.id_ajuste and p.registro_empleado = a.registro_empleado and
+    p.id_carga_archivo_datos = c.id_carga_archivo_datos and a.id_proceso = c.id_proceso and
+    c.id_carga_archivo_datos = $P{pIdCargaArchivoDatos}
+UNION
+select 
+Case when $P{pAnio} < 2017 
+Then To_Char(e.registro_empleado)
+Else Case When $P{pAnio} <= 2018 and $P{pPeriodo} < 7 
+     Then e.cui
+     Else e.cui||'<br>'||e.registro_empleado
+     End
+End Reg_CUI
+, To_Number($P{pPeriodo}) as periodo, To_Number($P{pAnio}) as anio,
+    101 as id_proceso
+, e.registro_empleado, e.cui, e.nombrecompleto, d.id_ajuste,  aj.nombre nombre_descuento, 
+    0.0 as total_a_descontar, nvl(d.total_descontado,0)*-1 as total_descuento,
+    0.0 as saldo_x_descontar, ' ' as no_prestamo,
+    (select SIS_PKG_UTIL.getNumero_mes($P{pPeriodo}) from dual) as nombre_mes,
+    (select o.nombre from sis_origen_carga_archivo o, sis_carga_archivo_datos c 
+     where c.id_origen_carga_archivo = o.id_origen_carga_archivo and c.id_carga_archivo_datos = $P{pIdCargaArchivoDatos}
+     ) as nombre_banco,
+     'NO HUBO MATCH CON EL ARCHIVO CARGADO' as motivo_inconsistencia
+from sis_ajuste aj, sis_empleado_vw e,
+    ( select sn.registro_empleado, sdca.id_ajuste, sdca.correlativo, 
+      sum(sdca.valor_aplicado) total_descontado
+    from sis_proceso proc, sis_det_calculo_ajuste sdca,
+        sis_nomina sn, sis_pago sp, sis_documento_banco sdb, sis_remesa sr
+    where sdca.id_ajuste in (select distinct to_number(cod_prestamo) from sis_archivo_prestamo where id_carga_archivo_datos = $P{pIdCargaArchivoDatos}) and
+        proc.id_estado in (44,53) and sn.id_proceso=proc.id_proceso and
+        sn.id_tipo_nomina <>20 and sdca.origen = 'E' and
+        sdca.ID_NOMINA=sn.ID_NOMINA and sp.ID_NOMINA=sn.ID_NOMINA  and
+        sdb.ID_DOCUMENTO_BANCO=sp.ID_DOCUMENTO_BANCO and
+        sr.periodo = $P{pPeriodo} and to_number(ltrim(to_char(sr.fecha_inicio,'rrrr'))) =  $P{pAnio} and
+        sdb.id_remesa = sr.id_remesa
+  group by sn.registro_empleado, sdca.id_ajuste, sdca.correlativo    
+    ) d
+where not exists( select 1 from sis_archivo_prestamo p,
+          sis_ajuste_empleado a, sis_carga_archivo_datos c
+      where a.id_correlativo = d.correlativo and a.id_ajuste = d.id_ajuste and
+          a.registro_empleado = d.registro_empleado and p.id_archivo_prestamo = a.id_archivo_prestamo and
+          p.cod_prestamo = a.id_ajuste and p.registro_empleado = a.registro_empleado and
+          p.id_carga_archivo_datos = c.id_carga_archivo_datos and a.id_proceso = c.id_proceso and
+          c.id_carga_archivo_datos = $P{pIdCargaArchivoDatos}
+    ) and
+    aj.id_ajuste = d.id_ajuste and e.registro_empleado = d.registro_empleado and
+    d.total_descontado <> 0
+order by Reg_cui asc]]></queryString>
+
+	<field name="REG_CUI" class="java.lang.String"/>
+	<field name="PERIODO" class="java.math.BigDecimal"/>
+	<field name="ANIO" class="java.math.BigDecimal"/>
+	<field name="ID_PROCESO" class="java.math.BigDecimal"/>
+	<field name="REGISTRO_EMPLEADO" class="java.math.BigDecimal"/>
+	<field name="CUI" class="java.lang.String"/>
+	<field name="NOMBRECOMPLETO" class="java.lang.String"/>
+	<field name="ID_AJUSTE" class="java.math.BigDecimal"/>
+	<field name="NOMBRE_DESCUENTO" class="java.lang.String"/>
+	<field name="TOTAL_A_DESCONTAR" class="java.math.BigDecimal"/>
+	<field name="TOTAL_DESCUENTO" class="java.math.BigDecimal"/>
+	<field name="SALDO_X_DESCONTAR" class="java.math.BigDecimal"/>
+	<field name="NO_PRESTAMO" class="java.lang.String"/>
+	<field name="NOMBRE_MES" class="java.lang.String"/>
+	<field name="NOMBRE_BANCO" class="java.lang.String"/>
+	<field name="MOTIVO_INCONSISTENCIA" class="java.lang.String"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="93"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="4"
+						y="61"
+						width="70"
+						height="30"
+						key="staCUI"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[CUI
+Registro empl.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="328"
+						y="61"
+						width="84"
+						height="16"
+						key="staticText-4"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[No. Prestamo]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="512"
+						y="61"
+						width="73"
+						height="32"
+						key="staticText-5"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Total a 
+descontar]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="439"
+						y="61"
+						width="73"
+						height="32"
+						key="staticText-6"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Descuento 
+Aplicado]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="74"
+						y="61"
+						width="254"
+						height="16"
+						key="staticText-8"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Nombre ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3"
+						y="0"
+						width="255"
+						height="16"
+						key="staticText-9"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" size="9"/>
+					</textElement>
+				<text><![CDATA[UNIVERSIDAD DE SAN CARLOS DE GUATEMALA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3"
+						y="16"
+						width="255"
+						height="16"
+						key="staticText-10"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" size="9"/>
+					</textElement>
+				<text><![CDATA[DEPARTAMENTO DE CAJA CENTRAL]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy h.mm a" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="767"
+						y="0"
+						width="108"
+						height="16"
+						key="textField-12"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="738"
+						y="16"
+						width="107"
+						height="16"
+						key="textField-13"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Página " + $V{PAGE_NUMBER} + " de "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="846"
+						y="16"
+						width="29"
+						height="16"
+						key="textField-14"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3"
+						y="32"
+						width="943"
+						height="15"
+						key="textField-15"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["INCONSISTENCIAS ENCONTRADAS EN LA APLICACION DEL DESCUENTO "+ $F{NOMBRE_BANCO} +" CORRESPONDIENTE AL MES DE "+$F{NOMBRE_MES}+" "+$F{ANIO}.toString()]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="585"
+						y="61"
+						width="347"
+						height="16"
+						key="staticText-11"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Observaciones]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="412"
+						y="61"
+						width="27"
+						height="16"
+						key="staticText-12"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Desc.]]></text>
+				</staticText>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="17"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4"
+						y="0"
+						width="70"
+						height="16"
+						key="txtCUI"/>
+					<box></box>
+					<textElement textAlignment="Right" markup="html">
+						<font fontName="Times New Roman" size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{REG_CUI}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="74"
+						y="0"
+						width="254"
+						height="16"
+						key="textField-4"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRECOMPLETO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="328"
+						y="0"
+						width="84"
+						height="16"
+						key="textField-8"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NO_PRESTAMO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="512"
+						y="0"
+						width="73"
+						height="16"
+						key="textField-9"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_A_DESCONTAR}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="439"
+						y="0"
+						width="73"
+						height="16"
+						key="textField-10"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_DESCUENTO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="412"
+						y="0"
+						width="27"
+						height="16"
+						key="textField-16"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ID_AJUSTE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="585"
+						y="0"
+						width="347"
+						height="16"
+						key="textField-18"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Times New Roman" size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{MOTIVO_INCONSISTENCIA}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="25"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="136"
+						y="0"
+						width="192"
+						height="16"
+						key="staticText-13"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" size="9"/>
+					</textElement>
+				<text><![CDATA[Total de inconsistencias:]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="328"
+						y="0"
+						width="84"
+						height="16"
+						key="textField-17"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$V{REPORT_COUNT}.toString()]]></textFieldExpression>
+				</textField>
+			</band>
+		</summary>
+</jasperReport>

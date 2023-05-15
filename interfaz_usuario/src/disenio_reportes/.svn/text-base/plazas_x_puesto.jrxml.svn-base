@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="plazas_x_puesto"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="612"
+		 pageHeight="792"
+		 columnWidth="552"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pIdPuesto" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pAnio" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[select 
+Case When (Extract (year from pl.fecha_inicio)) < 2017
+Then To_Char(empl.registro_empleado)
+Else Case when (select to_number(to_char(pl.fecha_inicio,'yyyymm')) from dual) < 201807
+     Then to_char(empl.cui,'9999G99999G9999','NLS_NUMERIC_CHARACTERS= '', ''')
+     Else to_char(empl.cui,'9999G99999G9999','NLS_NUMERIC_CHARACTERS= '', ''')||'<br>'||empl.registro_empleado
+     End 
+End Reg_CUI
+, pst.id_puesto,pst.nombre as nomPuesto
+,empl.nombrecompleto,part.formato1,dep.nombre as nombreDep, uni.nombre as nombreUni,contr.numero_plaza,floor(trunc(months_between(sysdate+1,empl.FECHA_INGRESO_emp))/12) as antiguedad
+from sis_plaza pl, sis_contrato contr, sis_partida_vw part, sis_dependencia dep
+, sis_unidad_ejecutora uni, sis_empleado_vw empl, sis_puesto pst
+where contr.id_partida=pl.id_partida and contr.id_puesto=pl.id_puesto
+and contr.numero_plaza=pl.numero_plaza and contr.correlativo=pl.correlativo
+and pl.id_puesto=$P{pIdPuesto} and pl.correlativo=$P{pAnio}
+and contr.estatus in (3,4) and part.id_partida=contr.id_partida
+and part.id_dependencia=dep.id_dependencia and part.id_unidad=uni.id_unidad
+and part.id_dependencia=uni.id_dependencia and part.id_programa=uni.id_programa
+and contr.registro_empleado=empl.registro_empleado and pst.id_puesto=pl.id_puesto
+order by part.id_dependencia,part.id_programa,part.id_unidad,part.id_renglon,numero_plaza]]></queryString>
+
+	<field name="REG_CUI" class="java.lang.String"/>
+	<field name="ID_PUESTO" class="java.math.BigDecimal"/>
+	<field name="NOMPUESTO" class="java.lang.String"/>
+	<field name="NOMBRECOMPLETO" class="java.lang.String"/>
+	<field name="FORMATO1" class="java.lang.String"/>
+	<field name="NOMBREDEP" class="java.lang.String"/>
+	<field name="NOMBREUNI" class="java.lang.String"/>
+	<field name="NUMERO_PLAZA" class="java.math.BigDecimal"/>
+	<field name="ANTIGUEDAD" class="java.math.BigDecimal"/>
+
+
+		<group  name="Partida" >
+			<groupExpression><![CDATA[$F{FORMATO1}]]></groupExpression>
+			<groupHeader>
+			<band height="27"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="10"
+						y="9"
+						width="540"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{FORMATO1}+" - "+$F{NOMBREDEP}+", "+$F{NOMBREUNI}]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+			</groupFooter>
+		</group>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="106"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="57"
+						width="550"
+						height="20"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{ID_PUESTO} + " "+$F{NOMPUESTO}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="1"
+						width="260"
+						height="30"
+						key="staticText-1"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[UNIVERSIDAD DE SAN CARLOS DE GUATEMALA
+UNIDAD DE CLASIFICACIÓN DE PUESTOS]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="406"
+						y="85"
+						width="40"
+						height="16"
+						key="staticText-2"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font/>
+					</textElement>
+				<text><![CDATA[Plaza]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="478"
+						y="85"
+						width="70"
+						height="16"
+						key="staticText-3"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font/>
+					</textElement>
+				<text><![CDATA[Antiguedad]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="105"
+						y="86"
+						width="64"
+						height="16"
+						key="staticText-4"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font/>
+					</textElement>
+				<text><![CDATA[Nombre]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="5"
+						y="103"
+						width="540"
+						height="0"
+						key="line-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="5"
+						y="83"
+						width="540"
+						height="0"
+						key="line-2"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="191"
+						y="41"
+						width="170"
+						height="16"
+						key="staticText-6"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" size="11" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Reporte de plazas por puesto]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="408"
+						y="2"
+						width="139"
+						height="12"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="SansSerif" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["HOJA NO. "+$V{PAGE_NUMBER}.toString()]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="409"
+						y="16"
+						width="139"
+						height="12"
+						key="textField-2"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="SansSerif" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new java.util.Date()]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="2"
+						y="84"
+						width="95"
+						height="18"
+						key="staCUI"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font/>
+					</textElement>
+				<text><![CDATA[CUI / RegPer.]]></text>
+				</staticText>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="19"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="105"
+						y="0"
+						width="265"
+						height="16"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRECOMPLETO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="##0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="2"
+						y="1"
+						width="95"
+						height="16"
+						key="txtReg_CUI"/>
+					<box></box>
+					<textElement textAlignment="Right" markup="html">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{REG_CUI}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="510"
+						y="0"
+						width="20"
+						height="16"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ANTIGUEDAD}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="374"
+						y="0"
+						width="100"
+						height="16"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{FORMATO1}+" - " +$F{NUMERO_PLAZA}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

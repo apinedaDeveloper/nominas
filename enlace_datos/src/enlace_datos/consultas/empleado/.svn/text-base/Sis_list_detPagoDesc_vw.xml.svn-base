@@ -1,0 +1,313 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="Sis_list_detPagoDesc_vw"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   RowClass="enlace_datos.consultas.empleado.Sis_list_detPagoDesc_vwRowImpl"
+   ComponentClass="enlace_datos.consultas.empleado.Sis_list_detPagoDesc_vwImpl"
+   MsgBundleClass="enlace_datos.consultas.empleado.common.Sis_list_detPagoDesc_vwRowImplMsgBundle"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isCodegen" Value="true" />
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|Msg|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="pRegistroEmpleado"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="pAnio"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="pIdAjuste"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select
+datos.*,
+tdoc.nombre as tipoPago,
+bnc.nombre as banco,
+docb.NUM_DOC_FISICO
+from(
+select 
+--*
+tipnom.nombre as tipoNomina,
+nom.id_nomina,
+nom.registro_empleado,
+nom.anio,
+nom.periodo,
+period.nombre as nomPeriodo,
+part.formato1 as numPartida,
+nom.numero_plaza,
+abs(dt.VALOR_APLICADO) as valor_aplicado,
+(select distinct 
+ docb.id_documento_banco
+from
+sis_documento_banco docb, sis_pago pg
+where docb.id_documento_banco=pg.id_documento_Banco
+and pg.id_nomina=nom.id_nomina
+and docb.FECHA_ANULACION is null
+) as id_doc_pago,
+aj.id_ajuste,
+aj.nombre as nomDesc,
+aj.cod_nomina
+from
+sis_det_calculo_ajuste dt,
+sis_nomina nom,
+sis_partida_vw part,
+sis_tipo_nomina tipnom,
+sis_periodo period,
+sis_ajuste aj
+where dt.id_nomina=nom.id_nomina
+and part.id_partida=nom.id_partida
+and tipnom.id_tipo_nomina=nom.id_tipo_nomina
+and period.id_periodo=nom.periodo
+and dt.id_ajuste=aj.id_ajuste
+and nom.registro_empleado=:pRegistroEmpleado
+and nom.id_estado <> 23
+and nom.anio=:pAnio
+and dt.id_ajuste=:pIdAjuste
+)datos,sis_documento_banco docb, sis_tipo_documento tdoc, sis_banco bnc
+where datos.id_doc_pago=docb.id_documento_banco
+and tdoc.id_tipo_documento=docb.id_tipo_documento
+and bnc.id_banco=docb.id_banco
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="Tiponomina"
+      IsPersistent="false"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="TIPONOMINA"
+      Expression="TIPONOMINA"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdNomina"
+      IsPersistent="false"
+      IsNotNull="true"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_NOMINA"
+      Expression="ID_NOMINA"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="RegistroEmpleado"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="REGISTRO_EMPLEADO"
+      Expression="REGISTRO_EMPLEADO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Anio"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="4"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ANIO"
+      Expression="ANIO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Periodo"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="2"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="PERIODO"
+      Expression="PERIODO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomperiodo"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="50"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMPERIODO"
+      Expression="NOMPERIODO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="50" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Numpartida"
+      IsPersistent="false"
+      Precision="87"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NUMPARTIDA"
+      Expression="NUMPARTIDA"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="87" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="NumeroPlaza"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="5"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="NUMERO_PLAZA"
+      Expression="NUMERO_PLAZA"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="ValorAplicado"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="VALOR_APLICADO"
+      Expression="VALOR_APLICADO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdDocPago"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_DOC_PAGO"
+      Expression="ID_DOC_PAGO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdAjuste"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="6"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_AJUSTE"
+      Expression="ID_AJUSTE"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomdesc"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMDESC"
+      Expression="NOMDESC"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="CodNomina"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="COD_NOMINA"
+      Expression="COD_NOMINA"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="10" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Tipopago"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="TIPOPAGO"
+      Expression="TIPOPAGO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Banco"
+      IsPersistent="false"
+      Precision="150"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="BANCO"
+      Expression="BANCO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="150" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="NumDocFisico"
+      IsPersistent="false"
+      Precision="12"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="NUM_DOC_FISICO"
+      Expression="NUM_DOC_FISICO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="TotalAplicado"
+      IsSelected="false"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="VIEW_ATTR"
+      SQLType="NUMERIC" >
+   </ViewAttribute>
+</ViewObject>

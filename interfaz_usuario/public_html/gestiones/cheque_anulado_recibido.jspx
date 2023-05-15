@@ -1,0 +1,214 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:afc="http://xmlns.oracle.com/adf/faces/webcache"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html"
+          xmlns:af="http://xmlns.oracle.com/adf/faces">
+  <jsp:output omit-xml-declaration="true" doctype-root-element="HTML"
+              doctype-system="http://www.w3.org/TR/html4/loose.dtd"
+              doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN"/>
+  <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+  <f:view>
+    <afh:html>
+      <f:loadBundle basename="propiedades" var="txt"/>
+      <afh:head title="Recepción de pagos anulados">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+      </afh:head>
+      <script language="javascript" type="text/javascript"> 
+         function generaReporte(idDocRecibido){ 
+                window.open("../verreportepdf?id="+idDocRecibido+String.fromCharCode(38)+"rep=CHEQRECIBIDO","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+                                            } 
+         
+          function openNewWindow(nomArchivo){ 
+                window.open("../ver_documento?source="+nomArchivo,"preview","width=640,height=640,scrollbars=YES"); 
+       } 
+        function generaReporte2(idDocRecibido){ 
+                window.open("../verreportepdf?id="+idDocRecibido+String.fromCharCode(38)+"rep=CHEQRECIBIDO","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+                                            } 
+      </script> 
+      <afh:body>
+        <af:messages/>
+        <h:form>         
+             <af:page value="#{modeloMenu.modeloBD}" var="node"
+                   chromeType="compact"
+                   title="#{txt['cheque_anulado_recibido.title']}">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+           <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelBox>
+              <af:panelHorizontal halign="center">
+                <af:showOneTab>
+                  <af:showDetailItem text="Historico" disclosed="true"
+                                     binding="#{cheqAnuladoRecibido.pestania1}">
+                    <af:outputLabel value="#{bindings.vIdDocRecibido1.inputValue}"
+                                    rendered="false"/>
+                    <af:commandButton text="#{txt['cheque_anulado_recibido.btn_nuevo.text']}"
+                                      action="#{cheqAnuladoRecibido.nuevoDocRecibido}"
+                                      partialSubmit="false" id="nuevo"/>
+                    <af:objectSpacer width="16" height="20"/>
+                    <af:table value="#{bindings['sis_docPago_recibido_vw11'].collectionModel}"
+                              var="row"
+                              rows="#{bindings['sis_docPago_recibido_vw11'].rangeSize}"
+                              first="#{bindings['sis_docPago_recibido_vw11'].rangeStart}"
+                              emptyText="#{bindings['sis_docPago_recibido_vw11'].viewable ? 'No rows yet.' : 'Access Denied.'}"
+                              selectionState="#{bindings['sis_docPago_recibido_vw11'].collectionModel.selectedRow}"
+                              selectionListener="#{bindings['sis_docPago_recibido_vw11'].collectionModel.makeCurrent}"
+                              banding="row" bandingInterval="1">
+                      <af:column sortProperty="IdDocpagoRecibido"
+                                 sortable="false"
+                                 headerText="#{bindings['sis_docPago_recibido_vw11'].labels.IdDocpagoRecibido}">
+                        <af:commandLink text="#{row.IdDocpagoRecibido}"
+                                        actionListener="#{bindings.setCurrentRowWithKey.execute}"
+                                        onclick="javascript:generaReporte('#{row.IdDocpagoRecibido}');"/>
+                      </af:column>
+                      <af:column sortProperty="CreadoPor" sortable="false"
+                                 headerText="#{bindings['sis_docPago_recibido_vw11'].labels.CreadoPor}"
+                                 noWrap="true">
+                        <af:outputText value="#{row.CreadoPor} - #{row.Nomusuario}"/>
+                      </af:column>
+                      <af:column sortProperty="FechaCreacion" sortable="false"
+                                 headerText="#{bindings['sis_docPago_recibido_vw11'].labels.FechaCreacion}"
+                                 noWrap="true">
+                        <af:outputText value="#{row.FechaCreacion}">
+                          <f:convertDateTime pattern="#{bindings['sis_docPago_recibido_vw11'].formats.FechaCreacion}"/>
+                        </af:outputText>
+                      </af:column>
+                    </af:table>
+                  </af:showDetailItem>
+                  <af:showDetailItem text="Detalle"
+                                     binding="#{cheqAnuladoRecibido.pestania2}"
+                                     disabled="true" disclosed="false">
+                    <af:panelForm rendered="true">
+                      <f:facet name="footer"/>
+                      <af:inputText label="#{txt['cheque_anulado_recibido.out_idDocPagoRecibido.text']}"
+                                    value="#{bindings.vIdDocRecibido1.inputValue}"
+                                    binding="#{cheqAnuladoRecibido.idPagoRecibido}"
+                                    disabled="true"/>
+                      <af:selectOneChoice id="listDependencia" autoSubmit="true"
+                                          disabled="#{bindings.vIdDocRecibido1.inputValue!=null &amp;&amp;  !(bindings.vIdDocRecibido1.inputValue eq '0') ? true : false}"
+                                          value="#{bindings.dependencias.inputValue}"
+                                          label="#{txt['cheque_anulado_recibido.cmb_dependencia.text']}"
+                                          valueChangeListener="#{cheqAnuladoRecibido.SeleccionarDependencia}">
+                        <f:selectItems value="#{bindings.dependencias.items}"/>
+                      </af:selectOneChoice>
+                      <af:panelGroup>
+                        <af:panelHeader text="#{txt['cheque_anulado_recibido.pnh_unidad.text']}"
+                                        partialTriggers="navList1"/>
+                        <af:panelHorizontal>
+                          <af:selectOneChoice id="navList1" autoSubmit="true"
+                                              value="#{bindings['unidades_ejec'].inputValue}"
+                                              label="#{txt['cheque_anulado_recibido.cmb_unidad.text']}"
+                                              partialTriggers="listDependencia">
+                            <f:selectItems value="#{bindings['unidades_ejec'].items}"/>
+                          </af:selectOneChoice>
+                          <af:selectBooleanCheckbox value="#{bindings.vSelecUnidad1.inputValue}"
+                                                    binding="#{cheqAnuladoRecibido.selecUni}"
+                                                    tip="Marcar para filtrar"/>
+                        </af:panelHorizontal>
+                      </af:panelGroup>
+                      <af:panelHeader text="#{txt['cheque_anulado_recibido.pnh_fecha.text']}">
+                        <af:panelHorizontal>
+                          <af:selectInputDate label="#{txt['cheque_anulado_recibido.inpt_fechaInicio.text']}"
+                                              value="#{bindings.fechaInicio1.inputValue}"
+                                              binding="#{cheqAnuladoRecibido.fechainicio}"/>
+                          <af:selectInputDate label="#{txt['cheque_anulado_recibido.inpt_fechaFin.text']}"
+                                              value="#{bindings.fechaFinal2.inputValue}"
+                                              binding="#{cheqAnuladoRecibido.fechafin}"/>
+                          <af:selectBooleanCheckbox value="#{bindings.vSelecFecha1.inputValue}"
+                                                    binding="#{cheqAnuladoRecibido.selecFecha}"
+                                                    tip="Marcar para filtrar"/>
+                        </af:panelHorizontal>
+                      </af:panelHeader>
+                      <af:objectSpacer width="10" height="10"/>
+                      <af:commandButton text="#{txt['cheque_anulado_recibido.btn_buscar.text']}"
+                                        action="#{cheqAnuladoRecibido.Buscar}"/>
+                      <af:objectSpacer width="10" height="15"/>
+                      <af:table value="#{bindings['consul_cheqAnuladoXRecibir_vw1'].collectionModel}"
+                                var="row"
+                                rows="#{bindings['consul_cheqAnuladoXRecibir_vw1'].rangeSize}"
+                                first="#{bindings['consul_cheqAnuladoXRecibir_vw1'].rangeStart}"
+                                emptyText="Ninguna fila"
+                                banding="row" bandingInterval="1">
+                        <af:column sortProperty="Recibido" sortable="false"
+                                   headerText="#{bindings['consul_cheqAnuladoXRecibir_vw1'].labels.Recibido}">
+                          <af:selectBooleanCheckbox value="#{row.Recibido}"/>
+                        </af:column>
+                        <af:column sortProperty="NoDocFisico" sortable="false"
+                                   headerText="#{bindings['consul_cheqAnuladoXRecibir_vw1'].labels.NoDocFisico}">
+                          <af:outputText value="#{row.NoDocFisico}"/>
+                        </af:column>
+                        <af:column sortProperty="RegistroEmpleado"
+                                   sortable="false"
+                                   headerText="#{bindings['consul_cheqAnuladoXRecibir_vw1'].labels.RegistroEmpleado}">
+                          <af:outputText value="#{row.RegistroEmpleado}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings['consul_cheqAnuladoXRecibir_vw1'].formats.RegistroEmpleado}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="Nombrecompleto"
+                                   sortable="false"
+                                   headerText="#{bindings['consul_cheqAnuladoXRecibir_vw1'].labels.Nombrecompleto}">
+                          <af:outputText value="#{row.Nombrecompleto}"/>
+                        </af:column>
+                        <af:column sortProperty="Valor" sortable="false"
+                                   headerText="#{bindings['consul_cheqAnuladoXRecibir_vw1'].labels.Valor}">
+                          <af:outputText value="#{row.Valor}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings['consul_cheqAnuladoXRecibir_vw1'].formats.Valor}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="FechaEmision" sortable="false"
+                                   headerText="#{bindings['consul_cheqAnuladoXRecibir_vw1'].labels.FechaEmision}">
+                          <af:outputText value="#{row.FechaEmision}">
+                            <f:convertDateTime pattern="#{bindings['consul_cheqAnuladoXRecibir_vw1'].formats.FechaEmision}"/>
+                          </af:outputText>
+                        </af:column>
+                      </af:table>
+                      <af:objectSpacer width="10" height="15"/>
+                      <af:panelButtonBar>
+                        <af:commandButton text="#{txt['cheque_anulado_recibido.btn_guardar.text']}"
+                                          action="#{cheqAnuladoRecibido.Guardar}"/>
+                        <af:commandButton text="#{txt['cheque_anulado_recibido.btn_imprimir.text']}"
+                                          onclick="javascript:generaReporte(#{bindings.vIdDocRecibido1.inputValue});"
+                                          binding="#{cheqAnuladoRecibido.btnImprimir}"
+                                          disabled="true"/>
+                        <af:commandButton
+                                          text="#{txt['cheque_anulado_recibido.btn_cancelar.text']}" disabled="#{''}"
+                                          immediate="true"
+                                          action="#{cheqAnuladoRecibido.cancelar}">
+                          <af:resetActionListener/>
+                        </af:commandButton>
+                        <af:commandButton text="Nuevo"
+                                          action="#{cheqAnuladoRecibido.btn_nuevo_recep}"/>
+                      </af:panelButtonBar>
+                    </af:panelForm>
+                  </af:showDetailItem>
+                </af:showOneTab>
+              </af:panelHorizontal>
+            </af:panelBox>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:cheqAnuladoRecibido-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:cheqAnuladoRecibido-->
+</jsp:root>

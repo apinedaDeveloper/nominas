@@ -1,0 +1,1395 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="xrenglon_sicoin_otros1"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="595"
+		 pageHeight="842"
+		 columnWidth="535"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="30"
+		 topMargin="0"
+		 bottomMargin="15"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pIdProceso" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pUsuario" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="pIdUnidad" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pIsRegEsp" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pTipoReporte" isForPrompting="true" class="java.lang.String"/>
+	<queryString><![CDATA[SELECT * FROM (
+select 21 ID_TIPO_NOMINA, 'VACACIONES POR RETIRO' TIPO_NOMINA, TIPO , RENGLON , SUM(SUELDO_BASE) VALOR 
+FROM (
+SELECT  RENGLON_SICOIN  RENGLON
+, 'NOMINAL' TIPO
+, T.*
+FROM (
+select u.unidad_ejecutora id_unidad, u.nombre_unidad_ejecutora unidad_ejecutora
+, case when nm.renglon_egreso = -1 OR (nm.programa = 41 and rrenglon =  -1)  
+         then TO_CHAR(formato_renglon,'FM000')
+       when (nm.programa = 41 and rrenglon <> -1) or (nm.programa <> 41 and id_tipo_nomina <> 1)
+          then TO_CHAR(nm.rrenglon ,'FM000')
+  END renglon_sicoin
+, CASE WHEN FORM1 IS NOT NULL THEN nm.anio||'.'||form1 ELSE '' END form1 ,  s.form2
+,nm.*
+from (
+select isregesp, id_partida_sicoin, id_partida_siif, rrenglon, id_proceso, programa, renglon_egreso, id_tipo_nomina, anio
+, sum(sueldo_base) sueldo_Base, sum(escalafon) escalafon, sum(total_bono) bono, sum(compl_salarial)  complemento
+from (
+SELECT case when sicoin_anexo is not null and sicoin_anexo <> sicoin_plaza then sicoin_anexo else sicoin_plaza end id_partida_sicoin
+,n2.*
+FROM (
+select  case when pl.id_partida_sicoin is null then 0  
+     else pl.id_partida_sicoin end sicoin_plaza 
+, (select max(sicoin_anexo)  from (
+      select id_partida, id_puesto, plaza, correlativo, sicoin_anexo
+      , TO_NUMBER(to_char(finicio, 'MM')) finicio, to_number(to_char(ffin, 'MM')) ffin
+      from (
+        select  m.id_partida, m.id_puesto, m.numero_plaza plaza, m.correlativo, m.id_partida_sicoin sicoin_anexo
+        , count(*), min(fecha_inicio) finicio, max(fecha_fin) ffin
+        from sis_movimiento_plaza m
+        inner join sis_Anexo a on a.id_anexo = m.id_anexo
+        inner join sis_estado e on e.id_Estado = a.estatus
+      where e.id_estado = 34  and m.id_partida_sicoin is not null
+        group by m.id_partida, m.id_puesto, m.numero_plaza , m.correlativo, m.id_partida_sicoin
+        ))
+  where id_partida = nomina.id_partida_siif and id_puesto = nomina.id_puesto and plaza = nomina.numero_plaza and correlativo = nomina.correlativo
+        and nomina.periodo between finicio and ffin
+  ) sicoin_anexo
+, nomina.* 
+from (
+select nn.id_nomina, nn.id_tipo_nomina, NN.PERIODO, nn.anio, nn.id_proceso, nn.id_puesto
+, nn.id_partida, nn.id_partida_egreso, ppe.id_partida_egresos  sicoin_e 
+, pp.d1||pp.d2 programa 
+, case when (pp.d1||pp.d2  = 41 ) then nn.id_partida_egreso
+       when (pp.d1||pp.d2 <> 41 ) then nn.id_partida  end id_partida_siif
+, case when nn.id_partida = nn.id_partida_egreso then -1 else ppe.d9d10 end renglon_egreso   -- cuando tanto partida egreso como partida contratacion son iguales no hay verificaciones extras de renglon       
+, CASE WHEN ppe.d9d10 = 75                                         THEN 79
+      WHEN SUELDO_BASE = 0 AND  ESCALAFON =0 
+       AND COMPL_SALARIAL = 0 AND NOMINAL= 0 AND TOTAL_BONO <> 0 THEN -1 --SE CARGA A LA PARTIDA CONTRATACION 
+       ELSE ppe.d9d10
+  END rrenglon          
+, nn.numero_plaza, correlativo, sueldo_base, escalafon, compl_salarial, total_bono, total_descuento, liquido, nominal
+, DECODE((select 1 from SIS_PARTIDAS_EXCLUD_NOMINA where id_partida = nn.id_partida), NULL, 0, 1) isRegEsp
+from sis_nomina nn
+INNER JOIN SIS_PROCESO proc ON proc.ID_PROCESO = NN.ID_PROCESO 
+inner join partida pp on pp.id_partida = nn.id_partida
+INNER JOIN SIS_DEPENDENCIA D ON D.ID_DEPENDENCIA = PP.D3D4
+inner join partida ppe on ppe.id_partida = nn.id_partida_egreso 
+LEFT join sis_pago pg on pg.id_nomina = nn.id_nomina
+LEFT join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where
+not ( (ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) or (ppe.d8 = 9 and ppe.d9d10 = 81) )
+and ( nn.id_tipo_nomina = 21  
+      AND $P{pTipoReporte} = 'VACACIONES'
+      AND PPE.D9D10 <> 0
+    )  
+and ( (doc.id_tipo_documento = 2 
+       and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)          
+       and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) < 2021
+      ) or
+      ( (doc.id_documento_banco is null or doc.id_documento_banco is not null)
+         and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) >= 2021
+      ) 
+    )     
+and exists( -- PERMISOS DE USUARIO
+            select 1 from usuario_unidad b, partida c where b.id_partida=c.id_partida
+            and usuario=$P{pUsuario} and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+            and pP.aniomanual=c.aniomanual and Pp.d1=c.d1 and pP.d2=c.d2 and PP.d3d4=c.d3d4
+            and ( (pP.d7=c.d7 and pP.d6=c.d6 and pP.d5=c.d5 ) or ( c.d5 is null and c.d6 is null and c.d7 is null ) )
+          )-- FIN PERMISOS DE USUARIO
+and proc.id_proceso = $P{pIdProceso}   
+) nomina
+left join sis_plaza pl on pl.id_puesto = nomina.id_puesto
+                       and pl.correlativo = nomina.correlativo
+                       and pl.numero_plaza = nomina.numero_plaza
+                       and pl.id_partida = nomina.id_partida_siif
+)n2 ) where rrenglon <> 0
+group by isregesp, id_partida_sicoin, id_partida_siif, rrenglon, id_proceso, programa, renglon_egreso, id_tipo_nomina, anio
+) nm
+ left join (select sicoin.ID_PARTIDA_EGRESOS, sicoin.fuente, sicoin.renglon, sicoin.unidad_ejecutora, sicoin.nombre
+          ,(SELECT entidad FROM sicoin_entidad )||'.'
+          ||sicoin.unidad_ejecutora
+          ||DECODE(unidad_desconcentrada,NULL,'','.')||TO_CHAR(sicoin.unidad_desconcentrada,'FM00')
+          ||DECODE(sicoin.programa,NULL,'','.')||TO_CHAR(sicoin.programa,'FM00')
+          ||DECODE(subprograma,NULL,'','.')||TO_CHAR(sicoin.subprograma,'FM00')
+          ||DECODE(proyecto,NULL,'','.')||TO_CHAR(sicoin.proyecto,'FM000')
+          ||DECODE(actividad,NULL,'','.')||TO_CHAR(sicoin.actividad,'FM000')
+          ||DECODE(obra,NULL,'','.')||TO_CHAR(obra,'FM000')||'.' form1
+          ,TO_CHAR(sicoin.renglon,'FM000') formato_renglon
+          ,DECODE(geografico,NULL,'','.')||TO_CHAR(geografico,'FM0000')
+          ||DECODE(fuente,NULL,'','.')||TO_CHAR(fuente,'FM00')
+          ||DECODE(organismo,NULL,'','.')||TO_CHAR(organismo,'FM0000')
+          ||DECODE(correlativo,NULL,'','.')||TO_CHAR(correlativo,'FM0000') form2
+          from SICOIN_PARTIDA_EGRESOS_VIEW sicoin 
+          ) s  on  s.id_partida_egresos = nm.id_partida_sicoin
+LEFT join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora  
+where sueldo_base <> 0 and u.unidad_ejecutora = $P{pIdUnidad} and nm.isregesp = $P{pIsRegEsp}
+) T
+) r
+GROUP BY    TIPO, RENGLON
+union
+select 21 ID_TIPO_NOMINA, 'VACACIONES POR RETIRO' TIPO_NOMINA, TIPO , RENGLON , SUM(BONO) VALOR 
+FROM (
+SELECT CASE WHEN ID_PARTIDA_SICOIN <> 0 AND BONO <> 0 THEN sis_pkg_pagos.getPartidaSICOIN(id_partida_siif,ID_PARTIDA_SICOIN,27,2) ELSE '' END RENGLON
+,  'BONO MENSUAL' TIPO
+, T.*
+FROM (
+select u.unidad_ejecutora id_unidad, u.nombre_unidad_ejecutora unidad_ejecutora
+, case when nm.renglon_egreso = -1 OR (nm.programa = 41 and rrenglon =  -1)  
+         then TO_CHAR(formato_renglon,'FM000')
+       when (nm.programa = 41 and rrenglon <> -1) or (nm.programa <> 41 and id_tipo_nomina <> 1)
+          then TO_CHAR(nm.rrenglon ,'FM000')
+  END renglon_sicoin
+, CASE WHEN FORM1 IS NOT NULL THEN nm.anio||'.'||form1 ELSE '' END form1 ,  s.form2
+,nm.*
+from (
+select isregesp, id_partida_sicoin, id_partida_siif, rrenglon, id_proceso, programa, renglon_egreso, id_tipo_nomina, anio
+, sum(sueldo_base) sueldo_Base, sum(escalafon) escalafon, sum(total_bono) bono, sum(compl_salarial)  complemento
+from (
+SELECT case when sicoin_anexo is not null and sicoin_anexo <> sicoin_plaza then sicoin_anexo else sicoin_plaza end id_partida_sicoin
+,n2.*
+FROM (
+select  case when pl.id_partida_sicoin is null then 0  
+     else pl.id_partida_sicoin end sicoin_plaza 
+, (select max(sicoin_anexo)  from (
+      select id_partida, id_puesto, plaza, correlativo, sicoin_anexo
+      , TO_NUMBER(to_char(finicio, 'MM')) finicio, to_number(to_char(ffin, 'MM')) ffin
+      from (
+        select  m.id_partida, m.id_puesto, m.numero_plaza plaza, m.correlativo, m.id_partida_sicoin sicoin_anexo
+        , count(*), min(fecha_inicio) finicio, max(fecha_fin) ffin
+        from sis_movimiento_plaza m
+        inner join sis_Anexo a on a.id_anexo = m.id_anexo
+        inner join sis_estado e on e.id_Estado = a.estatus
+      where e.id_estado = 34  and m.id_partida_sicoin is not null
+        group by m.id_partida, m.id_puesto, m.numero_plaza , m.correlativo, m.id_partida_sicoin
+        ))
+  where id_partida = nomina.id_partida_siif and id_puesto = nomina.id_puesto and plaza = nomina.numero_plaza and correlativo = nomina.correlativo
+        and nomina.periodo between finicio and ffin
+  ) sicoin_anexo
+, nomina.* 
+from (
+select nn.id_nomina, nn.id_tipo_nomina, NN.PERIODO, nn.anio, nn.id_proceso, nn.id_puesto
+, nn.id_partida, nn.id_partida_egreso, ppe.id_partida_egresos  sicoin_e 
+, pp.d1||pp.d2 programa 
+, case when (pp.d1||pp.d2  = 41 ) then nn.id_partida_egreso
+       when (pp.d1||pp.d2 <> 41 ) then nn.id_partida  end id_partida_siif
+, case when nn.id_partida = nn.id_partida_egreso then -1 else ppe.d9d10 end renglon_egreso   -- cuando tanto partida egreso como partida contratacion son iguales no hay verificaciones extras de renglon       
+, CASE WHEN ppe.d9d10 = 75                                         THEN 79
+      WHEN SUELDO_BASE = 0 AND  ESCALAFON =0 
+       AND COMPL_SALARIAL = 0 AND NOMINAL= 0 AND TOTAL_BONO <> 0 THEN -1 --SE CARGA A LA PARTIDA CONTRATACION 
+       ELSE ppe.d9d10
+  END rrenglon          
+, nn.numero_plaza, correlativo, sueldo_base, escalafon, compl_salarial, total_bono, total_descuento, liquido, nominal
+, DECODE((select 1 from SIS_PARTIDAS_EXCLUD_NOMINA where id_partida = nn.id_partida), NULL, 0, 1) isRegEsp
+from sis_nomina nn
+INNER JOIN SIS_PROCESO proc ON proc.ID_PROCESO = NN.ID_PROCESO 
+inner join partida pp on pp.id_partida = nn.id_partida
+INNER JOIN SIS_DEPENDENCIA D ON D.ID_DEPENDENCIA = PP.D3D4
+inner join partida ppe on ppe.id_partida = nn.id_partida_egreso 
+LEFT join sis_pago pg on pg.id_nomina = nn.id_nomina
+LEFT join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where
+not ( (ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) or (ppe.d8 = 9 and ppe.d9d10 = 81) )
+and ( nn.id_tipo_nomina = 21  
+      AND $P{pTipoReporte} = 'VACACIONES'
+      AND PPE.D9D10 <> 0
+    )  
+and ( (doc.id_tipo_documento = 2 
+       and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)          
+       and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) < 2021
+      ) or
+      ( (doc.id_documento_banco is null or doc.id_documento_banco is not null)
+         and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) >= 2021
+      ) 
+    )     
+and exists( -- PERMISOS DE USUARIO
+            select 1 from usuario_unidad b, partida c where b.id_partida=c.id_partida
+            and usuario=$P{pUsuario} and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+            and pP.aniomanual=c.aniomanual and Pp.d1=c.d1 and pP.d2=c.d2 and PP.d3d4=c.d3d4
+            and ( (pP.d7=c.d7 and pP.d6=c.d6 and pP.d5=c.d5 ) or ( c.d5 is null and c.d6 is null and c.d7 is null ) )
+          )-- FIN PERMISOS DE USUARIO
+and proc.id_proceso = $P{pIdProceso}   
+) nomina
+left join sis_plaza pl on pl.id_puesto = nomina.id_puesto
+                       and pl.correlativo = nomina.correlativo
+                       and pl.numero_plaza = nomina.numero_plaza
+                       and pl.id_partida = nomina.id_partida_siif
+)n2 ) where rrenglon <> 0
+group by isregesp, id_partida_sicoin, id_partida_siif, rrenglon, id_proceso, programa, renglon_egreso, id_tipo_nomina, anio
+) nm
+ left join (select sicoin.ID_PARTIDA_EGRESOS, sicoin.fuente, sicoin.renglon, sicoin.unidad_ejecutora, sicoin.nombre
+          ,(SELECT entidad FROM sicoin_entidad )||'.'
+          ||sicoin.unidad_ejecutora
+          ||DECODE(unidad_desconcentrada,NULL,'','.')||TO_CHAR(sicoin.unidad_desconcentrada,'FM00')
+          ||DECODE(sicoin.programa,NULL,'','.')||TO_CHAR(sicoin.programa,'FM00')
+          ||DECODE(subprograma,NULL,'','.')||TO_CHAR(sicoin.subprograma,'FM00')
+          ||DECODE(proyecto,NULL,'','.')||TO_CHAR(sicoin.proyecto,'FM000')
+          ||DECODE(actividad,NULL,'','.')||TO_CHAR(sicoin.actividad,'FM000')
+          ||DECODE(obra,NULL,'','.')||TO_CHAR(obra,'FM000')||'.' form1
+          ,TO_CHAR(sicoin.renglon,'FM000') formato_renglon
+          ,DECODE(geografico,NULL,'','.')||TO_CHAR(geografico,'FM0000')
+          ||DECODE(fuente,NULL,'','.')||TO_CHAR(fuente,'FM00')
+          ||DECODE(organismo,NULL,'','.')||TO_CHAR(organismo,'FM0000')
+          ||DECODE(correlativo,NULL,'','.')||TO_CHAR(correlativo,'FM0000') form2
+          from SICOIN_PARTIDA_EGRESOS_VIEW sicoin 
+          ) s  on  s.id_partida_egresos = nm.id_partida_sicoin
+LEFT join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora  
+where nm.bono <> 0 and u.unidad_ejecutora = $P{pIdUnidad} and nm.isregesp = $P{pIsRegEsp}
+) T
+) r
+GROUP BY   TIPO, RENGLON
+UNION
+select 21 ID_TIPO_NOMINA, 'VACACIONES POR RETIRO' TIPO_NOMINA, TIPO , RENGLON , SUM(COMPLEMENTO) VALOR 
+FROM (
+SELECT  DECODE(RENGLON_SICOIN,'011','012','024') RENGLON
+, 'COMPLEMENTOS' TIPO
+, T.*
+FROM (
+select u.unidad_ejecutora id_unidad, u.nombre_unidad_ejecutora unidad_ejecutora
+, case when nm.renglon_egreso = -1 OR (nm.programa = 41 and rrenglon =  -1)  
+         then TO_CHAR(formato_renglon,'FM000')
+       when (nm.programa = 41 and rrenglon <> -1) or (nm.programa <> 41 and id_tipo_nomina <> 1)
+          then TO_CHAR(nm.rrenglon ,'FM000')
+  END renglon_sicoin
+, CASE WHEN FORM1 IS NOT NULL THEN nm.anio||'.'||form1 ELSE '' END form1 ,  s.form2
+,nm.*
+from (
+select isregesp, id_partida_sicoin, id_partida_siif, rrenglon, id_proceso, programa, renglon_egreso, id_tipo_nomina, anio
+, sum(sueldo_base) sueldo_Base, sum(escalafon) escalafon, sum(total_bono) bono, sum(compl_salarial)  complemento
+from (
+SELECT case when sicoin_anexo is not null and sicoin_anexo <> sicoin_plaza then sicoin_anexo else sicoin_plaza end id_partida_sicoin
+,n2.*
+FROM (
+select  case when pl.id_partida_sicoin is null then 0  
+     else pl.id_partida_sicoin end sicoin_plaza 
+, (select max(sicoin_anexo)  from (
+      select id_partida, id_puesto, plaza, correlativo, sicoin_anexo
+      , TO_NUMBER(to_char(finicio, 'MM')) finicio, to_number(to_char(ffin, 'MM')) ffin
+      from (
+        select  m.id_partida, m.id_puesto, m.numero_plaza plaza, m.correlativo, m.id_partida_sicoin sicoin_anexo
+        , count(*), min(fecha_inicio) finicio, max(fecha_fin) ffin
+        from sis_movimiento_plaza m
+        inner join sis_Anexo a on a.id_anexo = m.id_anexo
+        inner join sis_estado e on e.id_Estado = a.estatus
+      where e.id_estado = 34  and m.id_partida_sicoin is not null
+        group by m.id_partida, m.id_puesto, m.numero_plaza , m.correlativo, m.id_partida_sicoin
+        ))
+  where id_partida = nomina.id_partida_siif and id_puesto = nomina.id_puesto and plaza = nomina.numero_plaza and correlativo = nomina.correlativo
+        and nomina.periodo between finicio and ffin
+  ) sicoin_anexo
+, nomina.* 
+from (
+select nn.id_nomina, nn.id_tipo_nomina, NN.PERIODO, nn.anio, nn.id_proceso, nn.id_puesto
+, nn.id_partida, nn.id_partida_egreso, ppe.id_partida_egresos  sicoin_e 
+, pp.d1||pp.d2 programa 
+, case when (pp.d1||pp.d2  = 41 ) then nn.id_partida_egreso
+       when (pp.d1||pp.d2 <> 41 ) then nn.id_partida  end id_partida_siif
+, case when nn.id_partida = nn.id_partida_egreso then -1 else ppe.d9d10 end renglon_egreso   -- cuando tanto partida egreso como partida contratacion son iguales no hay verificaciones extras de renglon       
+, CASE WHEN ppe.d9d10 = 75                                         THEN 79
+      WHEN SUELDO_BASE = 0 AND  ESCALAFON =0 
+       AND COMPL_SALARIAL = 0 AND NOMINAL= 0 AND TOTAL_BONO <> 0 THEN -1 --SE CARGA A LA PARTIDA CONTRATACION 
+       ELSE ppe.d9d10
+  END rrenglon          
+, nn.numero_plaza, correlativo, sueldo_base, escalafon, compl_salarial, total_bono, total_descuento, liquido, nominal
+, DECODE((select 1 from SIS_PARTIDAS_EXCLUD_NOMINA where id_partida = nn.id_partida), NULL, 0, 1) isRegEsp
+from sis_nomina nn
+INNER JOIN SIS_PROCESO proc ON proc.ID_PROCESO = NN.ID_PROCESO 
+inner join partida pp on pp.id_partida = nn.id_partida
+INNER JOIN SIS_DEPENDENCIA D ON D.ID_DEPENDENCIA = PP.D3D4
+inner join partida ppe on ppe.id_partida = nn.id_partida_egreso 
+LEFT join sis_pago pg on pg.id_nomina = nn.id_nomina
+LEFT join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where
+not ( (ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) or (ppe.d8 = 9 and ppe.d9d10 = 81) )
+and ( nn.id_tipo_nomina = 21  
+      AND $P{pTipoReporte} = 'VACACIONES'
+      AND PPE.D9D10 <> 0
+    )  
+and ( (doc.id_tipo_documento = 2 
+       and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)          
+       and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) < 2021
+      ) or
+      ( (doc.id_documento_banco is null or doc.id_documento_banco is not null)
+         and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) >= 2021
+      ) 
+    )     
+and exists( -- PERMISOS DE USUARIO
+            select 1 from usuario_unidad b, partida c where b.id_partida=c.id_partida
+            and usuario=$P{pUsuario} and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+            and pP.aniomanual=c.aniomanual and Pp.d1=c.d1 and pP.d2=c.d2 and PP.d3d4=c.d3d4
+            and ( (pP.d7=c.d7 and pP.d6=c.d6 and pP.d5=c.d5 ) or ( c.d5 is null and c.d6 is null and c.d7 is null ) )
+          )-- FIN PERMISOS DE USUARIO
+and proc.id_proceso = $P{pIdProceso}   
+) nomina
+left join sis_plaza pl on pl.id_puesto = nomina.id_puesto
+                       and pl.correlativo = nomina.correlativo
+                       and pl.numero_plaza = nomina.numero_plaza
+                       and pl.id_partida = nomina.id_partida_siif
+)n2 ) where rrenglon <> 0
+group by isregesp, id_partida_sicoin, id_partida_siif, rrenglon, id_proceso, programa, renglon_egreso, id_tipo_nomina, anio
+) nm
+ left join (select sicoin.ID_PARTIDA_EGRESOS, sicoin.fuente, sicoin.renglon, sicoin.unidad_ejecutora, sicoin.nombre
+          ,(SELECT entidad FROM sicoin_entidad )||'.'
+          ||sicoin.unidad_ejecutora
+          ||DECODE(unidad_desconcentrada,NULL,'','.')||TO_CHAR(sicoin.unidad_desconcentrada,'FM00')
+          ||DECODE(sicoin.programa,NULL,'','.')||TO_CHAR(sicoin.programa,'FM00')
+          ||DECODE(subprograma,NULL,'','.')||TO_CHAR(sicoin.subprograma,'FM00')
+          ||DECODE(proyecto,NULL,'','.')||TO_CHAR(sicoin.proyecto,'FM000')
+          ||DECODE(actividad,NULL,'','.')||TO_CHAR(sicoin.actividad,'FM000')
+          ||DECODE(obra,NULL,'','.')||TO_CHAR(obra,'FM000')||'.' form1
+          ,TO_CHAR(sicoin.renglon,'FM000') formato_renglon
+          ,DECODE(geografico,NULL,'','.')||TO_CHAR(geografico,'FM0000')
+          ||DECODE(fuente,NULL,'','.')||TO_CHAR(fuente,'FM00')
+          ||DECODE(organismo,NULL,'','.')||TO_CHAR(organismo,'FM0000')
+          ||DECODE(correlativo,NULL,'','.')||TO_CHAR(correlativo,'FM0000') form2
+          from SICOIN_PARTIDA_EGRESOS_VIEW sicoin 
+          ) s  on  s.id_partida_egresos = nm.id_partida_sicoin
+LEFT join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora  
+where COMPLEMENTO <> 0 and u.unidad_ejecutora = $P{pIdUnidad} and nm.isregesp = $P{pIsRegEsp}
+) T
+) r
+GROUP BY    TIPO, RENGLON
+UNION
+select 21 ID_TIPO_NOMINA, 'VACACIONES POR RETIRO' TIPO_NOMINA, TIPO , RENGLON , SUM(ESCALAFON) VALOR 
+FROM (
+SELECT '017' RENGLON
+, 'ESCALAFON' TIPO
+, T.*
+FROM (
+select u.unidad_ejecutora id_unidad, u.nombre_unidad_ejecutora unidad_ejecutora
+, case when nm.renglon_egreso = -1 OR (nm.programa = 41 and rrenglon =  -1)  
+         then TO_CHAR(formato_renglon,'FM000')
+       when (nm.programa = 41 and rrenglon <> -1) or (nm.programa <> 41 and id_tipo_nomina <> 1)
+          then TO_CHAR(nm.rrenglon ,'FM000')
+  END renglon_sicoin
+, CASE WHEN FORM1 IS NOT NULL THEN nm.anio||'.'||form1 ELSE '' END form1 ,  s.form2
+,nm.*
+from (
+select isregesp, id_partida_sicoin, id_partida_siif, rrenglon, id_proceso, programa, renglon_egreso, id_tipo_nomina, anio
+, sum(sueldo_base) sueldo_Base, sum(escalafon) escalafon, sum(total_bono) bono, sum(compl_salarial)  complemento
+from (
+SELECT case when sicoin_anexo is not null and sicoin_anexo <> sicoin_plaza then sicoin_anexo else sicoin_plaza end id_partida_sicoin
+,n2.*
+FROM (
+select  case when pl.id_partida_sicoin is null then 0  
+     else pl.id_partida_sicoin end sicoin_plaza 
+, (select max(sicoin_anexo)  from (
+      select id_partida, id_puesto, plaza, correlativo, sicoin_anexo
+      , TO_NUMBER(to_char(finicio, 'MM')) finicio, to_number(to_char(ffin, 'MM')) ffin
+      from (
+        select  m.id_partida, m.id_puesto, m.numero_plaza plaza, m.correlativo, m.id_partida_sicoin sicoin_anexo
+        , count(*), min(fecha_inicio) finicio, max(fecha_fin) ffin
+        from sis_movimiento_plaza m
+        inner join sis_Anexo a on a.id_anexo = m.id_anexo
+        inner join sis_estado e on e.id_Estado = a.estatus
+      where e.id_estado = 34  and m.id_partida_sicoin is not null
+        group by m.id_partida, m.id_puesto, m.numero_plaza , m.correlativo, m.id_partida_sicoin
+        ))
+  where id_partida = nomina.id_partida_siif and id_puesto = nomina.id_puesto and plaza = nomina.numero_plaza and correlativo = nomina.correlativo
+        and nomina.periodo between finicio and ffin
+  ) sicoin_anexo
+, nomina.* 
+from (
+select nn.id_nomina, nn.id_tipo_nomina, NN.PERIODO, nn.anio, nn.id_proceso, nn.id_puesto
+, nn.id_partida, nn.id_partida_egreso, ppe.id_partida_egresos  sicoin_e 
+, pp.d1||pp.d2 programa 
+, case when (pp.d1||pp.d2  = 41 ) then nn.id_partida_egreso
+       when (pp.d1||pp.d2 <> 41 ) then nn.id_partida  end id_partida_siif
+, case when nn.id_partida = nn.id_partida_egreso then -1 else ppe.d9d10 end renglon_egreso   -- cuando tanto partida egreso como partida contratacion son iguales no hay verificaciones extras de renglon       
+, CASE WHEN ppe.d9d10 = 75                                         THEN 79
+      WHEN SUELDO_BASE = 0 AND  ESCALAFON =0 
+       AND COMPL_SALARIAL = 0 AND NOMINAL= 0 AND TOTAL_BONO <> 0 THEN -1 --SE CARGA A LA PARTIDA CONTRATACION 
+       ELSE ppe.d9d10
+  END rrenglon          
+, nn.numero_plaza, correlativo, sueldo_base, escalafon, compl_salarial, total_bono, total_descuento, liquido, nominal
+, DECODE((select 1 from SIS_PARTIDAS_EXCLUD_NOMINA where id_partida = nn.id_partida), NULL, 0, 1) isRegEsp
+from sis_nomina nn
+INNER JOIN SIS_PROCESO proc ON proc.ID_PROCESO = NN.ID_PROCESO 
+inner join partida pp on pp.id_partida = nn.id_partida
+INNER JOIN SIS_DEPENDENCIA D ON D.ID_DEPENDENCIA = PP.D3D4
+inner join partida ppe on ppe.id_partida = nn.id_partida_egreso 
+LEFT join sis_pago pg on pg.id_nomina = nn.id_nomina
+LEFT join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where
+not ( (ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) or (ppe.d8 = 9 and ppe.d9d10 = 81) )
+and ( nn.id_tipo_nomina = 21  
+      AND $P{pTipoReporte} = 'VACACIONES'
+      AND PPE.D9D10 <> 0
+    )  
+and ( (doc.id_tipo_documento = 2 
+       and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)          
+       and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) < 2021
+      ) or
+      ( (doc.id_documento_banco is null or doc.id_documento_banco is not null)
+         and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) >= 2021
+      ) 
+    )     
+and exists( -- PERMISOS DE USUARIO
+            select 1 from usuario_unidad b, partida c where b.id_partida=c.id_partida
+            and usuario=$P{pUsuario} and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+            and pP.aniomanual=c.aniomanual and Pp.d1=c.d1 and pP.d2=c.d2 and PP.d3d4=c.d3d4
+            and ( (pP.d7=c.d7 and pP.d6=c.d6 and pP.d5=c.d5 ) or ( c.d5 is null and c.d6 is null and c.d7 is null ) )
+          )-- FIN PERMISOS DE USUARIO
+and proc.id_proceso = $P{pIdProceso}   
+) nomina
+left join sis_plaza pl on pl.id_puesto = nomina.id_puesto
+                       and pl.correlativo = nomina.correlativo
+                       and pl.numero_plaza = nomina.numero_plaza
+                       and pl.id_partida = nomina.id_partida_siif
+)n2 ) where rrenglon <> 0
+group by isregesp, id_partida_sicoin, id_partida_siif, rrenglon, id_proceso, programa, renglon_egreso, id_tipo_nomina, anio
+) nm
+ left join (select sicoin.ID_PARTIDA_EGRESOS, sicoin.fuente, sicoin.renglon, sicoin.unidad_ejecutora, sicoin.nombre
+          ,(SELECT entidad FROM sicoin_entidad )||'.'
+          ||sicoin.unidad_ejecutora
+          ||DECODE(unidad_desconcentrada,NULL,'','.')||TO_CHAR(sicoin.unidad_desconcentrada,'FM00')
+          ||DECODE(sicoin.programa,NULL,'','.')||TO_CHAR(sicoin.programa,'FM00')
+          ||DECODE(subprograma,NULL,'','.')||TO_CHAR(sicoin.subprograma,'FM00')
+          ||DECODE(proyecto,NULL,'','.')||TO_CHAR(sicoin.proyecto,'FM000')
+          ||DECODE(actividad,NULL,'','.')||TO_CHAR(sicoin.actividad,'FM000')
+          ||DECODE(obra,NULL,'','.')||TO_CHAR(obra,'FM000')||'.' form1
+          ,TO_CHAR(sicoin.renglon,'FM000') formato_renglon
+          ,DECODE(geografico,NULL,'','.')||TO_CHAR(geografico,'FM0000')
+          ||DECODE(fuente,NULL,'','.')||TO_CHAR(fuente,'FM00')
+          ||DECODE(organismo,NULL,'','.')||TO_CHAR(organismo,'FM0000')
+          ||DECODE(correlativo,NULL,'','.')||TO_CHAR(correlativo,'FM0000') form2
+          from SICOIN_PARTIDA_EGRESOS_VIEW sicoin 
+          ) s  on  s.id_partida_egresos = nm.id_partida_sicoin
+LEFT join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora  
+where ESCALAFON <> 0 and u.unidad_ejecutora = $P{pIdUnidad} and nm.isregesp = $P{pIsRegEsp}
+) T ) r
+GROUP BY    TIPO, RENGLON
+) where $P{pTipoReporte} = 'VACACIONES'
+union
+select * from (
+select  11 ID_TIPO_NOMINA, 'TIEMPO EXTRAORDINARIO' TIPO_NOMINA, TIPO , RENGLON , SUM(SUELDO_BASE) VALOR 
+FROM (
+SELECT S.FORMATO_RENGLON RENGLON
+, 'SUELDO BASE' TIPO
+, NM.*
+from (
+select isRegEsp, id_partida_sicoin, periodo, anio, id_proceso
+, sum(sueldo_base)SUELDO_BASE
+, sum(escalafon) escalafon, sum(compl_salarial) complemento
+, sum(total_bono) bono
+from (
+select nn.id_nomina, nn.id_tipo_nomina, NN.PERIODO, nn.anio, nn.id_proceso, nn.id_puesto, nn.id_partida
+, nn.PARTIDA_SICOIN id_partida_sicoin
+, numero_plaza, correlativo, sueldo_base, escalafon, compl_salarial, total_bono, total_descuento, liquido, nominal
+, DECODE((select 1 from SIS_PARTIDAS_EXCLUD_NOMINA where id_partida = nn.id_partida), NULL, 0, 1) isRegEsp
+from (SELECT distinct te.partida_sicoin, nom.*
+      FROM SIS_NOMINA NOM
+      inner join SIS_HORA_EXTRA he on he.ID_HORA_EXTRA = nom.id_gestion
+      inner join SIS_TIEMPO_EXTRAORDINARIO te on te.ID_HORA_EXTRA = he.ID_HORA_EXTRA AND TE.ID_CONTRATO = nom.ID_CONTRATO
+     ) nn
+INNER JOIN SIS_PROCESO proc ON proc.ID_PROCESO = NN.ID_PROCESO 
+inner join partida pp on pp.id_partida = nn.id_partida
+INNER JOIN SIS_DEPENDENCIA D ON D.ID_DEPENDENCIA = PP.D3D4
+inner join partida ppe on ppe.id_partida = nn.id_partida_egreso 
+LEFT join sis_pago pg on pg.id_nomina = nn.id_nomina
+LEFT join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where
+not ( (ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) or (ppe.d8 = 9 and ppe.d9d10 = 81) )
+and ( nn.id_tipo_nomina = 11 
+      AND $P{pTipoReporte} = 'EXTRAORDINARIO'
+      AND PPE.D9D10 <> 0
+    )  
+and ( (doc.id_tipo_documento = 2 
+       and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)          
+       and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) < 2021
+      ) or
+      ( (doc.id_documento_banco is null or doc.id_documento_banco is not null)
+         and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) >= 2021
+      ) 
+    )     
+and exists( -- PERMISOS DE USUARIO
+            select 1 from usuario_unidad b, partida c where b.id_partida=c.id_partida
+            and usuario=$P{pUsuario} and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+            and pP.aniomanual=c.aniomanual and Pp.d1=c.d1 and pP.d2=c.d2 and PP.d3d4=c.d3d4
+            and ( (pP.d7=c.d7 and pP.d6=c.d6 and pP.d5=c.d5 ) or ( c.d5 is null and c.d6 is null and c.d7 is null ) )
+          )-- FIN PERMISOS DE USUARIO
+and proc.id_proceso = $P{pIdProceso}   
+) nomina
+group by isRegEsp, id_partida_sicoin, periodo, anio, id_proceso
+) nm 
+LEFT join (select sicoin.ID_PARTIDA_EGRESOS, sicoin.fuente, sicoin.renglon, sicoin.unidad_ejecutora, sicoin.nombre
+          ,(SELECT entidad FROM sicoin_entidad )||'.'
+          ||sicoin.unidad_ejecutora
+          ||DECODE(unidad_desconcentrada,NULL,'','.')||TO_CHAR(sicoin.unidad_desconcentrada,'FM00')
+          ||DECODE(sicoin.programa,NULL,'','.')||TO_CHAR(sicoin.programa,'FM00')
+          ||DECODE(subprograma,NULL,'','.')||TO_CHAR(sicoin.subprograma,'FM00')
+          ||DECODE(proyecto,NULL,'','.')||TO_CHAR(sicoin.proyecto,'FM000')
+          ||DECODE(actividad,NULL,'','.')||TO_CHAR(sicoin.actividad,'FM000')
+          ||DECODE(obra,NULL,'','.')||TO_CHAR(obra,'FM000')||'.' form1
+          ,TO_CHAR(sicoin.renglon,'FM000') formato_renglon
+          ,DECODE(geografico,NULL,'','.')||TO_CHAR(geografico,'FM0000')
+          ||DECODE(fuente,NULL,'','.')||TO_CHAR(fuente,'FM00')
+          ||DECODE(organismo,NULL,'','.')||TO_CHAR(organismo,'FM0000')
+          ||DECODE(correlativo,NULL,'','.')||TO_CHAR(correlativo,'FM0000') form2
+          from SICOIN_PARTIDA_EGRESOS_VIEW sicoin 
+          ) s on  s.id_partida_egresos = nm.id_partida_sicoin
+LEFT join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora 
+WHERE SUELDO_BASE <> 0  and u.unidad_ejecutora = $P{pIdUnidad} and nm.isregesp = $P{pIsRegEsp}
+)R
+GROUP BY    TIPO, RENGLON
+UNION
+select 11 ID_TIPO_NOMINA, 'TIEMPO EXTRAORDINARIO' TIPO_NOMINA, TIPO , RENGLON , SUM(BONO) VALOR 
+FROM (
+SELECT  S.FORMATO_RENGLON RENGLON
+, 'BONO MENSUAL' TIPO
+, NM.*
+from (
+select isRegEsp, id_partida_sicoin, periodo, anio, id_proceso
+, sum(sueldo_base)SUELDO_BASE
+, sum(escalafon) escalafon, sum(compl_salarial) complemento
+, sum(total_bono) bono
+from (
+select nn.id_nomina, nn.id_tipo_nomina, NN.PERIODO, nn.anio, nn.id_proceso, nn.id_puesto, nn.id_partida
+, nn.PARTIDA_SICOIN id_partida_sicoin
+, numero_plaza, correlativo, sueldo_base, escalafon, compl_salarial, total_bono, total_descuento, liquido, nominal
+, DECODE((select 1 from SIS_PARTIDAS_EXCLUD_NOMINA where id_partida = nn.id_partida), NULL, 0, 1) isRegEsp
+from (SELECT distinct te.partida_sicoin, nom.*
+      FROM SIS_NOMINA NOM
+      inner join SIS_HORA_EXTRA he on he.ID_HORA_EXTRA = nom.id_gestion
+      inner join SIS_TIEMPO_EXTRAORDINARIO te on te.ID_HORA_EXTRA = he.ID_HORA_EXTRA AND TE.ID_CONTRATO = nom.ID_CONTRATO
+     ) nn
+INNER JOIN SIS_PROCESO proc ON proc.ID_PROCESO = NN.ID_PROCESO 
+inner join partida pp on pp.id_partida = nn.id_partida
+INNER JOIN SIS_DEPENDENCIA D ON D.ID_DEPENDENCIA = PP.D3D4
+inner join partida ppe on ppe.id_partida = nn.id_partida_egreso 
+LEFT join sis_pago pg on pg.id_nomina = nn.id_nomina
+LEFT join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where
+not ( (ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) or (ppe.d8 = 9 and ppe.d9d10 = 81) )
+and ( nn.id_tipo_nomina = 11 
+      AND $P{pTipoReporte} = 'EXTRAORDINARIO'
+      AND PPE.D9D10 <> 0
+    )  
+and ( (doc.id_tipo_documento = 2 
+       and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)          
+       and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) < 2021
+      ) or
+      ( (doc.id_documento_banco is null or doc.id_documento_banco is not null)
+         and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) >= 2021
+      ) 
+    )     
+and exists( -- PERMISOS DE USUARIO
+            select 1 from usuario_unidad b, partida c where b.id_partida=c.id_partida
+            and usuario=$P{pUsuario} and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+            and pP.aniomanual=c.aniomanual and Pp.d1=c.d1 and pP.d2=c.d2 and PP.d3d4=c.d3d4
+            and ( (pP.d7=c.d7 and pP.d6=c.d6 and pP.d5=c.d5 ) or ( c.d5 is null and c.d6 is null and c.d7 is null ) )
+          )-- FIN PERMISOS DE USUARIO
+and proc.id_proceso = $P{pIdProceso}   
+) nomina
+group by isRegEsp, id_partida_sicoin, periodo, anio, id_proceso
+) nm 
+LEFT join (select sicoin.ID_PARTIDA_EGRESOS, sicoin.fuente, sicoin.renglon, sicoin.unidad_ejecutora, sicoin.nombre
+          ,(SELECT entidad FROM sicoin_entidad )||'.'
+          ||sicoin.unidad_ejecutora
+          ||DECODE(unidad_desconcentrada,NULL,'','.')||TO_CHAR(sicoin.unidad_desconcentrada,'FM00')
+          ||DECODE(sicoin.programa,NULL,'','.')||TO_CHAR(sicoin.programa,'FM00')
+          ||DECODE(subprograma,NULL,'','.')||TO_CHAR(sicoin.subprograma,'FM00')
+          ||DECODE(proyecto,NULL,'','.')||TO_CHAR(sicoin.proyecto,'FM000')
+          ||DECODE(actividad,NULL,'','.')||TO_CHAR(sicoin.actividad,'FM000')
+          ||DECODE(obra,NULL,'','.')||TO_CHAR(obra,'FM000')||'.' form1
+          ,TO_CHAR(sicoin.renglon,'FM000') formato_renglon
+          ,DECODE(geografico,NULL,'','.')||TO_CHAR(geografico,'FM0000')
+          ||DECODE(fuente,NULL,'','.')||TO_CHAR(fuente,'FM00')
+          ||DECODE(organismo,NULL,'','.')||TO_CHAR(organismo,'FM0000')
+          ||DECODE(correlativo,NULL,'','.')||TO_CHAR(correlativo,'FM0000') form2
+          from SICOIN_PARTIDA_EGRESOS_VIEW sicoin 
+          ) s on  s.id_partida_egresos = nm.id_partida_sicoin
+LEFT join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora 
+WHERE BONO <> 0 and u.unidad_ejecutora = $P{pIdUnidad} and nm.isregesp = $P{pIsRegEsp}
+)R
+GROUP BY    TIPO, RENGLON
+UNION
+select  11 ID_TIPO_NOMINA, 'TIEMPO EXTRAORDINARIO' TIPO_NOMINA, TIPO , RENGLON , SUM(COMPLEMENTO) VALOR 
+FROM (
+SELECT   DECODE(S.FORMATO_RENGLON,'011','012','024') RENGLON
+, 'COMPLEMENTO' TIPO
+, NM.*
+from (
+select isRegEsp, id_partida_sicoin, periodo, anio, id_proceso
+, sum(sueldo_base)SUELDO_BASE
+, sum(escalafon) escalafon, sum(compl_salarial) complemento
+, sum(total_bono) bono
+from (
+select nn.id_nomina, nn.id_tipo_nomina, NN.PERIODO, nn.anio, nn.id_proceso, nn.id_puesto, nn.id_partida
+, nn.PARTIDA_SICOIN id_partida_sicoin
+, numero_plaza, correlativo, sueldo_base, escalafon, compl_salarial, total_bono, total_descuento, liquido, nominal
+, DECODE((select 1 from SIS_PARTIDAS_EXCLUD_NOMINA where id_partida = nn.id_partida), NULL, 0, 1) isRegEsp
+from (SELECT distinct te.partida_sicoin, nom.*
+      FROM SIS_NOMINA NOM
+      inner join SIS_HORA_EXTRA he on he.ID_HORA_EXTRA = nom.id_gestion
+      inner join SIS_TIEMPO_EXTRAORDINARIO te on te.ID_HORA_EXTRA = he.ID_HORA_EXTRA AND TE.ID_CONTRATO = nom.ID_CONTRATO
+     ) nn
+INNER JOIN SIS_PROCESO proc ON proc.ID_PROCESO = NN.ID_PROCESO 
+inner join partida pp on pp.id_partida = nn.id_partida
+INNER JOIN SIS_DEPENDENCIA D ON D.ID_DEPENDENCIA = PP.D3D4
+inner join partida ppe on ppe.id_partida = nn.id_partida_egreso 
+LEFT join sis_pago pg on pg.id_nomina = nn.id_nomina
+LEFT join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where
+not ( (ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) or (ppe.d8 = 9 and ppe.d9d10 = 81) )
+and ( nn.id_tipo_nomina = 11 
+      AND $P{pTipoReporte} = 'EXTRAORDINARIO'
+      AND PPE.D9D10 <> 0
+    )  
+and ( (doc.id_tipo_documento = 2 
+       and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)          
+       and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) < 2021
+      ) or
+      ( (doc.id_documento_banco is null or doc.id_documento_banco is not null)
+         and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) >= 2021
+      ) 
+    )     
+and exists( -- PERMISOS DE USUARIO
+            select 1 from usuario_unidad b, partida c where b.id_partida=c.id_partida
+            and usuario=$P{pUsuario} and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+            and pP.aniomanual=c.aniomanual and Pp.d1=c.d1 and pP.d2=c.d2 and PP.d3d4=c.d3d4
+            and ( (pP.d7=c.d7 and pP.d6=c.d6 and pP.d5=c.d5 ) or ( c.d5 is null and c.d6 is null and c.d7 is null ) )
+          )-- FIN PERMISOS DE USUARIO
+and proc.id_proceso = $P{pIdProceso}   
+) nomina
+group by isRegEsp, id_partida_sicoin, periodo, anio, id_proceso
+) nm 
+LEFT join (select sicoin.ID_PARTIDA_EGRESOS, sicoin.fuente, sicoin.renglon, sicoin.unidad_ejecutora, sicoin.nombre
+          ,(SELECT entidad FROM sicoin_entidad )||'.'
+          ||sicoin.unidad_ejecutora
+          ||DECODE(unidad_desconcentrada,NULL,'','.')||TO_CHAR(sicoin.unidad_desconcentrada,'FM00')
+          ||DECODE(sicoin.programa,NULL,'','.')||TO_CHAR(sicoin.programa,'FM00')
+          ||DECODE(subprograma,NULL,'','.')||TO_CHAR(sicoin.subprograma,'FM00')
+          ||DECODE(proyecto,NULL,'','.')||TO_CHAR(sicoin.proyecto,'FM000')
+          ||DECODE(actividad,NULL,'','.')||TO_CHAR(sicoin.actividad,'FM000')
+          ||DECODE(obra,NULL,'','.')||TO_CHAR(obra,'FM000')||'.' form1
+          ,TO_CHAR(sicoin.renglon,'FM000') formato_renglon
+          ,DECODE(geografico,NULL,'','.')||TO_CHAR(geografico,'FM0000')
+          ||DECODE(fuente,NULL,'','.')||TO_CHAR(fuente,'FM00')
+          ||DECODE(organismo,NULL,'','.')||TO_CHAR(organismo,'FM0000')
+          ||DECODE(correlativo,NULL,'','.')||TO_CHAR(correlativo,'FM0000') form2
+          from SICOIN_PARTIDA_EGRESOS_VIEW sicoin 
+          ) s on  s.id_partida_egresos = nm.id_partida_sicoin
+LEFT join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora 
+WHERE COMPLEMENTO <> 0 and u.unidad_ejecutora = $P{pIdUnidad} and nm.isregesp = $P{pIsRegEsp}
+)R
+GROUP BY    TIPO, RENGLON
+UNION
+select  11 ID_TIPO_NOMINA, 'TIEMPO EXTRAORDINARIO' TIPO_NOMINA, TIPO , RENGLON , SUM(ESCALAFON) VALOR 
+FROM (
+SELECT   '017' RENGLON
+, 'ESCALAFON' TIPO
+, NM.*
+from (
+select isRegEsp, id_partida_sicoin, periodo, anio, id_proceso
+, sum(sueldo_base)SUELDO_BASE
+, sum(escalafon) escalafon, sum(compl_salarial) complemento
+, sum(total_bono) bono
+from (
+select nn.id_nomina, nn.id_tipo_nomina, NN.PERIODO, nn.anio, nn.id_proceso, nn.id_puesto, nn.id_partida
+, nn.PARTIDA_SICOIN id_partida_sicoin
+, numero_plaza, correlativo, sueldo_base, escalafon, compl_salarial, total_bono, total_descuento, liquido, nominal
+, DECODE((select 1 from SIS_PARTIDAS_EXCLUD_NOMINA where id_partida = nn.id_partida), NULL, 0, 1) isRegEsp
+from (SELECT distinct te.partida_sicoin, nom.*
+      FROM SIS_NOMINA NOM
+      inner join SIS_HORA_EXTRA he on he.ID_HORA_EXTRA = nom.id_gestion
+      inner join SIS_TIEMPO_EXTRAORDINARIO te on te.ID_HORA_EXTRA = he.ID_HORA_EXTRA AND TE.ID_CONTRATO = nom.ID_CONTRATO
+     ) nn
+INNER JOIN SIS_PROCESO proc ON proc.ID_PROCESO = NN.ID_PROCESO 
+inner join partida pp on pp.id_partida = nn.id_partida
+INNER JOIN SIS_DEPENDENCIA D ON D.ID_DEPENDENCIA = PP.D3D4
+inner join partida ppe on ppe.id_partida = nn.id_partida_egreso 
+LEFT join sis_pago pg on pg.id_nomina = nn.id_nomina
+LEFT join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where
+not ( (ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) or (ppe.d8 = 9 and ppe.d9d10 = 81) )
+and ( nn.id_tipo_nomina = 11 
+      AND $P{pTipoReporte} = 'EXTRAORDINARIO'
+      AND PPE.D9D10 <> 0
+    )  
+and ( (doc.id_tipo_documento = 2 
+       and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)          
+       and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) < 2021
+      ) or
+      ( (doc.id_documento_banco is null or doc.id_documento_banco is not null)
+         and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) >= 2021
+      ) 
+    )     
+and exists( -- PERMISOS DE USUARIO
+            select 1 from usuario_unidad b, partida c where b.id_partida=c.id_partida
+            and usuario=$P{pUsuario} and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+            and pP.aniomanual=c.aniomanual and Pp.d1=c.d1 and pP.d2=c.d2 and PP.d3d4=c.d3d4
+            and ( (pP.d7=c.d7 and pP.d6=c.d6 and pP.d5=c.d5 ) or ( c.d5 is null and c.d6 is null and c.d7 is null ) )
+          )-- FIN PERMISOS DE USUARIO
+and proc.id_proceso = $P{pIdProceso}   
+) nomina
+group by isRegEsp, id_partida_sicoin, periodo, anio, id_proceso
+) nm 
+LEFT join (select sicoin.ID_PARTIDA_EGRESOS, sicoin.fuente, sicoin.renglon, sicoin.unidad_ejecutora, sicoin.nombre
+          ,(SELECT entidad FROM sicoin_entidad )||'.'
+          ||sicoin.unidad_ejecutora
+          ||DECODE(unidad_desconcentrada,NULL,'','.')||TO_CHAR(sicoin.unidad_desconcentrada,'FM00')
+          ||DECODE(sicoin.programa,NULL,'','.')||TO_CHAR(sicoin.programa,'FM00')
+          ||DECODE(subprograma,NULL,'','.')||TO_CHAR(sicoin.subprograma,'FM00')
+          ||DECODE(proyecto,NULL,'','.')||TO_CHAR(sicoin.proyecto,'FM000')
+          ||DECODE(actividad,NULL,'','.')||TO_CHAR(sicoin.actividad,'FM000')
+          ||DECODE(obra,NULL,'','.')||TO_CHAR(obra,'FM000')||'.' form1
+          ,TO_CHAR(sicoin.renglon,'FM000') formato_renglon
+          ,DECODE(geografico,NULL,'','.')||TO_CHAR(geografico,'FM0000')
+          ||DECODE(fuente,NULL,'','.')||TO_CHAR(fuente,'FM00')
+          ||DECODE(organismo,NULL,'','.')||TO_CHAR(organismo,'FM0000')
+          ||DECODE(correlativo,NULL,'','.')||TO_CHAR(correlativo,'FM0000') form2
+          from SICOIN_PARTIDA_EGRESOS_VIEW sicoin 
+          ) s on  s.id_partida_egresos = nm.id_partida_sicoin
+LEFT join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora 
+WHERE ESCALAFON <> 0 and u.unidad_ejecutora = $P{pIdUnidad} and nm.isregesp = $P{pIsRegEsp}
+)R
+GROUP BY    TIPO, RENGLON
+)
+where $P{pTipoReporte} = 'EXTRAORDINARIO'
+UNION
+select * from (
+select  8 ID_TIPO_NOMINA, 'COMPLEMENTO IGSS' TIPO_NOMINA, TIPO , RENGLON , SUM(SUELDO_BASE) VALOR 
+FROM (
+SELECT S.FORMATO_RENGLON RENGLON
+, 'SUELDO BASE' TIPO
+, NM.*
+from (
+select isRegEsp, id_partida_sicoin, periodo, anio, id_proceso
+, sum(sueldo_base)SUELDO_BASE
+, sum(escalafon) escalafon, sum(compl_salarial) complemento
+, sum(total_bono) bono
+from (
+select nn.id_nomina, nn.id_tipo_nomina, NN.PERIODO, nn.anio, nn.id_proceso, nn.id_puesto, nn.id_partida
+, ppe.id_partida_egresos  id_partida_sicoin 
+, numero_plaza, correlativo, sueldo_base, escalafon, compl_salarial, total_bono, total_descuento, liquido, nominal
+, DECODE((select 1 from SIS_PARTIDAS_EXCLUD_NOMINA where id_partida = nn.id_partida), NULL, 0, 1) isRegEsp
+from sis_nomina nn
+INNER JOIN SIS_PROCESO proc ON proc.ID_PROCESO = NN.ID_PROCESO 
+inner join partida pp on pp.id_partida = nn.id_partida
+INNER JOIN SIS_DEPENDENCIA D ON D.ID_DEPENDENCIA = PP.D3D4
+inner join partida ppe on ppe.id_partida = nn.id_partida_egreso 
+LEFT join sis_pago pg on pg.id_nomina = nn.id_nomina
+LEFT join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where
+not ( (ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) or (ppe.d8 = 9 and ppe.d9d10 = 81) )
+and ( nn.id_tipo_nomina = 8  
+      AND $P{pTipoReporte} = 'IGSS'
+      AND PPE.D9D10 <> 0
+    )  
+and ( (doc.id_tipo_documento = 2 
+       and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)          
+       and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) < 2021
+      ) or
+      ( (doc.id_documento_banco is null or doc.id_documento_banco is not null)
+         and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) >= 2021
+      ) 
+    )     
+and exists( -- PERMISOS DE USUARIO
+            select 1 from usuario_unidad b, partida c where b.id_partida=c.id_partida
+            and usuario=$P{pUsuario} and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+            and pP.aniomanual=c.aniomanual and Pp.d1=c.d1 and pP.d2=c.d2 and PP.d3d4=c.d3d4
+            and ( (pP.d7=c.d7 and pP.d6=c.d6 and pP.d5=c.d5 ) or ( c.d5 is null and c.d6 is null and c.d7 is null ) )
+          )-- FIN PERMISOS DE USUARIO
+and proc.id_proceso = $P{pIdProceso}  and ppe.id_partida = 18129
+) nomina
+group by isRegEsp, id_partida_sicoin, periodo, anio, id_proceso
+) nm 
+LEFT join (select sicoin.ID_PARTIDA_EGRESOS, sicoin.fuente, sicoin.renglon, sicoin.unidad_ejecutora, sicoin.nombre
+          ,(SELECT entidad FROM sicoin_entidad )||'.'
+          ||sicoin.unidad_ejecutora
+          ||DECODE(unidad_desconcentrada,NULL,'','.')||TO_CHAR(sicoin.unidad_desconcentrada,'FM00')
+          ||DECODE(sicoin.programa,NULL,'','.')||TO_CHAR(sicoin.programa,'FM00')
+          ||DECODE(subprograma,NULL,'','.')||TO_CHAR(sicoin.subprograma,'FM00')
+          ||DECODE(proyecto,NULL,'','.')||TO_CHAR(sicoin.proyecto,'FM000')
+          ||DECODE(actividad,NULL,'','.')||TO_CHAR(sicoin.actividad,'FM000')
+          ||DECODE(obra,NULL,'','.')||TO_CHAR(obra,'FM000')||'.' form1
+          ,TO_CHAR(sicoin.renglon,'FM000') formato_renglon
+          ,DECODE(geografico,NULL,'','.')||TO_CHAR(geografico,'FM0000')
+          ||DECODE(fuente,NULL,'','.')||TO_CHAR(fuente,'FM00')
+          ||DECODE(organismo,NULL,'','.')||TO_CHAR(organismo,'FM0000')
+          ||DECODE(correlativo,NULL,'','.')||TO_CHAR(correlativo,'FM0000') form2
+          from SICOIN_PARTIDA_EGRESOS_VIEW sicoin 
+          ) s on  s.id_partida_egresos = nm.id_partida_sicoin
+LEFT join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora 
+WHERE SUELDO_BASE <> 0 and u.unidad_ejecutora = $P{pIdUnidad} and nm.isregesp = $P{pIsRegEsp}
+)R
+GROUP BY    TIPO, RENGLON
+UNION
+select 8 ID_TIPO_NOMINA, 'COMPLEMENTO IGSS' TIPO_NOMINA, TIPO , RENGLON , SUM(BONO) VALOR 
+FROM (
+SELECT  S.FORMATO_RENGLON RENGLON
+, 'BONO MENSUAL' TIPO
+, NM.*
+from (
+select isRegEsp, id_partida_sicoin, periodo, anio, id_proceso
+, sum(sueldo_base)SUELDO_BASE
+, sum(escalafon) escalafon, sum(compl_salarial) complemento
+, sum(total_bono) bono
+from (
+select nn.id_nomina, nn.id_tipo_nomina, NN.PERIODO, nn.anio, nn.id_proceso, nn.id_puesto, nn.id_partida
+, ppe.id_partida_egresos  id_partida_sicoin 
+, numero_plaza, correlativo, sueldo_base, escalafon, compl_salarial, total_bono, total_descuento, liquido, nominal
+, DECODE((select 1 from SIS_PARTIDAS_EXCLUD_NOMINA where id_partida = nn.id_partida), NULL, 0, 1) isRegEsp
+from sis_nomina nn
+INNER JOIN SIS_PROCESO proc ON proc.ID_PROCESO = NN.ID_PROCESO 
+inner join partida pp on pp.id_partida = nn.id_partida
+INNER JOIN SIS_DEPENDENCIA D ON D.ID_DEPENDENCIA = PP.D3D4
+inner join partida ppe on ppe.id_partida = nn.id_partida_egreso 
+LEFT join sis_pago pg on pg.id_nomina = nn.id_nomina
+LEFT join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where
+not ( (ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) or (ppe.d8 = 9 and ppe.d9d10 = 81) )
+and ( nn.id_tipo_nomina = 8  
+      AND $P{pTipoReporte} = 'IGSS'
+      AND PPE.D9D10 <> 0
+    )  
+and ( (doc.id_tipo_documento = 2 
+       and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)          
+       and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) < 2021
+      ) or
+      ( (doc.id_documento_banco is null or doc.id_documento_banco is not null)
+         and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) >= 2021
+      ) 
+    )     
+and exists( -- PERMISOS DE USUARIO
+            select 1 from usuario_unidad b, partida c where b.id_partida=c.id_partida
+            and usuario=$P{pUsuario} and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+            and pP.aniomanual=c.aniomanual and Pp.d1=c.d1 and pP.d2=c.d2 and PP.d3d4=c.d3d4
+            and ( (pP.d7=c.d7 and pP.d6=c.d6 and pP.d5=c.d5 ) or ( c.d5 is null and c.d6 is null and c.d7 is null ) )
+          )-- FIN PERMISOS DE USUARIO
+and proc.id_proceso = $P{pIdProceso}  and ppe.id_partida = 18129
+) nomina
+group by isRegEsp, id_partida_sicoin, periodo, anio, id_proceso
+) nm 
+LEFT join (select sicoin.ID_PARTIDA_EGRESOS, sicoin.fuente, sicoin.renglon, sicoin.unidad_ejecutora, sicoin.nombre
+          ,(SELECT entidad FROM sicoin_entidad )||'.'
+          ||sicoin.unidad_ejecutora
+          ||DECODE(unidad_desconcentrada,NULL,'','.')||TO_CHAR(sicoin.unidad_desconcentrada,'FM00')
+          ||DECODE(sicoin.programa,NULL,'','.')||TO_CHAR(sicoin.programa,'FM00')
+          ||DECODE(subprograma,NULL,'','.')||TO_CHAR(sicoin.subprograma,'FM00')
+          ||DECODE(proyecto,NULL,'','.')||TO_CHAR(sicoin.proyecto,'FM000')
+          ||DECODE(actividad,NULL,'','.')||TO_CHAR(sicoin.actividad,'FM000')
+          ||DECODE(obra,NULL,'','.')||TO_CHAR(obra,'FM000')||'.' form1
+          ,TO_CHAR(sicoin.renglon,'FM000') formato_renglon
+          ,DECODE(geografico,NULL,'','.')||TO_CHAR(geografico,'FM0000')
+          ||DECODE(fuente,NULL,'','.')||TO_CHAR(fuente,'FM00')
+          ||DECODE(organismo,NULL,'','.')||TO_CHAR(organismo,'FM0000')
+          ||DECODE(correlativo,NULL,'','.')||TO_CHAR(correlativo,'FM0000') form2
+          from SICOIN_PARTIDA_EGRESOS_VIEW sicoin 
+          ) s on  s.id_partida_egresos = nm.id_partida_sicoin
+LEFT join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora 
+WHERE BONO <> 0 and u.unidad_ejecutora = $P{pIdUnidad} and nm.isregesp = $P{pIsRegEsp}
+)R
+GROUP BY    TIPO, RENGLON
+UNION
+select 8 ID_TIPO_NOMINA, 'COMPLEMENTO IGSS' TIPO_NOMINA, TIPO , RENGLON , SUM(COMPLEMENTO) VALOR 
+FROM (
+SELECT  'COMPLEMENTO' TIPO
+,  DECODE(S.FORMATO_RENGLON,'011','012','024') RENGLON
+, NM.*
+from (
+select isRegEsp, id_partida_sicoin, periodo, anio, id_proceso
+, sum(sueldo_base)SUELDO_BASE
+, sum(escalafon) escalafon, sum(compl_salarial) complemento
+, sum(total_bono) bono
+from (
+select nn.id_nomina, nn.id_tipo_nomina, NN.PERIODO, nn.anio, nn.id_proceso, nn.id_puesto, nn.id_partida
+, ppe.id_partida_egresos  id_partida_sicoin 
+, numero_plaza, correlativo, sueldo_base, escalafon, compl_salarial, total_bono, total_descuento, liquido, nominal
+, DECODE((select 1 from SIS_PARTIDAS_EXCLUD_NOMINA where id_partida = nn.id_partida), NULL, 0, 1) isRegEsp
+from sis_nomina nn
+INNER JOIN SIS_PROCESO proc ON proc.ID_PROCESO = NN.ID_PROCESO 
+inner join partida pp on pp.id_partida = nn.id_partida
+INNER JOIN SIS_DEPENDENCIA D ON D.ID_DEPENDENCIA = PP.D3D4
+inner join partida ppe on ppe.id_partida = nn.id_partida_egreso 
+LEFT join sis_pago pg on pg.id_nomina = nn.id_nomina
+LEFT join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where
+not ( (ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) or (ppe.d8 = 9 and ppe.d9d10 = 81) )
+and ( nn.id_tipo_nomina = 8  
+      AND $P{pTipoReporte} = 'IGSS'
+      AND PPE.D9D10 <> 0
+    )  
+and ( (doc.id_tipo_documento = 2 
+       and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)          
+       and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) < 2021
+      ) or
+      ( (doc.id_documento_banco is null or doc.id_documento_banco is not null)
+         and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) >= 2021
+      ) 
+    )     
+and exists( -- PERMISOS DE USUARIO
+            select 1 from usuario_unidad b, partida c where b.id_partida=c.id_partida
+            and usuario=$P{pUsuario} and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+            and pP.aniomanual=c.aniomanual and Pp.d1=c.d1 and pP.d2=c.d2 and PP.d3d4=c.d3d4
+            and ( (pP.d7=c.d7 and pP.d6=c.d6 and pP.d5=c.d5 ) or ( c.d5 is null and c.d6 is null and c.d7 is null ) )
+          )-- FIN PERMISOS DE USUARIO
+and proc.id_proceso = $P{pIdProceso}  and ppe.id_partida = 18129
+) nomina
+group by isRegEsp, id_partida_sicoin, periodo, anio, id_proceso
+) nm 
+LEFT join (select sicoin.ID_PARTIDA_EGRESOS, sicoin.fuente, sicoin.renglon, sicoin.unidad_ejecutora, sicoin.nombre
+          ,(SELECT entidad FROM sicoin_entidad )||'.'
+          ||sicoin.unidad_ejecutora
+          ||DECODE(unidad_desconcentrada,NULL,'','.')||TO_CHAR(sicoin.unidad_desconcentrada,'FM00')
+          ||DECODE(sicoin.programa,NULL,'','.')||TO_CHAR(sicoin.programa,'FM00')
+          ||DECODE(subprograma,NULL,'','.')||TO_CHAR(sicoin.subprograma,'FM00')
+          ||DECODE(proyecto,NULL,'','.')||TO_CHAR(sicoin.proyecto,'FM000')
+          ||DECODE(actividad,NULL,'','.')||TO_CHAR(sicoin.actividad,'FM000')
+          ||DECODE(obra,NULL,'','.')||TO_CHAR(obra,'FM000')||'.' form1
+          ,TO_CHAR(sicoin.renglon,'FM000') formato_renglon
+          ,DECODE(geografico,NULL,'','.')||TO_CHAR(geografico,'FM0000')
+          ||DECODE(fuente,NULL,'','.')||TO_CHAR(fuente,'FM00')
+          ||DECODE(organismo,NULL,'','.')||TO_CHAR(organismo,'FM0000')
+          ||DECODE(correlativo,NULL,'','.')||TO_CHAR(correlativo,'FM0000') form2
+          from SICOIN_PARTIDA_EGRESOS_VIEW sicoin 
+          ) s on  s.id_partida_egresos = nm.id_partida_sicoin
+LEFT join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora 
+WHERE COMPLEMENTO <> 0 and u.unidad_ejecutora = $P{pIdUnidad} and nm.isregesp = $P{pIsRegEsp}
+)R
+GROUP BY    TIPO, RENGLON
+UNION
+select 8 ID_TIPO_NOMINA, 'COMPLEMENTO IGSS' TIPO_NOMINA, TIPO , RENGLON , SUM(ESCALAFON) VALOR 
+FROM (
+SELECT  '017' RENGLON
+, 'ESCALAFON' TIPO
+, NM.*
+from (
+select isRegEsp, id_partida_sicoin, periodo, anio, id_proceso
+, sum(sueldo_base)SUELDO_BASE
+, sum(escalafon) escalafon, sum(compl_salarial) complemento
+, sum(total_bono) bono
+from (
+select nn.id_nomina, nn.id_tipo_nomina, NN.PERIODO, nn.anio, nn.id_proceso, nn.id_puesto, nn.id_partida
+, ppe.id_partida_egresos  id_partida_sicoin 
+, numero_plaza, correlativo, sueldo_base, escalafon, compl_salarial, total_bono, total_descuento, liquido, nominal
+, DECODE((select 1 from SIS_PARTIDAS_EXCLUD_NOMINA where id_partida = nn.id_partida), NULL, 0, 1) isRegEsp
+from sis_nomina nn
+INNER JOIN SIS_PROCESO proc ON proc.ID_PROCESO = NN.ID_PROCESO 
+inner join partida pp on pp.id_partida = nn.id_partida
+INNER JOIN SIS_DEPENDENCIA D ON D.ID_DEPENDENCIA = PP.D3D4
+inner join partida ppe on ppe.id_partida = nn.id_partida_egreso 
+LEFT join sis_pago pg on pg.id_nomina = nn.id_nomina
+LEFT join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where
+not ( (ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) or (ppe.d8 = 9 and ppe.d9d10 = 81) )
+and ( nn.id_tipo_nomina = 8  
+      AND $P{pTipoReporte} = 'IGSS'
+      AND PPE.D9D10 <> 0
+    )  
+and ( (doc.id_tipo_documento = 2 
+       and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)          
+       and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) < 2021
+      ) or
+      ( (doc.id_documento_banco is null or doc.id_documento_banco is not null)
+         and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) >= 2021
+      ) 
+    )     
+and exists( -- PERMISOS DE USUARIO
+            select 1 from usuario_unidad b, partida c where b.id_partida=c.id_partida
+            and usuario=$P{pUsuario} and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+            and pP.aniomanual=c.aniomanual and Pp.d1=c.d1 and pP.d2=c.d2 and PP.d3d4=c.d3d4
+            and ( (pP.d7=c.d7 and pP.d6=c.d6 and pP.d5=c.d5 ) or ( c.d5 is null and c.d6 is null and c.d7 is null ) )
+          )-- FIN PERMISOS DE USUARIO
+and proc.id_proceso = $P{pIdProceso}  and ppe.id_partida = 18129
+) nomina
+group by isRegEsp, id_partida_sicoin, periodo, anio, id_proceso
+) nm 
+LEFT join (select sicoin.ID_PARTIDA_EGRESOS, sicoin.fuente, sicoin.renglon, sicoin.unidad_ejecutora, sicoin.nombre
+          ,(SELECT entidad FROM sicoin_entidad )||'.'
+          ||sicoin.unidad_ejecutora
+          ||DECODE(unidad_desconcentrada,NULL,'','.')||TO_CHAR(sicoin.unidad_desconcentrada,'FM00')
+          ||DECODE(sicoin.programa,NULL,'','.')||TO_CHAR(sicoin.programa,'FM00')
+          ||DECODE(subprograma,NULL,'','.')||TO_CHAR(sicoin.subprograma,'FM00')
+          ||DECODE(proyecto,NULL,'','.')||TO_CHAR(sicoin.proyecto,'FM000')
+          ||DECODE(actividad,NULL,'','.')||TO_CHAR(sicoin.actividad,'FM000')
+          ||DECODE(obra,NULL,'','.')||TO_CHAR(obra,'FM000')||'.' form1
+          ,TO_CHAR(sicoin.renglon,'FM000') formato_renglon
+          ,DECODE(geografico,NULL,'','.')||TO_CHAR(geografico,'FM0000')
+          ||DECODE(fuente,NULL,'','.')||TO_CHAR(fuente,'FM00')
+          ||DECODE(organismo,NULL,'','.')||TO_CHAR(organismo,'FM0000')
+          ||DECODE(correlativo,NULL,'','.')||TO_CHAR(correlativo,'FM0000') form2
+          from SICOIN_PARTIDA_EGRESOS_VIEW sicoin 
+          ) s on  s.id_partida_egresos = nm.id_partida_sicoin
+LEFT join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora 
+WHERE ESCALAFON <> 0 and u.unidad_ejecutora = $P{pIdUnidad} and nm.isregesp = $P{pIsRegEsp}
+)R
+GROUP BY  TIPO, RENGLON
+)
+where $P{pTipoReporte} = 'IGSS'
+UNION
+select * from (
+select ID_TIPO_NOMINA,  TIPO_NOMINA, 'NOMINAL' TIPO, RENGLON, SUM(SUELDO_BASE) VALOR
+from (
+select d.CODIGO_SICOIN id_unidad, u.NOMBRE_UNIDAD_EJECUTORA unidad_ejecutora, tn.nombre tipo_nomina
+, nm.*
+, TO_CHAR(SRrenglon,'FM00') RENGLON
+from (
+select N.ID_NOMINA, n.id_tipo_nomina, n.anio, n.id_partida, n.id_partida_egreso, n.id_proceso
+,  pe.d1||pe.d2||'.'||pe.d3d4||'.'||pe.d5||'.'||pe.d6||'.'||pe.d7||'.'||pe.d8||'.'||pe.d9d10 formato_siif, n.renglon SRRENGLON
+, n.id_puesto, n.numero_plaza, n.correlativo, n.sueldo_base, n.escalafon, n.compl_salarial, n.total_Bono, n.total_descuento, n.liquido, n.isregesp
+from 
+(select id_nomina, nn.id_proceso, id_tipo_nomina, anio, nn.id_partida, nn.id_partida_egreso , ppe.d9d10 renglon
+, id_puesto, numero_plaza, correlativo, sueldo_base, escalafon, compl_salarial, total_bono, total_descuento, liquido, nominal
+, DECODE((select 1 from SIS_PARTIDAS_EXCLUD_NOMINA where id_partida = nn.id_partida), NULL, 0, 1) isRegEsp
+from sis_nomina nn
+inner join partida pp on pp.id_partida = nn.id_partida
+inner join partida ppe on ppe.id_partida = nn.id_partida_egreso  
+and ( ($P{pTipoReporte}='EGRESO981' and NOT(ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) and (ppe.d8 = 9 and ppe.d9d10 = 81) )
+   OR ($P{pTipoReporte}='EGRESO216' and (ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) and  NOT(ppe.d8 = 9 and ppe.d9d10 = 81) )
+    )
+) n 
+inner join partida p on p.id_partida = n.id_partida
+inner join partida pe on pe.id_partida = n.id_partida_egreso
+inner join sis_proceso proc on proc.id_proceso = n.id_proceso
+where proc.id_proceso = $P{pIdProceso} and 
+  n.isRegEsp = $P{pIsRegEsp}
+and exists( -- PERMISOS DE USUARIO
+            select 1 from usuario_unidad b, partida c where b.id_partida=c.id_partida
+            and usuario=$P{pUsuario} and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+            and p.aniomanual=c.aniomanual and p.d1=c.d1 and p.d2=c.d2 and p.d3d4=c.d3d4
+            and ( (p.d7=c.d7 and p.d6=c.d6 and p.d5=c.d5 ) or ( c.d5 is null and c.d6 is null and c.d7 is null ) )
+          )-- FIN PERMISOS DE USUARIO
+)NM   
+inner join sis_tipo_nomina tn on tn.id_tipo_nomina = nm.id_tipo_nomina
+inner join sis_partida po on po.id_partida = nm.id_partida
+inner join sis_dependencia d on d.id_dependencia = po.id_dependencia
+LEFT join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = d.codigo_sicoin 
+WHERE ($P{pTipoReporte} = 'EGRESO981' OR $P{pTipoReporte} = 'EGRESO216')
+and d.CODIGO_SICOIN  = $P{pIdUnidad}  and SUELDO_BASE <> 0
+)T
+GROUP BY T.ID_TIPO_NOMINA, T.TIPO_NOMINA, RENGLON
+UNION ALL
+select ID_TIPO_NOMINA,  TIPO_NOMINA, 'ESCALAFON' TIPO, RENGLON, SUM(ESCALAFON) VALOR
+from (
+select d.CODIGO_SICOIN id_unidad, u.NOMBRE_UNIDAD_EJECUTORA unidad_ejecutora, tn.nombre tipo_nomina
+, nm.*
+, TO_CHAR(SRrenglon,'FM00') RENGLON
+from (
+select N.ID_NOMINA, n.id_tipo_nomina, n.anio, n.id_partida, n.id_partida_egreso, n.id_proceso
+,  pe.d1||pe.d2||'.'||pe.d3d4||'.'||pe.d5||'.'||pe.d6||'.'||pe.d7||'.'||pe.d8||'.'||pe.d9d10 formato_siif, n.renglon SRRENGLON
+, n.id_puesto, n.numero_plaza, n.correlativo, n.sueldo_base, n.escalafon, n.compl_salarial, n.total_Bono, n.total_descuento, n.liquido, n.isregesp
+from 
+(select id_nomina, nn.id_proceso, id_tipo_nomina, anio, nn.id_partida, nn.id_partida_egreso , ppe.d9d10 renglon
+, id_puesto, numero_plaza, correlativo, sueldo_base, escalafon, compl_salarial, total_bono, total_descuento, liquido, nominal
+, DECODE((select 1 from SIS_PARTIDAS_EXCLUD_NOMINA where id_partida = nn.id_partida), NULL, 0, 1) isRegEsp
+from sis_nomina nn
+inner join partida pp on pp.id_partida = nn.id_partida
+inner join partida ppe on ppe.id_partida = nn.id_partida_egreso  
+and ( ($P{pTipoReporte}='EGRESO981' and NOT(ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) and (ppe.d8 = 9 and ppe.d9d10 = 81) )
+   OR ($P{pTipoReporte}='EGRESO216' and (ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) and  NOT(ppe.d8 = 9 and ppe.d9d10 = 81) )
+    )
+) n 
+inner join partida p on p.id_partida = n.id_partida
+inner join partida pe on pe.id_partida = n.id_partida_egreso
+inner join sis_proceso proc on proc.id_proceso = n.id_proceso
+where proc.id_proceso = $P{pIdProceso} and 
+  n.isRegEsp = $P{pIsRegEsp}
+and exists( -- PERMISOS DE USUARIO
+            select 1 from usuario_unidad b, partida c where b.id_partida=c.id_partida
+            and usuario=$P{pUsuario} and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+            and p.aniomanual=c.aniomanual and p.d1=c.d1 and p.d2=c.d2 and p.d3d4=c.d3d4
+            and ( (p.d7=c.d7 and p.d6=c.d6 and p.d5=c.d5 ) or ( c.d5 is null and c.d6 is null and c.d7 is null ) )
+          )-- FIN PERMISOS DE USUARIO
+)NM   
+inner join sis_tipo_nomina tn on tn.id_tipo_nomina = nm.id_tipo_nomina
+inner join sis_partida po on po.id_partida = nm.id_partida
+inner join sis_dependencia d on d.id_dependencia = po.id_dependencia
+LEFT join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = d.codigo_sicoin 
+WHERE ($P{pTipoReporte} = 'EGRESO981' OR $P{pTipoReporte} = 'EGRESO216')
+and d.CODIGO_SICOIN  = $P{pIdUnidad}  and ESCALAFON <> 0
+)T
+GROUP BY T.ID_TIPO_NOMINA, T.TIPO_NOMINA, RENGLON
+UNION ALL
+select ID_TIPO_NOMINA,  TIPO_NOMINA, 'BONO MENSUAL' TIPO, RENGLON, SUM(TOTAL_BONO) VALOR
+from (
+select d.CODIGO_SICOIN id_unidad, u.NOMBRE_UNIDAD_EJECUTORA unidad_ejecutora, tn.nombre tipo_nomina
+, nm.*
+, TO_CHAR(SRrenglon,'FM00') RENGLON
+from (
+select N.ID_NOMINA, n.id_tipo_nomina, n.anio, n.id_partida, n.id_partida_egreso, n.id_proceso
+,  pe.d1||pe.d2||'.'||pe.d3d4||'.'||pe.d5||'.'||pe.d6||'.'||pe.d7||'.'||pe.d8||'.'||pe.d9d10 formato_siif, n.renglon SRRENGLON
+, n.id_puesto, n.numero_plaza, n.correlativo, n.sueldo_base, n.escalafon, n.compl_salarial, n.total_Bono, n.total_descuento, n.liquido, n.isregesp
+from 
+(select id_nomina, nn.id_proceso, id_tipo_nomina, anio, nn.id_partida, nn.id_partida_egreso , ppe.d9d10 renglon
+, id_puesto, numero_plaza, correlativo, sueldo_base, escalafon, compl_salarial, total_bono, total_descuento, liquido, nominal
+, DECODE((select 1 from SIS_PARTIDAS_EXCLUD_NOMINA where id_partida = nn.id_partida), NULL, 0, 1) isRegEsp
+from sis_nomina nn
+inner join partida pp on pp.id_partida = nn.id_partida
+inner join partida ppe on ppe.id_partida = nn.id_partida_egreso  
+and ( ($P{pTipoReporte}='EGRESO981' and NOT(ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) and (ppe.d8 = 9 and ppe.d9d10 = 81) )
+   OR ($P{pTipoReporte}='EGRESO216' and (ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) and  NOT(ppe.d8 = 9 and ppe.d9d10 = 81) )
+    )
+) n 
+inner join partida p on p.id_partida = n.id_partida
+inner join partida pe on pe.id_partida = n.id_partida_egreso
+inner join sis_proceso proc on proc.id_proceso = n.id_proceso
+where proc.id_proceso = $P{pIdProceso} and 
+  n.isRegEsp = $P{pIsRegEsp}
+and exists( -- PERMISOS DE USUARIO
+            select 1 from usuario_unidad b, partida c where b.id_partida=c.id_partida
+            and usuario=$P{pUsuario} and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+            and p.aniomanual=c.aniomanual and p.d1=c.d1 and p.d2=c.d2 and p.d3d4=c.d3d4
+            and ( (p.d7=c.d7 and p.d6=c.d6 and p.d5=c.d5 ) or ( c.d5 is null and c.d6 is null and c.d7 is null ) )
+          )-- FIN PERMISOS DE USUARIO
+)NM   
+inner join sis_tipo_nomina tn on tn.id_tipo_nomina = nm.id_tipo_nomina
+inner join sis_partida po on po.id_partida = nm.id_partida
+inner join sis_dependencia d on d.id_dependencia = po.id_dependencia
+LEFT join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = d.codigo_sicoin 
+WHERE ($P{pTipoReporte} = 'EGRESO981' OR $P{pTipoReporte} = 'EGRESO216')
+and d.CODIGO_SICOIN  = $P{pIdUnidad}  and TOTAL_BONO <> 0
+)T
+GROUP BY T.ID_TIPO_NOMINA, T.TIPO_NOMINA, RENGLON
+UNION ALL
+select ID_TIPO_NOMINA,  TIPO_NOMINA, 'COMPLEMENTO' TIPO, RENGLON, SUM(COMPL_SALARIAL) VALOR
+from (
+select d.CODIGO_SICOIN id_unidad, u.NOMBRE_UNIDAD_EJECUTORA unidad_ejecutora, tn.nombre tipo_nomina
+, nm.*
+, TO_CHAR(SRrenglon,'FM00') RENGLON
+from (
+select N.ID_NOMINA, n.id_tipo_nomina, n.anio, n.id_partida, n.id_partida_egreso, n.id_proceso
+,  pe.d1||pe.d2||'.'||pe.d3d4||'.'||pe.d5||'.'||pe.d6||'.'||pe.d7||'.'||pe.d8||'.'||pe.d9d10 formato_siif, n.renglon SRRENGLON
+, n.id_puesto, n.numero_plaza, n.correlativo, n.sueldo_base, n.escalafon, n.compl_salarial, n.total_Bono, n.total_descuento, n.liquido, n.isregesp
+from 
+(select id_nomina, nn.id_proceso, id_tipo_nomina, anio, nn.id_partida, nn.id_partida_egreso , ppe.d9d10 renglon
+, id_puesto, numero_plaza, correlativo, sueldo_base, escalafon, compl_salarial, total_bono, total_descuento, liquido, nominal
+, DECODE((select 1 from SIS_PARTIDAS_EXCLUD_NOMINA where id_partida = nn.id_partida), NULL, 0, 1) isRegEsp
+from sis_nomina nn
+inner join partida pp on pp.id_partida = nn.id_partida
+inner join partida ppe on ppe.id_partida = nn.id_partida_egreso  
+and ( ($P{pTipoReporte}='EGRESO981' and NOT(ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) and (ppe.d8 = 9 and ppe.d9d10 = 81) )
+   OR ($P{pTipoReporte}='EGRESO216' and (ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) and  NOT(ppe.d8 = 9 and ppe.d9d10 = 81) )
+    )
+) n 
+inner join partida p on p.id_partida = n.id_partida
+inner join partida pe on pe.id_partida = n.id_partida_egreso
+inner join sis_proceso proc on proc.id_proceso = n.id_proceso
+where proc.id_proceso = $P{pIdProceso} and 
+  n.isRegEsp = $P{pIsRegEsp}
+and exists( -- PERMISOS DE USUARIO
+            select 1 from usuario_unidad b, partida c where b.id_partida=c.id_partida
+            and usuario=$P{pUsuario} and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+            and p.aniomanual=c.aniomanual and p.d1=c.d1 and p.d2=c.d2 and p.d3d4=c.d3d4
+            and ( (p.d7=c.d7 and p.d6=c.d6 and p.d5=c.d5 ) or ( c.d5 is null and c.d6 is null and c.d7 is null ) )
+          )-- FIN PERMISOS DE USUARIO
+)NM   
+inner join sis_tipo_nomina tn on tn.id_tipo_nomina = nm.id_tipo_nomina
+inner join sis_partida po on po.id_partida = nm.id_partida
+inner join sis_dependencia d on d.id_dependencia = po.id_dependencia
+LEFT join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = d.codigo_sicoin 
+WHERE ($P{pTipoReporte} = 'EGRESO981' OR $P{pTipoReporte} = 'EGRESO216')
+and d.CODIGO_SICOIN  = $P{pIdUnidad}  and COMPL_SALARIAL <> 0
+)T
+GROUP BY T.ID_TIPO_NOMINA, T.TIPO_NOMINA, RENGLON
+) 
+where $P{pTipoReporte} = 'EGRESO981' OR $P{pTipoReporte} = 'EGRESO216']]></queryString>
+
+	<field name="ID_TIPO_NOMINA" class="java.math.BigDecimal"/>
+	<field name="TIPO_NOMINA" class="java.lang.String"/>
+	<field name="TIPO" class="java.lang.String"/>
+	<field name="RENGLON" class="java.lang.String"/>
+	<field name="VALOR" class="java.math.BigDecimal"/>
+
+	<sortField name="ID_TIPO_NOMINA" />
+	<sortField name="TIPO" />
+	<sortField name="RENGLON" />
+
+
+		<group  name="porNomina" >
+			<groupExpression><![CDATA[$F{ID_TIPO_NOMINA}]]></groupExpression>
+			<groupHeader>
+			<band height="34"  isSplitAllowed="true" >
+				<rectangle>
+					<reportElement
+						x="1"
+						y="7"
+						width="564"
+						height="25"
+						backcolor="#ECECEC"
+						key="rectangle-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="296"
+						y="20"
+						width="131"
+						height="12"
+						key="staticText-2"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font pdfFontName="Helvetica" size="8" isBold="false" isUnderline="false"/>
+					</textElement>
+				<text><![CDATA[TIPO PAGO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="440"
+						y="20"
+						width="43"
+						height="12"
+						key="staticText-3"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font pdfFontName="Helvetica" size="8" isBold="false" isUnderline="false"/>
+					</textElement>
+				<text><![CDATA[RENGLON]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="483"
+						y="20"
+						width="78"
+						height="11"
+						key="staticText-4"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font pdfFontName="Helvetica" size="8" isBold="false" isUnderline="false"/>
+					</textElement>
+				<text><![CDATA[TOTAL]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="7"
+						width="565"
+						height="13"
+						backcolor="#CCCCCC"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{TIPO_NOMINA}]]></textFieldExpression>
+				</textField>
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="6"
+						width="565"
+						height="0"
+						key="line-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="0"  isSplitAllowed="false" >
+			</band>
+			</groupFooter>
+		</group>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="20"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="0"
+						y="1"
+						width="565"
+						height="17"
+						key="staticText-1"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="11" isBold="true" isUnderline="false"/>
+					</textElement>
+				<text><![CDATA[RESUMEN POR RENGLONES]]></text>
+				</staticText>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="11"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="296"
+						y="0"
+						width="131"
+						height="11"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{TIPO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="440"
+						y="0"
+						width="43"
+						height="11"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{RENGLON}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="483"
+						y="0"
+						width="78"
+						height="11"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{VALOR}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

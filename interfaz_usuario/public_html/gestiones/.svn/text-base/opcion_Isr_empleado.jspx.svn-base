@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html"
+          xmlns:af="http://xmlns.oracle.com/adf/faces">
+  <jsp:directive.page contentType="text/html;charset=windows-1252"
+                      autoFlush="true" language="java"/>
+  <f:view>
+    <afh:html>
+      <afh:head title="Opcion Isr Empleado">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+      </afh:head>
+      <afh:body>
+        <af:messages/>
+        <af:objectSeparator/>
+        <h:form>
+          <af:page title="#{flujo_usuario.datosEmpleadoSel}" value="#{modeloMenu.modeloBD}" var="node">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+             <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelBox width="700">
+              <af:panelForm partialTriggers="tbl_detalle">
+                <af:selectInputDate value="#{bindings.FechaBaja.inputValue}"
+                                    label="#{bindings.FechaBaja.label}"
+                                    required="#{bindings.FechaBaja.mandatory}"
+                                    disabled="#{bindings.FechaCreacion.inputValue==null}">
+                  <af:validator binding="#{bindings.FechaBaja.validator}"/>
+                  <f:convertDateTime pattern="#{bindings.FechaBaja.format}"/>
+                </af:selectInputDate>
+                <af:inputText value="#{bindings.Observacion.inputValue}"
+                              label="#{bindings.Observacion.label}"
+                              required="#{bindings.Observacion.mandatory}"
+                              columns="70"
+                              rows="2">
+                  <af:validator binding="#{bindings.Observacion.validator}"/>
+                </af:inputText>
+                <f:facet name="footer">
+                  <h:panelGroup>
+                    <af:panelButtonBar>
+                      <af:commandButton text="Agregar"
+                                        action="#{opcion_isr_empl.btn_agregar}"/>
+                                        
+                      <af:commandButton text="Guardar"                                        
+                                        action="#{opcion_isr_empl.btn_commit}"/>
+                      <af:commandButton actionListener="#{bindings.Rollback.execute}"
+                                        text="Cancelar"                                        
+                                        immediate="true">
+                        <af:resetActionListener/>
+                      </af:commandButton>
+                    </af:panelButtonBar>
+                  </h:panelGroup>
+                </f:facet>
+                <af:objectSpacer width="10" height="15"/>
+              </af:panelForm>
+              <af:panelHorizontal valign="top">
+                <af:outputFormatted value="Nota:"
+                                    inlineStyle="color:rgb(255,33,33); font-weight:bold; font-size:medium;"/>
+                <af:objectSpacer width="10" height="10"/>
+                <af:panelList>
+                  <af:outputFormatted value="Si existe una fila sin fecha de baja, entonces no se aplicará el descuento de ISR en Nómina"
+                                      inlineStyle="color:rgb(0,107,165); font-size:medium;"/>
+                  <af:outputFormatted value="Para que se aplique nuevamente el ISR todas las filas deben tener fecha de baja."
+                                      inlineStyle="color:rgb(0,107,165); font-size:medium;"/>
+                </af:panelList>
+              </af:panelHorizontal>
+              <af:objectSeparator/>
+              <af:table value="#{bindings.SisAjusteExcludEmpleadoVw.collectionModel}"
+                        var="row"
+                        rows="#{bindings.SisAjusteExcludEmpleadoVw.rangeSize}"
+                        first="#{bindings.SisAjusteExcludEmpleadoVw.rangeStart}"
+                        emptyText="Ninguna fila"
+                        selectionState="#{bindings.SisAjusteExcludEmpleadoVw.collectionModel.selectedRow}"
+                        selectionListener="#{bindings.SisAjusteExcludEmpleadoVw.collectionModel.makeCurrent}"
+                        banding="row" bandingInterval="1" id="tbl_detalle">
+                <f:facet name="selection">
+                  <af:tableSelectOne text="Select and" autoSubmit="true"/>
+                </f:facet>
+                <af:column sortProperty="Nombreajuste" sortable="false"
+                           headerText="Descuento">
+                  <af:outputText value="#{row.CodNomina} - #{row.Nombreajuste}"/>
+                </af:column>
+                <af:column sortProperty="Observacion" sortable="false"
+                           headerText="#{bindings.SisAjusteExcludEmpleadoVw.labels.Observacion}">
+                  <af:outputText value="#{row.Observacion}"/>
+                </af:column>
+                <af:column sortProperty="FechaBaja" sortable="false"
+                           headerText="#{bindings.SisAjusteExcludEmpleadoVw.labels.FechaBaja}">
+                  <af:outputText value="#{row.FechaBaja}">
+                    <f:convertDateTime pattern="#{bindings.SisAjusteExcludEmpleadoVw.formats.FechaBaja}"/>
+                  </af:outputText>
+                </af:column>
+                <af:column sortProperty="CreadoPor" sortable="false"
+                           headerText="#{bindings.SisAjusteExcludEmpleadoVw.labels.CreadoPor}">
+                  <af:outputText value="#{row.CreadoPor}"/>
+                </af:column>
+                <af:column sortProperty="FechaCreacion" sortable="false"
+                           headerText="#{bindings.SisAjusteExcludEmpleadoVw.labels.FechaCreacion}">
+                  <af:outputText value="#{row.FechaCreacion}">
+                    <f:convertDateTime pattern="#{bindings.SisAjusteExcludEmpleadoVw.formats.FechaCreacion}"/>
+                  </af:outputText>
+                </af:column>
+              </af:table>
+              <af:objectSpacer width="10" height="10"/>
+            </af:panelBox>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:opcion_isr_empl-->
+</jsp:root>

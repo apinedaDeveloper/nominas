@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="concentracion_salarios_subreport1"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="535"
+		 pageHeight="802"
+		 columnWidth="535"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="p_fecha1" isForPrompting="true" class="java.util.Date"/>
+	<parameter name="p_fecha2" isForPrompting="true" class="java.util.Date"/>
+	<parameter name="dep" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="registro" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="plaza" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[SELECT    nom.CORRELATIVO||'/'||
+  nvl(  
+  (
+  select codigo
+  from sis_tiponomina_periodo tnp
+  where tnp.id_tipo_nomina=nom.id_tipo_nomina
+  and tnp.id_periodo=nom.periodo 
+  ),' ')as periodo,
+  nom.id_tipo_nomina as id_tipo_nomina,
+  nom.numero_plaza as numero_plaza,
+  nom.registro_empleado,
+  emp.NOMBRE1||' '||emp.NOMBRE2||' '||emp.APELLIDO1||' '||emp.APELLIDO2 as nombre_empleado,
+  td.NOMBREABR,  
+  db.NUM_DOC_FISICO as documento,
+  db.FECHA_EMISION,
+  nom.nominal,
+  part.FORMATO1 as formato1,
+  dep.id_dependencia,
+  dep.nombre nom_dep
+FROM sis_nomina nom,
+  siif.sis_partida_vw PART,
+  siif.sis_dependencia dep,
+  siif.SIS_EMPLEADO emp,
+  siif.SIS_TIPO_NOMINA tn,
+  siif.SIS_PROCESO proc,
+  siif.SIS_PAGO pago,
+  siif.SIS_DOCUMENTO_BANCO db,
+  siif.SIS_TIPO_DOCUMENTO td
+WHERE db.FECHA_EMISION between $P{p_fecha1} and $P{p_fecha2}
+and dep.id_dependencia = $P{dep}
+and nom.registro_empleado = $P{registro}
+and nom.numero_plaza =$P{plaza}
+ and nom.CORRELATIVO = extract (year from sysdate)-1
+ AND PART.id_partida = nom.id_partida
+ AND dep.id_dependencia = PART.id_dependencia
+ and emp.REGISTRO_EMPLEADO = nom.REGISTRO_EMPLEADO
+ and tn.ID_TIPO_NOMINA = nom.ID_TIPO_NOMINA
+ AND tn.NOMBRE NOT IN('BONO 14','AGUINALDO','DEVOLUCION ISR','TIEMPO EXTRAORDINARIO','COMPLEMENTO IGSS','PRESTACIONES POR RETIRO')
+ and  nom.id_proceso=proc.id_proceso
+ and proc.id_estado in (44,53)
+ and pago.ID_NOMINA = nom.ID_NOMINA
+ and db.ID_DOCUMENTO_BANCO = pago.ID_DOCUMENTO_BANCO
+ and td.ID_TIPO_DOCUMENTO = db.ID_TIPO_DOCUMENTO
+ and db.id_estado  in (18,160)
+ ORDER BY FORMATO1 ,numero_plaza,registro_empleado,id_tipo_nomina,PERIODO]]></queryString>
+
+	<field name="PERIODO" class="java.lang.String"/>
+	<field name="ID_TIPO_NOMINA" class="java.math.BigDecimal"/>
+	<field name="NUMERO_PLAZA" class="java.math.BigDecimal"/>
+	<field name="REGISTRO_EMPLEADO" class="java.math.BigDecimal"/>
+	<field name="NOMBRE_EMPLEADO" class="java.lang.String"/>
+	<field name="NOMBREABR" class="java.lang.String"/>
+	<field name="DOCUMENTO" class="java.math.BigDecimal"/>
+	<field name="FECHA_EMISION" class="java.sql.Timestamp"/>
+	<field name="NOMINAL" class="java.math.BigDecimal"/>
+	<field name="FORMATO1" class="java.lang.String"/>
+	<field name="ID_DEPENDENCIA" class="java.math.BigDecimal"/>
+	<field name="NOM_DEP" class="java.lang.String"/>
+
+	<variable name="vSumaDiferidos" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[(!($F{ID_TIPO_NOMINA}.compareTo(new BigDecimal("1"))==0))?$F{NOMINAL}:new BigDecimal(0)]]></variableExpression>
+	</variable>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="18"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="1"
+						width="77"
+						height="17"
+						forecolor="#000000"
+						backcolor="#FFFFFF"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Courier" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PERIODO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="164"
+						y="1"
+						width="22"
+						height="17"
+						forecolor="#000000"
+						backcolor="#FFFFFF"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBREABR}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="190"
+						y="1"
+						width="84"
+						height="17"
+						forecolor="#000000"
+						backcolor="#FFFFFF"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Courier" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DOCUMENTO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="277"
+						y="1"
+						width="68"
+						height="17"
+						forecolor="#000000"
+						backcolor="#FFFFFF"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.sql.Timestamp"><![CDATA[$F{FECHA_EMISION}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="80"
+						y="1"
+						width="76"
+						height="17"
+						forecolor="#000000"
+						backcolor="#FFFFFF"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{NOMINAL}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

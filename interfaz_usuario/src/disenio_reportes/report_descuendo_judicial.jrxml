@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="report_descuendo_judicial"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="612"
+		 pageHeight="792"
+		 columnWidth="552"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="varSolicitud" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[select distinct(calculoAjuste.ID_AJUSTE),ordenJudicial.JUZGADO,ordenJudicial.NO_JUICIO,ordenJudicial.FECHA_DOC,empleado.NOMBRECOMPLETO,empleado.APELLIDO1,empleado.REGISTRO_EMPLEADO,nomina.PERIODO, nomina.ANIO, calculoAjuste.VALOR_APLICADO
+from sis_nomina nomina, sis_det_calculo_ajuste calculoAjuste, sis_ajuste ajuste, sis_tipo_ajuste tipoAjuste,
+sis_orden_judicial ordenJudicial, sis_solicitud solicitud, sis_empleado_vw empleado, sis_ajuste_empleado ajusem
+where calculoAjuste.ID_AJUSTE = ajuste.ID_AJUSTE and
+ajuste.ID_TIPOAJUSTE = tipoAjuste.ID_TIPOAJUSTE and
+tipoAjuste.NOMBRE like 'DESCUENTOS JUDICIALES' and
+calculoAjuste.ID_NOMINA = nomina.ID_NOMINA AND
+nomina.REGISTRO_EMPLEADO = solicitud.REGISTRO_EMPLEADO and
+solicitud.REGISTRO_EMPLEADO=empleado.REGISTRO_EMPLEADO and
+solicitud.ID_SOLICITUD = ordenJudicial.ID_SOLICITUD and
+ajusem.ID_AJUSTE = calculoajuste.ID_AJUSTE
+and ajusem.ID_SOLICITUD = solicitud.ID_SOLICITUD and
+ajusem.ID_CORRELATIVO = calculoajuste.CORRELATIVO and
+ajusem.REGISTRO_EMPLEADO = empleado.REGISTRO_EMPLEADO
+and ajusem.ESTADO = 'A' and
+solicitud.ID_SOLICITUD = $P{varSolicitud}
+order by anio, periodo]]></queryString>
+
+	<field name="ID_AJUSTE" class="java.math.BigDecimal"/>
+	<field name="JUZGADO" class="java.lang.String"/>
+	<field name="NO_JUICIO" class="java.lang.String"/>
+	<field name="FECHA_DOC" class="java.sql.Timestamp"/>
+	<field name="NOMBRECOMPLETO" class="java.lang.String"/>
+	<field name="APELLIDO1" class="java.lang.String"/>
+	<field name="REGISTRO_EMPLEADO" class="java.math.BigDecimal"/>
+	<field name="PERIODO" class="java.math.BigDecimal"/>
+	<field name="ANIO" class="java.math.BigDecimal"/>
+	<field name="VALOR_APLICADO" class="java.math.BigDecimal"/>
+
+	<variable name="total_descuento" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{VALOR_APLICADO}.abs()]]></variableExpression>
+	</variable>
+	<variable name="formato_fecha" class="java.lang.Object" resetType="Report" calculation="Nothing">
+		<variableExpression><![CDATA[$P{REPORT_FORMAT_FACTORY}.createDateFormat( "dd/MM/yyyy", $P{REPORT_LOCALE},$P{REPORT_TIME_ZONE} )]]></variableExpression>
+	</variable>
+	<variable name="fecha_doc" class="java.lang.String" resetType="None" calculation="Nothing">
+		<variableExpression><![CDATA[((java.text.DateFormat)$V{formato_fecha}).format($F{FECHA_DOC})]]></variableExpression>
+	</variable>
+	<variable name="total_anio" class="java.math.BigDecimal" resetType="Group" resetGroup="anio" calculation="Sum">
+		<variableExpression><![CDATA[$F{VALOR_APLICADO}.abs()]]></variableExpression>
+	</variable>
+
+		<group  name="anio" >
+			<groupExpression><![CDATA[$F{ANIO}]]></groupExpression>
+			<groupHeader>
+			<band height="1"  isSplitAllowed="true" >
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="16"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="###0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="333"
+						y="2"
+						width="34"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ANIO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="377"
+						y="2"
+						width="86"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{total_anio}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="283"
+						y="2"
+						width="60"
+						height="12"
+						key="staticText-12"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<text><![CDATA[TOTAL AÑO]]></text>
+				</staticText>
+			</band>
+			</groupFooter>
+		</group>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="79"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="140"
+						y="0"
+						width="267"
+						height="33"
+						key="staticText-10"/>
+					<box></box>
+					<textElement>
+						<font size="18"/>
+					</textElement>
+				<text><![CDATA[DESCUENTOS JUDICIALES]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="10"
+						y="30"
+						width="538"
+						height="49"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Justified" markup="html">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Descuentos efectuados sobre el sueldo del señor  "+ $F{NOMBRECOMPLETO} + ", con registro de personal "+ $F{REGISTRO_EMPLEADO} +", en atencion al Juicio Ejecutivo No." + $F{NO_JUICIO} +" del juzgado "+ $F{JUZGADO} +" , dichos descuentos se hace en atención a la orden judicial de fecha " + $V{fecha_doc}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="460"
+						y="0"
+						width="30"
+						height="12"
+						key="staticText-13"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Página]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="489"
+						y="0"
+						width="16"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="505"
+						y="0"
+						width="20"
+						height="12"
+						key="staticText-14"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[de]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="524"
+						y="0"
+						width="16"
+						height="12"
+						key="textField-3"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="16"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="141"
+						y="1"
+						width="26"
+						height="15"
+						key="staticText-7"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<text><![CDATA[MES]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="230"
+						y="1"
+						width="28"
+						height="15"
+						key="staticText-8"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<text><![CDATA[AÑO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="344"
+						y="1"
+						width="39"
+						height="15"
+						key="staticText-9"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<text><![CDATA[MONTO]]></text>
+				</staticText>
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="13"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="###0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="129"
+						y="0"
+						width="29"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{PERIODO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="305"
+						y="0"
+						width="81"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{VALOR_APLICADO}.abs()]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="215"
+						y="0"
+						width="34"
+						height="12"
+						key="textField-2"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ANIO}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="17"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="369"
+						y="3"
+						width="95"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{total_descuento}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="261"
+						y="3"
+						width="105"
+						height="12"
+						key="staticText-11"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="9"/>
+					</textElement>
+				<text><![CDATA[TOTAL DESCONTADO]]></text>
+				</staticText>
+			</band>
+		</summary>
+</jasperReport>

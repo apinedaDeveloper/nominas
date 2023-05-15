@@ -1,0 +1,938 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html"
+          xmlns:af="http://xmlns.oracle.com/adf/faces">
+  <jsp:directive.page contentType="text/html;charset=windows-1252"
+                      autoFlush="true" language="java"/>
+  <f:view>
+    <afh:html>
+      <afh:head title="Complementos">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+      </afh:head>
+      <jsp:include page="/js/libJQ.js"/>       
+      <jsp:include page="/js/librariesDialog.js"/>           
+      <script type="text/javascript" src="/${flujo_usuario.dominioApp}/js/gestiones/scrptAutorizacion.js">
+      var xy=new Date().getMilliseconds();      
+      </script>
+      <script language="javascript" type="text/javascript"> 
+       gbl_form="form1";
+       gbl_actionId="form1:page1:cmdRefresh";
+    
+         function verRepo(IdC){
+         
+           window.open("../verreportepdf?id="+IdC+String.fromCharCode(38)+"rep=CMPLSAL","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+           return false;    
+   
+         }
+         
+         function verRepoCompIgss(IdC){
+         
+           window.open("../verreportepdf?id="+IdC+String.fromCharCode(38)+"rep=SIS-15","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+           return false;    
+   
+         }
+      
+      </script>      
+      <afh:body>
+        <af:messages/>
+        <h:form id="form1">
+          <af:page title="Complementos IGSS" value="#{modeloMenu.modeloBD}" var="node" id="page1">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+             <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:verbatim>
+                <input type="hidden" name="hdn_tipo" id="hdn_tipo" value="12"/>
+                <input type="hidden" name="hdn_Id" id="hdn_Id"
+                       value="${bindings.pIdVar1.inputValue}"/>
+              </f:verbatim>
+            <af:showDetail undisclosedText="Mostrar consejos"
+                           disclosedText="Ocultar consejos">
+              <af:panelHeader text="Tips:">
+                <af:panelList>
+                  <af:outputFormatted value="Recuerde que debe grabar los datos de la suspensión IGSS"
+                                      inlineStyle="color:rgb(0,99,148); font-size:smaller;"/>
+                  <af:outputFormatted value='Para crear un complemento IGSS haga clic sobre la pestaña "Nuevo complemento IGSS"'
+                                      inlineStyle="color:rgb(0,99,148); font-size:smaller;"/>
+                  <af:outputFormatted value='Para editar un complemento que no se ha trasladado haga clic en la pestaña "Histórico" y luego haba clic sobre el número de complemento ubicado en la columna "IdComplemento"'
+                                      inlineStyle="color:rgb(0,99,148); font-size:smaller;"/>
+                  <af:outputFormatted value="Recuerde que debe trasladar el complemento para que el analista de sueldos lo pueda autorizar. Para trasladar el complemento debe ingresar al modo de edición siguiendo los pasos del item anterior."
+                                      inlineStyle="color:rgb(0,99,148); font-size:smaller;"/>
+                </af:panelList>
+              </af:panelHeader>
+            </af:showDetail>
+            <af:objectSpacer width="10" height="10"/>
+            <af:showOneTab>
+              <af:showDetailItem text="Histórico"
+                                 binding="#{complementos_igss_teso.tabHistorico}">
+                <af:panelForm>
+                  <af:selectInputDate value="#{bindings.fechaI.inputValue}"
+                                      label="Fecha inicio"
+                                      required="#{bindings.fechaI.mandatory}">
+                    <af:validator binding="#{bindings.fechaI.validator}"/>
+                    <f:convertDateTime pattern="#{bindings.fechaI.format}"/>
+                  </af:selectInputDate>
+                  <af:selectInputDate value="#{bindings.fechaF.inputValue}"
+                                      label="Fecha fin"
+                                      required="#{bindings.fechaF.mandatory}">
+                    <af:validator binding="#{bindings.fechaF.validator}"/>
+                    <f:convertDateTime pattern="#{bindings.fechaF.format}"/>
+                  </af:selectInputDate>
+                  <f:facet name="footer">
+                    <af:commandButton actionListener="#{bindings.ExecuteSisComplemento.execute}"
+                                      text="Buscar"
+                                      disabled="#{!bindings.ExecuteSisComplemento.enabled}"/>
+                  </f:facet>
+                  <af:objectSpacer width="10" height="10"/>
+                </af:panelForm>
+                <af:panelHeader text="..."/>
+                <af:commandLink actionListener="#{bindings.ExecuteSisComplemento.execute}"
+                                action="ExecuteSisComplemento"
+                                text="Actualizar listado"
+                                disabled="#{!bindings.ExecuteSisComplemento.enabled}"/>
+                <af:table value="#{bindings.SisComplementoVw.collectionModel}"
+                          var="row"
+                          rows="#{bindings.SisComplementoVw.rangeSize}"
+                          first="#{bindings.SisComplementoVw.rangeStart}"
+                          emptyText="#{bindings.SisComplementoVw.viewable ? 'No rows yet.' : 'Access Denied.'}"
+                          selectionState="#{bindings.SisComplementoVw.collectionModel.selectedRow}"
+                          selectionListener="#{bindings.SisComplementoVw.collectionModel.makeCurrent}"
+                          banding="row" bandingInterval="1">
+                  <af:column sortProperty="IdComplemento" sortable="false"
+                             headerText="#{bindings.SisComplementoVw.labels.IdComplemento}">
+                    <af:outputText value="#{row.IdComplemento}"
+                                   rendered="false">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.SisComplementoVw.formats.IdComplemento}"/>
+                    </af:outputText>
+                    <af:commandLink action="#{complementos_igss_teso.commandLink_action}"
+                                    text="#{row.IdComplemento}"
+                                    disabled="#{!bindings.setCurrentRowWithKey.enabled}"/>
+                  </af:column>
+                  <af:column sortable="false"
+                             headerText="#{bindings.SisComplementoVw.labels.Nomestado}">
+                    <af:outputText value="#{row.Nomestado}"/>
+                  </af:column>
+                  <af:column sortProperty="IdEstado" sortable="false"
+                             headerText="#{bindings.SisComplementoVw.labels.IdEstado}"
+                             rendered="false">
+                    <af:outputText value="#{row.IdEstado}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.SisComplementoVw.formats.IdEstado}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="IdTipo" sortable="false"
+                             headerText="#{bindings.SisComplementoVw.labels.IdTipo}"
+                             rendered="false">
+                    <af:outputText value="#{row.IdTipo}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.SisComplementoVw.formats.IdTipo}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="IdSubprograma" sortable="false"
+                             headerText="#{bindings.SisComplementoVw.labels.IdSubprograma}">
+                    <af:outputText value="#{row.IdSubprograma}"
+                                   rendered="false">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.SisComplementoVw.formats.IdSubprograma}"/>
+                    </af:outputText>
+                    <af:outputFormatted value="#{row.Formato2} - #{row.Nomunidad}"/>
+                  </af:column>
+                  <af:column sortProperty="Periodo" sortable="false"
+                             headerText="Mes operado">
+                    <af:outputText value="#{row.Periodo}" rendered="false">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.SisComplementoVw.formats.Periodo}"/>
+                    </af:outputText>
+                    <af:panelHorizontal>
+                      <af:objectSpacer width="10" height="10"/>
+                      <af:outputFormatted value='#{row.Nomperiodo}#{" - "}#{row.Anio}'/>
+                    </af:panelHorizontal>
+                  </af:column>
+                  <af:column sortProperty="Anio" sortable="false"
+                             headerText="Año" rendered="false">
+                    <af:outputText value="#{row.Anio}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.SisComplementoVw.formats.Anio}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="FechaPresentacion" sortable="false"
+                             headerText="#{bindings.SisComplementoVw.labels.FechaPresentacion}">
+                    <af:outputText value="#{row.FechaPresentacion}">
+                      <f:convertDateTime pattern="#{bindings.SisComplementoVw.formats.FechaPresentacion}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="CreadoPor" sortable="false"
+                             headerText="#{bindings.SisComplementoVw.labels.CreadoPor}">
+                    <af:outputText value="#{row.CreadoPor}"/>
+                  </af:column>
+                  <af:column sortProperty="FechaCreacion" sortable="false"
+                             headerText="#{bindings.SisComplementoVw.labels.FechaCreacion}">
+                    <af:outputText value="#{row.FechaCreacion}">
+                      <f:convertDateTime pattern="#{bindings.SisComplementoVw.formats.FechaCreacion}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="ModPor" sortable="false"
+                             headerText="#{bindings.SisComplementoVw.labels.ModPor}">
+                    <af:outputText value="#{row.ModPor}"/>
+                  </af:column>
+                  <af:column sortProperty="FechaMod" sortable="false"
+                             headerText="#{bindings.SisComplementoVw.labels.FechaMod}">
+                    <af:outputText value="#{row.FechaMod}">
+                      <f:convertDateTime pattern="#{bindings.SisComplementoVw.formats.FechaMod}"/>
+                    </af:outputText>
+                  </af:column>
+                </af:table>
+                <af:objectSpacer width="10" height="10"/>
+                <af:objectSpacer width="10" height="10"/>
+              </af:showDetailItem>
+              <af:showDetailItem text="Editar complemento IGSS"
+                                 binding="#{complementos_igss_teso.tabEditarComplemento}"
+                                 disclosed="false">
+                <af:panelHeader text="Id [ #{bindings.IdComplemento.inputValue} ]"/>
+                <af:panelHorizontal halign="left">
+                  <af:panelBox>
+                    <af:panelGroup>
+                      <af:objectSpacer width="10" height="10"/>
+                      <af:panelButtonBar>
+                        <af:selectOneChoice label="Label 2"
+                                            value="#{bindings['Periodo'].inputValue}"
+                                            disabled="#{!bindings.IsFormaActiva.inputValue}"
+                                            simple="true">
+                          <f:selectItems value="#{bindings['Periodo'].items}"/>
+                        </af:selectOneChoice>
+                        <af:selectOneChoice label="#{tx['cambioAnio.cmb_anios.title']}"
+                                        simple="true" rendered="true"
+                                        disabled="#{!bindings.IsFormaActiva.inputValue}"
+                                        value="#{bindings.vAnio1.inputValue}">
+                            <f:selectItems value="#{backing_bean_comun.listaComboAniosTrabajo}"/>
+                        </af:selectOneChoice>
+                        <af:commandButton actionListener="#{bindings.agregarComplementoIGSS.execute}"
+                                          text="agregarComplementoIGSS"
+                                          disabled="#{!bindings.agregarComplementoIGSS.enabled}"
+                                          rendered="false"/>
+                        <af:commandButton text="Agregar complemento"
+                                          disabled="#{!bindings.IsFormaActiva.inputValue}"
+                                          action="#{complementos_igss_teso.agregarComplemento}"/>
+                        <af:commandButton actionListener="#{bindings.crearComplementoIGSS.execute}"
+                                          text="CrearComplementoIGSS"
+                                          disabled="#{!bindings.crearComplementoIGSS.enabled}"
+                                          rendered="false"/>
+                        <af:commandButton actionListener="#{bindings.Commit.execute}"
+                                          text="Commit" rendered="false"/>
+                        <af:commandButton actionListener="#{bindings.Rollback.execute}"
+                                          text="Rollback" immediate="true"
+                                          rendered="false">
+                          <af:resetActionListener/>
+                        </af:commandButton>
+                        <af:commandButton actionListener="#{bindings.reprocesarComplementoIGSS.execute}"
+                                          text="reprocesarComplementoIGSS"
+                                          disabled="#{!bindings.reprocesarComplementoIGSS.enabled}"
+                                          rendered="false"/>
+                        <af:commandButton text="Reprocesar complemento"
+                                          action="#{complementos_igss_teso.reprocesar_complemento}"
+                                          disabled="#{!bindings.IsFormaActiva.inputValue}"
+                                          onclick="return confirm('Está seguro de reprocesar el complemento ?');"/>
+                        <af:commandButton text="Guardar"
+                                          action="#{complementos_igss_teso.guardar}"
+                                          disabled="#{!bindings.IsFormaActiva.inputValue}"/>
+                        <af:commandButton text="Cancelar"
+                                          action="#{complementos_igss_teso.deshacer}"
+                                          disabled="#{!bindings.IsFormaActiva.inputValue}"/>
+                        <af:commandLink
+                                      id="cmdRefresh"
+                                      actionListener="#{bindings.actualizarVW.execute}"
+                                      disabled="true"
+                                      action="#{complementos_igss_teso.cmdRefresh_action}"/>
+                        <af:commandLink onclick="verRepoCompIgss('#{bindings.IdComplemento.inputValue}');">
+                          <af:objectImage source="/imagenes/printer_1.png"
+                                          shortDesc="Ver SIS - 15"/>
+                        </af:commandLink>
+                        <af:commandLink onclick="verRepo('#{bindings.IdComplemento.inputValue}');">
+                          <af:objectImage source="/imagenes/printer_1.png"
+                                          shortDesc="Ver Nomina de complemento"
+                                          rendered="false"/>
+                        </af:commandLink>
+                        <af:commandLink onclick="return OpenDialogo(1);"
+                                        returnListener="#{complementos_igss_teso.returnAnulacionComple}">
+                          <af:objectImage source="/imagenes/btn_trasladar.png"/>
+                        </af:commandLink>
+                        <af:commandLink onclick="return OpenDialogo(2);"
+                                        returnListener="#{complementos_igss_teso.returnAnulacionComple}">
+                          <af:objectImage source="/imagenes/btn_anular.png"/>
+                        </af:commandLink>
+                        <af:commandLink
+                                      action="dialog:det_autoriza"
+                                      launchListener="#{complementos_igss_teso.launch_detalle_auto}"
+                                      useWindow="true" windowHeight="300"
+                                      windowWidth="600">
+                            <af:objectImage source="/imagenes/list_information.png"/>
+                        </af:commandLink>
+                      </af:panelButtonBar>
+                    </af:panelGroup>
+                  </af:panelBox>
+                </af:panelHorizontal>
+                <af:panelHorizontal valign="top">
+                  <af:outputFormatted value="Nota:"
+                                      inlineStyle="color:rgb(255,33,33); font-weight:bold; font-size:small;"/>
+                  <af:objectSpacer width="10" height="10"/>
+                  <af:panelList>
+                    <af:outputFormatted value="Si tiene algún comentario respecto del funcionamiento de esta página, por favor escribanos al correo: siif@usac.edu.gt"
+                                        inlineStyle="color:rgb(0,107,165); font-size:smaller;"/>
+                    <af:outputFormatted value="Recuerde que debe grabar cualquier cambio que realice"
+                                        inlineStyle="color:rgb(0,107,165); font-size:small;"/>
+                  </af:panelList>
+                </af:panelHorizontal>
+                 <af:showDetail undisclosedText="Mostrar instrucciones"
+                           disclosedText="Ocultar instrucciones"
+                                disclosed="false">
+                    <af:panelBox background="transparent" width="700px">
+                    <af:panelList>
+                      <af:outputFormatted value='Para modificar los valores que el sistema a calculado debe hacer clic sobre la imagen ubicada en la columna "Editar"'
+                                          inlineStyle="color:rgb(0,99,148); font-size:smaller;"/>
+                      <af:outputFormatted value='Para finalizar la modificación de valores debe hacer clic sobre el botón "Guardar" ubicado mas arriba o bien hacer clic sobre la imagen que se muestra en la columna "Editar"'
+                                          inlineStyle="color:rgb(0,99,148); font-size:smaller;"/>
+                      <af:outputFormatted value='Al colocar el valor "NO" en la columna "Recalcular valores" usted le esta indicando al sistema que no debe modificar los valores de esta fila, por lo que al relizar un reproceso del complemento no se modificará ninguno de los valores de las filas con el valor "NO".'
+                                        inlineStyle="color:rgb(0,107,165); font-size:smaller;"/>
+                      <af:outputFormatted value='Para recalcular los montos a pagar debe modificar el rango de días a pagar (día de inicio y día fin), colocar el valor "SI" en la columna "Recalcular valores" y guardar los cambios, luego hacer clic sobre el botón "Reprocesar complemento" ubicado mas arriba, esto hara que el sistema recalcule los valores en base al nuevo rango de dias.'
+                                          inlineStyle="color:rgb(0,99,148); font-size:smaller;"/>
+                      <af:outputFormatted value='Para eliminar un contrato de este complemento haga clic sobre la imagen ubicada en la columna "Borrar".'
+                                          inlineStyle="color:rgb(0,99,148); font-size:smaller;"/>                                          
+                      <af:outputFormatted value='Para ver el formulario "SIS-15" haga clic sobre la imagen de la impresora ubicada mas arriba.'
+                                          inlineStyle="color:rgb(0,99,148); font-size:smaller;"/>                                                                                    
+                      <af:outputFormatted value='Para trasladar el complemento hacia el analista haga clic sobre la imagen con el chequesito en color verde ubicada mas arriba.'
+                                          inlineStyle="color:rgb(0,99,148); font-size:smaller;"/>                                                                                         
+                      <af:outputFormatted value='Para anular el complemento haga clic sobre la imagen de no permitido en color rojo ubicada mas arriba.'
+                                          inlineStyle="color:rgb(0,99,148); font-size:smaller;"/>                                                                                                                                   
+                    </af:panelList>
+                    </af:panelBox>
+                </af:showDetail>
+                <af:objectSpacer width="10" height="10"/>
+                <af:panelHorizontal valign="top">
+                <af:panelBox background="transparent">
+                    <af:table value="#{bindings.SisComplementoVwSisComplementoIgssVw.collectionModel}"
+                              var="row"
+                              rows="#{bindings.SisComplementoVwSisComplementoIgssVw.rangeSize}"
+                              first="#{bindings.SisComplementoVwSisComplementoIgssVw.rangeStart}"
+                              emptyText="#{bindings.SisComplementoVwSisComplementoIgssVw.viewable ? 'No rows yet.' : 'Access Denied.'}"
+                              banding="row" bandingInterval="1"
+                              selectionState="#{bindings.SisComplementoVwSisComplementoIgssVw.collectionModel.selectedRow}"
+                              selectionListener="#{bindings.SisComplementoVwSisComplementoIgssVw.collectionModel.makeCurrent}"
+                              id="tablaCompIgss"
+                              partialTriggers="tablaCompIgss:cmdEditarReg tablaCompIgss:cmdFinEditarReg tablaCompIgss:cmdBorrarReg">                              
+                      <f:facet name="actions"/>
+                      <f:facet name="selection">
+                        <af:tableSelectOne autoSubmit="true"/>
+                      </f:facet>
+                      <af:column sortable="false" headerText="Borrar">
+                        <af:outputText/>
+                        <af:panelHorizontal>
+                          <af:objectSpacer width="10" height="10"/>
+                          <af:commandLink actionListener="#{bindings.removeRowWithKey.execute}"
+                                          action="#{complementos_igss_teso.confirmarBorrar}"
+                                          disabled="#{!bindings.IsFormaActiva.inputValue}"
+                                          onclick="return confirm('Está seguro de borrar esta fila?');"
+                                          partialSubmit="true"
+                                          id="cmdBorrarReg">
+                            <af:objectImage source="/imagenes/borrar.png"
+                                            rendered="#{bindings.IsFormaActiva.inputValue}"/>
+                          </af:commandLink>
+                          <af:objectSpacer width="10" height="10"/>
+                        </af:panelHorizontal>
+                      </af:column>
+                      <af:column sortable="false" headerText="Editar">
+                        <af:outputText/>
+                        <af:panelHorizontal>
+                          <af:objectSpacer width="10" height="10"/>
+                          <af:commandLink disabled="#{!bindings.IsFormaActiva.inputValue}"
+                                          rendered="#{!row.isSel}"
+                                          action="#{complementos_igss_teso.cmd_editar}"
+                                          partialSubmit="true"
+                                          id="cmdEditarReg">
+                            <af:objectImage source="/imagenes/form_edit.png"
+                                            rendered="#{bindings.IsFormaActiva.inputValue}"
+                                            shortDesc="Editar fila"/>
+                          </af:commandLink>
+                          <af:commandLink disabled="#{!bindings.IsFormaActiva.inputValue}"
+                                          rendered="#{row.isSel}"
+                                          action="#{complementos_igss_teso.btn_cancelar_edicion}"
+                                          partialSubmit="true"
+                                          id="cmdFinEditarReg">
+                            <af:objectImage source="/imagenes/finished-work.png"
+                                            rendered="#{bindings.IsFormaActiva.inputValue}"
+                                            shortDesc="Finalizar edición"/>
+                          </af:commandLink>
+                          <af:objectSpacer width="10" height="10"/>
+                        </af:panelHorizontal>
+                      </af:column>
+                      <af:column headerText="Recalcular valores"
+                                 sortable="false">
+                        <af:selectOneChoice value="#{row.ReprocesarCalculos}"
+                                            simple="true"
+                                            required="#{bindings.SisComplementoVwSisComplementoIgssVw.attrDefs.ReprocesarCalculos.mandatory}"
+                                            label="Label 1" readOnly="false"
+                                            disabled="#{!bindings.IsFormaActiva.inputValue}"
+                                            rendered="#{row.isSel}">
+                          <af:validator binding="#{bindings.ReprocesarCalculos.validator}"/>
+                          <af:selectItem label="SI" value="SI"/>
+                          <af:selectItem label="NO" value="NO"/>
+                        </af:selectOneChoice>
+                        <af:outputText value="#{row.ReprocesarCalculos}"
+                                       rendered="#{!row.isSel}"/>
+                      </af:column>
+                      <af:column sortable="false" headerText="RegPer">
+                        <af:commandLink text="#{row.RegistroEmpleado}"
+                                        disabled="#{!bindings.IsFormaActiva.inputValue}"
+                                        action="#{complementos_igss_teso.verParametrosSuspIgss}"
+                                        rendered="false">
+                          <af:setActionListener from="#{row.RegistroEmpleado}"
+                                                to="#{processScope.CIT_regper_emp}"/>
+                          <af:setActionListener from="#{row.Nombrecompleto}"
+                                                to="#{processScope.CIT_nombre_emp}"/>
+                        </af:commandLink>
+                        <af:outputText value="#{row.RegistroEmpleado}"
+                                       rendered="true">
+                          <f:convertNumber groupingUsed="false"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortable="false" headerText="CUI">
+                        <af:outputText value="#{row.Cui}"/>
+                      </af:column>
+                      <af:column sortable="false" headerText="Nombre">
+                        <af:outputText value="#{row.Nombrecompleto}"/>
+                      </af:column>
+                      <af:column sortable="false" headerText="Partida">
+                        <af:outputText value="#{row.Numpartida}"/>
+                      </af:column>
+                      <af:column sortable="false" headerText="No. Plaza">
+                        <af:outputText value="#{row.NumeroPlaza}"/>
+                      </af:column>
+                      <af:column sortProperty="IdContrato" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoIgssVw.labels.IdContrato}">
+                        <af:inputText value="#{row.IdContrato}"
+                                      required="#{bindings.SisComplementoVwSisComplementoIgssVw.attrDefs.IdContrato.mandatory}"
+                                      columns="#{bindings.SisComplementoVwSisComplementoIgssVw.attrHints.IdContrato.displayWidth}"
+                                      readOnly="true">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisComplementoVwSisComplementoIgssVw.formats.IdContrato}"/>
+                        </af:inputText>
+                      </af:column>
+                      <af:column sortProperty="DiaInicio" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoIgssVw.labels.DiaInicio}">
+                        <af:inputText value="#{row.DiaInicio}"
+                                      required="#{bindings.SisComplementoVwSisComplementoIgssVw.attrDefs.DiaInicio.mandatory}"
+                                      columns="#{bindings.SisComplementoVwSisComplementoIgssVw.attrHints.DiaInicio.displayWidth}"
+                                      rendered="#{row.isSel}"
+                                      disabled="#{!bindings.IsFormaActiva.inputValue}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisComplementoVwSisComplementoIgssVw.formats.DiaInicio}"/>
+                        </af:inputText>
+                        <af:outputText value="#{row.DiaInicio}"
+                                       rendered="#{!row.isSel}"/>
+                      </af:column>
+                      <af:column sortProperty="DiaFin" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoIgssVw.labels.DiaFin}">
+                        <af:inputText value="#{row.DiaFin}"
+                                      required="#{bindings.SisComplementoVwSisComplementoIgssVw.attrDefs.DiaFin.mandatory}"
+                                      columns="#{bindings.SisComplementoVwSisComplementoIgssVw.attrHints.DiaFin.displayWidth}"
+                                      rendered="#{row.isSel}"
+                                      disabled="#{!bindings.IsFormaActiva.inputValue}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisComplementoVwSisComplementoIgssVw.formats.DiaFin}"/>
+                        </af:inputText>
+                        <af:outputText value="#{row.DiaFin}"
+                                       rendered="#{!row.isSel}"/>
+                      </af:column>
+                      <af:column sortable="false" headerText="Periodo">
+                        <af:outputText value='#{row.NomPeriodo}#{"-"}#{row.Anio}'/>
+                      </af:column>
+                      <af:column sortProperty="DiaNoPagaIgss" sortable="false"
+                                 headerText="Primeros dia(s) que el IGSS no paga (3/3)"
+                                 formatType="number">
+                        <af:inputText required="#{bindings.SisComplementoVwSisComplementoIgssVw.attrDefs.DiaNoPagaIgss.mandatory}"
+                                      disabled="#{!bindings.IsFormaActiva.inputValue}"
+                                      columns="8" rendered="#{row.isSel}"
+                                      value="#{row.DiaNoPagaIgss}"/>
+                        <af:outputText value="#{row.DiaNoPagaIgss}"
+                                       rendered="#{!row.isSel}">
+                          <f:convertNumber type="currency" currencySymbol="Q"
+                                           groupingUsed="true"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="ComplementoSueldo"
+                                 sortable="false"
+                                 headerText="Complemento del sueldo (1/3)"
+                                 formatType="number">
+                        <af:inputText value="#{row.ComplementoSueldo}"
+                                      required="#{bindings.SisComplementoVwSisComplementoIgssVw.attrDefs.ComplementoSueldo.mandatory}"
+                                      columns="8" rendered="#{row.isSel}"
+                                      disabled="#{!bindings.IsFormaActiva.inputValue}"/>
+                        <af:outputText value="#{row.ComplementoSueldo}"
+                                       rendered="#{!row.isSel}">
+                          <f:convertNumber type="currency" currencySymbol="Q"
+                                           groupingUsed="true"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="DifCalculoIgss" sortable="false"
+                                 headerText="Diferencia de este mes, por calculos del IGSS"
+                                 formatType="number">
+                        <af:inputText value="#{row.DifCalculoIgss}"
+                                      required="#{bindings.SisComplementoVwSisComplementoIgssVw.attrDefs.DifCalculoIgss.mandatory}"
+                                      columns="8" rendered="#{row.isSel}"
+                                      disabled="#{!bindings.IsFormaActiva.inputValue}"/>
+                        <af:commandButton text="Guardar" id="btnGuardarDet"
+                                          rendered="#{row.isSel}"
+                                          action="#{complementos_igss_teso.btn_guardar_en_detalle}"
+                                          partialSubmit="true"/>
+                        <af:outputText value="#{row.DifCalculoIgss}"
+                                       rendered="#{!row.isSel}">
+                          <f:convertNumber type="currency" currencySymbol="Q"
+                                           groupingUsed="true"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Nominal" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoIgssVw.labels.Nominal}"
+                                 formatType="number">
+                        <af:outputText value="#{row.Nominal}"
+                                       partialTriggers="btnGuardarDet">
+                          <f:convertNumber type="currency" currencySymbol="Q"
+                                           groupingUsed="true"/>
+                        </af:outputText>
+                        <af:inputText value="#{row.Nominal}"
+                                      required="#{bindings.SisComplementoVwSisComplementoIgssVw.attrDefs.Nominal.mandatory}"
+                                      columns="#{bindings.SisComplementoVwSisComplementoIgssVw.attrHints.Nominal.displayWidth}"
+                                      disabled="#{!bindings.IsFormaActiva.inputValue}"
+                                      rendered="false"/>
+                      </af:column>
+                      <af:column headerText="Bono" formatType="number"
+                                 sortable="false">
+                        <af:outputText value="#{row.totalBono}"
+                                       partialTriggers="tbl_det_desc:btn_agregar_desc tbl_det_desc:btnEliminarDesc">
+                          <f:convertNumber type="currency" currencySymbol="Q"
+                                           groupingUsed="true"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column headerText="Descuentos" width="75px"
+                                 formatType="number" sortable="false">
+                        <af:outputText value="#{row.totalDescuento}"
+                                       partialTriggers="tbl_det_desc:btn_agregar_desc tbl_det_desc:btnEliminarDesc">
+                          <f:convertNumber type="currency" currencySymbol="Q"
+                                           groupingUsed="true"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortable="false" headerText="Liquido"
+                                 formatType="number">
+                        <af:outputText value="#{row.liquido}"
+                                       partialTriggers="tbl_det_desc:btn_agregar_desc tbl_det_desc:btnEliminarDesc btnGuardarDet">
+                          <f:convertNumber type="currency" currencySymbol="Q"
+                                           groupingUsed="true"/>
+                        </af:outputText>
+                        <af:panelHorizontal>
+                          <af:objectSpacer width="10" height="10"/>
+                        </af:panelHorizontal>
+                        <af:table value="#{bindings.SisComplementoDetVwSisComplementoDetajustesVw.collectionModel}"
+                                  var="row"
+                                  rows="#{bindings.SisComplementoDetVwSisComplementoDetajustesVw.rangeSize}"
+                                  first="#{bindings.SisComplementoDetVwSisComplementoDetajustesVw.rangeStart}"
+                                  emptyText="#{bindings.SisComplementoDetVwSisComplementoDetajustesVw.viewable ? 'No rows yet.' : 'Access Denied.'}"
+                                  rendered="#{row.isSel}"
+                                  partialTriggers="tbl_det_desc:btn_agregar_desc tbl_det_desc:btnEliminarDesc"
+                                  id="tbl_det_desc" banding="row"
+                                  bandingInterval="1">
+                          <f:facet name="actions">
+                            <af:panelForm>
+                              <af:selectOneChoice value="#{bindings.pIdAjuste.inputValue}"
+                                                  label="Descuento/Bono"
+                                                  required="#{bindings.pIdAjuste.mandatory}">
+                                <af:validator binding="#{bindings.pIdAjuste.validator}"/>
+                                <f:convertNumber groupingUsed="false"
+                                                 pattern="#{bindings.pIdAjuste.format}"/>
+                                <af:selectItem label="- BONO MENSUAL"
+                                               value="27"/>
+                                <af:selectItem label="04 POR ALIMENTOS"
+                                               value="4"/>
+                                <af:selectItem label="24 CUOTA PLAN DE PRESTACIONES"
+                                               value="24"/>
+                              </af:selectOneChoice>
+                              <af:inputText value="#{bindings.pValor.inputValue}"
+                                            label="Monto"
+                                            required="#{bindings.pValor.mandatory}"
+                                            columns="6"
+                                            tip="Dejar en blanco para calculo automatico">
+                                <af:validator binding="#{bindings.pValor.validator}"/>
+                                <f:convertNumber groupingUsed="false"
+                                                 pattern="#{bindings.pValor.format}"/>
+                              </af:inputText>
+                              <af:commandButton text="Agregar"
+                                                action="#{complementos_igss_teso.btn_agregaDesc}"
+                                                id="btn_agregar_desc"
+                                                partialSubmit="true"/>
+                              <af:commandButton actionListener="#{bindings['actualiza_desc_bono'].execute}"
+                                                text="actualiza_desc_bono"
+                                                disabled="#{!bindings['actualiza_desc_bono'].enabled}"
+                                                rendered="false"/>
+                              <af:commandButton actionListener="#{bindings.agregarDescuento.execute}"
+                                                text="agregarDescuento"
+                                                disabled="#{!bindings.agregarDescuento.enabled}"
+                                                rendered="false"/>
+                            </af:panelForm>
+                          </f:facet>
+                          <af:column sortProperty="IdAjuste" sortable="false"
+                                     headerText="#{bindings.SisComplementoDetVwSisComplementoDetajustesVw.labels.IdAjuste}"
+                                     rendered="false">
+                            <af:outputText value="#{row.IdAjuste}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.SisComplementoDetVwSisComplementoDetajustesVw.formats.IdAjuste}"/>
+                            </af:outputText>
+                          </af:column>
+                          <af:column sortProperty="Nomajusteabre"
+                                     sortable="false" headerText="Bono / Desc.">
+                            <af:outputText value="#{row.CodNomina} - #{row.Nomajusteabre}"/>
+                          </af:column>
+                          <af:column sortProperty="MontoAjuste" sortable="false"
+                                     headerText="Valor aplicado"
+                                     formatType="number">
+                            <af:outputText value="#{row.MontoAjuste}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.SisComplementoDetVwSisComplementoDetajustesVw.formats.MontoAjuste}"/>
+                            </af:outputText>
+                          </af:column>
+                          <af:column sortProperty="ValorAplicado"
+                                     sortable="false" headerText="">
+                            <af:commandLink action="#{complementos_igss_teso.btn_eliminar_ajuste}"
+                                            onclick="return confirm('Está seguro de borrar ?');"
+                                            id="btnEliminarDesc"
+                                            partialSubmit="true">
+                              <af:objectImage source="/imagenes/borrar.png"/>
+                            </af:commandLink>
+                          </af:column>
+                        </af:table>
+                      </af:column>
+                      <af:column sortProperty="CreadoPor" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoIgssVw.labels.CreadoPor}">
+                        <af:inputText value="#{row.CreadoPor}" simple="true"
+                                      required="#{bindings.SisComplementoVwSisComplementoIgssVw.attrDefs.CreadoPor.mandatory}"
+                                      columns="#{bindings.SisComplementoVwSisComplementoIgssVw.attrHints.CreadoPor.displayWidth}"
+                                      readOnly="true"/>
+                      </af:column>
+                      <af:column sortProperty="FechaCreacion" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoIgssVw.labels.FechaCreacion}">
+                        <af:inputText value="#{row.FechaCreacion}"
+                                      required="#{bindings.SisComplementoVwSisComplementoIgssVw.attrDefs.FechaCreacion.mandatory}"
+                                      columns="#{bindings.SisComplementoVwSisComplementoIgssVw.attrHints.FechaCreacion.displayWidth}"
+                                      readOnly="true">
+                          <f:convertDateTime pattern="dd-MM-yyyy hh:mm:ss"/>
+                        </af:inputText>
+                      </af:column>
+                      <af:column sortProperty="FechaMod" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoIgssVw.labels.FechaMod}">
+                        <af:inputText value="#{row.FechaMod}"
+                                      partialTriggers="tbl_det_desc:btn_agregar_desc tbl_det_desc:btnEliminarDesc btnGuardarDet"
+                                      required="#{bindings.SisComplementoVwSisComplementoIgssVw.attrDefs.FechaMod.mandatory}"
+                                      columns="#{bindings.SisComplementoVwSisComplementoIgssVw.attrHints.FechaMod.displayWidth}"
+                                      readOnly="true">
+                          <f:convertDateTime pattern="dd-MM-yyyy hh:mm:ss"/>
+                        </af:inputText>
+                      </af:column>
+                      <af:column sortProperty="ModPor" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoIgssVw.labels.ModPor}">
+                        <af:inputText value="#{row.ModPor}" simple="true"
+                                      partialTriggers="tbl_det_desc:btn_agregar_desc tbl_det_desc:btnEliminarDesc btnGuardarDet"
+                                      required="#{bindings.SisComplementoVwSisComplementoIgssVw.attrDefs.ModPor.mandatory}"
+                                      columns="#{bindings.SisComplementoVwSisComplementoIgssVw.attrHints.ModPor.displayWidth}"
+                                      readOnly="true"/>
+                      </af:column>
+                    </af:table>
+                </af:panelBox>
+                </af:panelHorizontal>
+              </af:showDetailItem>
+              <af:showDetailItem text="Nuevo complemento IGSS"
+                                 binding="#{complementos_igss_teso.tabNuevoComplemento}"
+                                 disclosed="false">
+                <af:panelHeader text="Cálculo de complemento IGSS">
+                  <!--  
+                  <af:outputFormatted value="Mes en el que se trámitara el pago"/>
+                  <af:outputFormatted value="#{flujo_usuario.mesActual}"/>
+                  -->
+                  <!--
+                  <af:panelHorizontal>
+                    <af:selectOneChoice label=""
+                                        value="#{bindings['PeriodoPago'].inputValue}">
+                      <f:selectItems value="#{bindings['PeriodoPago'].items}"/>
+                    </af:selectOneChoice>
+                  </af:panelHorizontal>
+                  -->
+                  <af:panelHorizontal>
+                    <af:objectSpacer width="10" height="10"/>
+                  </af:panelHorizontal>
+                  <af:outputFormatted value="Mes y año base para los cálculos"/>
+                  <af:panelHorizontal>
+                    <af:selectOneChoice simple="true"
+                                        value="#{bindings['Periodo'].inputValue}">
+                      <f:selectItems value="#{bindings['Periodo'].items}"/>
+                    </af:selectOneChoice>
+                    <af:objectSpacer width="10" height="10"/>
+                    <af:selectOneChoice label="#{tx['cambioAnio.cmb_anios.title']}"
+                                        simple="true" rendered="true"
+                                        value="#{bindings.vAnio1.inputValue}">
+                      <f:selectItems value="#{backing_bean_comun.listaComboAniosTrabajo}"/>
+                    </af:selectOneChoice>
+                  </af:panelHorizontal>
+                  <af:panelHorizontal>
+                    <af:objectSpacer width="10" height="10"/>
+                  </af:panelHorizontal>
+                  <af:inputText label="Label 1" simple="true" rows="4"
+                                columns="50"
+                                value="#{bindings.Comentarios.inputValue}"
+                                rendered="false"/>
+                  <af:commandButton text="Crear complemento IGSS"
+                                    action="#{complementos_igss_teso.crearComplementoIGSS}"/>
+                </af:panelHeader>
+              </af:showDetailItem>
+              <af:showDetailItem text="Búsqueda por Registro" disclosed="false">
+                <af:panelHeader text="Complemento seleccionado: Id [ #{bindings.IdComplemento.inputValue} ]"/>
+                <af:panelHorizontal>
+                  <af:objectSpacer width="10" height="10"/>
+                </af:panelHorizontal>
+                <af:panelHorizontal>
+                  <af:inputText label="Registro de Personal a buscar"
+                                value="#{bindings.pRegistro.inputValue}"
+                                columns="10"/>
+                  <af:inputText value="#{bindings.pCui.inputValue}"
+                                label="CUI"
+                                required="#{bindings.pCui.mandatory}"
+                                columns="#{bindings.pCui.displayWidth}">
+                    <af:validator binding="#{bindings.pCui.validator}"/>
+                  </af:inputText>
+                  <af:objectSpacer width="10" height="10"/>
+                  <af:commandButton actionListener="#{bindings.ExecuteWithParams.execute}"
+                                    text="Buscar"
+                                    disabled="#{!bindings.ExecuteWithParams.enabled}"/>
+                  <af:objectSpacer width="10" height="10"/>
+                  <af:objectSpacer width="10" height="10"/>
+                  <af:selectOneChoice label="Modalidad"
+                                      value="#{bindings.pModoAjuste.inputValue}"
+                                      required="false"
+                                      unselectedLabel="Seleccione la modalidad de operación"
+                                      rendered="true">
+                    <af:selectItem label="NUEVO COMPLEMENTO" value="NUEVO"/>
+                    <af:selectItem label="AGREGAR A COMPLEMENTO"
+                                   value="AGREGAR"/>
+                  </af:selectOneChoice>
+                </af:panelHorizontal>
+                <af:showDetail disclosedText="Ocultar instrucciones"
+                                 undisclosedText="Ver instrucciones">
+                    <af:panelBox background="transparent" width="700px">
+                      <af:outputFormatted value="Instrucciones"
+                                          inlineStyle="color:rgb(198,0,0); font-size:smaller;"/>
+                      <af:panelList>
+                        <af:outputFormatted value="Este formulario le visualizará cada uno de los complementos en los que se haya tramitado un pago por complemento Igss y le permitirá generar un ajuste para un complemento Igss. Por ejemplo si ya trámito el pago de las 2/3 partes, acá podrá generar un complemento para tramitar el pago de la otra tercera parte (1/3)."
+                                            inlineStyle="color:rgb(0,107,165); font-size:smaller;"/>
+                        <af:outputFormatted value='La lista de valores ubicada mas arriba junto a la etiqueta "Modalidad" permite indicarle al sistema si el ajuste a generar se va a agregar al complemento seleccionado o si debe crear un nuevo complemento.'
+                                            inlineStyle="color:rgb(0,107,165); font-size:smaller;"/>
+                        <af:outputFormatted value='Para generar un ajuste solo debe hacer clic sobre el botón "Generar ajuste" ubicado a la par de cada fila del listado que se visualizará al ejecutar la consulta.'
+                                            inlineStyle="color:rgb(0,107,165); font-size:smaller;"/>
+                      </af:panelList>
+                    </af:panelBox>
+                  </af:showDetail>                
+                <af:panelHorizontal>
+                  <af:objectSpacer width="10" height="10"/>
+                </af:panelHorizontal>                  
+                <af:table value="#{bindings.SisComplementoIgssPorEmpleadoVw.collectionModel}"
+                          var="row"
+                          rows="#{bindings.SisComplementoIgssPorEmpleadoVw.rangeSize}"
+                          first="#{bindings.SisComplementoIgssPorEmpleadoVw.rangeStart}"
+                          emptyText="#{bindings.SisComplementoIgssPorEmpleadoVw.viewable ? 'No existen filas.' : 'Access Denied.'}"
+                          selectionState="#{bindings.SisComplementoIgssPorEmpleadoVw.collectionModel.selectedRow}"
+                          selectionListener="#{bindings.SisComplementoIgssPorEmpleadoVw.collectionModel.makeCurrent}"
+                          banding="row" bandingInterval="1">
+                  <f:facet name="selection">
+                    <af:tableSelectOne text="" rendered="true">
+                    </af:tableSelectOne>
+                  </f:facet>
+                  <af:column sortable="false" headerText="">
+                    <af:commandButton actionListener="#{bindings.setearCompleIgssEmpl.execute}"
+                                      text="Generar ajuste"
+                                      disabled="#{!bindings.setearCompleIgssEmpl.enabled}"
+                                      action="#{complementos_igss_teso.crearAjusteComplementoIGSS}">
+                      <af:setActionListener from="#{null}"
+                                            to="#{bindings.pIdComplementoAjuste.inputValue}"/>
+                    </af:commandButton>
+                  </af:column>
+                  <af:column sortProperty="Estadocomplemento" sortable="false"
+                             headerText="Estado del complemento">
+                    <af:outputText value="#{row.Estadocomplemento}"/>
+                  </af:column>
+                  <af:column sortProperty="IdComplemento" sortable="false"
+                             headerText="Id complemento">
+                    <af:outputText value="#{row.IdComplemento}"/>
+                  </af:column>
+                  <af:column sortProperty="RegistroEmpleado" sortable="false"
+                             headerText="Regper">
+                    <af:outputText value="#{row.RegistroEmpleado}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.SisComplementoIgssPorEmpleadoVw.formats.RegistroEmpleado}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortable="false" headerText="CUI">
+                    <af:outputText value="#{row.Cui}"/>
+                  </af:column>
+                  <af:column sortProperty="Nombrecompleto" sortable="false"
+                             headerText="Nombre">
+                    <af:outputText value="#{row.Nombrecompleto}"/>
+                  </af:column>
+                  <af:column sortProperty="Numpartida" sortable="false"
+                             headerText="Partida">
+                    <af:outputText value="#{row.Numpartida}"/>
+                  </af:column>
+                  <af:column sortProperty="NumeroPlaza" sortable="false"
+                             headerText="No. Plaza">
+                    <af:outputText value="#{row.NumeroPlaza}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.SisComplementoIgssPorEmpleadoVw.formats.NumeroPlaza}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="IdContrato" sortable="false"
+                             headerText="#{bindings.SisComplementoIgssPorEmpleadoVw.labels.IdContrato}">
+                    <af:outputText value="#{row.IdContrato}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.SisComplementoIgssPorEmpleadoVw.formats.IdContrato}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="DiaInicio" sortable="false"
+                             headerText="Dia Inicio">
+                    <af:outputText value="#{row.DiaInicio}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.SisComplementoIgssPorEmpleadoVw.formats.DiaInicio}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="DiaFin" sortable="false"
+                             headerText="Dia Fin">
+                    <af:outputText value="#{row.DiaFin}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.SisComplementoIgssPorEmpleadoVw.formats.DiaFin}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="NomPeriodo" sortable="false"
+                             headerText="Periodo">
+                    <af:outputText value="#{row.NomPeriodo}-#{row.Anio}"/>
+                  </af:column>
+                  <af:column sortProperty="DiaNoPagaIgss" sortable="false"
+                             headerText="Primeros dia(s) que el IGSS no paga (3/3)"
+                             formatType="number">
+                    <af:outputText value="#{row.DiaNoPagaIgss}">
+                      <f:convertNumber groupingUsed="true"
+                                       pattern="#{bindings.SisComplementoIgssPorEmpleadoVw.formats.DiaNoPagaIgss}"
+                                       currencySymbol="Q" type="currency"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="ComplementoSueldo" sortable="false"
+                             formatType="number"
+                             headerText="Complemento del sueldo (1/3)">
+                    <af:outputText value="#{row.ComplementoSueldo}">
+                      <f:convertNumber groupingUsed="true"
+                                       pattern="#{bindings.SisComplementoIgssPorEmpleadoVw.formats.ComplementoSueldo}"
+                                       type="currency" currencySymbol="Q"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="DifCalculoIgss" sortable="false"
+                             formatType="number"
+                             headerText="Diferencia de este mes, por calculos del IGSS">
+                    <af:outputText value="#{row.DifCalculoIgss}">
+                      <f:convertNumber groupingUsed="true"
+                                       pattern="#{bindings.SisComplementoIgssPorEmpleadoVw.formats.DifCalculoIgss}"
+                                       type="currency" currencySymbol="Q"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="Nominal" sortable="false"
+                             formatType="number"
+                             headerText="#{bindings.SisComplementoIgssPorEmpleadoVw.labels.Nominal}">
+                    <af:outputText value="#{row.Nominal}">
+                      <f:convertNumber groupingUsed="true"
+                                       pattern="#{bindings.SisComplementoIgssPorEmpleadoVw.formats.Nominal}"
+                                       type="currency" currencySymbol="Q"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="TotalBono" sortable="false"
+                             formatType="number" headerText="Bono">
+                    <af:outputText value="#{row.TotalBono}">
+                      <f:convertNumber groupingUsed="true"
+                                       pattern="#{bindings.SisComplementoIgssPorEmpleadoVw.formats.TotalBono}"
+                                       type="currency" currencySymbol="Q"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="TotalDescuento" sortable="false"
+                             formatType="number" headerText="Descuento">
+                    <af:outputText value="#{row.TotalDescuento}">
+                      <f:convertNumber groupingUsed="true"
+                                       pattern="#{bindings.SisComplementoIgssPorEmpleadoVw.formats.TotalDescuento}"
+                                       type="currency" currencySymbol="Q"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="Liquido" sortable="false"
+                             formatType="number"
+                             headerText="#{bindings.SisComplementoIgssPorEmpleadoVw.labels.Liquido}">
+                    <af:outputText value="#{row.Liquido}">
+                      <f:convertNumber groupingUsed="true"
+                                       pattern="#{bindings.SisComplementoIgssPorEmpleadoVw.formats.Liquido}"
+                                       type="currency" currencySymbol="Q"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="CreadoPor" sortable="false"
+                             headerText="#{bindings.SisComplementoIgssPorEmpleadoVw.labels.CreadoPor}">
+                    <af:outputText value="#{row.CreadoPor}"/>
+                  </af:column>
+                  <af:column sortProperty="FechaCreacion" sortable="false"
+                             headerText="#{bindings.SisComplementoIgssPorEmpleadoVw.labels.FechaCreacion}">
+                    <af:outputText value="#{row.FechaCreacion}">
+                      <f:convertDateTime pattern="dd-MM-yyyy hh:mm:ss"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="ModPor" sortable="false"
+                             headerText="#{bindings.SisComplementoIgssPorEmpleadoVw.labels.ModPor}">
+                    <af:outputText value="#{row.ModPor}"/>
+                  </af:column>
+                  <af:column sortProperty="FechaMod" sortable="false"
+                             headerText="#{bindings.SisComplementoIgssPorEmpleadoVw.labels.FechaMod}">
+                    <af:outputText value="#{row.FechaMod}">
+                      <f:convertDateTime pattern="dd-MM-yyyy hh:mm:ss"/>
+                    </af:outputText>
+                  </af:column>
+                </af:table>
+              </af:showDetailItem>
+            </af:showOneTab>
+          </af:page>
+          <f:verbatim>
+          <jsp:include page="../util/dialog_autoriza.txt"/>     
+          </f:verbatim>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:complementos_igss_teso-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:complementos_igss_teso-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:complementos_igss_teso-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:complementos_igss_teso-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:complementos_igss_teso-->
+</jsp:root>

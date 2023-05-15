@@ -1,0 +1,765 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html"
+          xmlns:af="http://xmlns.oracle.com/adf/faces">
+  <jsp:directive.page contentType="text/html;charset=windows-1252"
+                      autoFlush="true" language="java"/>
+  <f:view>
+    <afh:html>
+      <afh:head title="Pago Complementos">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+      </afh:head>
+       <jsp:include page="/js/libJQ.js"/>       
+       <jsp:include page="/js/librariesDialog.js"/>           
+      <script type="text/javascript" src="/${flujo_usuario.dominioApp}/js/gestiones/scrptAutorizacion.js">
+      var xy=new Date().getMilliseconds();      
+      </script>
+      <script language="javascript" type="text/javascript"> 
+       gbl_form="form1";
+       gbl_actionId="form1:page1:cmdRefresh";
+    
+         function newCompl(){
+    
+         submitForm('form1',1,{source:'form1:page1:btn_nuevo'});
+         return false;
+         }
+      
+         function verRepo(IdC){
+         
+           window.open("../verreportepdf?id="+IdC+String.fromCharCode(38)+"rep=CMPLSAL","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+           return false;    
+   
+         }
+         
+         function verRepoDuplicados(IdC){
+         
+           window.open("../verreportepdf?id="+IdC+String.fromCharCode(38)+"rep=CMPLDUPL","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+           return false;    
+   
+         }
+      
+      </script>
+    
+      <afh:body>
+        <af:messages/>
+        <h:form id="form1">
+          <af:page title="Complementos año actual" value="#{modeloMenu.modeloBD}" var="node"
+                   id="page1">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+             <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelBox>
+             <f:verbatim>
+                <input type="hidden" name="hdn_tipo" id="hdn_tipo" value="12"/>
+                <input type="hidden" name="hdn_Id" id="hdn_Id"
+                       value="${bindings.pIdVar1.inputValue}"/>
+              </f:verbatim>
+              <af:showOneTab>
+                <af:showDetailItem text="HIstorico"
+                                   binding="#{pago_complementos.tab_histo}">
+                  <af:commandLink id="btn_nuevo"
+                                  action="#{pago_complementos.btn_nuevo_action}"
+                                  disabled="true"/>
+                  <af:panelForm>
+                    <af:selectInputDate value="#{bindings.fechaI.inputValue}"
+                                        label="Fecha Inicio"
+                                        required="#{bindings.fechaI.mandatory}">
+                      <af:validator binding="#{bindings.fechaI.validator}"/>
+                      <f:convertDateTime pattern="#{bindings.fechaI.format}"/>
+                    </af:selectInputDate>
+                    <af:selectInputDate value="#{bindings.fechaF.inputValue}"
+                                        label="Fecha fin"
+                                        required="#{bindings.fechaF.mandatory}">
+                      <af:validator binding="#{bindings.fechaF.validator}"/>
+                      <f:convertDateTime pattern="#{bindings.fechaF.format}"/>
+                    </af:selectInputDate>
+                    <f:facet name="footer">
+                      <af:commandButton actionListener="#{bindings.Compl.execute}"
+                                        text="Buscar"
+                                        disabled="#{!bindings.Compl.enabled}"/>
+                    </f:facet>
+                  </af:panelForm>
+                  <af:panelHeader text=". . ."/>
+                  <af:objectSpacer width="10" height="15"/>
+                  <af:table value="#{bindings.SisComplementoVw.collectionModel}"
+                            var="row"
+                            rows="#{bindings.SisComplementoVw.rangeSize}"
+                            first="#{bindings.SisComplementoVw.rangeStart}"
+                            emptyText="Ninguna fila"
+                            selectionState="#{bindings.SisComplementoVw.collectionModel.selectedRow}"
+                            selectionListener="#{bindings.SisComplementoVw.collectionModel.makeCurrent}"
+                            partialTriggers="cmd_IdComple" banding="row"
+                            bandingInterval="1">
+                    <f:facet name="header">
+                      <af:outputText value="Listado de complementos"/>
+                    </f:facet>
+                    <af:column sortProperty="IdComplemento" sortable="false"
+                               headerText="#{bindings.SisComplementoVw.labels.IdComplemento}">
+                      <af:commandLink text="#{row.IdComplemento}"
+                                      disabled="#{!bindings.setCurrentRowWithKey.enabled}"
+                                      action="#{pago_complementos.cmd_Complemento}"
+                                      id="cmd_IdComple"/>
+                    </af:column>
+                    <af:column sortProperty="IdEstado" sortable="false"
+                               headerText="#{bindings.SisComplementoVw.labels.IdEstado}">
+                      <af:outputText value="#{row.Nomestado}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.SisComplementoVw.formats.IdEstado}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="IdSubprograma" sortable="false"
+                               headerText="#{bindings.SisComplementoVw.labels.IdSubprograma}"
+                               noWrap="true">
+                      <af:outputText value="#{row.Formato2} - #{row.Nomunidad}"/>
+                    </af:column>
+                    <af:column sortProperty="Periodo" sortable="false"
+                               headerText="#{bindings.SisComplementoVw.labels.Periodo}">
+                      <af:outputText value="#{row.Periodo}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.SisComplementoVw.formats.Periodo}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Anio" sortable="false"
+                               headerText="Año">
+                      <af:outputText value="#{row.Anio}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.SisComplementoVw.formats.Anio}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="CreadoPor" sortable="false"
+                               headerText="#{bindings.SisComplementoVw.labels.CreadoPor}"
+                               noWrap="true">
+                      <af:outputText value="#{row.CreadoPor} - #{row.Nomusuario}"/>
+                    </af:column>
+                    <af:column sortProperty="FechaCreacion" sortable="false"
+                               headerText="#{bindings.SisComplementoVw.labels.FechaCreacion}">
+                      <af:outputText value="#{row.FechaCreacion}">
+                        <f:convertDateTime pattern="#{bindings.SisComplementoVw.formats.FechaCreacion}"/>
+                      </af:outputText>
+                    </af:column>
+                  </af:table>
+                </af:showDetailItem>
+                <af:showDetailItem text="Nuevo Complemento" disclosed="false"
+                                   disabled="false"
+                                   onclick="return newCompl();"
+                                   binding="#{pago_complementos.tab_detalle}">
+                  <af:panelHeader text="Id: [ #{bindings.IdComplemento.inputValue} ]" size="0"/>
+                  <af:showOneTab>
+                    <af:showDetailItem text="Inicio"
+                                       binding="#{pago_complementos.tab_inicio}">
+                      <af:panelForm>
+                        <af:panelHorizontal>
+                          <af:inputText value="#{bindings['reg_empleado'].inputValue}"
+                                        label="Registro Empleado"
+                                        required="#{bindings['reg_empleado'].mandatory}"
+                                        columns="#{bindings['reg_empleado'].displayWidth}"
+                                        disabled="#{!bindings.IsFormaActiva.inputValue}">
+                            <af:validator binding="#{bindings['reg_empleado'].validator}"/>
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings['reg_empleado'].format}"/>
+                          </af:inputText>
+                          <af:inputText value="#{bindings['num_cui'].inputValue}"
+                                        simple="false"
+                                        required="#{bindings['num_cui'].mandatory}"
+                                        columns="#{bindings['num_cui'].displayWidth}"
+                                        label="CUI">
+                            <af:validator binding="#{bindings['num_cui'].validator}"/>
+                          </af:inputText>
+                          <af:selectBooleanCheckbox value="#{bindings.SisComplementoVwIsautofinanciable.inputValue}"
+                                                    label="#{bindings.SisComplementoVwIsautofinanciable.label}"
+                                                    disabled="#{bindings.SisComplementoVwSisComplementoDetVw.estimatedRowCount >0 ? true : false}"/>
+                          <af:commandButton actionListener="#{bindings.Contratos.execute}"
+                                            text="Buscar"
+                                            disabled="#{!bindings.Contratos.enabled}"
+                                            action="#{pago_complementos.btn_buscar}"/>
+                          <f:facet name="separator">
+                            <h:panelGroup>
+                              <af:objectSpacer width="10" height="10"/>
+                            </h:panelGroup>
+                          </f:facet>
+                        </af:panelHorizontal>
+                        <af:outputText value="#{bindings.NombreCompleto.inputValue}"
+                                       inlineStyle="color:rgb(0,49,148); font-size:large;"/>
+                        <af:table value="#{bindings.SisEmpleadoVwSisContratosEmplOpVw.collectionModel}"
+                                  var="row"
+                                  rows="#{bindings.SisEmpleadoVwSisContratosEmplOpVw.rangeSize}"
+                                  first="#{bindings.SisEmpleadoVwSisContratosEmplOpVw.rangeStart}"
+                                  emptyText="Ninguna Plaza"
+                                  selectionState="#{bindings.SisEmpleadoVwSisContratosEmplOpVw.collectionModel.selectedRow}"
+                                  selectionListener="#{bindings.SisEmpleadoVwSisContratosEmplOpVw.collectionModel.makeCurrent}"
+                                  banding="row" bandingInterval="1">
+                          <af:column sortable="false" headerText="Seleccionar">
+                            <af:selectBooleanCheckbox value="#{row.Seleccionado}"
+                                                      label="Label 1"
+                                                      selected="#{row.Seleccionado}"/>
+                          </af:column>
+                          <af:column sortable="false" headerText="Partida">
+                            <af:outputText value="#{row.Partida}"/>
+                          </af:column>
+                          <af:column sortProperty="NumeroPlaza" sortable="false"
+                                     headerText="#{bindings.SisEmpleadoVwSisContratosEmplOpVw.labels.NumeroPlaza}">
+                            <af:outputText value="#{row.NumeroPlaza}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.SisEmpleadoVwSisContratosEmplOpVw.formats.NumeroPlaza}"/>
+                            </af:outputText>
+                          </af:column>
+                          <af:column sortProperty="IdPuesto" sortable="false"
+                                     headerText="#{bindings.SisEmpleadoVwSisContratosEmplOpVw.labels.IdPuesto}">
+                            <af:outputText value="#{row.IdPuesto}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.SisEmpleadoVwSisContratosEmplOpVw.formats.IdPuesto}"/>
+                            </af:outputText>
+                          </af:column>
+                          <af:column sortProperty="NomPuesto" sortable="false"
+                                     headerText="#{bindings.SisEmpleadoVwSisContratosEmplOpVw.labels.NomPuesto}">
+                            <af:outputText value="#{row.NomPuesto}"/>
+                          </af:column>
+                          <af:column sortProperty="Nomdependencia"
+                                     sortable="false"
+                                     headerText="#{bindings.SisEmpleadoVwSisContratosEmplOpVw.labels.Nomdependencia}">
+                            <af:outputText value="#{row.Nomdependencia}"/>
+                          </af:column>
+                          <af:column sortProperty="Horascontratadas"
+                                     sortable="false"
+                                     headerText="#{bindings.SisEmpleadoVwSisContratosEmplOpVw.labels.Horascontratadas}">
+                            <af:outputText value="#{row.Horascontratadas}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.SisEmpleadoVwSisContratosEmplOpVw.formats.Horascontratadas}"/>
+                            </af:outputText>
+                          </af:column>
+                          <af:column sortProperty="FechaInicio" sortable="false"
+                                     headerText="#{bindings.SisEmpleadoVwSisContratosEmplOpVw.labels.FechaInicio}">
+                            <af:outputText value="#{row.FechaInicio}">
+                              <f:convertDateTime pattern="#{bindings.SisEmpleadoVwSisContratosEmplOpVw.formats.FechaInicio}"/>
+                            </af:outputText>
+                          </af:column>
+                          <af:column sortProperty="FechaFin" sortable="false"
+                                     headerText="#{bindings.SisEmpleadoVwSisContratosEmplOpVw.labels.FechaFin}">
+                            <af:outputText value="#{row.FechaFin}">
+                              <f:convertDateTime pattern="#{bindings.SisEmpleadoVwSisContratosEmplOpVw.formats.FechaFin}"/>
+                            </af:outputText>
+                          </af:column>
+                          <af:column sortProperty="Estado" sortable="false"
+                                     headerText="#{bindings.SisEmpleadoVwSisContratosEmplOpVw.labels.Estado}">
+                            <af:outputText value="#{row.Estado}"/>
+                          </af:column>
+                        </af:table>
+                        <af:panelHorizontal>
+                          <af:selectOneChoice label="Tipo Nomina"
+                                              valueChangeListener="#{pago_complementos.tipo_nomina}"
+                                              value="#{bindings.pIdNomina1.inputValue}"
+                                              autoSubmit="true"
+                                              id="cmb_tipoNomina"
+                                              disabled="#{!bindings.IsFormaActiva.inputValue}">
+                            <af:selectItem label="NOMINA NORMAL" value="1"/>
+                            <af:selectItem label="DIFERIDO 12%" value="2"/>
+                            <af:selectItem label="DIFERIDO 50%" value="3"/>
+                            <af:selectItem label="BONO 14" value="5"/>
+                            <af:selectItem label="AGUINALDO" value="6"/>
+                          </af:selectOneChoice>
+                          <af:selectOneChoice id="navList1" autoSubmit="false"
+                                              value="#{bindings.SisPeridoxTipoNomVw.inputValue}"
+                                              label="Mes"
+                                              partialTriggers="cmb_tipoNomina"
+                                              disabled="#{!bindings.IsFormaActiva.inputValue}">
+                            <f:selectItems value="#{bindings.SisPeridoxTipoNomVw.items}"/>
+                          </af:selectOneChoice>
+                          <af:commandLink id="cmdRefresh"
+                                          actionListener="#{bindings.actualizarVW.execute}"
+                                          disabled="true"
+                                          action="#{pago_complementos.cmdRefresh_action}"/>
+                          <af:commandButton text="Generar Complemento"
+                                            action="#{pago_complementos.btn_GenerarComplemento}"
+                                            disabled="#{!bindings.IsFormaActiva.inputValue}"/>
+                        </af:panelHorizontal>
+                        <af:panelButtonBar>
+                          <af:commandButton text="Generar pagos curso vacaciones"
+                                            action="#{pago_complementos.btn_vacacion_action}"
+                                            disabled="#{!bindings.IsFormaActiva.inputValue}"/>
+                          <af:commandLink onclick="verRepo('#{bindings.IdComplemento.inputValue}');">
+                            <af:objectImage source="/imagenes/printer_1.png"/>
+                          </af:commandLink>
+                          <af:commandLink onclick="return validaComplemento();">
+                            <af:objectImage source="/imagenes/btn_trasladar.png"/>
+                          </af:commandLink>
+                          <af:commandLink onclick="return OpenDialogo(2);">
+                            <af:objectImage source="/imagenes/btn_anular.png"/>
+                          </af:commandLink>
+                          <af:commandLink action="dialog:det_autoriza"
+                                          launchListener="#{pago_complementos.launch_detalle_auto}"
+                                          useWindow="true" windowHeight="300"
+                                          windowWidth="600">
+                            <af:objectImage source="/imagenes/list_information.png"/>
+                          </af:commandLink>
+                          <af:commandLink onclick="verRepoDuplicados('#{bindings.IdComplemento.inputValue}');"
+                                          shortDesc="Pagos del Complemento ya Realizados o en Gestión">
+                            <af:objectImage source="/imagenes/img_pagosComplementos.png"/>
+                          </af:commandLink>
+                        </af:panelButtonBar>
+                        <af:objectSpacer width="10" height="50"/>
+                        <af:table value="#{bindings.SisComplementoVwSisComplementoDetVw.collectionModel}"
+                                  var="row"
+                                  rows="#{bindings.SisComplementoVwSisComplementoDetVw.rangeSize}"
+                                  first="#{bindings.SisComplementoVwSisComplementoDetVw.rangeStart}"
+                                  emptyText="Ninguna fila"
+                                  selectionState="#{bindings.SisComplementoVwSisComplementoDetVw.collectionModel.selectedRow}"
+                                  selectionListener="#{bindings.SisComplementoVwSisComplementoDetVw.collectionModel.makeCurrent}"
+                                  banding="row" bandingInterval="1">
+                          <f:facet name="selection">
+                            <af:tableSelectOne text="Select and"
+                                               autoSubmit="true"
+                                               disabled="#{!bindings.IsFormaActiva.inputValue}"/>
+                          </f:facet>
+                          <f:facet name="actions">
+                            <af:panelButtonBar rendered="#{bindings.IsFormaActiva.inputValue}">
+                              <af:commandButton text="Guardar"
+                                                action="#{pago_complementos.btn_guardar_ant}"/>
+                              <af:commandButton actionListener="#{bindings.Rollback.execute}"
+                                                text="Cancelar"
+                                                immediate="true">
+                                <af:resetActionListener/>
+                              </af:commandButton>
+                              <af:commandButton text="cancelar edición"
+                                                action="#{pago_complementos.btn_cancelar_edit_ant}"/>
+                            </af:panelButtonBar>
+                          </f:facet>
+                          <af:column sortable="false" headerText="Eliminar">
+                            <af:commandLink action="#{pago_complementos.cmd_eliminar_det}"
+                                            disabled="#{!bindings.IsFormaActiva.inputValue}">
+                              <af:objectImage source="/imagenes/borrar.png"/>
+                            </af:commandLink>
+                          </af:column>
+                          <af:column sortable="false" headerText="Editar">
+                            <af:commandLink action="#{pago_complementos.cmd_editar}"
+                                            disabled="#{!bindings.IsFormaActiva.inputValue}">
+                              <af:objectImage source="/imagenes/form_edit.png"/>
+                            </af:commandLink>
+                          </af:column>
+                          <af:column sortProperty="IdComplementoDet"
+                                     sortable="false" headerText="IdDet">
+                            <af:outputText value="#{row.IdComplementoDet}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.IdComplementoDet}"/>
+                            </af:outputText>
+                          </af:column>
+                          <af:column sortProperty="RegistroEmpleado"
+                                     sortable="false"
+                                     headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.RegistroEmpleado}">
+                            <af:outputText value="#{row.RegistroEmpleado}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.RegistroEmpleado}"/>
+                            </af:outputText>
+                          </af:column>
+                          <af:column sortProperty="Tiponomina" sortable="false"
+                                     headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.Tiponomina}">
+                            <af:outputText value="#{row.Tiponomina}"/>
+                          </af:column>
+                          <af:column sortable="false" headerText="Partida">
+                            <af:outputText value="#{row.Formato1}"/>
+                          </af:column>
+                          <af:column sortProperty="NumeroPlaza" sortable="false"
+                                     headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.NumeroPlaza}">
+                            <af:outputText value="#{row.NumeroPlaza}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.NumeroPlaza}"/>
+                            </af:outputText>
+                          </af:column>
+                          <af:column sortProperty="IdPuesto" sortable="false"
+                                     headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.IdPuesto}">
+                            <af:outputText value="#{row.IdPuesto}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.IdPuesto}"/>
+                            </af:outputText>
+                          </af:column>
+                          <af:column sortProperty="IdContrato" sortable="false"
+                                     headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.IdContrato}">
+                            <af:outputText value="#{row.IdContrato}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.IdContrato}"/>
+                            </af:outputText>
+                          </af:column>
+                          <af:column sortProperty="Anio" sortable="false"
+                                     headerText="Año">
+                            <af:outputText value="#{row.Anio}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.Anio}"/>
+                            </af:outputText>
+                          </af:column>
+                          <af:column sortProperty="Periodo" sortable="false"
+                                     headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.Periodo}">
+                            <af:outputText value="#{row.Periodo}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.Periodo}"/>
+                            </af:outputText>
+                          </af:column>
+                          <af:column sortProperty="SueldoBase" sortable="false"
+                                     headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.SueldoBase}"
+                                     formatType="number">
+                            <af:outputText value="Q#{row.SueldoBase}"
+                                           rendered="#{!row.isSel}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.SueldoBase}"/>
+                            </af:outputText>
+                            <af:inputText value="#{row.SueldoBase}" columns="10"
+                                          rendered="#{row.isSel}"/>
+                          </af:column>
+                          <af:column sortProperty="Escalafon" sortable="false"
+                                     headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.Escalafon}"
+                                     formatType="number">
+                            <af:outputText value="Q#{row.Escalafon}"
+                                           rendered="#{!row.isSel}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.Escalafon}"/>
+                            </af:outputText>
+                            <af:inputText value="#{row.Escalafon}" columns="10"
+                                          rendered="#{row.isSel}"/>
+                          </af:column>
+                          <af:column sortProperty="ComplSalarial"
+                                     sortable="false"
+                                     headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.ComplSalarial}"
+                                     formatType="number">
+                            <af:outputText value="Q#{row.ComplSalarial}"
+                                           rendered="#{!row.isSel}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.ComplSalarial}"/>
+                            </af:outputText>
+                            <af:inputText value="#{row.ComplSalarial}"
+                                          columns="10" rendered="#{row.isSel}"/>
+                          </af:column>
+                          <af:column sortProperty="Nominal" sortable="false"
+                                     headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.Nominal}"
+                                     formatType="number">
+                            <af:outputText value="Q#{row.Nominal}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.Nominal}"/>
+                            </af:outputText>
+                          </af:column>
+                          <af:column sortProperty="TotalBono" sortable="false"
+                                     headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.TotalBono}"
+                                     formatType="number">
+                            <af:outputText value="Q#{row.TotalBono}"
+                                           partialTriggers="tbl_det_desc">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.TotalBono}"/>
+                            </af:outputText>
+                          </af:column>
+                          <af:column sortProperty="TotalDescuento"
+                                     sortable="false"
+                                     headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.TotalDescuento}"
+                                     formatType="number">
+                            <af:outputText value="Q#{row.TotalDescuento}"
+                                           partialTriggers="tbl_det_desc">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.TotalDescuento}"/>
+                            </af:outputText>
+                            <af:table value="#{bindings.SisComplementoDetVwSisComplementoDetajustesVw.collectionModel}"
+                                      var="row"
+                                      rows="#{bindings.SisComplementoDetVwSisComplementoDetajustesVw.rangeSize}"
+                                      first="#{bindings.SisComplementoDetVwSisComplementoDetajustesVw.rangeStart}"
+                                      emptyText="Ninguna Fila"
+                                      selectionState="#{bindings.SisComplementoDetVwSisComplementoDetajustesVw.collectionModel.selectedRow}"
+                                      selectionListener="#{bindings.SisComplementoDetVwSisComplementoDetajustesVw.collectionModel.makeCurrent}"
+                                      rendered="#{row.isSel}" banding="row"
+                                      bandingInterval="1" id="tbl_det_desc"
+                                      partialTriggers="tbl_det_desc:btn_agregar_desc tbl_det_desc:cmd_eliminar_Desc">
+                              <f:facet name="actions">
+                                <af:panelForm>
+                                  <af:selectOneChoice value="#{bindings.pIdAjuste.inputValue}"
+                                                      label="Descuento/Bono"
+                                                      required="#{bindings.pIdAjuste.mandatory}">
+                                    <af:validator binding="#{bindings.pIdAjuste.validator}"/>
+                                    <f:convertNumber groupingUsed="false"
+                                                     pattern="#{bindings.pIdAjuste.format}"/>
+                                    <af:selectItem label="- BONO MENSUAL"
+                                                   value="27"/>
+                                    <af:selectItem label="01 ISR" value="1"/>
+                                    <af:selectItem label="02 TIMBRE COL ECONOMISTAS"
+                                                   value="2"/>
+                                    <af:selectItem label="03 PRESTAMO BANTRAB"
+                                                   value="3"/>
+                                    <af:selectItem label="04 POR DEUDA"
+                                                   value="30"/>
+                                    <af:selectItem label="04 POR ALIMENTOS"
+                                                   value="4"/>
+                                    <af:selectItem label="05 PRESTACIONES PAGADAS DE MAS"
+                                                   value="5"/>
+                                    <af:selectItem label="06 SUSPE TRAB SIN GOCE DE SUELDO"
+                                                   value="6"/>
+                                    <af:selectItem label="07 PAGO DEUDORES"
+                                                   value="7"/>
+                                    <af:selectItem label="08 FIDEICOMISO"
+                                                   value="8"/>
+                                    <af:selectItem label="09 PRESTAMO PLAN PRESTACIONES"
+                                                   value="9"/>
+                                    <af:selectItem label="10 CUOTA SEGURO DE CREDITO"
+                                                   value="10"/>
+                                    <af:selectItem label="105 BONO MENSUAL PAGADO DE MAS"
+                                                   value="40" rendered="false"/>
+                                    <af:selectItem label="11 CUOTA COOPERATIVA DE VIVIENDA"
+                                                   value="11"/>
+                                    <af:selectItem label="12 PRESTAMO BANRURAL"
+                                                   value="12"/>
+                                    <af:selectItem label="13 SINDICATO DOCENTE"
+                                                   value="13"/>
+                                    <af:selectItem label="14 CUOTA PENDIENTE PLAN PREST"
+                                                   value="14"/>
+                                    <af:selectItem label="15 SUELDOS PAGADOS DE MAS"
+                                                   value="15"/>
+                                    <af:selectItem label="16 FALTAS AL TRABAJO"
+                                                   value="16"/>
+                                    <af:selectItem label="17 DESCUENTOS A TERCEROS"
+                                                   value="17"/>
+                                    <af:selectItem label="18 VARIOS"
+                                                   value="18"/>
+                                    <af:selectItem label="19 PRESTAMO MORA BANCO BANTRAB"
+                                                   value="19"/>
+                                    <af:selectItem label="20 TIMBRE ARQUITECTOS"
+                                                   value="32"/>
+                                    <af:selectItem label="21 IGSS 3%"
+                                                   value="25"/>
+                                    <af:selectItem label="21 IGSS 4.83"
+                                                   value="21"/>
+                                    <af:selectItem label="23 SINDICATO ADMINISTRATIVO"
+                                                   value="23"/>
+                                    <af:selectItem label="24 CUOTA PLAN DE PRESTACIONES"
+                                                   value="24"/>
+                                    <af:selectItem label="25 SIPT" value="41"/>
+                                    <af:selectItem label="27 SINDICEUSAC" value="44"/>
+                                    <af:selectItem label="29 ASESORIA STUSC" value="46"/>
+                                    <af:selectItem label="34 SINTRAUSAC" value="51"/>
+                                    <af:selectItem label="35 FIANZA DE FIDELIDAD" value="52"/>
+                                  </af:selectOneChoice>
+                                  <af:inputText value="#{bindings.pValor.inputValue}"
+                                                label="Monto"
+                                                required="#{bindings.pValor.mandatory}"
+                                                columns="6"
+                                                tip="Dejar en blanco para calculo automatico">
+                                    <af:validator binding="#{bindings.pValor.validator}"/>
+                                    <f:convertNumber groupingUsed="false"
+                                                     pattern="#{bindings.pValor.format}"/>
+                                  </af:inputText>
+                                  <af:commandButton text="Agregar"
+                                                    action="#{pago_complementos.btn_agregar_desc_ant}"
+                                                    id="btn_agregar_desc"
+                                                    partialSubmit="true"/>
+                                </af:panelForm>
+                              </f:facet>
+                              <af:column sortProperty="IdAjuste"
+                                         sortable="false"
+                                         headerText="Bono/Desc">
+                                <af:outputText value="#{row.CodNomina} - #{row.Nomajusteabre}">
+                                  <f:convertNumber groupingUsed="false"
+                                                   pattern="#{bindings.SisComplementoDetVwSisComplementoDetajustesVw.formats.IdAjuste}"/>
+                                </af:outputText>
+                              </af:column>
+                              <af:column sortProperty="MontoAjuste"
+                                         sortable="false"
+                                         headerText="#{bindings.SisComplementoDetVwSisComplementoDetajustesVw.labels.ValorAplicado}"
+                                         formatType="number">
+                                <af:outputText value="#{row.MontoAjuste}">
+                                  <f:convertNumber groupingUsed="false"
+                                                   pattern="#{bindings.SisComplementoDetVwSisComplementoDetajustesVw.formats.ValorAplicado}"/>
+                                </af:outputText>
+                              </af:column>
+                              <af:column sortProperty="CreadoPor"
+                                         sortable="false" headerText=" -">
+                                <af:commandLink action="#{pago_complementos.cmd_eliminar_ajuste_ant}"
+                                                id="cmd_eliminar_Desc"
+                                                partialSubmit="true">
+                                  <af:objectImage source="/imagenes/borrar.png"/>
+                                </af:commandLink>
+                              </af:column>
+                            </af:table>
+                          </af:column>
+                          <af:column sortProperty="Liquido" sortable="false"
+                                     headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.Liquido}"
+                                     formatType="number">
+                            <af:outputText value="Q#{row.Liquido}"
+                                           partialTriggers="tbl_det_desc">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.Liquido}"/>
+                            </af:outputText>
+                          </af:column>
+                          <af:column sortProperty="CantidadHoras"
+                                     sortable="false"
+                                     headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.CantidadHoras}">
+                            <af:outputText value="#{row.CantidadHoras}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.CantidadHoras}"/>
+                            </af:outputText>
+                            <af:inputText value="#{row.CantidadHoras}"
+                                          columns="5"
+                                          rendered='#{row.isSel &amp;&amp;  row.Tiponomina=="NOMINA NORMAL" &amp;&amp; row.Periodo.value ==12}'/>
+                          </af:column>
+                          <af:column sortProperty="Diaslaborados"
+                                     sortable="false"
+                                     headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.Diaslaborados}">
+                            <af:outputText value="#{row.Diaslaborados}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.Diaslaborados}"/>
+                            </af:outputText>
+                            <af:inputText value="#{row.Diaslaborados}"
+                                          columns="5" rendered="#{row.isSel}"/>
+                          </af:column>
+                          <af:column sortProperty="Fechacreacion"
+                                     sortable="false"
+                                     headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.Fechacreacion}">
+                            <af:outputText value="#{row.Fechacreacion}">
+                              <f:convertDateTime pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.Fechacreacion}"/>
+                            </af:outputText>
+                          </af:column>
+                          <af:column sortable="false" headerText="CUI">
+                            <af:outputText value="#{row.Cui}"/>
+                          </af:column>
+                        </af:table>
+                      </af:panelForm>
+                    </af:showDetailItem>
+                    <af:showDetailItem text="Curso de Vacaciones"
+                                       disclosed="false"
+                                       binding="#{pago_complementos.tab_vacacion}"
+                                       disabled="#{bindings.Isautofinanciable.inputValue =='NO'&amp;&amp;bindings.SisComplementoVwSisComplementoDetVw.estimatedRowCount >0?true:false}">
+                      <af:panelHorizontal valign="top">
+                        <af:outputFormatted value="Nota:"
+                                            inlineStyle="color:rgb(255,33,33); font-weight:bold; font-size:small;"/>
+                        <af:objectSpacer width="10" height="10"/>
+                        <af:panelList>
+                          <af:outputFormatted value="El siguiente listado muestra las plazas de curso de vacaciones pendientes de pago. Si alguna plaza aparece en otro complemento ya no aparecerá en este listado."
+                                              inlineStyle="color:rgb(0,107,165); font-size:small;"/>
+                          <af:outputFormatted value="Para generar el pago de las plazas, seleccionar la casilla del lado izquierdo y luego el botón Procesar."
+                                              inlineStyle="color:rgb(0,107,165); font-size:small;"/>
+                        </af:panelList>
+                      </af:panelHorizontal>
+                      <af:table value="#{bindings['SisComplementoPlazaVac_vw'].collectionModel}"
+                                var="row"
+                                rows="#{bindings['SisComplementoPlazaVac_vw'].rangeSize}"
+                                first="#{bindings['SisComplementoPlazaVac_vw'].rangeStart}"
+                                emptyText="Ninguna Fila"
+                                banding="row" bandingInterval="1">
+                        <af:column sortable="false" headerText="Seleccionar">
+                          <af:selectBooleanCheckbox value="#{row.Seleccionado}"
+                                                    selected="#{row.Seleccionado}"/>
+                        </af:column>
+                        <af:column sortProperty="IdContrato" sortable="false"
+                                   headerText="#{bindings['SisComplementoPlazaVac_vw'].labels.IdContrato}">
+                          <af:outputText value="#{row.IdContrato}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings['SisComplementoPlazaVac_vw'].formats.IdContrato}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="RegistroEmpleado"
+                                   sortable="false"
+                                   headerText="#{bindings['SisComplementoPlazaVac_vw'].labels.RegistroEmpleado}">
+                          <af:outputText value="#{row.RegistroEmpleado}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings['SisComplementoPlazaVac_vw'].formats.RegistroEmpleado}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="Partida" sortable="false"
+                                   headerText="#{bindings['SisComplementoPlazaVac_vw'].labels.Partida}">
+                          <af:outputText value="#{row.Partida}"/>
+                        </af:column>
+                        <af:column sortProperty="IdPuesto" sortable="false"
+                                   headerText="#{bindings['SisComplementoPlazaVac_vw'].labels.IdPuesto}">
+                          <af:outputText value="#{row.IdPuesto}-#{row.NomPuesto}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings['SisComplementoPlazaVac_vw'].formats.IdPuesto}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="NumeroPlaza" sortable="false"
+                                   headerText="#{bindings['SisComplementoPlazaVac_vw'].labels.NumeroPlaza}">
+                          <af:outputText value="#{row.NumeroPlaza}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings['SisComplementoPlazaVac_vw'].formats.NumeroPlaza}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="Horascontratadas"
+                                   sortable="false"
+                                   headerText="#{bindings['SisComplementoPlazaVac_vw'].labels.Horascontratadas}">
+                          <af:outputText value="#{row.Horascontratadas}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings['SisComplementoPlazaVac_vw'].formats.Horascontratadas}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="Sueldobase" sortable="false"
+                                   headerText="#{bindings['SisComplementoPlazaVac_vw'].labels.Sueldobase}">
+                          <af:outputText value="#{row.Sueldobase}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings['SisComplementoPlazaVac_vw'].formats.Sueldobase}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="Nomdependencia"
+                                   sortable="false"
+                                   headerText="#{bindings['SisComplementoPlazaVac_vw'].labels.Nomdependencia}">
+                          <af:outputText value="#{row.Nomdependencia}"/>
+                        </af:column>
+                        <af:column sortProperty="FechaInicio" sortable="false"
+                                   headerText="#{bindings['SisComplementoPlazaVac_vw'].labels.FechaInicio}">
+                          <af:outputText value="#{row.FechaInicio}">
+                            <f:convertDateTime pattern="#{bindings['SisComplementoPlazaVac_vw'].formats.FechaInicio}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="FechaFin" sortable="false"
+                                   headerText="#{bindings['SisComplementoPlazaVac_vw'].labels.FechaFin}">
+                          <af:outputText value="#{row.FechaFin}">
+                            <f:convertDateTime pattern="#{bindings['SisComplementoPlazaVac_vw'].formats.FechaFin}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="Estado" sortable="false"
+                                   headerText="#{bindings['SisComplementoPlazaVac_vw'].labels.Estado}">
+                          <af:outputText value="#{row.Estado}"/>
+                        </af:column>
+                        <f:facet name="header"/>
+                        <f:facet name="actions">
+                          <h:panelGroup>
+                            <af:commandButton text="Refrescar tabla"
+                                              actionListener="#{bindings.Execute1.execute}"
+                                              disabled="#{!bindings.Execute1.enabled}"/>
+                            <af:commandButton text="Procesar"
+                                              action="#{pago_complementos.btn_procesar_vac2}"/>
+                          </h:panelGroup>
+                        </f:facet>
+                      </af:table>
+                      <af:objectSeparator/>
+                      <af:commandButton text="Procesar"
+                                        action="#{pago_complementos.btn_procesar_vac2}"/>
+                    </af:showDetailItem>
+                  </af:showOneTab>
+                </af:showDetailItem>
+              </af:showOneTab>
+            </af:panelBox>
+          </af:page>
+            <f:verbatim>
+          <jsp:include page="../util/dialog_autoriza.txt"/>     
+          </f:verbatim>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:pago_complementos-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:pago_complementos-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:pago_complementos-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:pago_complementos-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:pago_complementos-->
+</jsp:root>

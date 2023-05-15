@@ -1,0 +1,1884 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="reporte_liquidacion_nominacui"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="609"
+		 pageHeight="651"
+		 columnWidth="549"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="id_liquidacion" isForPrompting="true" class="java.lang.Integer"/>
+	<parameter name="SUBREPORT_DIR" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA["C:\\checkout11122008\\interfaz_usuario\\public_html\\reportes\\def_reportes\\"]]></defaultValueExpression>
+	</parameter>
+	<queryString><![CDATA[select 
+sis_liquidacion.ID_LIQUIDACION,
+sis_liquidacion.FOLIO_INICIAL,
+sis_liquidacion.FOLIO_FINAL,
+sis_util_report_pkg.GETFOLIOS(sis_liquidacion.id_liquidacion) as folios,
+(select  sis_pkg_util.GETNOMINASPROCESOPAGO(sis_liquidacion.id_proceso) 
+from dual) nomina,
+to_char(sis_liquidacion.FECHA_LIQUIDACION,'dd/mm/yyyy') fecha_liquidacion,
+(select d.nombre from sis_dependencia d where d.ID_DEPENDENCIA= sis_liquidacion.ID_DEPENDENCIA) nom_dependencia
+,
+sis_liquidacion.id_dependencia,
+(select u.nombre from sis_unidad_ejecutora u 
+where u.ID_DEPENDENCIA=sis_liquidacion.ID_DEPENDENCIA_UN 
+and u.ID_PROGRAMA=sis_liquidacion.ID_PROGRAMA_UN
+and u.ID_UNIDAD=sis_liquidacion.ID_UNIDAD_UN) nom_un_ejec_un,
+sis_liquidacion.ID_PROGRAMA_UN programa,
+(select d.nombre from sis_dependencia d where d.ID_DEPENDENCIA= sis_liquidacion.ID_DEPENDENCIA_un) 
+nom_dependencia_un,
+sis_liquidacion.ID_PROGRAMA_UN||'.'||sis_liquidacion.ID_DEPENDENCIA_UN||'.'||sis_liquidacion.ID_UNIDAD_UN as codigo,
+(select nvl(min(sis_documento_banco.num_doc_fisico ),'0') ||'  AL '|| nvl(max(sis_documento_banco.num_doc_fisico ),'0') from sis_documento_banco,sis_tipo_documento where   
+sis_liquidacion.id_liquidacion=sis_documento_banco.id_liquidacion
+and sis_documento_banco.id_tipo_documento=sis_tipo_documento.ID_TIPO_DOCUMENTO
+and sis_tipo_documento.nombre='CHEQUE') 
+min_max_doc_cheque,
+(select nvl(min(sis_documento_banco.num_doc_fisico ),'0')||'  AL '|| nvl(max(sis_documento_banco.num_doc_fisico ),'0') 
+from sis_documento_banco,sis_tipo_documento where   
+sis_documento_banco.id_liquidacion=sis_liquidacion.id_liquidacion
+and sis_documento_banco.id_tipo_documento=sis_tipo_documento.ID_TIPO_DOCUMENTO
+and sis_tipo_documento.nombre='ACREDITACION') 
+min_max_doc_acred,
+(select count(*) from sis_documento_banco where 
+sis_documento_banco.id_liquidacion=sis_liquidacion.id_liquidacion and sis_documento_banco.id_tipo_documento=1) 
+docs_chq_liquidados,
+(select count(*) from sis_documento_banco where 
+sis_documento_banco.id_liquidacion=sis_liquidacion.id_liquidacion and sis_documento_banco.id_tipo_documento=2) 
+docs_acr_liquidados,
+(select count(*) from sis_documento_banco where 
+sis_documento_banco.id_liquidacion=sis_liquidacion.id_liquidacion and sis_documento_banco.fecha_anulacion is not null and sis_documento_banco.id_tipo_documento=1 
+and trunc(fecha_anulacion) <= trunc(nvl(sis_liquidacion.fecha_mod,sis_liquidacion.fecha_liquidacion))) 
+docs_chq_anulados,
+(select count(*) from sis_documento_banco where 
+sis_documento_banco.id_liquidacion=sis_liquidacion.id_liquidacion and sis_documento_banco.fecha_anulacion is not null and sis_documento_banco.id_tipo_documento=2 
+and trunc(fecha_anulacion) <= trunc(nvl(sis_liquidacion.fecha_mod,sis_liquidacion.fecha_liquidacion))) 
+docs_acr_anulados,
+(nvl((select sum(sis_documento_banco.valor) from sis_documento_banco 
+where sis_documento_banco.id_liquidacion=sis_liquidacion.ID_LIQUIDACION and sis_documento_banco.id_tipo_documento=1),0)
+ ) 
+ total_chq_liquido,
+ (nvl((select sum(sis_documento_banco.valor) from sis_documento_banco 
+where sis_documento_banco.id_liquidacion=sis_liquidacion.ID_LIQUIDACION and sis_documento_banco.id_tipo_documento=2),0)
+ ) 
+ total_acr_liquido,
+nvl((select sum(sis_documento_banco.valor) from sis_documento_banco 
+where sis_documento_banco.id_liquidacion=sis_liquidacion.ID_LIQUIDACION 
+and sis_documento_banco.fecha_anulacion is not null and sis_documento_banco.id_tipo_documento=1
+and trunc(fecha_anulacion) <= trunc(nvl(sis_liquidacion.fecha_mod,sis_liquidacion.fecha_liquidacion))),0)
+total_chq_liquido_anulados,
+nvl((select sum(sis_documento_banco.valor) from sis_documento_banco 
+where sis_documento_banco.id_liquidacion=sis_liquidacion.ID_LIQUIDACION 
+and sis_documento_banco.fecha_anulacion is not null and sis_documento_banco.id_tipo_documento=2
+and trunc(fecha_anulacion) <= trunc(nvl(sis_liquidacion.fecha_mod,sis_liquidacion.fecha_liquidacion))),0)
+total_acr_liquido_anulados,
+nvl((select sum(sis_nomina.nominal) from sis_nomina,sis_pago,sis_documento_banco
+where
+sis_liquidacion.ID_LIQUIDACION=sis_documento_Banco.id_liquidacion
+and sis_documento_banco.id_documento_banco=sis_pago.id_documento_banco
+and sis_documento_banco.id_proceso=sis_pago.id_proceso
+and sis_pago.ID_NOMINA=sis_nomina.id_nomina and sis_documento_banco.id_tipo_documento=1),0)
+total_chq_nominal_liquidado,
+nvl((select sum(sis_nomina.nominal) from sis_nomina,sis_pago,sis_documento_banco
+where
+sis_liquidacion.ID_LIQUIDACION=sis_documento_Banco.id_liquidacion
+and sis_documento_banco.id_documento_banco=sis_pago.id_documento_banco
+and sis_documento_banco.id_proceso=sis_pago.id_proceso
+and sis_pago.ID_NOMINA=sis_nomina.id_nomina and sis_documento_banco.id_tipo_documento=2),0)
+total_acr_nominal_liquidado,
+nvl((select sum(sis_nomina.nominal) from sis_nomina,sis_pago,sis_documento_banco
+where
+sis_liquidacion.ID_LIQUIDACION=sis_documento_Banco.id_liquidacion
+and sis_documento_banco.id_documento_banco=sis_pago.id_documento_banco
+and sis_documento_banco.id_proceso=sis_pago.id_proceso
+and sis_pago.ID_NOMINA=sis_nomina.id_nomina 
+and sis_documento_banco.fecha_anulacion is not null and sis_documento_banco.id_tipo_documento=1 
+and trunc(fecha_anulacion) <= trunc(nvl(sis_liquidacion.fecha_mod,sis_liquidacion.fecha_liquidacion))),0)
+total_chq_nominal_anulado,
+nvl((select sum(sis_nomina.nominal) from sis_nomina,sis_pago,sis_documento_banco
+where
+sis_liquidacion.ID_LIQUIDACION=sis_documento_Banco.id_liquidacion
+and sis_documento_banco.id_documento_banco=sis_pago.id_documento_banco
+and sis_documento_banco.id_proceso=sis_pago.id_proceso
+and sis_pago.ID_NOMINA=sis_nomina.id_nomina 
+and sis_documento_banco.fecha_anulacion is not null and sis_documento_banco.id_tipo_documento=2 
+and trunc(fecha_anulacion) <= trunc(nvl(sis_liquidacion.fecha_mod,sis_liquidacion.fecha_liquidacion))),0)
+total_acr_nominal_anulado,
+nvl((select sum(sis_nomina.total_bono) from sis_nomina,sis_pago,sis_documento_banco
+where
+sis_liquidacion.ID_LIQUIDACION=sis_documento_Banco.id_liquidacion
+and sis_documento_banco.id_documento_banco=sis_pago.id_documento_banco
+and sis_documento_banco.id_proceso=sis_pago.id_proceso
+and sis_pago.ID_NOMINA=sis_nomina.id_nomina  and sis_documento_banco.id_tipo_documento=1),0)
+total_chq_bono,
+nvl((select sum(sis_nomina.total_bono) from sis_nomina,sis_pago,sis_documento_banco
+where
+sis_liquidacion.ID_LIQUIDACION=sis_documento_Banco.id_liquidacion
+and sis_documento_banco.id_documento_banco=sis_pago.id_documento_banco
+and sis_documento_banco.id_proceso=sis_pago.id_proceso
+and sis_pago.ID_NOMINA=sis_nomina.id_nomina  and sis_documento_banco.id_tipo_documento=2),0)
+total_acr_bono,
+nvl((select sum(sis_nomina.total_bono) from sis_nomina,sis_pago,sis_documento_banco
+where
+sis_liquidacion.ID_LIQUIDACION=sis_documento_Banco.id_liquidacion
+and sis_documento_banco.id_documento_banco=sis_pago.id_documento_banco
+and sis_documento_banco.id_proceso=sis_pago.id_proceso
+and sis_pago.ID_NOMINA=sis_nomina.id_nomina 
+and sis_documento_banco.fecha_anulacion is not null and sis_documento_banco.id_tipo_documento=1 
+and trunc(fecha_anulacion) <= trunc(nvl(sis_liquidacion.fecha_mod,sis_liquidacion.fecha_liquidacion))),0)
+total_chq_bono_anulado,
+nvl((select sum(sis_nomina.total_bono) from sis_nomina,sis_pago,sis_documento_banco
+where
+sis_liquidacion.ID_LIQUIDACION=sis_documento_Banco.id_liquidacion
+and sis_documento_banco.id_documento_banco=sis_pago.id_documento_banco
+and sis_documento_banco.id_proceso=sis_pago.id_proceso
+and sis_pago.ID_NOMINA=sis_nomina.id_nomina 
+and sis_documento_banco.fecha_anulacion is not null and sis_documento_banco.id_tipo_documento=2 
+and trunc(fecha_anulacion) <= trunc(nvl(sis_liquidacion.fecha_mod,sis_liquidacion.fecha_liquidacion))),0)
+total_acr_bono_anulado
+from sis_liquidacion where id_liquidacion=$P{id_liquidacion}]]></queryString>
+
+	<field name="ID_LIQUIDACION" class="java.math.BigDecimal"/>
+	<field name="FOLIO_INICIAL" class="java.math.BigDecimal"/>
+	<field name="FOLIO_FINAL" class="java.math.BigDecimal"/>
+	<field name="FOLIOS" class="java.lang.String"/>
+	<field name="NOMINA" class="java.lang.String"/>
+	<field name="FECHA_LIQUIDACION" class="java.lang.String"/>
+	<field name="NOM_DEPENDENCIA" class="java.lang.String"/>
+	<field name="ID_DEPENDENCIA" class="java.math.BigDecimal"/>
+	<field name="NOM_UN_EJEC_UN" class="java.lang.String"/>
+	<field name="PROGRAMA" class="java.math.BigDecimal"/>
+	<field name="NOM_DEPENDENCIA_UN" class="java.lang.String"/>
+	<field name="CODIGO" class="java.lang.String"/>
+	<field name="MIN_MAX_DOC_CHEQUE" class="java.lang.String"/>
+	<field name="MIN_MAX_DOC_ACRED" class="java.lang.String"/>
+	<field name="DOCS_CHQ_LIQUIDADOS" class="java.math.BigDecimal"/>
+	<field name="DOCS_ACR_LIQUIDADOS" class="java.math.BigDecimal"/>
+	<field name="DOCS_CHQ_ANULADOS" class="java.math.BigDecimal"/>
+	<field name="DOCS_ACR_ANULADOS" class="java.math.BigDecimal"/>
+	<field name="TOTAL_CHQ_LIQUIDO" class="java.math.BigDecimal"/>
+	<field name="TOTAL_ACR_LIQUIDO" class="java.math.BigDecimal"/>
+	<field name="TOTAL_CHQ_LIQUIDO_ANULADOS" class="java.math.BigDecimal"/>
+	<field name="TOTAL_ACR_LIQUIDO_ANULADOS" class="java.math.BigDecimal"/>
+	<field name="TOTAL_CHQ_NOMINAL_LIQUIDADO" class="java.math.BigDecimal"/>
+	<field name="TOTAL_ACR_NOMINAL_LIQUIDADO" class="java.math.BigDecimal"/>
+	<field name="TOTAL_CHQ_NOMINAL_ANULADO" class="java.math.BigDecimal"/>
+	<field name="TOTAL_ACR_NOMINAL_ANULADO" class="java.math.BigDecimal"/>
+	<field name="TOTAL_CHQ_BONO" class="java.math.BigDecimal"/>
+	<field name="TOTAL_ACR_BONO" class="java.math.BigDecimal"/>
+	<field name="TOTAL_CHQ_BONO_ANULADO" class="java.math.BigDecimal"/>
+	<field name="TOTAL_ACR_BONO_ANULADO" class="java.math.BigDecimal"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+				<rectangle>
+					<reportElement
+						x="0"
+						y="-353"
+						width="548"
+						height="198"
+						key="rectangle-8"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<line direction="TopDown">
+					<reportElement
+						x="20"
+						y="-353"
+						width="0"
+						height="198"
+						key="line-31"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="125"
+						y="-354"
+						width="0"
+						height="200"
+						key="line-32"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="75"
+						y="-354"
+						width="1"
+						height="200"
+						key="line-33"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="185"
+						y="-354"
+						width="0"
+						height="200"
+						key="line-34"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="284"
+						y="-354"
+						width="0"
+						height="199"
+						key="line-35"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="334"
+						y="-354"
+						width="0"
+						height="199"
+						key="line-36"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="502"
+						y="-354"
+						width="1"
+						height="200"
+						key="line-37"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="97"
+						y="-353"
+						width="0"
+						height="198"
+						key="line-38"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="235"
+						y="-353"
+						width="0"
+						height="198"
+						key="line-43"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+			</band>
+		</background>
+		<title>
+			<band height="250"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="191"
+						y="20"
+						width="172"
+						height="10"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[REPORTE DE EJECUCIÓN DE NOMINA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="440"
+						y="79"
+						width="31"
+						height="10"
+						key="staticText-3"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[FECHA:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="479"
+						y="1"
+						width="69"
+						height="10"
+						key="staticText-5"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[FORM SIS-13]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1"
+						y="79"
+						width="62"
+						height="10"
+						key="staticText-7"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[TIPO NOMINA:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="94"
+						width="138"
+						height="10"
+						key="staticText-10"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[FOLIOS FORM SIS-07 DEL No.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="97"
+						y="109"
+						width="63"
+						height="10"
+						key="staticText-12"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[CHEQUES DEL]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="97"
+						y="125"
+						width="100"
+						height="10"
+						key="staticText-15"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[ACREDITAMIENTOS DEL]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="0"
+						y="150"
+						width="549"
+						height="40"
+						key="rectangle-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="126"
+						y="151"
+						width="67"
+						height="10"
+						key="staticText-17"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[DESCRIPCIÓN]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="261"
+						y="151"
+						width="52"
+						height="10"
+						key="staticText-18"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[CANTIDAD]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="319"
+						y="151"
+						width="75"
+						height="10"
+						key="staticText-19"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[VALOR NOMINAL]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="469"
+						y="151"
+						width="77"
+						height="10"
+						key="staticText-20"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[VALOR LIQUIDO]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="174"
+						width="0"
+						height="0"
+						key="line-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="159"
+						width="549"
+						height="0"
+						key="line-2"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="2"
+						y="160"
+						width="207"
+						height="10"
+						key="staticText-21"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[TOTAL CHEQUES EMITIDOS:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="2"
+						y="169"
+						width="247"
+						height="10"
+						key="staticText-22"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[(-)TOTAL CHEQUES ANULADOS (Detallados abajo)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="209"
+						y="181"
+						width="49"
+						height="10"
+						key="staticText-24"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[SUBTOTAL:]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="261"
+						y="150"
+						width="0"
+						height="43"
+						key="line-3"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="316"
+						y="150"
+						width="0"
+						height="43"
+						key="line-4"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="394"
+						y="150"
+						width="0"
+						height="43"
+						key="line-5"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="1"
+						y="180"
+						width="548"
+						height="0"
+						key="line-6"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="486"
+						y="79"
+						width="60"
+						height="10"
+						key="textField"/>
+					<box>					<pen lineWidth="0.0" lineStyle="Solid"/>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+</box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{FECHA_LIQUIDACION}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="133"
+						y="94"
+						width="416"
+						height="10"
+						key="textField"/>
+					<box>					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+</box>
+					<textElement textAlignment="Left">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{FOLIOS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="66"
+						y="79"
+						width="366"
+						height="10"
+						key="textField"/>
+					<box>					<pen lineWidth="0.0" lineStyle="Solid"/>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+</box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMINA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="468"
+						y="160"
+						width="79"
+						height="10"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_CHQ_LIQUIDO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="468"
+						y="169"
+						width="79"
+						height="10"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_CHQ_LIQUIDO_ANULADOS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0;-###0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="266"
+						y="169"
+						width="47"
+						height="10"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DOCS_CHQ_ANULADOS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0;-###0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="266"
+						y="160"
+						width="47"
+						height="10"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DOCS_CHQ_LIQUIDADOS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="197"
+						y="109"
+						width="128"
+						height="10"
+						key="textField"/>
+					<box>					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+</box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{MIN_MAX_DOC_CHEQUE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="197"
+						y="125"
+						width="128"
+						height="10"
+						key="textField"/>
+					<box>					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+</box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{MIN_MAX_DOC_ACRED}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="1"
+						y="36"
+						width="123"
+						height="10"
+						key="staticText-46"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Señor Contador General]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="46"
+						width="548"
+						height="20"
+						key="staticText-47"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[Señor Contador General, el presente reporte incluye todos los cheques y acreditamientos que fueron pagados y/o anulados con o sin reposición según detalle:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="68"
+						width="91"
+						height="10"
+						key="staticText-48"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[UNIDAD EJECUTORA:]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="91"
+						y="68"
+						width="368"
+						height="10"
+						key="textField-1">
+							<printWhenExpression><![CDATA[new Boolean($F{NOM_DEPENDENCIA}==null)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOM_DEPENDENCIA_UN}+", "+$F{NOM_UN_EJEC_UN}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="440"
+						y="68"
+						width="46"
+						height="10"
+						key="textField-2"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["CÓDIGO:"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="492"
+						y="68"
+						width="55"
+						height="10"
+						key="textField">
+							<printWhenExpression><![CDATA[new Boolean($F{NOM_DEPENDENCIA}==null)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{CODIGO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="91"
+						y="68"
+						width="341"
+						height="10"
+						key="textField">
+							<printWhenExpression><![CDATA[new Boolean($F{NOM_DEPENDENCIA}!=null)]]></printWhenExpression>
+						</reportElement>
+					<box>					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+</box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOM_DEPENDENCIA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="486"
+						y="68"
+						width="55"
+						height="10"
+						key="textField">
+							<printWhenExpression><![CDATA[new Boolean($F{NOM_DEPENDENCIA}!=null)]]></printWhenExpression>
+						</reportElement>
+					<box>					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+</box>
+					<textElement textAlignment="Left">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ID_DEPENDENCIA}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="109"
+						width="76"
+						height="10"
+						key="staticText-49"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[FORMA DE PAGO:]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="467"
+						y="151"
+						width="0"
+						height="43"
+						key="line-41"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="399"
+						y="150"
+						width="67"
+						height="10"
+						key="staticText-50"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[BONO MENSUAL]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="253"
+						y="4"
+						width="105"
+						height="10"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="Helvetica" size="8" isBold="false"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Id: "+$F{ID_LIQUIDACION}]]></textFieldExpression>
+				</textField>
+				<image  evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="2"
+						y="1"
+						width="122"
+						height="35"
+						key="image-1"/>
+					<box></box>
+					<graphicElement stretchType="NoStretch"/>
+					<imageExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR}+"usac_sis.jpg"]]></imageExpression>
+				</image>
+				<staticText>
+					<reportElement
+						x="334"
+						y="109"
+						width="71"
+						height="10"
+						key="staticText-54"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[MONTO TOTAL Q.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="334"
+						y="125"
+						width="71"
+						height="10"
+						key="staticText-55"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[MONTO TOTAL Q.]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="0"
+						y="190"
+						width="549"
+						height="47"
+						key="rectangle-11"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<line direction="TopDown">
+					<reportElement
+						x="261"
+						y="191"
+						width="0"
+						height="46"
+						key="line-45"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="316"
+						y="190"
+						width="0"
+						height="47"
+						key="line-46"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="394"
+						y="190"
+						width="0"
+						height="47"
+						key="line-47"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="467"
+						y="191"
+						width="0"
+						height="46"
+						key="line-48"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="2"
+						y="193"
+						width="207"
+						height="10"
+						key="staticText-56"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[TOTAL ACREDITAMIENTOS EMITIDOS:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="2"
+						y="203"
+						width="259"
+						height="10"
+						key="staticText-57"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[(-)TOTAL ACREDITAMIENTOS ANULADOS (Detallados abajo)]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="1"
+						y="213"
+						width="548"
+						height="0"
+						key="line-49"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="209"
+						y="214"
+						width="49"
+						height="10"
+						key="staticText-58"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[SUBTOTAL:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="209"
+						y="227"
+						width="49"
+						height="10"
+						key="staticText-59"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[TOTAL:]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="224"
+						width="548"
+						height="0"
+						key="line-50"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="394"
+						y="4"
+						width="53"
+						height="10"
+						key="textField-6"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Página: "+$V{PAGE_NUMBER}.toString()]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0;-###0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="266"
+						y="192"
+						width="47"
+						height="10"
+						key="textField-12"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DOCS_ACR_LIQUIDADOS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0;-###0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="266"
+						y="202"
+						width="47"
+						height="10"
+						key="textField-13"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DOCS_ACR_ANULADOS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="468"
+						y="203"
+						width="79"
+						height="10"
+						key="textField-15"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_ACR_LIQUIDO_ANULADOS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0;-###0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="266"
+						y="180"
+						width="47"
+						height="10"
+						key="textField-16"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DOCS_CHQ_LIQUIDADOS}.subtract($F{DOCS_CHQ_ANULADOS})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0;-###0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="266"
+						y="214"
+						width="47"
+						height="10"
+						key="textField-17"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DOCS_ACR_LIQUIDADOS}.subtract($F{DOCS_ACR_ANULADOS})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0;-###0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="266"
+						y="225"
+						width="47"
+						height="10"
+						key="textField-18"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DOCS_CHQ_LIQUIDADOS}.subtract($F{DOCS_CHQ_ANULADOS}).add($F{DOCS_ACR_LIQUIDADOS}).subtract($F{DOCS_ACR_ANULADOS})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="468"
+						y="180"
+						width="79"
+						height="10"
+						key="textField-19"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_CHQ_LIQUIDO}.subtract($F{TOTAL_CHQ_LIQUIDO_ANULADOS})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="468"
+						y="191"
+						width="79"
+						height="10"
+						key="textField-20"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_ACR_LIQUIDO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="468"
+						y="213"
+						width="79"
+						height="10"
+						key="textField-21"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_ACR_LIQUIDO}.subtract($F{TOTAL_ACR_LIQUIDO_ANULADOS})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="468"
+						y="225"
+						width="79"
+						height="10"
+						key="textField-22"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_CHQ_LIQUIDO}.subtract($F{TOTAL_CHQ_LIQUIDO_ANULADOS}).add($F{TOTAL_ACR_LIQUIDO}).subtract($F{TOTAL_ACR_LIQUIDO_ANULADOS})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="405"
+						y="109"
+						width="128"
+						height="10"
+						key="textField-23"/>
+					<box>					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+</box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[/*$F{TOTAL_CHQ_LIQUIDO}.add($F{TOTAL_CHQ_LIQUIDO_ANULADOS})*/
+$F{TOTAL_CHQ_LIQUIDO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="405"
+						y="125"
+						width="128"
+						height="10"
+						key="textField-24"/>
+					<box>					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+</box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[/*$F{TOTAL_ACR_LIQUIDO}.add($F{TOTAL_ACR_LIQUIDO_ANULADOS})*/
+$F{TOTAL_ACR_LIQUIDO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="319"
+						y="160"
+						width="71"
+						height="10"
+						key="textField-25"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_CHQ_NOMINAL_LIQUIDADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="319"
+						y="170"
+						width="71"
+						height="10"
+						key="textField-26"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_CHQ_NOMINAL_ANULADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="319"
+						y="180"
+						width="71"
+						height="10"
+						key="textField-27"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_CHQ_NOMINAL_LIQUIDADO}.subtract($F{TOTAL_CHQ_NOMINAL_ANULADO})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="318"
+						y="192"
+						width="72"
+						height="10"
+						key="textField-28"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_ACR_NOMINAL_LIQUIDADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="318"
+						y="202"
+						width="72"
+						height="10"
+						key="textField-29"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_ACR_NOMINAL_ANULADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="319"
+						y="214"
+						width="71"
+						height="10"
+						key="textField-30"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_ACR_NOMINAL_LIQUIDADO}.subtract($F{TOTAL_ACR_NOMINAL_ANULADO})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="318"
+						y="225"
+						width="72"
+						height="10"
+						key="textField-31"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_CHQ_NOMINAL_LIQUIDADO}.subtract($F{TOTAL_CHQ_NOMINAL_ANULADO}).add($F{TOTAL_ACR_NOMINAL_LIQUIDADO}).subtract($F{TOTAL_ACR_NOMINAL_ANULADO})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="395"
+						y="161"
+						width="71"
+						height="10"
+						key="textField-32"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_CHQ_BONO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="395"
+						y="171"
+						width="71"
+						height="10"
+						key="textField-33"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_CHQ_BONO_ANULADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="394"
+						y="181"
+						width="71"
+						height="10"
+						key="textField-34"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_CHQ_BONO}.subtract($F{TOTAL_CHQ_BONO_ANULADO})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="394"
+						y="192"
+						width="72"
+						height="10"
+						key="textField-35"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_ACR_BONO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="394"
+						y="202"
+						width="72"
+						height="10"
+						key="textField-36"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_ACR_BONO_ANULADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="395"
+						y="213"
+						width="71"
+						height="10"
+						key="textField-37"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_ACR_BONO}.subtract($F{TOTAL_ACR_BONO_ANULADO})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="394"
+						y="225"
+						width="72"
+						height="10"
+						key="textField-38"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_CHQ_BONO}.subtract($F{TOTAL_CHQ_BONO_ANULADO}).add($F{TOTAL_ACR_BONO}).subtract($F{TOTAL_ACR_BONO_ANULADO})]]></textFieldExpression>
+				</textField>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="50"  isSplitAllowed="true" >
+				<rectangle>
+					<reportElement
+						x="0"
+						y="18"
+						width="548"
+						height="31"
+						key="rectangle-2"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="176"
+						y="19"
+						width="167"
+						height="10"
+						key="staticText-25"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[DETALLE DE PAGOS ANULADOS]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="29"
+						width="548"
+						height="1"
+						key="line-7"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="1"
+						y="30"
+						width="25"
+						height="20"
+						key="staticText-26"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[No.
+ORD]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="21"
+						y="30"
+						width="55"
+						height="20"
+						key="staticText-27"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[No.
+DOCUMENTO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="131"
+						y="30"
+						width="52"
+						height="20"
+						key="staticText-28"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[VALOR NOMINAL Q.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="230"
+						y="30"
+						width="48"
+						height="20"
+						key="staticText-29"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[VALOR LIQUIDO Q]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="315"
+						y="30"
+						width="152"
+						height="10"
+						key="staticText-30"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[DOCUMENTO EMITIDO A FAVOR DE:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="501"
+						y="30"
+						width="48"
+						height="19"
+						key="staticText-31"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" size="6"/>
+					</textElement>
+				<text><![CDATA[MOTIVO ANULACIÓN (*)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="287"
+						y="40"
+						width="49"
+						height="10"
+						key="staticText-32"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[CUI]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="355"
+						y="40"
+						width="140"
+						height="10"
+						key="staticText-33"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[NOMBRE]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="279"
+						y="30"
+						width="0"
+						height="19"
+						key="line-8"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="279"
+						y="38"
+						width="223"
+						height="0"
+						key="line-9"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="98"
+						y="40"
+						width="30"
+						height="10"
+						key="staticText-34"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[BANCO]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="502"
+						y="29"
+						width="0"
+						height="20"
+						key="line-11"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="76"
+						y="30"
+						width="24"
+						height="20"
+						key="staticText-43"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[TIPO DOC.]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="20"
+						y="30"
+						width="0"
+						height="19"
+						key="line-19"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="75"
+						y="30"
+						width="0"
+						height="18"
+						key="line-20"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="97"
+						y="30"
+						width="0"
+						height="19"
+						key="line-21"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="125"
+						y="30"
+						width="0"
+						height="19"
+						key="line-22"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="185"
+						y="29"
+						width="0"
+						height="20"
+						key="line-23"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="339"
+						y="39"
+						width="0"
+						height="11"
+						key="line-28"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="227"
+						y="30"
+						width="0"
+						height="20"
+						key="line-42"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="186"
+						y="30"
+						width="40"
+						height="20"
+						key="staticText-51"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[BONO
+MENSUAL]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="394"
+						y="2"
+						width="53"
+						height="10"
+						key="textField-4"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$V{PAGE_NUMBER}.toString().equals("1")?" " : "Página: "+$V{PAGE_NUMBER}.toString()]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="253"
+						y="3"
+						width="105"
+						height="10"
+						key="textField-5"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="Helvetica" size="8" isBold="false"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$V{PAGE_NUMBER}.toString().equals("1")?" " : "Id: "+$F{ID_LIQUIDACION}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="479"
+						y="1"
+						width="53"
+						height="10"
+						key="textField-7"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$V{PAGE_NUMBER}.toString().equals("1")?" " : "FORM SIS-13"]]></textFieldExpression>
+				</textField>
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="15"  isSplitAllowed="true" >
+				<subreport  isUsingCache="true">
+					<reportElement
+						x="0"
+						y="0"
+						width="544"
+						height="14"
+						key="subreport-2"/>
+					<subreportParameter  name="id_liquidacion">
+						<subreportParameterExpression><![CDATA[$P{id_liquidacion}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pNominalAnulado">
+						<subreportParameterExpression><![CDATA[$F{TOTAL_CHQ_NOMINAL_ANULADO}.add($F{TOTAL_ACR_NOMINAL_ANULADO})]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pBonoAnulado">
+						<subreportParameterExpression><![CDATA[$F{TOTAL_CHQ_BONO_ANULADO}.add($F{TOTAL_ACR_BONO_ANULADO})]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pLiquidoAnulado">
+						<subreportParameterExpression><![CDATA[$F{TOTAL_CHQ_LIQUIDO_ANULADOS}.add($F{TOTAL_ACR_LIQUIDO_ANULADOS})]]></subreportParameterExpression>
+					</subreportParameter>
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<subreportExpression  class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "sub2_reporte_liquidacion_nominacui.jasper"]]></subreportExpression>
+				</subreport>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<lastPageFooter>
+			<band height="140"  isSplitAllowed="true" >
+				<rectangle>
+					<reportElement
+						x="0"
+						y="68"
+						width="548"
+						height="70"
+						key="rectangle-10"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<subreport  isUsingCache="true">
+					<reportElement
+						x="0"
+						y="69"
+						width="537"
+						height="10"
+						key="subreport-1"/>
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<subreportExpression  class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "sub1_reporte_liquidacion_nomina.jasper"]]></subreportExpression>
+				</subreport>
+				<rectangle>
+					<reportElement
+						x="0"
+						y="11"
+						width="548"
+						height="56"
+						key="rectangle-6"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="3"
+						y="12"
+						width="70"
+						height="10"
+						key="staticText-36"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[Firma y Sello]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="185"
+						y="12"
+						width="70"
+						height="10"
+						key="staticText-37"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[Adjunto:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3"
+						y="57"
+						width="60"
+						height="10"
+						key="staticText-39"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[Tesorería]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="182"
+						y="12"
+						width="0"
+						height="55"
+						key="line-13"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<textField isStretchWithOverflow="false" pattern="###0;-###0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="216"
+						y="31"
+						width="35"
+						height="10"
+						key="textField-39"/>
+					<box>					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+</box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DOCS_CHQ_LIQUIDADOS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0;-###0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="216"
+						y="46"
+						width="35"
+						height="10"
+						key="textField-40"/>
+					<box>					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+</box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DOCS_CHQ_ANULADOS}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="254"
+						y="31"
+						width="120"
+						height="10"
+						key="staticText-60"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[Cheques voucher pagados]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="254"
+						y="46"
+						width="140"
+						height="10"
+						key="staticText-61"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[Cheques y voucher anulados]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="###0;-###0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="363"
+						y="31"
+						width="37"
+						height="10"
+						key="textField-41"/>
+					<box>					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+</box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DOCS_ACR_LIQUIDADOS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0;-###0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="363"
+						y="46"
+						width="37"
+						height="10"
+						key="textField-42"/>
+					<box>					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+</box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DOCS_ACR_ANULADOS}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="403"
+						y="31"
+						width="120"
+						height="10"
+						key="staticText-62"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[Acreditamientos pagados]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="403"
+						y="45"
+						width="120"
+						height="10"
+						key="staticText-63"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[Acreditamientos anulados]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="298"
+						y="129"
+						width="250"
+						height="10"
+						key="staticText-64"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[1/2 Departamento de Contabilidad     2/2 Tesorería]]></text>
+				</staticText>
+			</band>
+		</lastPageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="sub1_sis-26"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="534"
+		 pageHeight="650"
+		 columnWidth="534"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pIdDetReintegro" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[SELECT nombre_ajuste, sum(valor_aplicado) valor_aplicado, sum(valor_aplicado_nomina) valor_aplicado_nomina 
+FROM (select nombre_ajuste, sum(valor_aplicado) valor_aplicado, 0 valor_aplicado_nomina
+from(select b.nombre nombre_ajuste, abs(a.valor_aplicado) valor_aplicado
+from sis_descuento_reintegro a, sis_ajuste b, sis_detalle_reintegro c
+where a.id_ajuste = b.id_ajuste
+and a.id_detalle_reintegro = c.id_detalle_reintegro
+and a.id_detalle_reintegro=$P{pIdDetReintegro}
+and a.valor_aplicado <0)
+group by nombre_ajuste
+UNION
+select nombre_ajuste, 0, abs(nvl(sum(valor_aplicado),0)) valor_aplicado_nomina
+from (select a.nombre nombre_ajuste, dca.valor_Aplicado 
+from sis_descuento_reintegro dr
+inner join sis_ajuste a on a.id_ajuste = dr.id_ajuste
+inner join sis_detalle_reintegro da on da.id_detalle_reintegro = dr.id_detalle_reintegro
+inner join sis_det_calculo_ajuste dca on dca.id_nomina = da.id_nomina and dca.id_ajuste = dr.id_ajuste
+where dr.id_detalle_reintegro = $P{pIdDetReintegro}
+and dr.valor_aplicado <0
+group by a.nombre, dca.valor_Aplicado ) group by nombre_ajuste ) group by nombre_ajuste]]></queryString>
+
+	<field name="NOMBRE_AJUSTE" class="java.lang.String"/>
+	<field name="VALOR_APLICADO" class="java.math.BigDecimal"/>
+	<field name="VALOR_APLICADO_NOMINA" class="java.math.BigDecimal"/>
+
+	<variable name="total_descuentos" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{VALOR_APLICADO}]]></variableExpression>
+	</variable>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="25"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="0"
+						width="236"
+						height="25"
+						key="textField"/>
+					<box>					<leftPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+</box>
+					<textElement verticalAlignment="Middle">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRE_AJUSTE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="236"
+						y="0"
+						width="100"
+						height="25"
+						key="textField"/>
+					<box>					<bottomPen lineWidth="0.75"/>
+					<rightPen lineWidth="1.0"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{VALOR_APLICADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="336"
+						y="0"
+						width="100"
+						height="25"
+						key="textField-1"/>
+					<box>					<bottomPen lineWidth="0.75"/>
+					<rightPen lineWidth="1.0"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{VALOR_APLICADO_NOMINA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="436"
+						y="0"
+						width="98"
+						height="25"
+						key="textField-2"/>
+					<box>					<bottomPen lineWidth="0.75"/>
+					<rightPen lineWidth="1.0"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{VALOR_APLICADO_NOMINA}.subtract($F{VALOR_APLICADO})]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

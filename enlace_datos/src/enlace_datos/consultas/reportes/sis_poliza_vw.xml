@@ -1,0 +1,122 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="sis_poliza_vw"
+   OrderBy="id_proceso desc"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   RowClass="enlace_datos.consultas.reportes.sis_poliza_vwRowImpl"
+   MsgBundleClass="enlace_datos.consultas.reportes.common.sis_poliza_vwRowImplMsgBundle"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isCodegen" Value="true" />
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Msg" />
+   </DesignTime>
+   <Variable
+      Name="fechaI"
+      Kind="where"
+      Type="oracle.jbo.domain.Date" >
+   </Variable>
+   <Variable
+      Name="fechaF"
+      Kind="where"
+      Type="oracle.jbo.domain.Date" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select a.id_proceso,b.nombre,a.observaciones,a.fecha_inicio,est.NOMBRE as estadopoliza
+from sis_proceso a, sis_tipo_proceso b,sis_estado est
+where a.tipoproceso=b.id_tipoproceso
+and b.nombre='POLIZA'
+and est.id_estado=a.id_estado
+and exists
+(
+select 1 from sis_estado_proceso_vw c
+where c.id_estado=a.id_estado
+and nombre in ('PROCESADO','ANULADO') 
+)
+and not exists
+(
+select 1 from sis_proceso d, sis_tipo_proceso e
+where a.proceso_padre=d.id_proceso
+and d.tipoproceso=e.id_tipoproceso
+and e.nombre='POLIZA'
+)
+and trunc(fecha_inicio) between nvl(:fechaI,sysdate-15) and nvl(:fechaF,sysdate+1)
+order by id_proceso desc
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="IdProceso"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_PROCESO"
+      Expression="ID_PROCESO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nombre"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBRE"
+      Expression="NOMBRE"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Observaciones"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="256"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="OBSERVACIONES"
+      Expression="OBSERVACIONES"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="256" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaInicio"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_INICIO"
+      Expression="FECHA_INICIO"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Estadopoliza"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="ESTADOPOLIZA"
+      Expression="ESTADOPOLIZA"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

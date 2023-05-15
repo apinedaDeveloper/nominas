@@ -1,0 +1,76 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="dependencias"
+   OrderBy="id_dependencia asc"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   RowClass="enlace_datos.consultas.gestiones.contrato.dependenciasRowImpl"
+   ComponentClass="enlace_datos.consultas.gestiones.contrato.dependenciasImpl"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isCodegen" Value="true" />
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="usuario"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select a.id_dependencia,a.nombre from sis_dependencia a
+where
+exists(
+select 1 from usuario_unidad un, partida part
+where 1 = (case when :usuario ='1' then 1 else (case when un.usuario= :usuario then 1 else 0 end) end)
+and tipo_usuario='TRABAJADOR'
+and sysdate between un.VIGENCIA_DE and nvl(un.VIGENCIA_A,sysdate)
+and part.id_partida=un.id_partida
+and part.d3d4=a.id_dependencia
+and part.d1=4
+)
+and (a.nombre is not null and a.nombre <>' ')
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="IdDependencia"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="5"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_DEPENDENCIA"
+      Expression="ID_DEPENDENCIA"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nombre"
+      IsPersistent="false"
+      Precision="250"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBRE"
+      Expression="NOMBRE"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="250" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="nombre_codigo"
+      IsUpdateable="false"
+      IsSelected="false"
+      IsPersistent="false"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="VIEW_ATTR"
+      SQLType="VARCHAR" >
+   </ViewAttribute>
+</ViewObject>

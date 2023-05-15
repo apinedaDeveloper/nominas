@@ -1,0 +1,656 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="OrdenDePago1"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="612"
+		 pageHeight="264"
+		 columnWidth="556"
+		 columnSpacing="0"
+		 leftMargin="28"
+		 rightMargin="28"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pIdReintegro" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="SUBREPORT_DIR" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<queryString><![CDATA[select o.id_persona, o.monto, o.chksum,o.fecha_generacion
+,to_char(o.unidad,'00') unidad,to_char(o.extension,'00') extension,to_char(o.carrera,'00') carrera
+,o.id_orden_pago, o.nemonico,initcap(o.nombre), Decode(o.status,0,'0','1') status,
+g.num_doc_fisico,
+(select distinct initcap(nombre) from sis_reintegro a, sis_documento_banco b, sis_pago c, sis_nomina d,
+sis_partida_vw e, sis_dependencia f
+where a.id_documento_banco = b.id_documento_banco
+and b.id_documento_banco = c.id_documento_banco
+and c.id_nomina = d.id_nomina
+and d.id_partida = e.id_partida
+and f.id_dependencia = e.id_dependencia
+and a.id_reintegro =$P{pIdReintegro} ) dependencia,  initcap(h.nombre) tipo_doc,
+CASE
+    WHEN trunc(o.fecha_generacion)>=to_date('20181220','RRRRMMDD')
+    THEN 'Fecha emisión  '|| to_char(o.fecha_generacion, 'RRRRMMDD')
+    else ' ' 
+    END AS fechaEmision,
+CASE
+    WHEN   o.status=0 
+    THEN 
+        CASE 
+            WHEN trunc(o.fecha_generacion)>=to_date('20181220','RRRRMMDD') 
+             THEN '** El documento es válido únicamente hasta el día '||to_char((o.fecha_generacion + 7), 'DD/MM/RRRR')||' **'
+             ELSE ''
+        END
+    else '*** Importante: Ésta orden únicamente puede ser utilizada para fines administrativos, ya ha sido pagada y no debe ser aceptada por el banco. ***' 
+    END AS textonuevo2,
+'Puede efectuar su pago en cualquier agencia o banca virtual de BANRURAL (ATX-253), GyT Continental o BANTRAB.' textonuevo
+from siif.sgi_orden_pago o, siif.sgi_orden_pago_detalle d, 
+sis_reintegro f, sis_documento_banco g, sis_tipo_documento h
+where o.id_orden_pago = d.id_orden_pago
+and o.id_orden_pago = f.id_orden_pago
+and f.id_documento_banco = g.id_documento_banco
+and g.id_tipo_documento = h.id_tipo_documento
+and f.id_reintegro=$P{pIdReintegro}]]></queryString>
+
+	<field name="ID_PERSONA" class="java.math.BigDecimal"/>
+	<field name="MONTO" class="java.math.BigDecimal"/>
+	<field name="CHKSUM" class="java.math.BigDecimal"/>
+	<field name="FECHA_GENERACION" class="java.sql.Timestamp"/>
+	<field name="UNIDAD" class="java.lang.String"/>
+	<field name="EXTENSION" class="java.lang.String"/>
+	<field name="CARRERA" class="java.lang.String"/>
+	<field name="ID_ORDEN_PAGO" class="java.math.BigDecimal"/>
+	<field name="NEMONICO" class="java.lang.String"/>
+	<field name="INITCAP(O.NOMBRE)" class="java.lang.String"/>
+	<field name="STATUS" class="java.lang.String"/>
+	<field name="NUM_DOC_FISICO" class="java.math.BigDecimal"/>
+	<field name="DEPENDENCIA" class="java.lang.String"/>
+	<field name="TIPO_DOC" class="java.lang.String"/>
+	<field name="FECHAEMISION" class="java.lang.String"/>
+	<field name="TEXTONUEVO2" class="java.lang.String"/>
+	<field name="TEXTONUEVO" class="java.lang.String"/>
+
+		<background>
+			<band height="218"  isSplitAllowed="true" >
+				<image  scaleImage="RetainShape" vAlign="Middle" hAlign="Center" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="2"
+						y="0"
+						width="552"
+						height="218"
+						key="image-1"/>
+					<box></box>
+					<graphicElement stretchType="NoStretch"/>
+					<imageExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR}+"logoUSAC2019C-15P.jpg"]]></imageExpression>
+				</image>
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="155"  isSplitAllowed="true" >
+				<rectangle>
+					<reportElement
+						mode="Transparent"
+						x="1"
+						y="0"
+						width="359"
+						height="154"
+						key="rectangle-3"
+						stretchType="RelativeToBandHeight"
+						isPrintRepeatedValues="false"
+						isPrintInFirstWholeBand="true"/>
+					<graphicElement stretchType="RelativeToBandHeight"/>
+				</rectangle>
+				<rectangle>
+					<reportElement
+						mode="Transparent"
+						x="360"
+						y="0"
+						width="196"
+						height="154"
+						key="rectangle-2"
+						stretchType="RelativeToBandHeight"
+						isPrintRepeatedValues="false"
+						isPrintInFirstWholeBand="true"/>
+					<graphicElement stretchType="RelativeToBandHeight"/>
+				</rectangle>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="73"
+						y="36"
+						width="66"
+						height="13"
+						key="txtCarnet"/>
+					<box leftPadding="2" rightPadding="2">					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement>
+						<font fontName="Times-Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ID_PERSONA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="476"
+						y="111"
+						width="75"
+						height="14"
+						key="txtLlave"/>
+					<box leftPadding="2" rightPadding="2">					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Left">
+						<font fontName="Times-Roman" size="11"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{CHKSUM}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="97"
+						y="12"
+						width="141"
+						height="13"
+						key="stOrden"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Orden de pago]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="368"
+						y="112"
+						width="100"
+						height="14"
+						key="stLLave"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="11"/>
+					</textElement>
+				<text><![CDATA[Llave]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="24"
+						width="61"
+						height="13"
+						key="stOrden"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<text><![CDATA[No.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="36"
+						width="61"
+						height="13"
+						key="stCarnet"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<text><![CDATA[Registro]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="48"
+						width="61"
+						height="13"
+						key="stNombre"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<text><![CDATA[Nombre]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="60"
+						width="61"
+						height="13"
+						key="stFacultad"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<text><![CDATA[Dependencia]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="2"
+						y="72"
+						width="76"
+						height="13"
+						key="stExtension"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font/>
+					</textElement>
+				<text><![CDATA[Reintegro sobre ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="110"
+						y="96"
+						width="113"
+						height="13"
+						key="stDetalle"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Detalle de pago]]></text>
+				</staticText>
+				<subreport  isUsingCache="true">
+					<reportElement
+						x="5"
+						y="112"
+						width="353"
+						height="40"
+						key="subreport-1"/>
+					<subreportParameter  name="pSubOrden">
+						<subreportParameterExpression><![CDATA[$F{ID_ORDEN_PAGO}]]></subreportParameterExpression>
+					</subreportParameter>
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<subreportExpression  class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "OrdenDePago1_subreport0.jasper"]]></subreportExpression>
+				</subreport>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="73"
+						y="48"
+						width="270"
+						height="13"
+						key="txtNombre"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{INITCAP(O.NOMBRE)}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="73"
+						y="24"
+						width="66"
+						height="13"
+						key="txtOrden"/>
+					<box leftPadding="2" rightPadding="2">					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement>
+						<font fontName="Times-Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ID_ORDEN_PAGO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="73"
+						y="60"
+						width="270"
+						height="13"
+						key="txtFacultad"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{DEPENDENCIA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="73"
+						y="72"
+						width="258"
+						height="13"
+						key="txtExtension"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{TIPO_DOC}+" "+$F{NUM_DOC_FISICO}.toString()]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="368"
+						y="1"
+						width="183"
+						height="13"
+						key="stUsoBanco"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Para uso exclusivo del banco]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="476"
+						y="13"
+						width="75"
+						height="14"
+						key="txtOrden2"/>
+					<box leftPadding="2" rightPadding="2"></box>
+					<textElement>
+						<font size="11"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ID_ORDEN_PAGO}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="368"
+						y="13"
+						width="100"
+						height="14"
+						key="stOrden2"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="11"/>
+					</textElement>
+				<text><![CDATA[Orden de pago]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="368"
+						y="25"
+						width="100"
+						height="14"
+						key="stCarnet2"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="11"/>
+					</textElement>
+				<text><![CDATA[Registro/Carné]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="368"
+						y="37"
+						width="100"
+						height="14"
+						key="stTotal"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="11"/>
+					</textElement>
+				<text><![CDATA[Total a pagar Q.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="368"
+						y="49"
+						width="100"
+						height="14"
+						key="stFacultad2"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="11"/>
+					</textElement>
+				<text><![CDATA[Código de unidad]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="360"
+						y="61"
+						width="108"
+						height="14"
+						key="stExtension2"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="11"/>
+					</textElement>
+				<text><![CDATA[Código de ext.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="368"
+						y="73"
+						width="100"
+						height="14"
+						key="stCarrera2"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="11"/>
+					</textElement>
+				<text><![CDATA[Código de carrera]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="476"
+						y="25"
+						width="75"
+						height="14"
+						key="txtCarnet2"/>
+					<box></box>
+					<textElement>
+						<font size="11"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ID_PERSONA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="476"
+						y="37"
+						width="75"
+						height="14"
+						key="txtTotal"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font size="11"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{MONTO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="476"
+						y="49"
+						width="75"
+						height="14"
+						key="txtFacultad2"/>
+					<box></box>
+					<textElement>
+						<font size="11"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{UNIDAD}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="476"
+						y="61"
+						width="75"
+						height="14"
+						key="txtExtension2"/>
+					<box></box>
+					<textElement>
+						<font size="11"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{EXTENSION}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="476"
+						y="73"
+						width="75"
+						height="14"
+						key="txtCarrera2"/>
+					<box></box>
+					<textElement>
+						<font size="11"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{CARRERA}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="368"
+						y="100"
+						width="100"
+						height="14"
+						key="stLLave-1"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="11"/>
+					</textElement>
+				<text><![CDATA[Rubro de pago]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="476"
+						y="99"
+						width="75"
+						height="14"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font size="11"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NEMONICO}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="1"
+						y="0"
+						width="70"
+						height="13"
+						key="staticText-1"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font/>
+					</textElement>
+				<text><![CDATA[Generación: ]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy HH:mm:ss" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="66"
+						y="0"
+						width="106"
+						height="13"
+						key="textField-2"/>
+					<box>					<pen lineWidth="0.0"/>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+</box>
+					<textElement textAlignment="Left">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[$F{FECHA_GENERACION}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy HH:mm:ss" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="237"
+						y="0"
+						width="115"
+						height="13"
+						key="txtDate"/>
+					<box>					<pen lineWidth="0.0"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Left">
+						<font fontName="Times-Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="177"
+						y="0"
+						width="56"
+						height="13"
+						key="staticText-2"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font/>
+					</textElement>
+				<text><![CDATA[impresión: ]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="364"
+						y="127"
+						width="188"
+						height="25"
+						key="textField-3"/>
+					<box></box>
+					<textElement textAlignment="Justified" verticalAlignment="Top">
+						<font fontName="SansSerif" size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{TEXTONUEVO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="370"
+						y="86"
+						width="181"
+						height="14"
+						key="textField-4"/>
+					<box></box>
+					<textElement>
+						<font size="11"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{FECHAEMISION}]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="27"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3"
+						y="0"
+						width="550"
+						height="27"
+						key="textField-5"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{TEXTONUEVO2}]]></textFieldExpression>
+				</textField>
+			</band>
+		</summary>
+</jasperReport>

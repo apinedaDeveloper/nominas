@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="reportePuestos"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="612"
+		 pageHeight="792"
+		 columnWidth="552"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="true">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pIdAumento" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="SUBREPORT_DIR" isForPrompting="true" class="java.lang.String"/>
+	<queryString><![CDATA[SELECT * from (
+select 
+decode(upper(c.nombre),'NIVEL DE DECISIÓN SUPERIOR',1,'NIVEL DE DIRECCIÓN',2,'NIVEL PROFESIONAL',3,'NIVEL TÉCNICO',4,'NIVEL DE OFICINA',5,'NIVEL DE SERVICIO',6,7) as orden,
+upper(c.nombre) as nomNivel,
+c.tipo,
+upper(b.nombre) as nomCategoria,
+d.nombre as nomPuesto,
+d.id_categoria,
+to_char(a.id_puesto,'09G99G99','NLS_NUMERIC_CHARACTERS= '',.''') as id_puesto,
+a.escalamin_nueva,
+escalamax_nueva,
+escalafon_nuevo,
+d.observ 
+from 
+sis_aumento_sal_det a,
+sis_categoria_puesto b,
+sis_nivel_puesto c,
+sis_puesto d
+where a.id_puesto=d.id_puesto
+and d.id_categoria=b.id_categoria
+and b.id_nivel_puesto=c.id_nivel_puesto
+and id_aumento_salarial=$P{pIdAumento}
+and UPPER(c.nombre)<>'NO DEFINIDO'
+and upper(c.tipo)<>'DOCENTE'
+union
+select 
+decode(upper(NPST.nombre),'NIVEL DE DECISIÓN SUPERIOR',1,'NIVEL DE DIRECCIÓN',2,'NIVEL PROFESIONAL',3,'NIVEL TÉCNICO',4,'NIVEL DE OFICINA',5,'NIVEL DE SERVICIO',6,7) as orden,
+upper(npst.nombre) as nomnivel,
+npst.tipo,
+upper(cpst.nombre),
+' ',
+cpst.id_categoria,
+' ',
+decode(cpst.id_categoria,43,1979,0),
+decode(cpst.id_categoria,43,1979,0),
+0,
+null
+from
+sis_categoria_puesto cpst, sis_nivel_puesto npst
+where cpst.id_nivel_puesto=npst.id_nivel_puesto
+and not exists(
+select 1
+from sis_aumento_sal_det aum, sis_puesto pst
+where aum.id_aumento_salarial=$P{pIdAumento}
+and aum.id_puesto=pst.id_puesto
+and pst.id_categoria=cpst.id_categoria
+)
+) datos
+order by datos.tipo,orden,datos.escalamin_nueva desc,datos.id_puesto asc]]></queryString>
+
+	<field name="ORDEN" class="java.math.BigDecimal"/>
+	<field name="NOMNIVEL" class="java.lang.String"/>
+	<field name="TIPO" class="java.lang.String"/>
+	<field name="NOMCATEGORIA" class="java.lang.String"/>
+	<field name="NOMPUESTO" class="java.lang.String"/>
+	<field name="ID_CATEGORIA" class="java.math.BigDecimal"/>
+	<field name="ID_PUESTO" class="java.lang.String"/>
+	<field name="ESCALAMIN_NUEVA" class="java.math.BigDecimal"/>
+	<field name="ESCALAMAX_NUEVA" class="java.math.BigDecimal"/>
+	<field name="ESCALAFON_NUEVO" class="java.math.BigDecimal"/>
+	<field name="OBSERV" class="java.lang.String"/>
+
+
+		<group  name="nivel" isStartNewPage="true" isReprintHeaderOnEachPage="true" >
+			<groupExpression><![CDATA[$F{NOMNIVEL}]]></groupExpression>
+			<groupHeader>
+			<band height="70"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="91"
+						y="5"
+						width="370"
+						height="16"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" size="12" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMNIVEL}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="30"
+						width="50"
+						height="15"
+						key="staticText-1"/>
+					<box></box>
+					<textElement>
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[CÓDIGO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="167"
+						y="30"
+						width="210"
+						height="15"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[CATEGORIA Y TITULO DEL PUESTO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="414"
+						y="30"
+						width="100"
+						height="15"
+						key="staticText-3"/>
+					<box></box>
+					<textElement>
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[ESCALA SALARIAL]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="400"
+						y="50"
+						width="50"
+						height="15"
+						key="staticText-4"/>
+					<box></box>
+					<textElement>
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[MÍNIMA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="481"
+						y="50"
+						width="49"
+						height="15"
+						key="staticText-5"/>
+					<box></box>
+					<textElement>
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[MÁXIMA]]></text>
+				</staticText>
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="19"  isSplitAllowed="true" >
+			</band>
+			</groupFooter>
+		</group>
+		<group  name="Categoria" isReprintHeaderOnEachPage="true" >
+			<groupExpression><![CDATA[$F{ID_CATEGORIA}+$F{ESCALAMIN_NUEVA}.toString()]]></groupExpression>
+			<groupHeader>
+			<band height="18"  isSplitAllowed="false" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="70"
+						y="4"
+						width="350"
+						height="13"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMCATEGORIA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="371"
+						y="4"
+						width="80"
+						height="13"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ESCALAMIN_NUEVA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="471"
+						y="4"
+						width="70"
+						height="13"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ESCALAMAX_NUEVA}]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="17"  isSplitAllowed="true" >
+			</band>
+			</groupFooter>
+		</group>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="50"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="170"
+						y="0"
+						width="230"
+						height="40"
+						key="staticText-6"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[UNIVERSIDAD DE SAN CARLOS DE GUATEMALA
+DIVISION DE ADMINISTRACIÓN DE RECURSOS HUMANOS
+UNIDAD DE CLASIFICACIÓN DE PUESTOS]]></text>
+				</staticText>
+				<image  evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="6"
+						y="4"
+						width="40"
+						height="40"
+						key="image-1"/>
+					<box></box>
+					<graphicElement stretchType="NoStretch"/>
+					<imageExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR}+"escudo2.jpg"]]></imageExpression>
+				</image>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="430"
+						y="0"
+						width="120"
+						height="10"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Página "+$V{PAGE_NUMBER}.toString()]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="15"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="1"
+						width="50"
+						height="14"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{ID_PUESTO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="66"
+						y="1"
+						width="484"
+						height="14"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMPUESTO}+"  " + ($F{OBSERV}!=null?$F{OBSERV}.split( "\\n")[0]:" ")]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="38"  isSplitAllowed="true" >
+				<subreport  isUsingCache="true">
+					<reportElement
+						x="0"
+						y="4"
+						width="552"
+						height="30"
+						key="subreport-1"/>
+					<subreportParameter  name="pIdAumento">
+						<subreportParameterExpression><![CDATA[$P{pIdAumento}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="SUBREPORT_DIR">
+						<subreportParameterExpression><![CDATA[$P{SUBREPORT_DIR}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pNumeroPagina">
+						<subreportParameterExpression><![CDATA[$V{PAGE_NUMBER}]]></subreportParameterExpression>
+					</subreportParameter>
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<subreportExpression  class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "reportePuestos_subreport0.jasper"]]></subreportExpression>
+				</subreport>
+			</band>
+		</summary>
+</jasperReport>

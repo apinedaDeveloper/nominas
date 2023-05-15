@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel"
+                version="10.1.3.41.57" id="reportes_rep_pagoPageDef"
+                Package="interfaz_usuario.pageDefs">
+  <parameters/>
+  <executables>
+    <iterator id="SisPagosProcesados_vwIterator" RangeSize="25"
+              Binds="SisPagosProcesados_vw" DataControl="QUERRYSDataControl">
+      <sortCriteria>
+        <sort attribute="IdProceso" ascending="false"/>
+      </sortCriteria>
+    </iterator>
+    <variableIterator id="variables">
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="SisPagosProcesados_vw.variablesMap.fechaI"
+                     Name="SisPagosProcesados_vw_fechaI" IsQueriable="false"/>
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="SisPagosProcesados_vw.variablesMap.fechaF"
+                     Name="SisPagosProcesados_vw_fechaF" IsQueriable="false"/>
+      <variable Name="pIdTipoDoc" Type="oracle.jbo.domain.Number"
+                DefaultValue="1"/>
+    </variableIterator>
+    <iterator id="SisProcesoPagoDetViewIterator" RangeSize="-1"
+              Binds="SisProcesoPagoDetView" DataControl="QUERRYSDataControl"/>
+    <invokeAction id="ExeListado" Binds="ExecuteWithParams"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+  </executables>
+  <bindings>
+    <action id="ExecuteWithParams" IterBinding="SisPagosProcesados_vwIterator"
+            InstanceName="QUERRYSDataControl.SisPagosProcesados_vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="fechaI" NDType="oracle.jbo.domain.Date"
+                 NDValue="${bindings.SisPagosProcesados_vw_fechaI}"/>
+      <NamedData NDName="fechaF" NDType="oracle.jbo.domain.Date"
+                 NDValue="${bindings.SisPagosProcesados_vw_fechaF}"/>
+    </action>
+    <attributeValues id="fechaI" IterBinding="variables">
+      <AttrNames>
+        <Item Value="SisPagosProcesados_vw_fechaI"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="fechaF" IterBinding="variables">
+      <AttrNames>
+        <Item Value="SisPagosProcesados_vw_fechaF"/>
+      </AttrNames>
+    </attributeValues>
+    <table id="SisPagosProcesados_vw"
+           IterBinding="SisPagosProcesados_vwIterator">
+      <AttrNames>
+        <Item Value="IdProceso"/>
+        <Item Value="FechaInicio"/>
+        <Item Value="FechaFin"/>
+        <Item Value="Observaciones"/>
+        <Item Value="NomEstado"/>
+        <Item Value="Tipoproceso"/>
+      </AttrNames>
+    </table>
+    <table id="SisPagosProcesados_vwSisProcesoPagoDetView"
+           IterBinding="SisProcesoPagoDetViewIterator">
+      <AttrNames>
+        <Item Value="IdProceso"/>
+        <Item Value="IdTipoNomina"/>
+        <Item Value="PorcentajePago"/>
+        <Item Value="IdPeriodo"/>
+        <Item Value="Anio"/>
+        <Item Value="Tiponomina"/>
+        <Item Value="Nomperido"/>
+        <Item Value="IdProcesoNomina"/>
+        <Item Value="Nomproceso"/>
+      </AttrNames>
+    </table>
+    <methodAction id="generar_rep_pago"
+                  InstanceName="preparar_reporteDataControl.dataProvider"
+                  DataControl="preparar_reporteDataControl"
+                  MethodName="generar_rep_pago" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="false"
+                  ReturnName="preparar_reporteDataControl.methodResults.preparar_reporteDataControl_dataProvider_generar_rep_pago_result">
+      <NamedData NDName="pIdProceso"
+                 NDValue="${bindings.SisPagosProcesados_vw.currentRow['idProceso']}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </methodAction>
+    <attributeValues IterBinding="variables" id="pIdTipoDoc1">
+      <AttrNames>
+        <Item Value="pIdTipoDoc"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisPagosProcesados_vwIterator" id="IdProceso">
+      <AttrNames>
+        <Item Value="IdProceso"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="SisPagosProcesados_vwIterator"
+                  id="acreditamiento_final" MethodName="acreditamiento_final"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisPagosProcesados_vw">
+      <NamedData NDName="pIdProceso" NDValue="${bindings.IdProceso.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+    </methodAction>
+    <attributeValues IterBinding="SisProcesoPagoDetViewIterator"
+                     id="Tiponomina">
+      <AttrNames>
+        <Item Value="Tiponomina"/>
+      </AttrNames>
+    </attributeValues>
+  </bindings>
+</pageDefinition>

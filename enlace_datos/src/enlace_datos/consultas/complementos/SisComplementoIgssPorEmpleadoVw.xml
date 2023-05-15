@@ -1,0 +1,445 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="SisComplementoIgssPorEmpleadoVw"
+   OrderBy="ANIO ASC, PERIODO ASC"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   ComponentClass="enlace_datos.consultas.complementos.SisComplementoIgssPorEmpleadoVwImpl"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.43.6" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="pRegistro"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="pCui"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <SQLQuery><![CDATA[
+SELECT 
+       SisComplementoIgss.ID_COMPLEMENTO,
+       SisEstado.NOMBRE as EstadoComplemento,
+       empl.registro_empleado,
+       empl.cui,
+       nvl(empl.nom_beneficiario,empl.nombrecompleto) nombrecompleto,
+       prt.formato1 as NumPartida,
+       SisComplementoDet.numero_plaza,
+       SisComplementoIgss.ID_CONTRATO, 
+       SisComplementoIgss.DIA_INICIO, 
+       SisComplementoIgss.DIA_FIN, 
+       SisPeriodo.NOMBRE AS NOM_PERIODO,
+       SisComplementoIgss.ANIO,
+       SisComplementoIgss.DIA_NO_PAGA_IGSS, 
+       SisComplementoIgss.COMPLEMENTO_SUELDO, 
+       SisComplementoIgss.DIF_CALCULO_IGSS, 
+       SisComplementoIgss.DIA_NO_PAGA_IGSS + SisComplementoIgss.COMPLEMENTO_SUELDO + SisComplementoIgss.DIF_CALCULO_IGSS as Nominal,
+       SisComplementoDet.TOTAL_BONO,
+       SisComplementoDet.TOTAL_DESCUENTO,
+       SisComplementoDet.LIQUIDO,
+       SisComplementoIgss.CREADO_POR, 
+       SisComplementoIgss.FECHA_CREACION, 
+       SisComplementoIgss.MOD_POR,       
+       SisComplementoIgss.FECHA_MOD,
+       SisComplementoIgss.PERIODO,
+       SisComplementoIgss.ID_COMPLEMENTO_IGSS
+FROM 
+sis_contrato contr,
+sis_empleado_vw empl,
+sis_partida_vw prt,
+SIS_PERIODO SisPeriodo,
+SIS_COMPLEMENTO_DET SisComplementoDet, 
+SIS_ESTADO SisEstado,
+SIS_COMPLEMENTO SisComplemento,
+SIS_COMPLEMENTO_IGSS SisComplementoIgss
+where  
+(contr.registro_empleado = :pRegistro or empl.cui = :pCui) and
+SisComplementoIgss.id_contrato=contr.id_contrato and
+contr.registro_Empleado=empl.registro_Empleado and
+SisComplementoDet.id_partida=prt.id_partida and
+SisPeriodo.ID_PERIODO = SisComplementoIgss.PERIODO and
+SisComplementoDet.PERIODO = SisComplementoIgss.PERIODO and
+SisComplementoDet.CORRELATIVO = SisComplementoIgss.ANIO and
+SisComplementoDet.ID_CONTRATO = SisComplementoIgss.ID_CONTRATO and
+SisComplementoDet.ID_COMPLEMENTO = SisComplementoIgss.ID_COMPLEMENTO and
+SisComplementoDet.ID_COMPLEMENTO_IGSS = SisComplementoIgss.ID_COMPLEMENTO_IGSS and 
+SisEstado.NOMBRE <> 'ANULADO' and
+SisEstado.ID_ESTADO = SisComplemento.ID_ESTADO and
+SisComplemento.ID_COMPLEMENTO = SisComplementoIgss.ID_COMPLEMENTO
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="IdComplemento"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="20"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_COMPLEMENTO"
+      Expression="ID_COMPLEMENTO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Estadocomplemento"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="ESTADOCOMPLEMENTO"
+      Expression="ESTADOCOMPLEMENTO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="RegistroEmpleado"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="REGISTRO_EMPLEADO"
+      Expression="REGISTRO_EMPLEADO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Cui"
+      IsPersistent="false"
+      Precision="13"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="CUI"
+      Expression="CUI"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="13" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nombrecompleto"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="305"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBRECOMPLETO"
+      Expression="NOMBRECOMPLETO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="305" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Numpartida"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="87"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NUMPARTIDA"
+      Expression="NUMPARTIDA"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="87" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="NumeroPlaza"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="5"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="NUMERO_PLAZA"
+      Expression="NUMERO_PLAZA"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdContrato"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_CONTRATO"
+      Expression="ID_CONTRATO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="DiaInicio"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="3"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="DIA_INICIO"
+      Expression="DIA_INICIO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="DiaFin"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="3"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="DIA_FIN"
+      Expression="DIA_FIN"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="NomPeriodo"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="50"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOM_PERIODO"
+      Expression="NOM_PERIODO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="50" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Anio"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="4"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ANIO"
+      Expression="ANIO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="DiaNoPagaIgss"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="14"
+      Scale="2"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="DIA_NO_PAGA_IGSS"
+      Expression="DIA_NO_PAGA_IGSS"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="ComplementoSueldo"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="14"
+      Scale="2"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="COMPLEMENTO_SUELDO"
+      Expression="COMPLEMENTO_SUELDO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="DifCalculoIgss"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="14"
+      Scale="2"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="DIF_CALCULO_IGSS"
+      Expression="DIF_CALCULO_IGSS"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nominal"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="NOMINAL"
+      Expression="NOMINAL"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="TotalBono"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="2"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="TOTAL_BONO"
+      Expression="TOTAL_BONO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="TotalDescuento"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="2"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="TOTAL_DESCUENTO"
+      Expression="TOTAL_DESCUENTO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Liquido"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="2"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="LIQUIDO"
+      Expression="LIQUIDO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="CreadoPor"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="20"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="CREADO_POR"
+      Expression="CREADO_POR"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="20" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaCreacion"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_CREACION"
+      Expression="FECHA_CREACION"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="ModPor"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="20"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="MOD_POR"
+      Expression="MOD_POR"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="20" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaMod"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_MOD"
+      Expression="FECHA_MOD"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Periodo"
+      IsPersistent="false"
+      Precision="2"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="PERIODO"
+      Expression="PERIODO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdComplementoIgss"
+      IsPersistent="false"
+      IsNotNull="true"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_COMPLEMENTO_IGSS"
+      Expression="ID_COMPLEMENTO_IGSS"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

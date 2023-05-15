@@ -1,0 +1,722 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="subreporte_resumen_renglon_sicoin"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="595"
+		 pageHeight="842"
+		 columnWidth="535"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="30"
+		 topMargin="0"
+		 bottomMargin="15"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pIdProceso" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pUsuario" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="pIdUnidad" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[select 'SUELDO BASE' tipo_renglon, id_unidad, unidad_ejecutora, formato_renglon,  sum(sueldo_base) valor from (
+select form1, formato_renglon, form2, id_partida_sicoin, id_unidad, unidad_ejecutora, renglon, anio, tipoproc, periodoproceso, formato_partida_bono
+, sum(sueldo_base) sueldo_base, sum(escalafon) escalafon, sum(complemento) complemento, sum(total_bono)total_bono, sum(total_descuento) total_descuento, sum(liquido) liquido
+from (
+select tt.form1, tt.formato_renglon, tt.form2, tt.id_partida_sicoin, tt.id_unidad, tt.unidad_ejecutora, tt.renglon, tt.anio, tt.tipoProc, tt.periodoProceso
+, case when tt.formato_partida_bono = 'SIN PARTIDA SICOIN' or tt.formato_partida_bono  is null then 'SIN PARTIDA SICOIN' else tt.anio||tt.formato_partida_bono end formato_partida_bono 
+,tt.sueldo_base, tt.escalafon, tt.complemento, tt.total_bono, tt.total_descuento, tt.liquido
+from  (
+select  t.anio||'.'||(SELECT entidad FROM sicoin_entidad )||'.'||sicoin.unidad_ejecutora||DECODE(unidad_desconcentrada,NULL,'','.')||TO_CHAR(sicoin.unidad_desconcentrada,'FM00')||DECODE(sicoin.programa,NULL,'','.')||TO_CHAR(sicoin.programa,'FM00')||TO_CHAR(sicoin.subprograma,'FM00')||DECODE(proyecto,NULL,'','.')||TO_CHAR(sicoin.proyecto,'FM000')||DECODE(actividad,NULL,'','.')||TO_CHAR(sicoin.actividad,'FM000')||DECODE(obra,NULL,'','.')||TO_CHAR(obra,'FM000')||'.' form1
+,TO_CHAR(sicoin.renglon,'FM000') formato_renglon
+,DECODE(geografico,NULL,'','.')||TO_CHAR(geografico,'FM0000')||DECODE(fuente,NULL,'','.')||TO_CHAR(fuente,'FM000')||DECODE(organismo,NULL,'','.')||TO_CHAR(organismo,'FM0000')||DECODE(correlativo,NULL,'','.')||TO_CHAR(correlativo,'FM0000') form2
+,t.id_partida_sicoin
+,t.id_unidad
+,t.unidad_ejecutora
+,t.renglon
+,t.anio
+, (select sistp.nombre
+from sis_tipo_proceso sistp, sis_proceso sisproc
+where sistp.id_tipoproceso=sisproc.tipoproceso
+and sisproc.id_proceso=$P{pIdProceso}
+) as tipoProc,
+(select sisPer.nombre
+from sis_proceso sisproc, sis_periodo sisPer
+where sisproc.id_proceso=$P{pIdProceso}
+and sisPer.id_periodo=sisproc.periodo
+) as periodoProceso
+--, (select partida from SICOIN_PARTIDA_EGRESOS_VIEW sv where id_partida_egresos = (select id_partida_egresos from partida where id_partida = t.partida_bono) ) formato_partida_bono
+, sis_pkg_pagos.getPartidaSICOIN(t.id_partida,t.id_partida_sicoin,27) formato_partida_bono
+,t.sueldo_base, t.escalafon, t.complemento, t.total_bono, t.total_descuento, t.liquido
+  from (
+select nm.anio, pl.ID_PARTIDA_SICOIN, u.unidad_ejecutora id_unidad, u.NOMBRE_UNIDAD_EJECUTORA unidad_ejecutora, s.RENGLON
+,nm.id_partida--, nm.partida_bono
+, sum(nm.sueldo_base) sueldo_base, sum(nm.escalafon) escalafon, sum(nm.compl_salarial) complemento, sum(nm.total_Bono) total_Bono, sum(nm.total_descuento) total_descuento, sum(nm.liquido) liquido
+from (
+select n.id_nomina,  n.id_puesto, n.numero_plaza, n.correlativo,n.anio,
+case when (n.id_partida_egreso is null or n.id_partida_egreso = n.id_partida ) then n.id_partida 
+     else 0 end id_partida
+--, sis_pkg_pagos.GETPARTIDAPAGOTA(nvl(null,n.id_partida),27) partida_bono
+, n.SUELDO_BASE, n.escalafon, n.compl_salarial, n.total_Bono, n.total_descuento, n.liquido
+from sis_nomina n 
+inner join sis_pago pg on pg.id_nomina = n.id_nomina
+inner join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where n.id_proceso = $P{pIdProceso} and
+(n.id_partida_egreso is null or n.id_partida_egreso = n.id_partida) 
+and doc.ID_TIPO_DOCUMENTO = 2
+and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)
+)nm
+inner join sis_plaza pl on pl.id_puesto = nm.id_puesto
+                       and pl.correlativo = nm.correlativo
+                       and pl.numero_plaza = nm.numero_plaza
+                       and pl.id_partida = nm.id_partida
+inner join partida pt on pt.id_partida = nm.id_partida                       
+inner join SICOIN_PARTIDA_EGRESOS s on s.ID_PARTIDA_EGRESOS = pl.id_partida_sicoin    
+inner join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora
+WHERE 
+exists(
+select 1 from usuario_unidad b, partida c
+where b.id_partida=c.id_partida
+and usuario=$P{pUsuario}
+and b.tipo_usuario='TRABAJADOR'
+and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+and pt.aniomanual=c.aniomanual
+and pt.d1=c.d1
+and pt.d2=c.d2
+and pt.d3d4=c.d3d4
+and 
+(
+(pt.d7=c.d7
+and pt.d6=c.d6
+and pt.d5=c.d5
+)
+or
+(
+c.d5 is null
+and c.d6 is null
+and c.d7 is null 
+)
+)
+)
+group by nm.anio, pl.ID_PARTIDA_SICOIN, u.unidad_ejecutora, u.NOMBRE_UNIDAD_EJECUTORA, s.RENGLON, nm.id_partida--, nm.partida_bono
+UNION --PARA PARTIDAS_EGRESOS
+select nm.anio, s.ID_PARTIDA_EGRESOS, u.unidad_ejecutora id_unidad, u.NOMBRE_UNIDAD_EJECUTORA unidad_ejecutora, s.RENGLON
+, nm.id_partida--, nm.partida_bono
+, sum(nm.sueldo_base) sueldo_base, sum(nm.escalafon) escalafon, sum(nm.compl_salarial) complemento, sum(nm.total_Bono) total_Bono, sum(nm.total_descuento) total_descuento, sum(nm.liquido) liquido
+--pl.ID_PARTIDA_SICOIN, nm.*
+from (
+select n.id_nomina,  n.id_puesto, n.numero_plaza, n.correlativo,anio,
+case when (n.id_partida_egreso is not null and n.id_partida_egreso <> n.id_partida ) 
+then n.id_partida_egreso 
+     else 1 end id_partida
+--, sis_pkg_pagos.GETPARTIDAPAGOTA(nvl(null,n.id_partida_egreso),27) partida_bono
+, n.SUELDO_BASE, n.escalafon, n.compl_salarial, n.total_Bono, n.total_descuento, n.liquido
+from sis_nomina n 
+inner join sis_pago pg on pg.id_nomina = n.id_nomina
+inner join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where  n.id_proceso = $P{pIdProceso} and 
+(n.id_partida_egreso is not null and n.id_partida_egreso <> n.id_partida) 
+and doc.ID_TIPO_DOCUMENTO = 2
+and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)
+)nm
+inner join partida pt on pt.id_partida = nm.id_partida
+inner join SICOIN_PARTIDA_EGRESOS s on s.ID_PARTIDA_EGRESOS = pt.ID_PARTIDA_EGRESOS
+inner join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora
+WHERE 
+exists(
+select 1 from usuario_unidad b, partida c
+where b.id_partida=c.id_partida
+and usuario=$P{pUsuario}
+and b.tipo_usuario='TRABAJADOR'
+and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+and pt.aniomanual=c.aniomanual
+and pt.d1=c.d1
+and pt.d2=c.d2
+and pt.d3d4=c.d3d4
+and 
+(
+(pt.d7=c.d7
+and pt.d6=c.d6
+and pt.d5=c.d5
+)
+or
+(
+c.d5 is null
+and c.d6 is null
+and c.d7 is null 
+)
+)
+)
+group by nm.anio, s.ID_PARTIDA_EGRESOS, u.unidad_ejecutora, u.NOMBRE_UNIDAD_EJECUTORA, s.RENGLON, nm.id_partida--, nm.partida_Bono
+) t
+inner join SICOIN_PARTIDA_EGRESOS sicoin on sicoin.id_partida_egresos = t.ID_PARTIDA_SICOIN
+) tt ) where id_unidad = $P{pIdUnidad}
+group by form1, formato_renglon, form2, id_partida_sicoin, id_unidad, unidad_ejecutora, renglon, anio, tipoproc, periodoproceso, formato_partida_bono
+) 
+group by 'NOMINAL SUELDO_BASE', id_unidad, unidad_ejecutora, formato_renglon 
+UNION
+select 'ESCALAFON',id_unidad, unidad_ejecutora, '017' formato_renglon,  sum(escalafon) from (
+select form1, formato_renglon, form2, id_partida_sicoin, id_unidad, unidad_ejecutora, renglon, anio, tipoproc, periodoproceso, formato_partida_bono
+, sum(sueldo_base) sueldo_base, sum(escalafon) escalafon, sum(complemento) complemento, sum(total_bono)total_bono, sum(total_descuento) total_descuento, sum(liquido) liquido
+from (
+select tt.form1, tt.formato_renglon, tt.form2, tt.id_partida_sicoin, tt.id_unidad, tt.unidad_ejecutora, tt.renglon, tt.anio, tt.tipoProc, tt.periodoProceso
+, case when tt.formato_partida_bono = 'SIN PARTIDA SICOIN' or tt.formato_partida_bono  is null then 'SIN PARTIDA SICOIN' else tt.anio||tt.formato_partida_bono end formato_partida_bono 
+,tt.sueldo_base, tt.escalafon, tt.complemento, tt.total_bono, tt.total_descuento, tt.liquido
+from  (
+select  t.anio||'.'||(SELECT entidad FROM sicoin_entidad )||'.'||sicoin.unidad_ejecutora||DECODE(unidad_desconcentrada,NULL,'','.')||TO_CHAR(sicoin.unidad_desconcentrada,'FM00')||DECODE(sicoin.programa,NULL,'','.')||TO_CHAR(sicoin.programa,'FM00')||TO_CHAR(sicoin.subprograma,'FM00')||DECODE(proyecto,NULL,'','.')||TO_CHAR(sicoin.proyecto,'FM000')||DECODE(actividad,NULL,'','.')||TO_CHAR(sicoin.actividad,'FM000')||DECODE(obra,NULL,'','.')||TO_CHAR(obra,'FM000')||'.' form1
+,TO_CHAR(sicoin.renglon,'FM000') formato_renglon
+,DECODE(geografico,NULL,'','.')||TO_CHAR(geografico,'FM0000')||DECODE(fuente,NULL,'','.')||TO_CHAR(fuente,'FM000')||DECODE(organismo,NULL,'','.')||TO_CHAR(organismo,'FM0000')||DECODE(correlativo,NULL,'','.')||TO_CHAR(correlativo,'FM0000') form2
+,t.id_partida_sicoin
+,t.id_unidad
+,t.unidad_ejecutora
+,t.renglon
+,t.anio
+, (select sistp.nombre
+from sis_tipo_proceso sistp, sis_proceso sisproc
+where sistp.id_tipoproceso=sisproc.tipoproceso
+and sisproc.id_proceso=$P{pIdProceso}
+) as tipoProc,
+(select sisPer.nombre
+from sis_proceso sisproc, sis_periodo sisPer
+where sisproc.id_proceso=$P{pIdProceso}
+and sisPer.id_periodo=sisproc.periodo
+) as periodoProceso
+--, (select partida from SICOIN_PARTIDA_EGRESOS_VIEW sv where id_partida_egresos = (select id_partida_egresos from partida where id_partida = t.partida_bono) ) formato_partida_bono
+, sis_pkg_pagos.getPartidaSICOIN(t.id_partida,t.id_partida_sicoin,27) formato_partida_bono
+,t.sueldo_base, t.escalafon, t.complemento, t.total_bono, t.total_descuento, t.liquido
+  from (
+select nm.anio, pl.ID_PARTIDA_SICOIN, u.unidad_ejecutora id_unidad, u.NOMBRE_UNIDAD_EJECUTORA unidad_ejecutora, s.RENGLON
+,nm.id_partida--, nm.partida_bono
+, sum(nm.sueldo_base) sueldo_base, sum(nm.escalafon) escalafon, sum(nm.compl_salarial) complemento, sum(nm.total_Bono) total_Bono, sum(nm.total_descuento) total_descuento, sum(nm.liquido) liquido
+from (
+select n.id_nomina,  n.id_puesto, n.numero_plaza, n.correlativo,n.anio,
+case when (n.id_partida_egreso is null or n.id_partida_egreso = n.id_partida ) then n.id_partida 
+     else 0 end id_partida
+--, sis_pkg_pagos.GETPARTIDAPAGOTA(nvl(null,n.id_partida),27) partida_bono
+, n.SUELDO_BASE, n.escalafon, n.compl_salarial, n.total_Bono, n.total_descuento, n.liquido
+from sis_nomina n 
+inner join sis_pago pg on pg.id_nomina = n.id_nomina
+inner join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where n.id_proceso = $P{pIdProceso} and
+(n.id_partida_egreso is null or n.id_partida_egreso = n.id_partida) 
+and doc.ID_TIPO_DOCUMENTO = 2
+and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)
+)nm
+inner join sis_plaza pl on pl.id_puesto = nm.id_puesto
+                       and pl.correlativo = nm.correlativo
+                       and pl.numero_plaza = nm.numero_plaza
+                       and pl.id_partida = nm.id_partida
+inner join partida pt on pt.id_partida = nm.id_partida                       
+inner join SICOIN_PARTIDA_EGRESOS s on s.ID_PARTIDA_EGRESOS = pl.id_partida_sicoin    
+inner join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora
+WHERE 
+exists(
+select 1 from usuario_unidad b, partida c
+where b.id_partida=c.id_partida
+and usuario=$P{pUsuario}
+and b.tipo_usuario='TRABAJADOR'
+and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+and pt.aniomanual=c.aniomanual
+and pt.d1=c.d1
+and pt.d2=c.d2
+and pt.d3d4=c.d3d4
+and 
+(
+(pt.d7=c.d7
+and pt.d6=c.d6
+and pt.d5=c.d5
+)
+or
+(
+c.d5 is null
+and c.d6 is null
+and c.d7 is null 
+)
+)
+)
+group by nm.anio, pl.ID_PARTIDA_SICOIN, u.unidad_ejecutora, u.NOMBRE_UNIDAD_EJECUTORA, s.RENGLON, nm.id_partida--, nm.partida_bono
+UNION --PARA PARTIDAS_EGRESOS
+select nm.anio, s.ID_PARTIDA_EGRESOS, u.unidad_ejecutora id_unidad, u.NOMBRE_UNIDAD_EJECUTORA unidad_ejecutora, s.RENGLON
+, nm.id_partida--, nm.partida_bono
+, sum(nm.sueldo_base) sueldo_base, sum(nm.escalafon) escalafon, sum(nm.compl_salarial) complemento, sum(nm.total_Bono) total_Bono, sum(nm.total_descuento) total_descuento, sum(nm.liquido) liquido
+--pl.ID_PARTIDA_SICOIN, nm.*
+from (
+select n.id_nomina,  n.id_puesto, n.numero_plaza, n.correlativo,anio,
+case when (n.id_partida_egreso is not null and n.id_partida_egreso <> n.id_partida ) 
+then n.id_partida_egreso 
+     else 1 end id_partida
+--, sis_pkg_pagos.GETPARTIDAPAGOTA(nvl(null,n.id_partida_egreso),27) partida_bono
+, n.SUELDO_BASE, n.escalafon, n.compl_salarial, n.total_Bono, n.total_descuento, n.liquido
+from sis_nomina n 
+inner join sis_pago pg on pg.id_nomina = n.id_nomina
+inner join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where  n.id_proceso = $P{pIdProceso} and 
+(n.id_partida_egreso is not null and n.id_partida_egreso <> n.id_partida) 
+and doc.ID_TIPO_DOCUMENTO = 2
+and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)
+)nm
+inner join partida pt on pt.id_partida = nm.id_partida
+inner join SICOIN_PARTIDA_EGRESOS s on s.ID_PARTIDA_EGRESOS = pt.ID_PARTIDA_EGRESOS
+inner join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora
+WHERE 
+exists(
+select 1 from usuario_unidad b, partida c
+where b.id_partida=c.id_partida
+and usuario=$P{pUsuario}
+and b.tipo_usuario='TRABAJADOR'
+and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+and pt.aniomanual=c.aniomanual
+and pt.d1=c.d1
+and pt.d2=c.d2
+and pt.d3d4=c.d3d4
+and 
+(
+(pt.d7=c.d7
+and pt.d6=c.d6
+and pt.d5=c.d5
+)
+or
+(
+c.d5 is null
+and c.d6 is null
+and c.d7 is null 
+)
+)
+)
+group by nm.anio, s.ID_PARTIDA_EGRESOS, u.unidad_ejecutora, u.NOMBRE_UNIDAD_EJECUTORA, s.RENGLON, nm.id_partida--, nm.partida_Bono
+) t
+inner join SICOIN_PARTIDA_EGRESOS sicoin on sicoin.id_partida_egresos = t.ID_PARTIDA_SICOIN
+) tt ) where id_unidad = $P{pIdUnidad}
+group by form1, formato_renglon, form2, id_partida_sicoin, id_unidad, unidad_ejecutora, renglon, anio, tipoproc, periodoproceso, formato_partida_bono
+) 
+group by 'ESCALAFON', id_unidad, unidad_ejecutora , '017'
+UNION
+select 'COMPLEMENTO DE PERSONAL', id_unidad, unidad_ejecutora, renglon FORMATO_RENGLON, sum(complemento) valor from (
+select form1, formato_renglon, form2, id_partida_sicoin, id_unidad, unidad_ejecutora, CASE WHEN renglon = 11 THEN '012' ELSE '024' END renglon, anio, tipoproc, periodoproceso, formato_partida_bono
+, sum(sueldo_base) sueldo_base, sum(escalafon) escalafon, sum(complemento) complemento, sum(total_bono)total_bono, sum(total_descuento) total_descuento, sum(liquido) liquido
+from (
+select tt.form1, tt.formato_renglon, tt.form2, tt.id_partida_sicoin, tt.id_unidad, tt.unidad_ejecutora, tt.renglon, tt.anio, tt.tipoProc, tt.periodoProceso
+, case when tt.formato_partida_bono = 'SIN PARTIDA SICOIN' or tt.formato_partida_bono  is null then 'SIN PARTIDA SICOIN' else tt.anio||tt.formato_partida_bono end formato_partida_bono 
+,tt.sueldo_base, tt.escalafon, tt.complemento, tt.total_bono, tt.total_descuento, tt.liquido
+from  (
+select  t.anio||'.'||(SELECT entidad FROM sicoin_entidad )||'.'||sicoin.unidad_ejecutora||DECODE(unidad_desconcentrada,NULL,'','.')||TO_CHAR(sicoin.unidad_desconcentrada,'FM00')||DECODE(sicoin.programa,NULL,'','.')||TO_CHAR(sicoin.programa,'FM00')||TO_CHAR(sicoin.subprograma,'FM00')||DECODE(proyecto,NULL,'','.')||TO_CHAR(sicoin.proyecto,'FM000')||DECODE(actividad,NULL,'','.')||TO_CHAR(sicoin.actividad,'FM000')||DECODE(obra,NULL,'','.')||TO_CHAR(obra,'FM000')||'.' form1
+,TO_CHAR(sicoin.renglon,'FM000') formato_renglon
+,DECODE(geografico,NULL,'','.')||TO_CHAR(geografico,'FM0000')||DECODE(fuente,NULL,'','.')||TO_CHAR(fuente,'FM000')||DECODE(organismo,NULL,'','.')||TO_CHAR(organismo,'FM0000')||DECODE(correlativo,NULL,'','.')||TO_CHAR(correlativo,'FM0000') form2
+,t.id_partida_sicoin
+,t.id_unidad
+,t.unidad_ejecutora
+,t.renglon
+,t.anio
+, (select sistp.nombre
+from sis_tipo_proceso sistp, sis_proceso sisproc
+where sistp.id_tipoproceso=sisproc.tipoproceso
+and sisproc.id_proceso=$P{pIdProceso}
+) as tipoProc,
+(select sisPer.nombre
+from sis_proceso sisproc, sis_periodo sisPer
+where sisproc.id_proceso=$P{pIdProceso}
+and sisPer.id_periodo=sisproc.periodo
+) as periodoProceso
+--, (select partida from SICOIN_PARTIDA_EGRESOS_VIEW sv where id_partida_egresos = (select id_partida_egresos from partida where id_partida = t.partida_bono) ) formato_partida_bono
+, sis_pkg_pagos.getPartidaSICOIN(t.id_partida,t.id_partida_sicoin,27) formato_partida_bono
+,t.sueldo_base, t.escalafon, t.complemento, t.total_bono, t.total_descuento, t.liquido
+  from (
+select nm.anio, pl.ID_PARTIDA_SICOIN, u.unidad_ejecutora id_unidad, u.NOMBRE_UNIDAD_EJECUTORA unidad_ejecutora, s.RENGLON
+,nm.id_partida--, nm.partida_bono
+, sum(nm.sueldo_base) sueldo_base, sum(nm.escalafon) escalafon, sum(nm.compl_salarial) complemento, sum(nm.total_Bono) total_Bono, sum(nm.total_descuento) total_descuento, sum(nm.liquido) liquido
+from (
+select n.id_nomina,  n.id_puesto, n.numero_plaza, n.correlativo,n.anio,
+case when (n.id_partida_egreso is null or n.id_partida_egreso = n.id_partida ) then n.id_partida 
+     else 0 end id_partida
+--, sis_pkg_pagos.GETPARTIDAPAGOTA(nvl(null,n.id_partida),27) partida_bono
+, n.SUELDO_BASE, n.escalafon, n.compl_salarial, n.total_Bono, n.total_descuento, n.liquido
+from sis_nomina n 
+inner join sis_pago pg on pg.id_nomina = n.id_nomina
+inner join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where n.id_proceso = $P{pIdProceso} and
+(n.id_partida_egreso is null or n.id_partida_egreso = n.id_partida) 
+and doc.ID_TIPO_DOCUMENTO = 2
+and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)
+)nm
+inner join sis_plaza pl on pl.id_puesto = nm.id_puesto
+                       and pl.correlativo = nm.correlativo
+                       and pl.numero_plaza = nm.numero_plaza
+                       and pl.id_partida = nm.id_partida
+inner join partida pt on pt.id_partida = nm.id_partida                       
+inner join SICOIN_PARTIDA_EGRESOS s on s.ID_PARTIDA_EGRESOS = pl.id_partida_sicoin    
+inner join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora
+WHERE 
+exists(
+select 1 from usuario_unidad b, partida c
+where b.id_partida=c.id_partida
+and usuario=$P{pUsuario}
+and b.tipo_usuario='TRABAJADOR'
+and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+and pt.aniomanual=c.aniomanual
+and pt.d1=c.d1
+and pt.d2=c.d2
+and pt.d3d4=c.d3d4
+and 
+(
+(pt.d7=c.d7
+and pt.d6=c.d6
+and pt.d5=c.d5
+)
+or
+(
+c.d5 is null
+and c.d6 is null
+and c.d7 is null 
+)
+)
+)
+group by nm.anio, pl.ID_PARTIDA_SICOIN, u.unidad_ejecutora, u.NOMBRE_UNIDAD_EJECUTORA, s.RENGLON, nm.id_partida--, nm.partida_bono
+UNION --PARA PARTIDAS_EGRESOS
+select nm.anio, s.ID_PARTIDA_EGRESOS, u.unidad_ejecutora id_unidad, u.NOMBRE_UNIDAD_EJECUTORA unidad_ejecutora, s.RENGLON
+, nm.id_partida--, nm.partida_bono
+, sum(nm.sueldo_base) sueldo_base, sum(nm.escalafon) escalafon, sum(nm.compl_salarial) complemento, sum(nm.total_Bono) total_Bono, sum(nm.total_descuento) total_descuento, sum(nm.liquido) liquido
+--pl.ID_PARTIDA_SICOIN, nm.*
+from (
+select n.id_nomina,  n.id_puesto, n.numero_plaza, n.correlativo,anio,
+case when (n.id_partida_egreso is not null and n.id_partida_egreso <> n.id_partida ) 
+then n.id_partida_egreso 
+     else 1 end id_partida
+--, sis_pkg_pagos.GETPARTIDAPAGOTA(nvl(null,n.id_partida_egreso),27) partida_bono
+, n.SUELDO_BASE, n.escalafon, n.compl_salarial, n.total_Bono, n.total_descuento, n.liquido
+from sis_nomina n 
+inner join sis_pago pg on pg.id_nomina = n.id_nomina
+inner join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where  n.id_proceso = $P{pIdProceso} and 
+(n.id_partida_egreso is not null and n.id_partida_egreso <> n.id_partida) 
+and doc.ID_TIPO_DOCUMENTO = 2
+and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)
+)nm
+inner join partida pt on pt.id_partida = nm.id_partida
+inner join SICOIN_PARTIDA_EGRESOS s on s.ID_PARTIDA_EGRESOS = pt.ID_PARTIDA_EGRESOS
+inner join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora
+WHERE 
+exists(
+select 1 from usuario_unidad b, partida c
+where b.id_partida=c.id_partida
+and usuario=$P{pUsuario}
+and b.tipo_usuario='TRABAJADOR'
+and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+and pt.aniomanual=c.aniomanual
+and pt.d1=c.d1
+and pt.d2=c.d2
+and pt.d3d4=c.d3d4
+and 
+(
+(pt.d7=c.d7
+and pt.d6=c.d6
+and pt.d5=c.d5
+)
+or
+(
+c.d5 is null
+and c.d6 is null
+and c.d7 is null 
+)
+)
+)
+group by nm.anio, s.ID_PARTIDA_EGRESOS, u.unidad_ejecutora, u.NOMBRE_UNIDAD_EJECUTORA, s.RENGLON, nm.id_partida--, nm.partida_Bono
+) t
+inner join SICOIN_PARTIDA_EGRESOS sicoin on sicoin.id_partida_egresos = t.ID_PARTIDA_SICOIN
+) tt ) where id_unidad = $P{pIdUnidad}
+group by form1, formato_renglon, form2, id_partida_sicoin, id_unidad, unidad_ejecutora, renglon, anio, tipoproc, periodoproceso, formato_partida_bono
+) 
+group by  'COMPLEMENTO', id_unidad, unidad_ejecutora, renglon
+union
+SELECT 'BONO MENSUAL', ID_UNIDAD, UNIDAD_EJECUTORA, FORMATO_PARTIDA_BONO FORMATO_RENGLON, SUM(TOTAL_BONO) FROM (
+select form1, formato_renglon, form2, id_partida_sicoin, id_unidad, unidad_ejecutora, renglon, anio, tipoproc, periodoproceso,  SUBSTR(FORMATO_PARTIDA_BONO,39,3) FORMATO_PARTIDA_BONO
+, sum(sueldo_base) sueldo_base, sum(escalafon) escalafon, sum(complemento) complemento, sum(total_bono)total_bono, sum(total_descuento) total_descuento, sum(liquido) liquido
+from (
+select tt.form1, tt.formato_renglon, tt.form2, tt.id_partida_sicoin, tt.id_unidad, tt.unidad_ejecutora, tt.renglon, tt.anio, tt.tipoProc, tt.periodoProceso
+, case when tt.formato_partida_bono = 'SIN PARTIDA SICOIN' or tt.formato_partida_bono  is null then 'SIN PARTIDA SICOIN' else tt.anio||tt.formato_partida_bono end formato_partida_bono 
+,tt.sueldo_base, tt.escalafon, tt.complemento, tt.total_bono, tt.total_descuento, tt.liquido
+from  (
+select  t.anio||'.'||(SELECT entidad FROM sicoin_entidad )||'.'||sicoin.unidad_ejecutora||DECODE(unidad_desconcentrada,NULL,'','.')||TO_CHAR(sicoin.unidad_desconcentrada,'FM00')||DECODE(sicoin.programa,NULL,'','.')||TO_CHAR(sicoin.programa,'FM00')||TO_CHAR(sicoin.subprograma,'FM00')||DECODE(proyecto,NULL,'','.')||TO_CHAR(sicoin.proyecto,'FM000')||DECODE(actividad,NULL,'','.')||TO_CHAR(sicoin.actividad,'FM000')||DECODE(obra,NULL,'','.')||TO_CHAR(obra,'FM000')||'.' form1
+,TO_CHAR(sicoin.renglon,'FM000') formato_renglon
+,DECODE(geografico,NULL,'','.')||TO_CHAR(geografico,'FM0000')||DECODE(fuente,NULL,'','.')||TO_CHAR(fuente,'FM000')||DECODE(organismo,NULL,'','.')||TO_CHAR(organismo,'FM0000')||DECODE(correlativo,NULL,'','.')||TO_CHAR(correlativo,'FM0000') form2
+,t.id_partida_sicoin
+,t.id_unidad
+,t.unidad_ejecutora
+,t.renglon
+,t.anio
+, (select sistp.nombre
+from sis_tipo_proceso sistp, sis_proceso sisproc
+where sistp.id_tipoproceso=sisproc.tipoproceso
+and sisproc.id_proceso=$P{pIdProceso}
+) as tipoProc,
+(select sisPer.nombre
+from sis_proceso sisproc, sis_periodo sisPer
+where sisproc.id_proceso=$P{pIdProceso}
+and sisPer.id_periodo=sisproc.periodo
+) as periodoProceso
+--, (select partida from SICOIN_PARTIDA_EGRESOS_VIEW sv where id_partida_egresos = (select id_partida_egresos from partida where id_partida = t.partida_bono) ) formato_partida_bono
+, sis_pkg_pagos.getPartidaSICOIN(t.id_partida,t.id_partida_sicoin,27) formato_partida_bono
+,t.sueldo_base, t.escalafon, t.complemento, t.total_bono, t.total_descuento, t.liquido
+  from (
+select nm.anio, pl.ID_PARTIDA_SICOIN, u.unidad_ejecutora id_unidad, u.NOMBRE_UNIDAD_EJECUTORA unidad_ejecutora, s.RENGLON
+,nm.id_partida--, nm.partida_bono
+, sum(nm.sueldo_base) sueldo_base, sum(nm.escalafon) escalafon, sum(nm.compl_salarial) complemento, sum(nm.total_Bono) total_Bono, sum(nm.total_descuento) total_descuento, sum(nm.liquido) liquido
+from (
+select n.id_nomina,  n.id_puesto, n.numero_plaza, n.correlativo,n.anio,
+case when (n.id_partida_egreso is null or n.id_partida_egreso = n.id_partida ) then n.id_partida 
+     else 0 end id_partida
+--, sis_pkg_pagos.GETPARTIDAPAGOTA(nvl(null,n.id_partida),27) partida_bono
+, n.SUELDO_BASE, n.escalafon, n.compl_salarial, n.total_Bono, n.total_descuento, n.liquido
+from sis_nomina n 
+inner join sis_pago pg on pg.id_nomina = n.id_nomina
+inner join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where n.id_proceso = $P{pIdProceso} and
+(n.id_partida_egreso is null or n.id_partida_egreso = n.id_partida) 
+and doc.ID_TIPO_DOCUMENTO = 2
+and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)
+)nm
+inner join sis_plaza pl on pl.id_puesto = nm.id_puesto
+                       and pl.correlativo = nm.correlativo
+                       and pl.numero_plaza = nm.numero_plaza
+                       and pl.id_partida = nm.id_partida
+inner join partida pt on pt.id_partida = nm.id_partida                       
+inner join SICOIN_PARTIDA_EGRESOS s on s.ID_PARTIDA_EGRESOS = pl.id_partida_sicoin    
+inner join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora
+WHERE 
+exists(
+select 1 from usuario_unidad b, partida c
+where b.id_partida=c.id_partida
+and usuario=$P{pUsuario}
+and b.tipo_usuario='TRABAJADOR'
+and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+and pt.aniomanual=c.aniomanual
+and pt.d1=c.d1
+and pt.d2=c.d2
+and pt.d3d4=c.d3d4
+and 
+(
+(pt.d7=c.d7
+and pt.d6=c.d6
+and pt.d5=c.d5
+)
+or
+(
+c.d5 is null
+and c.d6 is null
+and c.d7 is null 
+)
+)
+)
+group by nm.anio, pl.ID_PARTIDA_SICOIN, u.unidad_ejecutora, u.NOMBRE_UNIDAD_EJECUTORA, s.RENGLON, nm.id_partida--, nm.partida_bono
+UNION --PARA PARTIDAS_EGRESOS
+select nm.anio, s.ID_PARTIDA_EGRESOS, u.unidad_ejecutora id_unidad, u.NOMBRE_UNIDAD_EJECUTORA unidad_ejecutora, s.RENGLON
+, nm.id_partida--, nm.partida_bono
+, sum(nm.sueldo_base) sueldo_base, sum(nm.escalafon) escalafon, sum(nm.compl_salarial) complemento, sum(nm.total_Bono) total_Bono, sum(nm.total_descuento) total_descuento, sum(nm.liquido) liquido
+--pl.ID_PARTIDA_SICOIN, nm.*
+from (
+select n.id_nomina,  n.id_puesto, n.numero_plaza, n.correlativo,anio,
+case when (n.id_partida_egreso is not null and n.id_partida_egreso <> n.id_partida ) 
+then n.id_partida_egreso 
+     else 1 end id_partida
+--, sis_pkg_pagos.GETPARTIDAPAGOTA(nvl(null,n.id_partida_egreso),27) partida_bono
+, n.SUELDO_BASE, n.escalafon, n.compl_salarial, n.total_Bono, n.total_descuento, n.liquido
+from sis_nomina n 
+inner join sis_pago pg on pg.id_nomina = n.id_nomina
+inner join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where  n.id_proceso = $P{pIdProceso} and 
+(n.id_partida_egreso is not null and n.id_partida_egreso <> n.id_partida) 
+and doc.ID_TIPO_DOCUMENTO = 2
+and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)
+)nm
+inner join partida pt on pt.id_partida = nm.id_partida
+inner join SICOIN_PARTIDA_EGRESOS s on s.ID_PARTIDA_EGRESOS = pt.ID_PARTIDA_EGRESOS
+inner join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora
+WHERE 
+exists(
+select 1 from usuario_unidad b, partida c
+where b.id_partida=c.id_partida
+and usuario=$P{pUsuario}
+and b.tipo_usuario='TRABAJADOR'
+and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+and pt.aniomanual=c.aniomanual
+and pt.d1=c.d1
+and pt.d2=c.d2
+and pt.d3d4=c.d3d4
+and 
+(
+(pt.d7=c.d7
+and pt.d6=c.d6
+and pt.d5=c.d5
+)
+or
+(
+c.d5 is null
+and c.d6 is null
+and c.d7 is null 
+)
+)
+)
+group by nm.anio, s.ID_PARTIDA_EGRESOS, u.unidad_ejecutora, u.NOMBRE_UNIDAD_EJECUTORA, s.RENGLON, nm.id_partida--, nm.partida_Bono
+) t
+inner join SICOIN_PARTIDA_EGRESOS sicoin on sicoin.id_partida_egresos = t.ID_PARTIDA_SICOIN
+) tt ) where id_unidad = $P{pIdUnidad}
+group by form1, formato_renglon, form2, id_partida_sicoin, id_unidad, unidad_ejecutora, renglon, anio, tipoproc, periodoproceso, formato_partida_bono
+)
+GROUP BY 'BONO MENSUAL', ID_UNIDAD, UNIDAD_EJECUTORA, FORMATO_PARTIDA_BONO]]></queryString>
+
+	<field name="TIPO_RENGLON" class="java.lang.String"/>
+	<field name="ID_UNIDAD" class="java.math.BigDecimal"/>
+	<field name="UNIDAD_EJECUTORA" class="java.lang.String"/>
+	<field name="FORMATO_RENGLON" class="java.lang.String"/>
+	<field name="VALOR" class="java.math.BigDecimal"/>
+
+	<sortField name="TIPO_RENGLON" order="Descending" />
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="31"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="0"
+						y="1"
+						width="565"
+						height="17"
+						key="staticText-1"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="11" isBold="true" isUnderline="false"/>
+					</textElement>
+				<text><![CDATA[RESUMEN POR RENGLONES]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="6"
+						y="18"
+						width="238"
+						height="13"
+						key="staticText-2"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[TIPO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="244"
+						y="18"
+						width="49"
+						height="12"
+						key="staticText-3"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[RENGLON]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="472"
+						y="18"
+						width="93"
+						height="12"
+						key="staticText-4"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[TOTAL]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="30"
+						width="565"
+						height="0"
+						key="line-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="12"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="6"
+						y="0"
+						width="238"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{TIPO_RENGLON}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="244"
+						y="0"
+						width="49"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{FORMATO_RENGLON}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="472"
+						y="0"
+						width="93"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{VALOR}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="5"  isSplitAllowed="true" >
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="2"
+						width="565"
+						height="0"
+						key="line-2"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

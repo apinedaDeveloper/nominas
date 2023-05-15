@@ -1,0 +1,517 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html"
+          xmlns:af="http://xmlns.oracle.com/adf/faces">
+  <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+  <f:view>
+    <f:loadBundle basename="propiedades" var="tx"/>
+    <afh:html>
+      <afh:head title="#{tx['conciliacion.title']}">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+      </afh:head>
+        <script language="javascript" type="text/javascript"> 
+        
+         function genRep(idDocumento)
+         { 
+                window.open("../verreportepdf?id="+idDocumento+String.fromCharCode(38)+"rep=CONDBANC","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+         }
+
+        function genRepEmitido(pIdProc)
+        {        
+               window.open("../verreportepdf?id="+pIdProc+String.fromCharCode(38)+"rep=REPCNCEMTDO","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+        }
+        
+        function genRepEmitidoExcel(pIdProc)
+        {        
+               window.open("../verreporteexcel?id="+pIdProc+String.fromCharCode(38)+"rep=REPCNCEMTDO","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1");                                                                                                      
+        }
+  
+       
+
+      </script>
+      
+      <afh:body>
+        <af:messages/>
+        <af:form usesUpload="true">
+          <af:page value="#{modeloMenu.modeloBD}" var="node">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+           <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelHorizontal halign="center">
+              <af:panelBox width="700">
+                <af:showOneTab position="above"
+                               id="sh_Tab_one1"
+                               partialTriggers="btn_cargarArch">
+                  <af:showDetailItem text="#{tx['conciliacion.shw_dtal_item_Crear.label']}"
+                                     id="sh_detail_tab"
+                                     binding="#{carga_conciliacion.showDetail1}">
+                    <af:panelForm>
+                      <af:panelGroup>
+                        <af:panelHorizontal halign="left">
+                          <f:facet name="separator">
+                            <af:objectSpacer width="10" height="15"/>
+                          </f:facet>
+                        </af:panelHorizontal>
+                        <af:subform>
+                          <af:inputFile label="#{tx['prestamos.int_archivo.label']}"
+                                        binding="#{carga_conciliacion.inputCargaArchivo}"
+                                        valueChangeListener="#{carga_conciliacion.input_file}"
+                                        id="inp_archivo_entrada"/>
+                          <af:objectSpacer width="10" height="30"/>
+                          <af:panelHorizontal halign="center">
+                            <af:commandButton text="#{tx['conciliacion.btn_cargar.texto']}"
+                                              action="#{carga_conciliacion.carga_archivo_action}"
+                                              id="btn_cargarArch"/>
+                          </af:panelHorizontal>
+                          <af:objectSpacer width="10" height="30"/>
+                        </af:subform>
+                      </af:panelGroup>
+                    </af:panelForm>
+                  </af:showDetailItem>
+                  <af:showDetailItem text="#{tx['conciliacion.shw_dtal_item_Buscar.label']}"
+                                     disclosed="false"
+                                     binding="#{carga_conciliacion.showDetail2}"
+                                     partialTriggers="btn_cargarArch">
+                    <af:panelForm>
+                      <af:panelHorizontal>
+                        <af:panelForm>
+                          <af:selectInputDate value="#{bindings.pFechaI.inputValue}"
+                                              label="#{tx['conciliacion.inpt_fechaI.label']}"
+                                              required="#{bindings.pFechaI.mandatory}">
+                            <af:validator binding="#{bindings.pFechaI.validator}"/>
+                            <f:convertDateTime pattern="#{bindings.pFechaI.format}"/>
+                          </af:selectInputDate>
+                          <af:selectInputDate value="#{bindings.pFechaF.inputValue}"
+                                              label="#{tx['conciliacion.inpt_fechaF.label']}"
+                                              required="#{bindings.pFechaF.mandatory}">
+                            <af:validator binding="#{bindings.pFechaF.validator}"/>
+                            <f:convertDateTime pattern="#{bindings.pFechaF.format}"/>
+                          </af:selectInputDate>
+                        </af:panelForm>
+                        <af:objectSpacer width="30" height="10"/>
+                        <af:commandButton actionListener="#{bindings.ExecuteWithParams.execute}"
+                                          text="#{tx['conciliacion.btn_buscar.texto']}"
+                                          disabled="#{!bindings.ExecuteWithParams.enabled}"/>
+                      </af:panelHorizontal>
+                      <af:objectSeparator/>
+                      <af:objectSpacer width="10" height="20"/>
+                      <af:table value="#{bindings['Sis_conciliacion_bancaria_vw'].collectionModel}"
+                                var="row"
+                                rows="#{bindings['Sis_conciliacion_bancaria_vw'].rangeSize}"
+                                first="#{bindings['Sis_conciliacion_bancaria_vw'].rangeStart}"
+                                emptyText="Ninguna Fila" banding="row"
+                                bandingInterval="1"
+                                selectionState="#{bindings.Sis_conciliacion_bancaria_vw.collectionModel.selectedRow}"
+                                selectionListener="#{bindings.Sis_conciliacion_bancaria_vw.collectionModel.makeCurrent}"
+                                id="tbl_resultados">
+                        <f:facet name="selection">
+                          <af:tableSelectOne autoSubmit="true" id="tbl_sel"/>
+                        </f:facet>
+                        <f:facet name="actions">
+                          <af:commandButton text="#{tx['conciliacion.btn_procesar.texto']}"
+                                            action="#{carga_conciliacion.btn_procesar}"
+                                            disabled="#{bindings.Estado.inputValue eq '1'}"/>
+                        </f:facet>
+                        <af:column sortProperty="IdCargaArchivoDatos"
+                                   sortable="false"
+                                   headerText="#{tx['conciliacion.tbl.id.texto']}">
+                          <h:outputLink value="javascript:genRep(#{row.IdCargaArchivoDatos})">
+                            <h:outputText value="#{row.IdCargaArchivoDatos}"/>
+                          </h:outputLink>
+                        </af:column>
+                        <af:column sortProperty="NomArchivo" sortable="false"
+                                   headerText="#{tx['conciliacion.tbl.noma.texto']}">
+                          <af:outputText value="#{row.NomArchivo}"/>
+                        </af:column>
+                        <af:column sortProperty="Procesados" sortable="false"
+                                   headerText="#{tx['conciliacion.tbl.procesados.texto']}">
+                          <af:outputText value="#{row.Procesados}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings['prestamo_banco_Vw'].formats.Procesados}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="Periodo" sortable="false"
+                                   headerText="#{tx['conciliacion.tbl.periodo.texto']}">
+                          <af:outputText value="#{row.Periodo}"/>
+                        </af:column>
+                        <af:column sortProperty="Anio" sortable="false"
+                                   headerText="#{tx['conciliacion.tbl.anio.texto']}">
+                          <af:outputText value="#{row.Anio}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings['prestamo_banco_Vw'].formats.Anio}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="FechaInicio" sortable="false"
+                                   headerText="#{tx['conciliacion.tbl.fechai.texto']}"
+                                   noWrap="true">
+                          <af:outputText value="#{row.FechaInicio}">
+                            <f:convertDateTime pattern="#{bindings['prestamo_banco_Vw'].formats.FechaInicio}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="FechaFin" sortable="false"
+                                   headerText="#{tx['conciliacion.tbl.fechaf.texto']}"
+                                   noWrap="true">
+                          <af:outputText value="#{row.FechaFin}">
+                            <f:convertDateTime pattern="#{bindings['prestamo_banco_Vw'].formats.FechaFin}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="Error" sortable="false"
+                                   headerText="#{tx['conciliacion.tbl.error.texto']}">
+                          <af:outputText value="#{row.Error}"/>
+                        </af:column>
+                        <af:column sortable="false"
+                                   headerText="#{tx['conciliacion.tbl.estado.texto']}">
+                          <af:outputText value="#{row.Nomestado}"/>
+                        </af:column>
+                      </af:table>
+                    </af:panelForm>
+                  </af:showDetailItem>
+                  <af:showDetailItem text="#{tx['conciliacion.shw_dtal_item_proc.label']}">
+                    <af:panelForm labelWidth="250"
+                                  partialTriggers="tbl_listado_proc">
+                      <af:panelLabelAndMessage label="Id">
+                        <af:outputText value="#{bindings.IdProcesoConciliacion.inputValue}"/>
+                      </af:panelLabelAndMessage>
+                      <af:panelLabelAndMessage label="Mes">
+                        <af:selectOneChoice id="cmb_mes" valuePassThru="true"
+                                            value="#{bindings.Mes.inputValue}"
+                                            disabled="#{bindings.UsuarioOk.inputValue != null}">
+                          <af:selectItem label="ENERO" value="1"/>
+                          <af:selectItem label="FEBRERO" value="2"/>
+                          <af:selectItem label="MARZO" value="3"/>
+                          <af:selectItem label="ABRIL" value="4"/>
+                          <af:selectItem label="MAYO" value="5"/>
+                          <af:selectItem label="JUNIO" value="6"/>
+                          <af:selectItem label="JULIO" value="7"/>
+                          <af:selectItem label="AGOSTO" value="8"/>
+                          <af:selectItem label="SEPTIEMBRE" value="9"/>
+                          <af:selectItem label="OCTUBRE" value="10"/>
+                          <af:selectItem label="NOVIEMBRE" value="11"/>
+                          <af:selectItem label="DICIEMBRE" value="12"/>
+                        </af:selectOneChoice>
+                      </af:panelLabelAndMessage>
+                      <af:inputText value="#{bindings.Anio.inputValue}"
+                                    label="Año"
+                                    required="#{bindings.Anio.mandatory}"
+                                    columns="#{bindings.Anio.displayWidth}"
+                                    disabled="#{bindings.UsuarioOk.inputValue != null}">
+                        <af:validator binding="#{bindings.Anio.validator}"/>
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.Anio.format}"/>
+                      </af:inputText>
+                      <af:selectInputDate value="#{bindings.FechaEmisionI.inputValue}"
+                                          label="Fecha emisión inicio"
+                                          required="#{bindings.FechaEmisionI.mandatory}"
+                                          disabled="#{bindings.UsuarioOk.inputValue != null}">
+                        <af:validator binding="#{bindings.FechaEmisionI.validator}"/>
+                        <f:convertDateTime pattern="#{bindings.FechaEmisionI.format}"/>
+                      </af:selectInputDate>
+                      <af:selectInputDate value="#{bindings.FechaEmisionF.inputValue}"
+                                          label="Fecha emisión final"
+                                          required="#{bindings.FechaEmisionF.mandatory}"
+                                          disabled="#{bindings.UsuarioOk.inputValue != null}">
+                        <af:validator binding="#{bindings.FechaEmisionF.validator}"/>
+                        <f:convertDateTime pattern="#{bindings.FechaEmisionF.format}"/>
+                      </af:selectInputDate>
+                      <af:selectInputDate value="#{bindings.FechaAnulacionI.inputValue}"
+                                          label="Fecha anulación inicial"
+                                          required="#{bindings.FechaAnulacionI.mandatory}"
+                                          disabled="#{bindings.UsuarioOk.inputValue != null}">
+                        <af:validator binding="#{bindings.FechaAnulacionI.validator}"/>
+                        <f:convertDateTime pattern="#{bindings.FechaAnulacionI.format}"/>
+                      </af:selectInputDate>
+                      <af:selectInputDate value="#{bindings.FechaAnulacionF.inputValue}"
+                                          label="Fecha anulación final"
+                                          required="#{bindings.FechaAnulacionF.mandatory}"
+                                          disabled="#{bindings.UsuarioOk.inputValue != null}">
+                        <af:validator binding="#{bindings.FechaAnulacionF.validator}"/>
+                        <f:convertDateTime pattern="#{bindings.FechaAnulacionF.format}"/>
+                      </af:selectInputDate>
+                      <af:inputText value="#{bindings.Observacion.inputValue}"
+                                    label="#{bindings.Observacion.label}"
+                                    required="#{bindings.Observacion.mandatory}"
+                                    columns="100"
+                                    rows="3"
+                                    disabled="#{bindings.UsuarioOk.inputValue != null}">
+                        <af:validator binding="#{bindings.Observacion.validator}"/>
+                      </af:inputText>
+                      <af:objectSpacer width="10" height="10"/>
+                      <af:panelButtonBar>
+                        <af:commandButton text="Agregar nuevo"
+                                          actionListener="#{bindings['crear_nuevo_det'].execute}"
+                                          disabled="#{!bindings['crear_nuevo_det'].enabled}"/>
+                        <af:commandButton actionListener="#{bindings.Commit.execute}"
+                                          text="Guardar"/>
+                        <af:commandButton text="Cancelar"
+                                          actionListener="#{bindings.Rollback.execute}"
+                                          disabled="#{''}"
+                                          immediate="true">
+                          <af:resetActionListener/>
+                        </af:commandButton>
+                      </af:panelButtonBar>
+                      <af:objectSpacer width="10" height="30"/>
+                    </af:panelForm>
+                    <af:objectSeparator/>
+                    <af:table value="#{bindings.SisProcesoConciliacionVw.collectionModel}"
+                              var="row"
+                              rows="#{bindings.SisProcesoConciliacionVw.rangeSize}"
+                              first="#{bindings.SisProcesoConciliacionVw.rangeStart}"
+                              emptyText="#{bindings.SisProcesoConciliacionVw.viewable ? 'No rows yet.' : 'Access Denied.'}"
+                              selectionState="#{bindings.SisProcesoConciliacionVw.collectionModel.selectedRow}"
+                              selectionListener="#{bindings.SisProcesoConciliacionVw.collectionModel.makeCurrent}"
+                              banding="row" bandingInterval="1"
+                              id="tbl_listado_proc">
+                      <f:facet name="selection">
+                        <af:tableSelectOne text="Select and" autoSubmit="true"/>
+                      </f:facet>
+                      <af:column sortProperty="IdProcesoConciliacion"
+                                 sortable="false"
+                                 headerText="#{bindings.SisProcesoConciliacionVw.labels.IdProcesoConciliacion}">
+                        <af:outputText value="#{row.IdProcesoConciliacion}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisProcesoConciliacionVw.formats.IdProcesoConciliacion}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Mes" sortable="false"
+                                 headerText="#{bindings.SisProcesoConciliacionVw.labels.Mes}">
+                        <af:outputText value="#{row.Mes}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisProcesoConciliacionVw.formats.Mes}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Anio" sortable="false"
+                                 headerText="#{bindings.SisProcesoConciliacionVw.labels.Anio}">
+                        <af:outputText value="#{row.Anio}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisProcesoConciliacionVw.formats.Anio}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="FechaEmisionI" sortable="false"
+                                 headerText="#{bindings.SisProcesoConciliacionVw.labels.FechaEmisionI}">
+                        <af:outputText value="#{row.FechaEmisionI}">
+                          <f:convertDateTime pattern="#{bindings.SisProcesoConciliacionVw.formats.FechaEmisionI}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="FechaEmisionF" sortable="false"
+                                 headerText="#{bindings.SisProcesoConciliacionVw.labels.FechaEmisionF}">
+                        <af:outputText value="#{row.FechaEmisionF}">
+                          <f:convertDateTime pattern="#{bindings.SisProcesoConciliacionVw.formats.FechaEmisionF}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="FechaAnulacionI" sortable="false"
+                                 headerText="#{bindings.SisProcesoConciliacionVw.labels.FechaAnulacionI}">
+                        <af:outputText value="#{row.FechaAnulacionI}">
+                          <f:convertDateTime pattern="#{bindings.SisProcesoConciliacionVw.formats.FechaAnulacionI}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="FechaAnulacionF" sortable="false"
+                                 headerText="#{bindings.SisProcesoConciliacionVw.labels.FechaAnulacionF}">
+                        <af:outputText value="#{row.FechaAnulacionF}">
+                          <f:convertDateTime pattern="#{bindings.SisProcesoConciliacionVw.formats.FechaAnulacionF}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Observacion" sortable="false"
+                                 headerText="#{bindings.SisProcesoConciliacionVw.labels.Observacion}">
+                        <af:outputText value="#{row.Observacion}"/>
+                      </af:column>
+                      <af:column sortProperty="CreadoPor" sortable="false"
+                                 headerText="#{bindings.SisProcesoConciliacionVw.labels.CreadoPor}">
+                        <af:outputText value="#{row.CreadoPor}"/>
+                      </af:column>
+                      <af:column sortProperty="FechaCreacion" sortable="false"
+                                 headerText="#{bindings.SisProcesoConciliacionVw.labels.FechaCreacion}">
+                        <af:outputText value="#{row.FechaCreacion}">
+                          <f:convertDateTime pattern="#{bindings.SisProcesoConciliacionVw.formats.FechaCreacion}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortable="false" headerText=" - ">
+                        <af:commandButton text="Procesar conciliación"
+                                          action="#{carga_conciliacion.btn_procesar_concilia}"
+                                          disabled="#{row.is_btn_proc}"/>
+                      </af:column>
+                      <af:column sortable="false" headerText=" -">
+                        <af:commandButton text="Cheques emitidos PDF"
+                                          onclick="genRepEmitido('#{row.IdProcesoConciliacion}')"/>
+                        <af:commandButton text="Cheques emitidos EXCEL"
+                                          onclick="genRepEmitidoExcel('#{row.IdProcesoConciliacion}')"/>
+                      </af:column>
+                      <af:column sortable="false" headerText=" -">
+                        <af:commandButton text="Dar visto bueno"
+                                          action="#{carga_conciliacion.btn_dar_visto_bueno}"/>
+                      </af:column>
+                    </af:table>
+                  </af:showDetailItem>
+                  <af:showDetailItem text="#{tx['conciliacion.shw_dtal_item_Cheque.label']}">
+                    <af:panelForm>
+                      <af:selectOneChoice value="#{bindings.pIdBanco1.inputValue}"
+                                          label="Banco">
+                        <af:validator binding="#{bindings.pIdBanco1.validator}"/>
+                        <af:selectItem label="BANRURAL" value="1"/>
+                        <af:selectItem label="G&amp;T CONTINENTAL" value="2"/>
+                      </af:selectOneChoice>
+                      <af:inputText value="#{bindings.pNumCheque.inputValue}"
+                                    label="Numero Cheque"
+                                    required="#{bindings.pNumCheque.mandatory}"
+                                    columns="10">
+                        <af:validator binding="#{bindings.pNumCheque.validator}"/>
+                      </af:inputText>
+                      <f:facet name="footer">
+                        <h:panelGroup>
+                          <af:commandButton actionListener="#{bindings.ExecuteWithParams1.execute}"
+                                            text="Buscar"
+                                            disabled="#{!bindings.ExecuteWithParams1.enabled}"/>
+                        </h:panelGroup>
+                      </f:facet>
+                      <af:objectSpacer width="10" height="20"/>
+                    </af:panelForm>
+                    <af:objectSeparator/>
+                    <af:objectSpacer width="10" height="10"/>
+                    <af:table value="#{bindings.SisConsultaChequeConciaVW.collectionModel}"
+                              var="row"
+                              rows="#{bindings.SisConsultaChequeConciaVW.rangeSize}"
+                              first="#{bindings.SisConsultaChequeConciaVW.rangeStart}"
+                              emptyText="Ninguna Fila">
+                      <af:column sortProperty="IdDocumentoBanco"
+                                 sortable="false"
+                                 headerText="#{bindings.SisConsultaChequeConciaVW.labels.IdDocumentoBanco}">
+                        <af:outputText value="#{row.IdDocumentoBanco}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisConsultaChequeConciaVW.formats.IdDocumentoBanco}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="RegistroEmpleado"
+                                 sortable="false"
+                                 headerText="#{bindings.SisConsultaChequeConciaVW.labels.RegistroEmpleado}">
+                        <af:outputText value="#{row.RegistroEmpleado}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisConsultaChequeConciaVW.formats.RegistroEmpleado}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Nombrecompleto" sortable="false"
+                                 headerText="#{bindings.SisConsultaChequeConciaVW.labels.Nombrecompleto}">
+                        <af:outputText value="#{row.Nombrecompleto}"/>
+                      </af:column>
+                      <af:column sortProperty="IdDependencia" sortable="false"
+                                 headerText="#{bindings.SisConsultaChequeConciaVW.labels.IdDependencia}">
+                        <af:outputText value="#{row.IdDependencia}"/>
+                      </af:column>
+                      <af:column sortProperty="Nombre" sortable="false"
+                                 headerText="#{bindings.SisConsultaChequeConciaVW.labels.Nombre}">
+                        <af:outputText value="#{row.Nombre}"/>
+                      </af:column>
+                      <af:column sortProperty="FechaEmision" sortable="false"
+                                 headerText="#{bindings.SisConsultaChequeConciaVW.labels.FechaEmision}">
+                        <af:outputText value="#{row.FechaEmision}">
+                          <f:convertDateTime pattern="#{bindings.SisConsultaChequeConciaVW.formats.FechaEmision}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="NumDocFisico" sortable="false"
+                                 headerText="#{bindings.SisConsultaChequeConciaVW.labels.NumDocFisico}">
+                        <af:outputText value="#{row.NumDocFisico}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisConsultaChequeConciaVW.formats.NumDocFisico}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Nombanco" sortable="false"
+                                 headerText="#{bindings.SisConsultaChequeConciaVW.labels.Nombanco}">
+                        <af:outputText value="#{row.Nombanco}"/>
+                      </af:column>
+                      <af:column sortProperty="Valor" sortable="false"
+                                 headerText="#{bindings.SisConsultaChequeConciaVW.labels.Valor}">
+                        <af:outputText value="#{row.Valor}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisConsultaChequeConciaVW.formats.Valor}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Estado" sortable="false"
+                                 headerText="#{bindings.SisConsultaChequeConciaVW.labels.Estado}">
+                        <af:outputText value="#{row.Estado}"/>
+                      </af:column>
+                      <af:column sortProperty="MontoCobrado" sortable="false"
+                                 headerText="#{bindings.SisConsultaChequeConciaVW.labels.MontoCobrado}">
+                        <af:outputText value="#{row.MontoCobrado}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisConsultaChequeConciaVW.formats.MontoCobrado}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="AnioEmision" sortable="false"
+                                 headerText="#{bindings.SisConsultaChequeConciaVW.labels.AnioEmision}">
+                        <af:outputText value="#{row.AnioEmision}"/>
+                      </af:column>
+                      <af:column sortProperty="AnioCobro" sortable="false"
+                                 headerText="#{bindings.SisConsultaChequeConciaVW.labels.AnioCobro}">
+                        <af:outputText value="#{row.AnioCobro}"/>
+                      </af:column>
+                      <af:column sortProperty="FechaCobro" sortable="false"
+                                 headerText="#{bindings.SisConsultaChequeConciaVW.labels.FechaCobro}">
+                        <af:outputText value="#{row.FechaCobro}">
+                          <f:convertDateTime pattern="#{bindings.SisConsultaChequeConciaVW.formats.FechaCobro}"/>
+                        </af:outputText>
+                      </af:column>
+                    </af:table>
+                    <af:panelHeader text="Cambio Estado"/>
+                    <af:panelForm>
+                      <af:panelHorizontal halign="center">
+                        <af:selectOneChoice value="#{bindings.pIdEstado1.inputValue}"
+                                            label="Estado"
+                                            valueChangeListener="#{carga_conciliacion.cambioEstado}"
+                                            autoSubmit="true" id="cbEstado">
+                          <af:selectItem label="PAGADO" value="18"/>
+                          <af:selectItem label="ANULADO DMG" value="0"/>
+                        </af:selectOneChoice>
+                        <af:objectSpacer width="10" height="10"/>
+                        <af:selectInputDate label="Fecha Anulacion DMG"
+                                            partialTriggers="cbEstado"
+                                            disabled="true"
+                                            binding="#{carga_conciliacion.inputFechaAnulacion}"
+                                            value="#{bindings.pFechaDMG.inputValue}"/>
+                      </af:panelHorizontal>
+                      <af:inputText value="#{bindings.pObservaciones.inputValue}"
+                                    label="Observaciones"
+                                    required="#{bindings.pObservaciones.mandatory}"
+                                    columns="60" rows="2" autoSubmit="false">
+                        <af:validator binding="#{bindings.pObservaciones.validator}"/>
+                      </af:inputText>
+                      <f:facet name="footer">
+                        <af:commandButton actionListener="#{bindings.cambiarEstadoCheque.execute}"
+                                          text="cambiarEstadoCheque"
+                                          disabled="#{!bindings.cambiarEstadoCheque.enabled}"
+                                          action="#{carga_conciliacion.btn_cambiar_estado_cheque}"/>
+                      </f:facet>
+                      <af:objectSpacer width="10" height="15"/>
+                    </af:panelForm>
+                  </af:showDetailItem>
+                </af:showOneTab>
+              </af:panelBox>
+            </af:panelHorizontal>
+          </af:page>
+        </af:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:modeloMenu-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:prueba2-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:carga_prestamo-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:carga_prestamo-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:carga_conciliacion-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:carga_conciliacion-->
+</jsp:root>

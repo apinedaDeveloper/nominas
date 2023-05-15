@@ -1,0 +1,801 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="contratos_nomina_normal"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="934"
+		 pageHeight="612"
+		 columnWidth="874"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pPeriodo" isForPrompting="true" class="java.util.Date"/>
+	<parameter name="pWhere1" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA[" and dep.id_dependencia=32 "]]></defaultValueExpression>
+	</parameter>
+	<queryString><![CDATA[SELECT 
+Case When a.correlativo < 2017
+Then To_char(empl.registro_empleado)
+Else Case When To_Number(To_Char(To_Date($P{pPeriodo}),'yyyymm')) < 201807  
+     Then empl.cui 
+     Else empl.cui||'<br>'||empl.registro_empleado 
+     End 
+End Reg_CUI
+, a.id_contrato, initcap(empl.nombrecompleto) NOMBRECOMPLETO,
+a.id_partida, a.id_puesto, a.numero_plaza, a.correlativo, a.horascontratadas,
+a.sueldobase, a.compl_sal, a.escalaf, a.fecha_inicio, d.tipo,
+e.periodo_plaza,  prt.id_programa, prt.id_dependencia, prt.id_unidad,
+prt.id_renglon, prt.formato2, dep.nombre as nomDep, uni.nombre as nomUni,
+rengl.nombre as nomRenglon, b.NOMBRE as nomPuesto,
+a.sueldobase+a.compl_sal+a.escalaf as nominal,
+sis_pkg_calculos.GET_SUELDO_CONTRATO(4,a.id_contrato,$P{pPeriodo}) as nominalReal,
+sis_pkg_calculos.GETVALORAJUSTEXVAR(27,0,a.horascontratadas,30,30,$P{pPeriodo}) bonoMensual,
+sis_pkg_calculos.GETPROPORCIONDIASLABORADOS(a.id_contrato,$P{pPeriodo}) as proporcion,
+sis_pkg_calculos.GETPROPORCIONAJUSTE(a.id_contrato,27,$P{pPeriodo}) as proporcionAjuste
+    FROM SIS_CONTRATO A,SIS_PUESTO B, SIS_CATEGORIA_PUESTO C, SIS_NIVEL_PUESTO D,sis_plaza E, sis_empleado_vw empl, sis_partida_vw prt,sis_dependencia dep,sis_unidad_ejecutora uni,sis_renglon rengl
+    WHERE EXISTS(
+        SELECT 1 FROM SIS_ESTADO_CONTRATO_VW B
+        WHERE A.ESTATUS=B.ID_ESTADO
+        AND B.NOMBRE IN ('ACTIVO','SUSPENDIDO IGSS','BAJA LICENCIA')
+                ) 
+    and $P{pPeriodo} between trunc(A.fecha_inicio,'mm') and trunc(nvl(A.fecha_fin,$P{pPeriodo}),'mm')
+    AND B.ID_PUESTO=A.ID_PUESTO AND C.ID_CATEGORIA=B.ID_CATEGORIA
+    AND D.ID_NIVEL_PUESTO=C.ID_NIVEL_PUESTO and E.ID_PARTIDA=A.ID_PARTIDA
+    and prt.id_partida=a.id_partida
+    $P!{pWhere1}
+    and prt.id_dependencia=dep.id_dependencia     and prt.id_unidad=uni.id_unidad
+    and prt.id_programa=uni.id_programa     and prt.id_dependencia=uni.id_dependencia
+    and prt.id_renglon=rengl.id_renglon     AND E.ID_PUESTO=A.ID_PUESTO
+    AND E.NUMERO_PLAZA=A.NUMERO_PLAZA     AND E.CORRELATIVO=A.CORRELATIVO
+    and empl.registro_empleado=a.registro_empleado
+   order by id_programa,id_dependencia,id_unidad,id_renglon,numero_plaza]]></queryString>
+
+	<field name="REG_CUI" class="java.lang.String"/>
+	<field name="ID_CONTRATO" class="java.math.BigDecimal"/>
+	<field name="NOMBRECOMPLETO" class="java.lang.String"/>
+	<field name="ID_PARTIDA" class="java.math.BigDecimal"/>
+	<field name="ID_PUESTO" class="java.math.BigDecimal"/>
+	<field name="NUMERO_PLAZA" class="java.math.BigDecimal"/>
+	<field name="CORRELATIVO" class="java.math.BigDecimal"/>
+	<field name="HORASCONTRATADAS" class="java.math.BigDecimal"/>
+	<field name="SUELDOBASE" class="java.math.BigDecimal"/>
+	<field name="COMPL_SAL" class="java.math.BigDecimal"/>
+	<field name="ESCALAF" class="java.math.BigDecimal"/>
+	<field name="FECHA_INICIO" class="java.sql.Timestamp"/>
+	<field name="TIPO" class="java.lang.String"/>
+	<field name="PERIODO_PLAZA" class="java.lang.String"/>
+	<field name="ID_PROGRAMA" class="java.math.BigDecimal"/>
+	<field name="ID_DEPENDENCIA" class="java.math.BigDecimal"/>
+	<field name="ID_UNIDAD" class="java.math.BigDecimal"/>
+	<field name="ID_RENGLON" class="java.math.BigDecimal"/>
+	<field name="FORMATO2" class="java.lang.String"/>
+	<field name="NOMDEP" class="java.lang.String"/>
+	<field name="NOMUNI" class="java.lang.String"/>
+	<field name="NOMRENGLON" class="java.lang.String"/>
+	<field name="NOMPUESTO" class="java.lang.String"/>
+	<field name="NOMINAL" class="java.math.BigDecimal"/>
+	<field name="NOMINALREAL" class="java.math.BigDecimal"/>
+	<field name="BONOMENSUAL" class="java.math.BigDecimal"/>
+	<field name="PROPORCION" class="java.math.BigDecimal"/>
+	<field name="PROPORCIONAJUSTE" class="java.math.BigDecimal"/>
+
+	<variable name="TotalSueldoBaseRenglon" class="java.math.BigDecimal" resetType="Group" resetGroup="Renglon" calculation="Sum">
+		<variableExpression><![CDATA[$F{SUELDOBASE}.multiply($F{PROPORCION})]]></variableExpression>
+	</variable>
+	<variable name="TotalEscalafRenglon" class="java.math.BigDecimal" resetType="Group" resetGroup="Renglon" calculation="Sum">
+		<variableExpression><![CDATA[$F{ESCALAF}.multiply($F{PROPORCION})]]></variableExpression>
+	</variable>
+	<variable name="TotalComplRenglon" class="java.math.BigDecimal" resetType="Group" resetGroup="Renglon" calculation="Sum">
+		<variableExpression><![CDATA[$F{COMPL_SAL}.multiply($F{PROPORCION})]]></variableExpression>
+	</variable>
+	<variable name="TotalNomRenglon" class="java.math.BigDecimal" resetType="Group" resetGroup="Renglon" calculation="Sum">
+		<variableExpression><![CDATA[$F{NOMINALREAL}.multiply($F{PROPORCION})]]></variableExpression>
+	</variable>
+	<variable name="TotalSueldoBaseUnidad" class="java.math.BigDecimal" resetType="Group" resetGroup="Unidad" calculation="Sum">
+		<variableExpression><![CDATA[$F{SUELDOBASE}.multiply($F{PROPORCION})]]></variableExpression>
+	</variable>
+	<variable name="TotalEscalafonUnidad" class="java.math.BigDecimal" resetType="Group" resetGroup="Unidad" calculation="Sum">
+		<variableExpression><![CDATA[$F{ESCALAF}.multiply($F{PROPORCION})]]></variableExpression>
+	</variable>
+	<variable name="TotalComplUnidad" class="java.math.BigDecimal" resetType="Group" resetGroup="Unidad" calculation="Sum">
+		<variableExpression><![CDATA[$F{COMPL_SAL}.multiply($F{PROPORCION})]]></variableExpression>
+	</variable>
+	<variable name="TotalNominalUnidad" class="java.math.BigDecimal" resetType="Group" resetGroup="Unidad" calculation="Sum">
+		<variableExpression><![CDATA[$F{NOMINAL}.multiply($F{PROPORCION})]]></variableExpression>
+	</variable>
+	<variable name="TotalSueldoBaseDep" class="java.math.BigDecimal" resetType="Group" resetGroup="Dependencia" calculation="Sum">
+		<variableExpression><![CDATA[$F{SUELDOBASE}.multiply($F{PROPORCION})]]></variableExpression>
+	</variable>
+	<variable name="TotalEscalafDep" class="java.math.BigDecimal" resetType="Group" resetGroup="Dependencia" calculation="Sum">
+		<variableExpression><![CDATA[$F{ESCALAF}.multiply($F{PROPORCION})]]></variableExpression>
+	</variable>
+	<variable name="TotalComplDep" class="java.math.BigDecimal" resetType="Group" resetGroup="Dependencia" calculation="Sum">
+		<variableExpression><![CDATA[$F{COMPL_SAL}.multiply($F{PROPORCION})]]></variableExpression>
+	</variable>
+	<variable name="TotalNominalDep" class="java.math.BigDecimal" resetType="Group" resetGroup="Dependencia" calculation="Sum">
+		<variableExpression><![CDATA[$F{NOMINALREAL}.multiply($F{PROPORCION})]]></variableExpression>
+	</variable>
+	<variable name="TotalBonoRenglon" class="java.math.BigDecimal" resetType="Group" resetGroup="Renglon" calculation="Sum">
+		<variableExpression><![CDATA[$F{BONOMENSUAL}.multiply($F{PROPORCIONAJUSTE}).multiply($F{PROPORCION})]]></variableExpression>
+	</variable>
+	<variable name="TotalBonoUnidad" class="java.math.BigDecimal" resetType="Group" resetGroup="Unidad" calculation="Sum">
+		<variableExpression><![CDATA[$F{BONOMENSUAL}.multiply($F{PROPORCIONAJUSTE}).multiply($F{PROPORCION})]]></variableExpression>
+	</variable>
+	<variable name="TotalBonoDependencia" class="java.math.BigDecimal" resetType="Group" resetGroup="Dependencia" calculation="Sum">
+		<variableExpression><![CDATA[$F{BONOMENSUAL}.multiply($F{PROPORCIONAJUSTE}).multiply($F{PROPORCION})]]></variableExpression>
+	</variable>
+
+		<group  name="Dependencia" isStartNewPage="true" >
+			<groupExpression><![CDATA[$F{ID_DEPENDENCIA}]]></groupExpression>
+			<groupHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="26"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="640"
+						y="5"
+						width="68"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{TotalNominalDep}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="577"
+						y="5"
+						width="55"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{TotalComplDep}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="517"
+						y="5"
+						width="55"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{TotalEscalafDep}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="443"
+						y="5"
+						width="69"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{TotalSueldoBaseDep}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="188"
+						y="6"
+						width="115"
+						height="20"
+						key="staticText-10"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="12" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Total dependencia]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="723"
+						y="5"
+						width="68"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{TotalBonoDependencia}]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupFooter>
+		</group>
+		<group  name="Unidad" >
+			<groupExpression><![CDATA[$F{ID_UNIDAD}]]></groupExpression>
+			<groupHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="25"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="640"
+						y="3"
+						width="68"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{TotalNominalUnidad}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="577"
+						y="3"
+						width="55"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{TotalComplUnidad}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="517"
+						y="3"
+						width="55"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{TotalEscalafonUnidad}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="443"
+						y="3"
+						width="69"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{TotalSueldoBaseUnidad}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="203"
+						y="5"
+						width="100"
+						height="20"
+						key="staticText-9"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="12" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Total unidad]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="723"
+						y="3"
+						width="68"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{TotalBonoUnidad}]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupFooter>
+		</group>
+		<group  name="Renglon" isReprintHeaderOnEachPage="true" >
+			<groupExpression><![CDATA[$F{NOMRENGLON}]]></groupExpression>
+			<groupHeader>
+			<band height="58"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="90"
+						y="5"
+						width="750"
+						height="20"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMDEP}+", "+$F{NOMUNI}+ " - "+$F{NOMRENGLON}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3"
+						y="5"
+						width="84"
+						height="20"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{FORMATO2}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="6"
+						y="39"
+						width="34"
+						height="15"
+						key="staticText-1"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Plaza]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="43"
+						y="39"
+						width="82"
+						height="15"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Clasificación]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="443"
+						y="39"
+						width="70"
+						height="15"
+						key="staticText-4"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Sueldo base]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="514"
+						y="39"
+						width="58"
+						height="15"
+						key="staticText-5"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Escalafón]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="585"
+						y="24"
+						width="47"
+						height="30"
+						key="staticText-6"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Compl Salarial]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="656"
+						y="39"
+						width="50"
+						height="15"
+						key="staticText-7"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Nominal]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="722"
+						y="39"
+						width="80"
+						height="15"
+						key="staticText-13"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Bono Mensual]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="344"
+						y="39"
+						width="79"
+						height="15"
+						key="staticText-14"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Nombre]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="260"
+						y="39"
+						width="79"
+						height="15"
+						key="staCUI"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[CUI / RegPer.]]></text>
+				</staticText>
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="30"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="640"
+						y="5"
+						width="68"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{TotalNomRenglon}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="577"
+						y="5"
+						width="55"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{TotalComplRenglon}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="517"
+						y="5"
+						width="55"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{TotalEscalafRenglon}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="443"
+						y="5"
+						width="69"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{TotalSueldoBaseRenglon}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="203"
+						y="5"
+						width="100"
+						height="20"
+						key="staticText-8"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="12" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Total renglón]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="723"
+						y="5"
+						width="68"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{TotalBonoRenglon}]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupFooter>
+		</group>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="51"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="251"
+						y="3"
+						width="395"
+						height="20"
+						key="staticText-11"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font size="14"/>
+					</textElement>
+				<text><![CDATA[Reporte de plazas para el cálculo de la nómina del mes de]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="720"
+						y="5"
+						width="139"
+						height="15"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["HOJA NO. "+$V{PAGE_NUMBER}.toString()]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="721"
+						y="24"
+						width="139"
+						height="15"
+						key="textField-2"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new java.util.Date()]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="3"
+						y="3"
+						width="227"
+						height="40"
+						key="staticText-12"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Universidad de San Carlos de Guatemala
+Departamento de Procesamiento de datos
+Sistema Integrado de Sueldos]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3"
+						y="3"
+						width="227"
+						height="40"
+						key="staticText-12"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Universidad de San Carlos de Guatemala
+Departamento de Procesamiento de datos
+Sistema Integrado de Sueldos]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="MMMMM" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="251"
+						y="22"
+						width="395"
+						height="20"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="14"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[$P{pPeriodo}]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="19"  isSplitAllowed="true" >
+				<printWhenExpression><![CDATA[new Boolean($F{PROPORCION}.compareTo( new BigDecimal(0))>0)]]></printWhenExpression>
+				<textField isStretchWithOverflow="false" pattern="##0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="5"
+						y="1"
+						width="33"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{NUMERO_PLAZA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="43"
+						y="1"
+						width="50"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ID_PUESTO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="443"
+						y="1"
+						width="69"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{SUELDOBASE}.multiply($F{PROPORCION})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="517"
+						y="1"
+						width="55"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ESCALAF}.multiply($F{PROPORCION})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="577"
+						y="1"
+						width="55"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{COMPL_SAL}.multiply($F{PROPORCION})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="640"
+						y="1"
+						width="68"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{NOMINAL}.multiply($F{PROPORCION})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="96"
+						y="1"
+						width="162"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMPUESTO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="723"
+						y="1"
+						width="68"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{BONOMENSUAL}.multiply($F{PROPORCIONAJUSTE}).multiply($F{PROPORCION})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="342"
+						y="1"
+						width="100"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRECOMPLETO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="260"
+						y="1"
+						width="79"
+						height="15"
+						key="txtCUI"/>
+					<box></box>
+					<textElement textAlignment="Right" markup="html">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{REG_CUI}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="30"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="49"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<lastPageFooter>
+			<band height="50"  isSplitAllowed="true" >
+			</band>
+		</lastPageFooter>
+		<summary>
+			<band height="50"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

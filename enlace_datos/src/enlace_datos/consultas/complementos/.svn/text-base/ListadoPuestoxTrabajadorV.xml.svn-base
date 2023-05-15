@@ -1,0 +1,226 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="ListadoPuestoxTrabajadorV"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   ComponentClass="enlace_datos.consultas.complementos.ListadoPuestoxTrabajadorVImpl"
+   MsgBundleClass="enlace_datos.consultas.complementos.common.ListadoPuestoxTrabajadorVRowImplMsgBundle"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.43.6" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|Msg|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="pRegPer"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="pAnio"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select * from (
+select distinct c.registro_empleado, (Nombre1||' '||nombre2||' '||apellido1||' '||apellido2) NombreEmpleado
+, c.id_contrato, tc.nombre NombreContrato, c.id_puesto, p.nombre NombrePuesto, c.numero_plaza
+, c.correlativo, c.id_partida, c.fecha_inicio, Decode(c.fecha_fin,null,c.no_exceda_de,c.fecha_fin) fecha_fin, ue.nombre Unidad
+from siif.sis_contrato c, siif.sis_empleado e, siif.sis_tipo_contrato tc, siif.sis_puesto p, siif.sis_partida pa, SIIF.sis_unidad_ejecutora ue
+where c.estatus =43 --43=FINALIZADO 
+and c.registro_empleado = :pRegPer and c.correlativo between :pAnio-1 and :pAnio
+and c.registro_empleado = e.registro_empleado and c.id_tipo_contrato = tc.id_tipo_contrato and c.id_puesto = p.id_puesto and c.id_partida = pa.id_partida
+and pa.id_programa=ue.id_programa and pa.id_dependencia=ue.id_dependencia and pa.id_unidad=ue.id_unidad
+Union ALL
+select distinct c.registro_empleado, (Nombre1||' '||nombre2||' '||apellido1||' '||apellido2) NombreEmpleado
+, c.id_contrato, tc.nombre NombreContrato, c.id_puesto, p.nombre NombrePuesto, c.numero_plaza
+, c.correlativo, c.id_partida, c.fecha_inicio, s.Fecha_solicitud fecha_fin, ue.nombre Unidad
+from sis_contrato c left outer join sis_solicitud s on c.id_contrato = s.id_contrato
+, siif.sis_empleado e, siif.sis_tipo_contrato tc, siif.sis_puesto p, siif.sis_partida pa, SIIF.sis_unidad_ejecutora ue
+where c.estatus =15--15=Baja Definitiva, 43=Finalizado
+and s.id_tipo_solicitud in (5,6,9) and s.id_estado=39  --5=Renuncia, 6=Despido, 9=Fallecimiento
+and c.correlativo between :pAnio-1 and :pAnio and c.registro_empleado=:pRegPer
+and c.registro_empleado = e.registro_empleado and c.id_tipo_contrato = tc.id_tipo_contrato and c.id_puesto = p.id_puesto and c.id_partida = pa.id_partida
+and pa.id_programa=ue.id_programa and pa.id_dependencia=ue.id_dependencia and pa.id_unidad=ue.id_unidad
+) t
+order by t.fecha_inicio desc
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="RegistroEmpleado"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="REGISTRO_EMPLEADO"
+      Expression="REGISTRO_EMPLEADO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="NombreEmpleado"
+      IsPersistent="false"
+      Precision="203"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBREEMPLEADO"
+      Expression="NOMBREEMPLEADO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="203" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdContrato"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_CONTRATO"
+      Expression="ID_CONTRATO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="NombreContrato"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="25"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBRECONTRATO"
+      Expression="NOMBRECONTRATO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="25" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdPuesto"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_PUESTO"
+      Expression="ID_PUESTO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="NombrePuesto"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="200"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBREPUESTO"
+      Expression="NOMBREPUESTO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="200" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="NumeroPlaza"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="5"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="NUMERO_PLAZA"
+      Expression="NUMERO_PLAZA"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Correlativo"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="6"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="CORRELATIVO"
+      Expression="CORRELATIVO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdPartida"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="6"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_PARTIDA"
+      Expression="ID_PARTIDA"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaInicio"
+      IsPersistent="false"
+      IsNotNull="true"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_INICIO"
+      Expression="FECHA_INICIO"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaFin"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_FIN"
+      Expression="FECHA_FIN"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Unidad"
+      IsPersistent="false"
+      Precision="250"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="UNIDAD"
+      Expression="UNIDAD"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="250" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

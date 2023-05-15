@@ -1,0 +1,235 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="rpt_liquidacion"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   ComponentClass="enlace_datos.consultas.reportes.rpt_liquidacionImpl"
+   MsgBundleClass="enlace_datos.consultas.reportes.common.rpt_liquidacionRowImplMsgBundle"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|Msg|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="usuario"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <Variable
+      Name="idLiqui"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select 
+ id_liquidacion,
+id_proceso,
+nomina,
+case when tipo_liquidacion=0 then nomdependencia||' - '||unidad else case when ID_DEPENDENCIA_UN is null
+then auxDependencia else  nomdependencia end end as correspondientea,
+fecha,creado_por, fecha_mod, mod_por,
+tipo_liquidacion,
+estado 
+from(
+select  
+liq.id_liquidacion, 
+liq.ID_PROCESO,
+(select  sis_pkg_util.GETNOMINASPROCESOPAGO(liq.id_proceso) from dual) nomina,
+(
+  select sis_dependencia.nombre from sis_dependencia
+   where sis_dependencia.ID_DEPENDENCIA=liq.ID_DEPENDENCIA_un
+) 
+as nomdependencia, 
+(
+    select sis_unidad_ejecutora.nombre  from  sis_unidad_ejecutora where 
+    sis_unidad_ejecutora.ID_DEPENDENCIA=liq.id_dependencia_un
+    and sis_unidad_ejecutora.ID_PROGRAMA=liq.ID_PROGRAMA_UN
+    and sis_unidad_ejecutora.ID_UNIDAD=liq.ID_UNIDAD_UN
+) as unidad,
+(
+  select sis_dependencia.nombre from sis_dependencia
+   where sis_dependencia.ID_DEPENDENCIA=liq.ID_DEPENDENCIA
+)as auxDependencia,
+liq.FECHA_LIQUIDACION FECHA,
+liq.creado_por||' - '||initcap(usr.NOMBRES||' '||usr.APELLIDOS) as creado_por,
+liq.FECHA_MOD,
+(select liq.mod_por||' - '||initcap(usr2.NOMBRES||' '||usr2.APELLIDOS) from usuario usr2 
+  where usr2.usuario=to_char(liq.mod_por) and usr2.tipo_usuario='TRABAJADOR') as mod_por,
+  liq.tipo_liquidacion, liq.ID_DEPENDENCIA_UN
+  , es.nombre as estado
+-- decode(estado,205,'INGRESADO',decode(estado,206,'TRASLADADO',decode(estado,207,'OBJETADO',decode(estado,208,'ANULADO','AUTORIZADO')))) as estado 
+from sis_liquidacion liq
+inner join sis_estado es on es.id_estado = liq.estado and es.tabla = 'SIS_LIQUIDACION'
+inner join usuario usr on usr.usuario=to_char(liq.creado_por) and usr.tipo_usuario='TRABAJADOR'
+where
+DECODE (:idLiqui,null,1,liq.id_liquidacion) = DECODE(:idLiqui, NULL, 1, :idLiqui)
+AND  ( exists(
+      select 1 from usuario_unidad b, partida c, usuario_perfil up
+          where b.id_partida=c.id_partida
+		  and b.usuario = up.usuario
+         and b.usuario=:usuario
+         and b.tipo_usuario='TRABAJADOR' and (up.perfil='tesorero' or up.perfil='auxiliar_tesoreria')
+         and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)         
+          and ((liq.id_programa_un=to_number(c.d1||c.d2)  	and liq.id_dependencia_un=c.d3d4)or liq.ID_DEPENDENCIA = c.D3D4 )
+         and( 
+             ( 
+              liq.id_unidad_un=to_number(c.d5||c.d6||c.d7)
+             )
+               or
+             (
+               c.d5 is null
+               and c.d6 is null
+               and c.d7 is null 
+             )
+           )
+         ) OR (exists(select 1 from usuario_unidad b, partida c, usuario_perfil up
+          where b.id_partida=c.id_partida
+         and b.usuario = up.usuario
+         and b.usuario=:usuario
+         and b.tipo_usuario='TRABAJADOR' and (up.perfil='sis_administrador' or up.perfil='archivo_conta')
+         and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate) and liq.estado in(206))))
+) order by id_liquidacion desc
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="IdLiquidacion"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="12"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_LIQUIDACION"
+      Expression="ID_LIQUIDACION"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdProceso"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_PROCESO"
+      Expression="ID_PROCESO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomina"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="4000"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMINA"
+      Expression="NOMINA"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="4000" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Correspondientea"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="250"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="CORRESPONDIENTEA"
+      Expression="CORRESPONDIENTEA"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="250" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Fecha"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA"
+      Expression="FECHA"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="CreadoPor"
+      IsPersistent="false"
+      Precision="244"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="CREADO_POR"
+      Expression="CREADO_POR"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="244" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaMod"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_MOD"
+      Expression="FECHA_MOD"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="ModPor"
+      IsPersistent="false"
+      Precision="224"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="MOD_POR"
+      Expression="MOD_POR"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="224" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="TipoLiquidacion"
+      IsPersistent="false"
+      IsNotNull="true"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="TIPO_LIQUIDACION"
+      Expression="TIPO_LIQUIDACION"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Estado"
+      IsPersistent="false"
+      Precision="10"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="ESTADO"
+      Expression="ESTADO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

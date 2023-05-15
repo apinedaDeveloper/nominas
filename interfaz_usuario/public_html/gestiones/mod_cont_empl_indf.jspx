@@ -1,0 +1,414 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns="http://www.w3.org/1999/xhtml"
+          xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <f:view>
+    <afh:html>
+      <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+      <afh:head title="Gestiones Contratos Indefinidos">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+       
+        <style type="text/css">
+      body {
+background-color: #ffffff; 
+}
+
+     
+    </style>
+      </afh:head>
+       <jsp:include page="/js/libJQ.js"/> 
+       <jsp:include page="/js/libMask.js"/>
+       <jsp:include page="/js/librariesDialog.js"/>           
+      <script type="text/javascript" src="/${flujo_usuario.dominioApp}/js/gestiones/scrptAutorizacion.js">
+      var xy=new Date().getMilliseconds();   
+        
+        
+      </script>
+      <afh:body>
+        <af:messages/>
+        <script language="javascript" type="text/javascript"> 
+            
+            function cambioSelected(combo){
+                var valor = combo.options[combo.selectedIndex].text;
+                if(valor=="Por Migracion"){
+                    document.getElementById("_id5:panelObserva").style.display = "none";
+                }
+                else{
+                    document.getElementById("_id5:panelObserva").style.display = "";
+                }
+                return false;
+            }
+            
+            function verificar(){
+                var combo = document.getElementById("_id5:tipoAct");
+                if (combo!= null){
+                    var valorC = combo.options[combo.selectedIndex].text;
+                    if(valorC!="Por Migracion"){
+                        var observa = document.getElementById("_id5:txtObserva");
+                        var acta = document.getElementById("_id5:txtActa");
+                        if(observa!=null &amp;&amp; observa.value.trim()!=""){
+                            if(acta!=null &amp;&amp; acta.value.trim()!=""){
+                                return true;
+                            }
+                            else{
+                                alert('Debe ingresar el numero de acta correspondiente');
+                            }
+                        }
+                        else{
+                            alert('Debe ingresar observaciones');
+                        }
+                        return false;
+                    }
+                }
+                return true;
+            }
+                        
+            
+            document.addEventListener("DOMContentLoaded", function(event) {
+                
+                var combo =  document.getElementById("_id5:tipoAct");
+                if(combo !=null){
+                    for (i=0; i &lt; combo.length;  i++) {
+                        if (combo.options[i].value=="") {
+                            combo.remove(i);
+                        }
+                    }
+                    combo.selectedIndex = "0";
+                    
+                }
+                
+                var observa = document.getElementById("_id5:txtObserva");
+                var acta = document.getElementById("_id5:txtActa");
+                if(observa!=null){
+                    observa.value ="";
+                    acta.value="";
+                }
+              
+                
+            });
+              
+      </script> 
+        <af:form usesUpload="true">
+          
+          
+          <af:page title="#{flujo_usuario.datosEmpleadoSel}" value="#{modeloMenu.modeloBD}" var="node">
+          
+          <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+           <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+          
+            <af:panelHorizontal halign="center">
+              <af:panelBox width="1000">
+                <af:showOneTab>
+                  <af:showDetailItem text="Modificaciones Contratos Indefinidos">
+                    <af:panelForm>
+                      <af:panelHorizontal>
+                        <af:inputText value="#{bindings['reg_empleado'].inputValue}"
+                                      label="Registro de Empleado"
+                                      required="#{bindings['reg_empleado'].mandatory}"
+                                      columns="#{bindings['reg_empleado'].displayWidth}">
+                          <af:validator binding="#{bindings['reg_empleado'].validator}"/>
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['reg_empleado'].format}"/>
+                        </af:inputText>
+                        <af:commandButton actionListener="#{bindings.ExecuteWithParams.execute}"
+                                          text="Buscar"
+                                          disabled="#{!bindings.ExecuteWithParams.enabled}"
+                                          binding="#{backing_gestiones_list_empleado.buscaContIndef}"/>
+                      </af:panelHorizontal>
+                      <af:table value="#{bindings['sis_contrato_busq2'].collectionModel}"
+                                var="row"
+                                rows="#{bindings['sis_contrato_busq2'].rangeSize}"
+                                first="#{bindings['sis_contrato_busq2'].rangeStart}"
+                                emptyText="#{bindings['sis_contrato_busq2'].viewable ? 'No rows yet.' : 'Access Denied.'}"
+                                selectionState="#{bindings['sis_contrato_busq2'].collectionModel.selectedRow}"
+                                selectionListener="#{bindings['sis_contrato_busq2'].collectionModel.makeCurrent}"
+                                id="tbl_contratos" width="100%">
+                        <f:facet name="selection">
+                          <af:tableSelectOne
+                                             autoSubmit="true"
+                                             binding="#{backing_gestiones_list_empleado.tblSelContIndef}">
+                            <af:commandButton text="Submit" rendered="false"/>
+                          </af:tableSelectOne>
+                        </f:facet>
+                        <af:column sortProperty="IdContrato" sortable="false"
+                                   headerText="#{bindings['sis_contrato_busq2'].labels.IdContrato}">
+                          <af:outputText value="#{row.IdContrato}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings['sis_contrato_busq2'].formats.IdContrato}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="Partida" sortable="false"
+                                   headerText="#{bindings['sis_contrato_busq2'].labels.Partida}">
+                          <af:outputText value="#{row.Partida}"/>
+                        </af:column>
+                        <af:column sortProperty="NumeroPlaza" sortable="false"
+                                   headerText="#{bindings['sis_contrato_busq2'].labels.NumeroPlaza}">
+                          <af:outputText value="#{row.NumeroPlaza}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings['sis_contrato_busq2'].formats.NumeroPlaza}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="NomPuesto" sortable="false"
+                                   headerText="#{bindings['sis_contrato_busq2'].labels.NomPuesto}">
+                          <af:outputText value="#{row.NomPuesto}"/>
+                        </af:column>
+                        <af:column sortable="false"
+                                   headerText="#{bindings['sis_contrato_busq2'].labels.Nombrecompleto}">
+                          <af:outputText value="#{row.Nombrecompleto}"/>
+                        </af:column>
+                        <af:column sortProperty="NomDependencia"
+                                   sortable="false"
+                                   headerText="#{bindings['sis_contrato_busq2'].labels.NomDependencia}">
+                          <af:outputText value="#{row.NomDependencia}"/>
+                        </af:column>
+                        <af:column sortProperty="Horascontratadas"
+                                   sortable="false"
+                                   headerText="#{bindings['sis_contrato_busq2'].labels.Horascontratadas}">
+                          <af:outputText value="#{row.Horascontratadas}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings['sis_contrato_busq2'].formats.Horascontratadas}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="FechaInicio" sortable="false"
+                                   headerText="#{bindings['sis_contrato_busq2'].labels.FechaInicio}">
+                          <af:outputText value="#{row.FechaInicio}">
+                            <f:convertDateTime pattern="#{bindings['sis_contrato_busq2'].formats.FechaInicio}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="FechaFin" sortable="false"
+                                   headerText="#{bindings['sis_contrato_busq2'].labels.FechaFin}">
+                          <af:outputText value="#{row.FechaFin}">
+                            <f:convertDateTime pattern="#{bindings['sis_contrato_busq2'].formats.FechaFin}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="Estado" sortable="false"
+                                   headerText="#{bindings['sis_contrato_busq2'].labels.Estado}">
+                          <af:outputText value="#{row.Estado}"/>
+                        </af:column>
+                      </af:table>
+                    </af:panelForm>
+                    <af:panelBox text="Contrato Seleccionado: #{bindings.IdContrato.inputValue}"
+                                 partialTriggers="tbl_contratos" width="100%">
+                      <af:panelHorizontal>
+                        <af:commandButton text="Modificar Horario"
+                                          rendered="#{bindings.IdContrato.inputValue !=null}"
+                                          action="#{backing_gestiones_list_empleado.selContratoIndef}"/>
+                        <af:commandButton text="Modificar Fecha Indefinido"
+                                          rendered="#{bindings.IdContrato.inputValue !=null}"
+                                          action="#{backing_gestiones_list_empleado.btn_mod_indef}"/>
+                      </af:panelHorizontal>
+                      <af:objectSpacer width="10" height="25"/>
+                      <af:panelGroup binding="#{backing_gestiones_list_empleado.panelHorarios}"
+                                     rendered="false">
+                        <af:panelHorizontal>
+                          <af:table rows="#{bindings['SisContrato_vwSisHorarioContrato'].rangeSize}"
+                                    first="#{bindings['SisContrato_vwSisHorarioContrato'].rangeStart}"
+                                    emptyText="#{tx['contrato_pnl_puesto.tbl_horario.norows.texto']}"
+                                    selectionState="#{bindings['SisContrato_vwSisHorarioContrato'].collectionModel.selectedRow}"
+                                    selectionListener="#{bindings['SisContrato_vwSisHorarioContrato'].collectionModel.makeCurrent}"
+                                    id="tbl_horario"
+                                    partialTriggers="btn_horario_crear tbl_horario:btn_hora_borrar btn_hora_ejec btn_sig_datos tbl_horario:btn_crearHorario tbl_horario:btn_tblHorarioOK tbl_horario:cmd_editH tbl_horario:cmd_borrarH1"
+                                    binding="#{backing_gestiones_nombramiento.tbl_horario}"
+                                    rendered="true"
+                                    value="#{bindings['SisContrato_vwSisHorarioContrato'].collectionModel}"
+                                    var="row" immediate="false" banding="row"
+                                    bandingInterval="1">
+                            <f:facet name="selection">
+                              <af:tableSelectOne autoSubmit="true"
+                                                 partialTriggers="btn_sig_datos"
+                                                 disabled="false"
+                                                 binding="#{backing_gestiones_nombramiento.tbl_selection}"
+                                                 onclick="createHorarioAction();"/>
+                            </f:facet>
+                            <f:facet name="footer">
+                              <af:outputText value="#{bindings.numHoras.inputValue}  horas semanales"/>
+                            </f:facet>
+                            <f:facet name="actions">
+                              <h:panelGroup rendered="#{bindings.TipoValidez.inputValue eq 'I'?true:!bindings.estadoContrl.inputValue}">
+                                <af:commandButton text="Agregar Horario"
+                                                  action="#{backing_gestiones_nombramiento.btn_horario_crear}"
+                                                  partialSubmit="true"
+                                                  id="btn_crearHorario"
+                                                  onclick="createHorarioAction();"
+                                                  binding="#{backing_gestiones_nombramiento.btn_crear_horarioNew}"/>
+                                <af:commandButton text="Aceptar"
+                                                  action="#{backing_gestiones_nombramiento.btn_horario_OK}"
+                                                  partialSubmit="true"
+                                                  id="btn_tblHorarioOK"/>
+                              </h:panelGroup>
+                            </f:facet>
+                            <af:column sortable="false" headerText="Editar"
+                                       rendered="#{bindings.TipoValidez.inputValue eq 'I'?true:!bindings.estadoContrl.inputValue}">
+                              <af:commandLink shortDesc="Editar"
+                                              action="#{backing_gestiones_nombramiento.btn_editar_horarioNew}"
+                                              binding="#{backing_gestiones_nombramiento.cm_lnk_editarHorario}"
+                                              id="cmd_editH"
+                                              partialSubmit="true">
+                                <af:objectImage source="/imagenes/form_edit.png"/>
+                              </af:commandLink>
+                            </af:column>
+                            <af:column sortProperty="IdContrato"
+                                       sortable="false"
+                                       headerText="#{tx['empleado.tbl_horario.nomD.texto']}"
+                                       noWrap="true">
+                              <af:outputText value="#{row.nomDia}"
+                                             rendered="#{!row.Selected}">
+                                <f:convertNumber groupingUsed="false"
+                                                 pattern="#{bindings['SisContrato_vwSisHorarioContrato'].formats.IdContrato}"/>
+                              </af:outputText>
+                              <af:selectOneChoice value="#{bindings['dias_Semana_vwNombre'].inputValue}"
+                                                  label="#{tx['contrato_pnl_puesto.cmb_dia.texto']}"
+                                                  disabled="false"
+                                                  rendered="#{row.Selected}">
+                                <f:selectItems value="#{bindings['dias_Semana_vwNombre'].items}"/>
+                              </af:selectOneChoice>
+                            </af:column>
+                            <af:column sortProperty="HoraEntrada2"
+                                       sortable="false"
+                                       headerText="#{tx['empleado.tbl_horario.HI.texto']}">
+                              <af:outputText value="#{row.HoraEntrada2}"
+                                             rendered="#{!row.Selected}"/>
+                              <af:inputText label="#{tx['contrato_pnl_puesto.inp_horaE.texto']}"
+                                            value="#{bindings.SisHorarioContratoHoraEntrada.inputValue}"
+                                            simple="false"
+                                            required="#{bindings.SisHorarioContratoHoraEntrada.mandatory}"
+                                            columns="5"
+                                            binding="#{backing_gestiones_nombramiento.inpt_horaE}"
+                                            disabled="false"
+                                            id="inptHoraE"
+                                            onfocus="setMask(this);"
+                                            rendered="#{row.Selected}">
+                                <af:validator binding="#{bindings.SisHorarioContratoHoraEntrada.validator}"/>
+                              </af:inputText>
+                            </af:column>
+                            <af:column sortProperty="HoraSalida2"
+                                       sortable="false"
+                                       headerText="#{tx['empleado.tbl_horario.HF.texto']}">
+                              <af:outputText value="#{row.HoraSalida2}"
+                                             rendered="#{!row.Selected}"/>
+                              <af:inputText value="#{bindings.SisHorarioContratoHoraSalida.inputValue}"
+                                            simple="false"
+                                            required="#{bindings.SisHorarioContratoHoraSalida.mandatory}"
+                                            columns="5"
+                                            label="#{tx['contrato_pnl_puesto.inp_horaS.texto']}"
+                                            binding="#{backing_gestiones_nombramiento.inpt_horaS}"
+                                            disabled="false"
+                                            id="inptHoraS"
+                                            onfocus="setMask2(this);"
+                                            rendered="#{row.Selected}">
+                                <af:validator binding="#{bindings.SisHorarioContratoHoraSalida.validator}"/>
+                              </af:inputText>
+                            </af:column>
+                            <af:column sortable="false" headerText="Borrar">
+                              <af:commandLink action="#{backing_gestiones_nombramiento.cmd_borrarH}"
+                                              id="cmd_borrarH1"
+                                              partialSubmit="true"
+                                              binding="#{backing_gestiones_nombramiento.cmd_link_borrarH}"
+                                              rendered="#{!bindings.estadoContrl.inputValue}">
+                                <af:objectImage source="/imagenes/borrar.png"/>
+                              </af:commandLink>
+                            </af:column>
+                          </af:table>
+                          <f:facet name="separator">
+                            <af:objectSpacer width="25" height="10"/>
+                          </f:facet>
+                        </af:panelHorizontal>
+                        <af:objectSpacer width="10" height="15"/>
+                        <af:selectOneChoice label="Modificar:"
+                                            value="Por Actualizacion"
+                                            binding="#{backing_gestiones_list_empleado.cb_tipo_actualizacion}"
+                                            autoSubmit="false"
+                                            id="tipoAct"
+                                            onchange="return cambioSelected(this);">
+                          <f:selectItems value="#{backing_gestiones_list_empleado.listaComboActContIndef}"/>
+                        </af:selectOneChoice>
+                        <af:objectSpacer width="10" height="10"/>
+                        <af:panelHorizontal binding="#{backing_gestiones_list_empleado.panelObserCamHoraIndf}"
+                                            id="panelObserva">
+                          <af:inputText label="Numero de Acta" columns="50"
+                                        rows="2" id="txtActa"
+                                        value="#{bindings.pNumActa.inputValue}"/>
+                          <af:inputText label="Observaciones" columns="50"
+                                        rows="5" id="txtObserva"
+                                        value="#{bindings.pObserva.inputValue}"/>
+                        </af:panelHorizontal>
+                      </af:panelGroup>
+                      <af:panelGroup binding="#{backing_gestiones_list_empleado.panelFechas}"
+                                     rendered="false">
+                        <af:selectInputDate label="Fecha Inicio Indefinido"
+                                            value="#{bindings.FechaInicioDoc.inputValue}"/>
+                        <af:panelHorizontal>
+                          <af:selectInputDate value="#{bindings.FechaPosesion.inputValue}"
+                                              label="Fecha Posesión"
+                                              disabled="false"
+                                              showRequired="true">
+                            <af:validator binding="#{bindings.FechaPosesion.validator}"/>
+                            <f:convertDateTime pattern="#{bindings.FechaPosesion.format}"
+                                               timeStyle="default"/>
+                          </af:selectInputDate>
+                          <af:inputText value="#{bindings.HoraPosesion.inputValue}"
+                                        disabled="false"
+                                        rows="1" columns="8"
+                                        label="Hora"
+                                        showRequired="true" id="inptHoraPose"
+                                        onfocus="setMaskHoraPos();"/>
+                          <f:facet name="separator">
+                            <af:objectSpacer width="20" height="10"/>
+                          </f:facet>
+                          <af:selectOneChoice value="#{bindings['SisContrato_vwOpcionIndef'].inputValue}"
+                                              label="Opcion">
+                            <af:selectItem label="Todo el año" value="1"/>
+                            <af:selectItem label="Primer Semestre" value="2"/>
+                            <af:selectItem label="Segundo Semestre" value="3"/>
+                          </af:selectOneChoice>
+                        </af:panelHorizontal>
+                      </af:panelGroup>
+                      <af:objectSpacer width="10" height="25"/>
+                      <af:panelHorizontal rendered="false"
+                                          binding="#{backing_gestiones_list_empleado.panelBtnContIndf}">
+                        <af:commandButton text="Cambiar" onclick="return verificar();"
+                                          action="#{backing_gestiones_list_empleado.btn_saveHorario}"/>
+                        <af:commandButton text="Cancelar"
+                                          action="#{backing_gestiones_list_empleado.cancelSelContIndef}"/>
+                      </af:panelHorizontal>
+                    </af:panelBox>
+                  </af:showDetailItem>
+                </af:showOneTab>
+              </af:panelBox>
+            </af:panelHorizontal>
+          </af:page>
+        </af:form>
+      </afh:body>
+    </afh:html>
+    <script type="text/javascript" src="/${flujo_usuario.dominioApp}/js/gestiones/scrptNom.js">
+  var xy=new Date().getMilliseconds(); 
+  </script>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:backing_bean_reportes-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:backing_bean_reportes-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:backing_gestiones_list_empleado-->
+</jsp:root>

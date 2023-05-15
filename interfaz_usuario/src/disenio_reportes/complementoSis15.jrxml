@@ -1,0 +1,1441 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="complementoSis15"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="1008"
+		 pageHeight="612"
+		 columnWidth="948"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="BlankPage"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="p_id_complemento" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[select rownum, reg_cui,formato2, id_contrato, numero_plaza, registro_empleado, apellidos,
+       (select substr(nom_beneficiario,0,instr(nom_beneficiario, ' ',1)) from dual) apellidos_ben, 
+       nombres,
+       (select substr(nom_beneficiario,instr(nom_beneficiario, ' ',-1),length(nom_beneficiario)) from dual) nombres_ben,
+       nvl(nom_beneficiario,'0') nom_beneficiario, fecha_inicio_susp_igss, motivo_susp_igss
+       ,mes,anio, dia_inicio, dia_fin, nominal_primeros_dias, complemento_sueldo,
+       dif_calculo_igss, nominal, total_bono, total_descuento, liquido, descuento_judicial,
+       cuota_plan, nom_depend_solicitante, part_depencia, periodo_calculo, anio_calculo,
+       nom_periodo_calculo, str_partida_egreso
+from (
+select 
+case When d.correlativo < 2017 
+      Then To_Char(e.registro_empleado)
+      Else Case when To_Number(to_char(c.fecha_creacion,'yyyymm'))>=201807
+           Then to_Char(e.cui||' / '||e.registro_empleado)
+		   Else	e.cui
+		   End 
+      End Reg_Cui,
+       p.formato2, con.id_contrato, d.numero_plaza, e.registro_empleado,
+       e.apellido1 || ' ' || e.apellido2 apellidos, e.nombre1 || ' ' || e.nombre2 nombres,
+       e.nom_beneficiario, sus.fecha_inicio_susp_igss,
+       (select descripcion from sis_tipo_suspencion_igss where id_tipo_suspencion_igss = sus.id_tipo_suspencion_igss) as motivo_susp_igss,
+       c.periodo mes, c.anio, i.dia_inicio, i.dia_fin,
+       i.dia_no_paga_igss nominal_primeros_dias,
+       i.complemento_sueldo, i.dif_calculo_igss, i.nominal,
+       d.total_bono, d.total_descuento, d.liquido,
+       nvl(dj.descuento_judicial,0) descuento_judicial,
+       nvl(cp.cuota_plan,0) cuota_plan,
+       dep.nombre as nom_depend_solicitante,
+       pc.d1||'.'||pc.d2||'.'||ltrim(to_char(pc.d3d4,'09'))||'.'||pc.d5||pc.d6||pc.d7 as part_depencia,
+       i.periodo as periodo_calculo, i.anio as anio_calculo,
+       per.nombre as nom_periodo_calculo,
+       (select formato from sis_partida2_vw where id_partida = d.id_partida_egreso) as str_partida_egreso
+from  
+      ( select nvl(sum(a.valor_aplicado),0) * -1 descuento_judicial, d.id_complemento_det
+        from SIIF.sis_complemento_detajustes a, SIIF.sis_complemento_det d
+        where 
+              (a.id_ajuste = 4 or a.id_ajuste = 30) and
+              a.id_complemento_det = d.id_complemento_det and
+              d.id_complemento = $P{p_id_complemento}
+        group by d.id_complemento_det
+      ) dj,
+      ( select nvl(sum(a.valor_aplicado),0) * -1 cuota_plan, d.id_complemento_det
+        from SIIF.sis_complemento_detajustes a, SIIF.sis_complemento_det d
+        where 
+              a.id_ajuste = 24 and
+              a.id_complemento_det = d.id_complemento_det and
+              d.id_complemento = $P{p_id_complemento}
+        group by d.id_complemento_det
+      ) cp, SIIF.sis_periodo per, SIIF.dependencia dep,
+      SIIF.partida pc, SIIF.sis_empleado e,
+      SIIF.sis_partida_vw p, SIIF.sis_contrato con,
+      SIIF.sis_suspencion_igss sus, SIIF.sis_complemento_igss i, 
+      SIIF.sis_complemento_det d, SIIF.sis_complemento c
+where 
+      per.id_periodo = i.periodo and      
+      d.id_complemento_det = dj.id_complemento_det(+) and
+      d.id_complemento_det = cp.id_complemento_det(+) and
+      dep.codigo_dependencia = pc.d3d4 and
+      c.id_subprograma = pc.id_partida and
+      con.registro_empleado = e.registro_empleado and
+      d.id_partida = p.id_partida and
+      d.id_contrato = con.id_contrato and
+      i.id_suspencion_igss = sus.id_suspencion_igss and
+      d.correlativo = i.anio and
+      d.periodo = i.periodo and
+      d.id_contrato = i.id_contrato and
+      d.id_complemento = i.id_complemento and
+      d.id_complemento_igss = i.id_complemento_igss and
+      c.id_complemento = d.id_complemento and
+      c.id_complemento = $P{p_id_complemento}
+order by e.registro_empleado asc, con.id_contrato asc, i.anio asc, i.periodo asc
+)]]></queryString>
+
+	<field name="ROWNUM" class="java.math.BigDecimal"/>
+	<field name="REG_CUI" class="java.lang.String"/>
+	<field name="FORMATO2" class="java.lang.String"/>
+	<field name="ID_CONTRATO" class="java.math.BigDecimal"/>
+	<field name="NUMERO_PLAZA" class="java.math.BigDecimal"/>
+	<field name="REGISTRO_EMPLEADO" class="java.math.BigDecimal"/>
+	<field name="APELLIDOS" class="java.lang.String"/>
+	<field name="APELLIDOS_BEN" class="java.lang.String"/>
+	<field name="NOMBRES" class="java.lang.String"/>
+	<field name="NOMBRES_BEN" class="java.lang.String"/>
+	<field name="NOM_BENEFICIARIO" class="java.lang.String"/>
+	<field name="FECHA_INICIO_SUSP_IGSS" class="java.sql.Timestamp"/>
+	<field name="MOTIVO_SUSP_IGSS" class="java.lang.String"/>
+	<field name="MES" class="java.math.BigDecimal"/>
+	<field name="ANIO" class="java.math.BigDecimal"/>
+	<field name="DIA_INICIO" class="java.math.BigDecimal"/>
+	<field name="DIA_FIN" class="java.math.BigDecimal"/>
+	<field name="NOMINAL_PRIMEROS_DIAS" class="java.math.BigDecimal"/>
+	<field name="COMPLEMENTO_SUELDO" class="java.math.BigDecimal"/>
+	<field name="DIF_CALCULO_IGSS" class="java.math.BigDecimal"/>
+	<field name="NOMINAL" class="java.math.BigDecimal"/>
+	<field name="TOTAL_BONO" class="java.math.BigDecimal"/>
+	<field name="TOTAL_DESCUENTO" class="java.math.BigDecimal"/>
+	<field name="LIQUIDO" class="java.math.BigDecimal"/>
+	<field name="DESCUENTO_JUDICIAL" class="java.math.BigDecimal"/>
+	<field name="CUOTA_PLAN" class="java.math.BigDecimal"/>
+	<field name="NOM_DEPEND_SOLICITANTE" class="java.lang.String"/>
+	<field name="PART_DEPENCIA" class="java.lang.String"/>
+	<field name="PERIODO_CALCULO" class="java.math.BigDecimal"/>
+	<field name="ANIO_CALCULO" class="java.math.BigDecimal"/>
+	<field name="NOM_PERIODO_CALCULO" class="java.lang.String"/>
+	<field name="STR_PARTIDA_EGRESO" class="java.lang.String"/>
+
+		<background>
+			<band height="572"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="9"
+						y="455"
+						width="313"
+						height="18"
+						key="staticText-12"/>
+					<box>					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center">
+						<font/>
+					</textElement>
+				<text><![CDATA[U n i d a d      e j e c u t o r a]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="322"
+						y="455"
+						width="538"
+						height="18"
+						key="staticText-13"/>
+					<box>					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center">
+						<font/>
+					</textElement>
+				<text><![CDATA[D i v i s i ó n    d e    A d m i n i s t r a c i ó n   d e    P e r s o n a l]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="13"
+						y="498"
+						width="10"
+						height="13"
+						key="staticText-14"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[f.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="122"
+						y="512"
+						width="65"
+						height="23"
+						key="staticText-15"/>
+					<box>					<topPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="9"/>
+					</textElement>
+				<text><![CDATA[fecha]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="13"
+						y="512"
+						width="103"
+						height="23"
+						key="staticText-17"/>
+					<box>					<topPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="9"/>
+					</textElement>
+				<text><![CDATA[Tesorero o persona responsable]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="204"
+						y="512"
+						width="104"
+						height="23"
+						key="staticText-18"/>
+					<box>					<topPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="9"/>
+					</textElement>
+				<text><![CDATA[Decano, Director, Jefe]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="340"
+						y="512"
+						width="104"
+						height="23"
+						key="staticText-19"/>
+					<box>					<topPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="9"/>
+					</textElement>
+				<text><![CDATA[Profesional de Recursos Humanos]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="459"
+						y="512"
+						width="65"
+						height="23"
+						key="staticText-20"/>
+					<box>					<topPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="9"/>
+					</textElement>
+				<text><![CDATA[fecha]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="204"
+						y="498"
+						width="21"
+						height="13"
+						key="staticText-21"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[f.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="340"
+						y="498"
+						width="21"
+						height="13"
+						key="staticText-22"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[f.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="560"
+						y="512"
+						width="106"
+						height="23"
+						key="staticText-23"/>
+					<box>					<topPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="9"/>
+					</textElement>
+				<text><![CDATA[Grabador de datos]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="560"
+						y="498"
+						width="22"
+						height="13"
+						key="staticText-24"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[f.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="690"
+						y="512"
+						width="139"
+						height="23"
+						key="staticText-25"/>
+					<box>					<topPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="9"/>
+					</textElement>
+				<text><![CDATA[Coordinador Area de Sueldos y Nombramientos]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="690"
+						y="498"
+						width="24"
+						height="13"
+						key="staticText-26"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[f.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="9"
+						y="473"
+						width="313"
+						height="65"
+						key="staticText-27"/>
+					<box>					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="322"
+						y="473"
+						width="538"
+						height="65"
+						key="staticText-28"/>
+					<box>					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="8"
+						y="122"
+						width="0"
+						height="326"
+						key="line-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="200"
+						y="122"
+						width="0"
+						height="326"
+						key="line-2"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="337"
+						y="122"
+						width="0"
+						height="326"
+						key="line-3"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="466"
+						y="122"
+						width="0"
+						height="326"
+						key="line-4"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="594"
+						y="122"
+						width="0"
+						height="326"
+						key="line-5"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="723"
+						y="122"
+						width="0"
+						height="326"
+						key="line-6"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="8"
+						y="121"
+						width="853"
+						height="0"
+						key="line-7"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="BottomUp">
+					<reportElement
+						x="8"
+						y="146"
+						width="853"
+						height="0"
+						key="line-8"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="8"
+						y="448"
+						width="853"
+						height="0"
+						key="line-9"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="861"
+						y="122"
+						width="0"
+						height="326"
+						key="line-10"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="9"
+						y="539"
+						width="836"
+						height="16"
+						key="staticText-29"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="9"/>
+					</textElement>
+				<text><![CDATA[                                 1/4 Prof. Recursos Humanos                                                        2/4 Grabador datos                                                               3/4  Auditoría Interna                                                                4/4  Tesorero ]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy h.mm a" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="669"
+						y="557"
+						width="189"
+						height="13"
+						key="textField-5"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="8"
+						y="8"
+						width="292"
+						height="14"
+						key="staticText-1"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[UNIVERSIDAD DE SAN CARLOS DE GUATEMALA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="8"
+						y="23"
+						width="217"
+						height="14"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[SISTEMA INTEGRADO DE SALARIOS]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="155"
+						y="51"
+						width="535"
+						height="17"
+						key="staticText-3"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[TRAMITE DE  PAGO DE PRESTACION POR COMPLEMENTO IGSS,   AL PERSONAL SUSPENDIDO.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="776"
+						y="13"
+						width="85"
+						height="19"
+						key="staticText-4"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<text><![CDATA[FORM: SIS - 15]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="8"
+						y="79"
+						width="96"
+						height="17"
+						key="staticText-5"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Unidad Ejecutora:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="8"
+						y="100"
+						width="267"
+						height="17"
+						key="staticText-6"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Partida presupuestal que soportara el gasto:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="391"
+						y="79"
+						width="92"
+						height="18"
+						key="staticText-9"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Código Unidad:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="391"
+						y="100"
+						width="92"
+						height="17"
+						key="staticText-11"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Fecha de trámite:]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="500"
+						y="100"
+						width="118"
+						height="16"
+						key="textField-1"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="702"
+						y="102"
+						width="158"
+						height="14"
+						key="textField-2"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="SansSerif" pdfFontName="Helvetica"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Id. Complemento: "+$P{p_id_complemento}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="732"
+						y="87"
+						width="106"
+						height="14"
+						key="textField-3"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Página " + $V{PAGE_NUMBER} + " de "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="839"
+						y="87"
+						width="21"
+						height="14"
+						key="textField-4"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="SansSerif" pdfFontName="Helvetica"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="108"
+						y="79"
+						width="272"
+						height="16"
+						key="textField-6"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOM_DEPEND_SOLICITANTE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="490"
+						y="79"
+						width="108"
+						height="17"
+						key="textField-7"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PART_DEPENCIA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="234"
+						y="101"
+						width="151"
+						height="16"
+						key="textField-8"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{STR_PARTIDA_EGRESO}]]></textFieldExpression>
+				</textField>
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="39"  isSplitAllowed="true" >
+				<elementGroup><!--  Start: 1 !-->
+				<crosstab >
+					<reportElement
+						x="5"
+						y="5"
+						width="854"
+						height="26"
+						key="crosstab-1"/>
+					<crosstabDataset>
+						<dataset >
+						</dataset>
+					</crosstabDataset>
+					<crosstabHeaderCell>						<cellContents mode="Transparent">
+					<box></box>
+						</cellContents>
+					</crosstabHeaderCell>					<rowGroup name="MES" width="210">
+						<bucket>
+							<bucketExpression class="java.math.BigDecimal"><![CDATA[$F{MES}]]></bucketExpression>
+						</bucket>
+						<crosstabRowHeader>
+						<cellContents mode="Transparent">
+					<box></box>
+				<staticText>
+					<reportElement
+						x="7"
+						y="100"
+						width="112"
+						height="13"
+						key="staticText-29"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Bold" size="9" isBold="true" isUnderline="true"/>
+					</textElement>
+				<text><![CDATA[Trabajador]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="6"
+						y="184"
+						width="204"
+						height="11"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="9"/>
+					</textElement>
+				<text><![CDATA[Fecha de inicio de la suspensión]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="6"
+						y="197"
+						width="204"
+						height="11"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="9"/>
+					</textElement>
+				<text><![CDATA[Motivo de la suspensión]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="6"
+						y="213"
+						width="204"
+						height="11"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="9"/>
+					</textElement>
+				<text><![CDATA[Mes y año al que corresponde el pago]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="6"
+						y="227"
+						width="204"
+						height="11"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="9"/>
+					</textElement>
+				<text><![CDATA[Periodo suspensión a pagar en el mes. Del  ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="109"
+						y="242"
+						width="46"
+						height="11"
+						key="staticText-2"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="9"/>
+					</textElement>
+				<text><![CDATA[Al]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="6"
+						y="267"
+						width="141"
+						height="11"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="9" isBold="true" isUnderline="true"/>
+					</textElement>
+				<text><![CDATA[Calculo del valor del subsidio]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="6"
+						y="281"
+						width="204"
+						height="11"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="9"/>
+					</textElement>
+				<text><![CDATA[Primeros dia(s) que el IGSS no paga (3/3)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="6"
+						y="295"
+						width="204"
+						height="11"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="9"/>
+					</textElement>
+				<text><![CDATA[Complemento del sueldo (1/3)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="6"
+						y="309"
+						width="204"
+						height="11"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="9"/>
+					</textElement>
+				<text><![CDATA[Diferencia de este mes, por calculos de IGSS  ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="6"
+						y="324"
+						width="116"
+						height="11"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Valor Nominal]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="7"
+						y="342"
+						width="154"
+						height="11"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[( - ) D e s c u e n t o s]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="6"
+						y="356"
+						width="204"
+						height="11"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="8"/>
+					</textElement>
+				<text><![CDATA[Descuento Judicial, (por alimentos)   código 04]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="6"
+						y="370"
+						width="204"
+						height="11"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="8"/>
+					</textElement>
+				<text><![CDATA[Cuota plan de prestaciones,                código 24]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="7"
+						y="387"
+						width="88"
+						height="11"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[( + ) Bono Mensual]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="8"
+						y="402"
+						width="119"
+						height="13"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Valor líquido a recibir]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="6"
+						y="140"
+						width="204"
+						height="13"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="9"/>
+					</textElement>
+				<text><![CDATA[Número de: CUI / registro de personal]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="6"
+						y="126"
+						width="204"
+						height="13"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="9"/>
+					</textElement>
+				<text><![CDATA[Partida presupuestal / número de plaza]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="6"
+						y="154"
+						width="204"
+						height="13"
+						key="staticText-30"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="9"/>
+					</textElement>
+				<text><![CDATA[Apellidos]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="6"
+						y="169"
+						width="204"
+						height="13"
+						key="staticText-30"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="9"/>
+					</textElement>
+				<text><![CDATA[Nombres]]></text>
+				</staticText>
+						</cellContents>
+						</crosstabRowHeader>
+					</rowGroup>
+					<columnGroup name="ROWNUM" height="25" headerPosition="Center">
+						<bucket>
+							<bucketExpression class="java.math.BigDecimal"><![CDATA[$F{ROWNUM}]]></bucketExpression>
+						</bucket>
+						<crosstabColumnHeader>
+						<cellContents mode="Transparent">
+					<box></box>
+						</cellContents>
+						</crosstabColumnHeader>
+					</columnGroup>
+
+					<measure name="PARTIDA" class="java.lang.String">
+						<measureExpression><![CDATA[($F{FORMATO2}!=null?$F{FORMATO2}:"") + ($F{NUMERO_PLAZA}!=null?" / "+$F{NUMERO_PLAZA}:"")]]></measureExpression>
+					</measure>
+					<measure name="NO_REGISTRO" class="java.lang.String">
+						<measureExpression><![CDATA[$F{REG_CUI}]]></measureExpression>
+					</measure>
+					<measure name="APELLIDOS" class="java.lang.String">
+						<measureExpression><![CDATA[$F{APELLIDOS}]]></measureExpression>
+					</measure>
+					<measure name="NOMBRES" class="java.lang.String">
+						<measureExpression><![CDATA[$F{NOMBRES}]]></measureExpression>
+					</measure>
+					<measure name="FECHA_INICIO_SUSP" class="java.util.Date">
+						<measureExpression><![CDATA[$F{FECHA_INICIO_SUSP_IGSS}]]></measureExpression>
+					</measure>
+					<measure name="MOTIVO_SUSPENSION" class="java.lang.String">
+						<measureExpression><![CDATA[$F{MOTIVO_SUSP_IGSS}]]></measureExpression>
+					</measure>
+					<measure name="MES_ANIO_PAGO" class="java.lang.String">
+						<measureExpression><![CDATA[$F{NOM_PERIODO_CALCULO}.toString() + " - " + $F{ANIO_CALCULO}.toString()]]></measureExpression>
+					</measure>
+					<measure name="PERIODO_DE" class="java.math.BigDecimal">
+						<measureExpression><![CDATA[$F{DIA_INICIO}]]></measureExpression>
+					</measure>
+					<measure name="PERIODO_A" class="java.math.BigDecimal">
+						<measureExpression><![CDATA[$F{DIA_FIN}]]></measureExpression>
+					</measure>
+					<measure name="NOMINAL_PRIMEROS_DIAS" class="java.math.BigDecimal">
+						<measureExpression><![CDATA[$F{NOMINAL_PRIMEROS_DIAS}]]></measureExpression>
+					</measure>
+					<measure name="COMPLEMENTO_SUELDO" class="java.math.BigDecimal">
+						<measureExpression><![CDATA[$F{COMPLEMENTO_SUELDO}]]></measureExpression>
+					</measure>
+					<measure name="DIF_CALCULO_IGSS" class="java.math.BigDecimal">
+						<measureExpression><![CDATA[$F{DIF_CALCULO_IGSS}]]></measureExpression>
+					</measure>
+					<measure name="VALOR_NOMINAL" class="java.math.BigDecimal">
+						<measureExpression><![CDATA[$F{NOMINAL}]]></measureExpression>
+					</measure>
+					<measure name="BONO_MENSUAL" class="java.math.BigDecimal">
+						<measureExpression><![CDATA[$F{TOTAL_BONO}]]></measureExpression>
+					</measure>
+					<measure name="LIQUIDO" class="java.math.BigDecimal">
+						<measureExpression><![CDATA[$F{LIQUIDO}]]></measureExpression>
+					</measure>
+					<measure name="DESCUENTO_JUDICIAL" class="java.math.BigDecimal">
+						<measureExpression><![CDATA[$F{DESCUENTO_JUDICIAL}]]></measureExpression>
+					</measure>
+					<measure name="CUOTA_PLAN" class="java.math.BigDecimal">
+						<measureExpression><![CDATA[$F{CUOTA_PLAN}]]></measureExpression>
+					</measure>
+					<measure name="APELLIDOS_BEN" class="java.lang.String">
+						<measureExpression><![CDATA[$F{APELLIDOS_BEN}]]></measureExpression>
+					</measure>
+					<measure name="NOMBRES_BEN" class="java.lang.String">
+						<measureExpression><![CDATA[$F{NOMBRES_BEN}]]></measureExpression>
+					</measure>
+					<crosstabCell width="128" height="425">
+						<cellContents backcolor="#FFFFFF" mode="Transparent">
+					<box></box>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="38"
+						y="98"
+						width="50"
+						height="13"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{ROWNUM}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="16"
+						y="98"
+						width="21"
+						height="12"
+						key="staticText-29"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="10"/>
+					</textElement>
+				<text><![CDATA[No.]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1"
+						y="125"
+						width="120"
+						height="13"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$V{PARTIDA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1"
+						y="139"
+						width="126"
+						height="13"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$V{NO_REGISTRO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="153"
+						width="120"
+						height="13"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$V{NOMBRES_BEN} == null ? $V{APELLIDOS} : $V{APELLIDOS_BEN}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1"
+						y="167"
+						width="120"
+						height="13"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$V{NOMBRES_BEN} == null ? $V{NOMBRES} : $V{NOMBRES_BEN}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1"
+						y="183"
+						width="120"
+						height="13"
+						key="textField-1"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[$V{FECHA_INICIO_SUSP}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1"
+						y="198"
+						width="120"
+						height="13"
+						key="textField-1"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$V{MOTIVO_SUSPENSION}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1"
+						y="213"
+						width="120"
+						height="13"
+						key="textField-1"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$V{MES_ANIO_PAGO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1"
+						y="227"
+						width="120"
+						height="13"
+						key="textField-1"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{PERIODO_DE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1"
+						y="240"
+						width="120"
+						height="13"
+						key="textField-1"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{PERIODO_A}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="18"
+						y="387"
+						width="100"
+						height="13"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{BONO_MENSUAL}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="18"
+						y="402"
+						width="100"
+						height="13"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{LIQUIDO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="18"
+						y="322"
+						width="100"
+						height="13"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{VALOR_NOMINAL}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="18"
+						y="280"
+						width="100"
+						height="13"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{NOMINAL_PRIMEROS_DIAS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="18"
+						y="294"
+						width="100"
+						height="13"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{COMPLEMENTO_SUELDO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="18"
+						y="308"
+						width="100"
+						height="13"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{DIF_CALCULO_IGSS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="18"
+						y="357"
+						width="100"
+						height="13"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{DESCUENTO_JUDICIAL}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="18"
+						y="370"
+						width="100"
+						height="13"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{CUOTA_PLAN}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="1"
+						y="280"
+						width="14"
+						height="13"
+						key="staticText-29"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman"/>
+					</textElement>
+				<text><![CDATA[Q.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1"
+						y="294"
+						width="14"
+						height="13"
+						key="staticText-29"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman"/>
+					</textElement>
+				<text><![CDATA[Q.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1"
+						y="308"
+						width="14"
+						height="13"
+						key="staticText-29"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman"/>
+					</textElement>
+				<text><![CDATA[Q.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1"
+						y="322"
+						width="13"
+						height="13"
+						key="staticText-29"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman"/>
+					</textElement>
+				<text><![CDATA[Q.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1"
+						y="357"
+						width="12"
+						height="13"
+						key="staticText-29"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman"/>
+					</textElement>
+				<text><![CDATA[Q.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1"
+						y="370"
+						width="13"
+						height="13"
+						key="staticText-29"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman"/>
+					</textElement>
+				<text><![CDATA[Q.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1"
+						y="387"
+						width="13"
+						height="13"
+						key="staticText-29"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman"/>
+					</textElement>
+				<text><![CDATA[Q.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1"
+						y="402"
+						width="13"
+						height="13"
+						key="staticText-29"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman"/>
+					</textElement>
+				<text><![CDATA[Q.]]></text>
+				</staticText>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="0" height="425" columnTotalGroup="ROWNUM">
+						<cellContents mode="Transparent">
+					<box></box>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="128" height="0" rowTotalGroup="MES">
+						<cellContents mode="Transparent">
+					<box></box>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="0" height="0" rowTotalGroup="MES" columnTotalGroup="ROWNUM">
+						<cellContents mode="Transparent">
+					<box></box>
+						</cellContents>
+					</crosstabCell>
+					<whenNoDataCell>						<cellContents mode="Transparent">
+					<box></box>
+						</cellContents>
+					</whenNoDataCell>					</crosstab>
+				</elementGroup><!-- End 1 !-->
+			</band>
+		</summary>
+</jasperReport>

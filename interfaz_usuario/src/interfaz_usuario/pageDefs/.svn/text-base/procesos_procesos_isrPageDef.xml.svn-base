@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel"
+                version="10.1.3.42.70" id="procesos_procesos_isrPageDef"
+                Package="interfaz_usuario.pageDefs"
+                MsgBundleClass="interfaz_usuario.pageDefs.procesos_procesos_isrPageDefMsgBundle">
+  <executables>
+    <variableIterator id="variables">
+      <variable Name="pAnio" Type="oracle.jbo.domain.Number"
+                DefaultValue="${flujo_usuario.anioActual}"/>
+      <variable Name="pPeriodo" Type="oracle.jbo.domain.Number"/>
+      <variable Name="pDisp" Type="oracle.jbo.domain.Number"/>
+      <variable Name="pTipoP" Type="java.lang.String"/>
+      <variable Name="pPeriodoCombo" Type="oracle.jbo.domain.Number"
+                DefaultValue="1"/>
+      <variable Type="java.lang.String" Name="setCurrentRowWithKey_rowKey"
+                IsQueriable="false"/>
+      <variable Name="pFechaDesde" Type="oracle.jbo.domain.Number"/>
+    </variableIterator>
+    <iterator id="ProcesoVwIterator" RangeSize="10" Binds="ProcesoVw"
+              DataControl="QUERRYSDataControl"/>
+    <invokeAction Binds="filtrarProcesosAnuales" id="ExeLstProcesos"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <iterator id="Sis_Procesos_revISR_vwIterator" RangeSize="-1"
+              Binds="Sis_Procesos_revISR_vw" DataControl="QUERRYSDataControl">
+      <sortCriteria>
+        <sort attribute="IdProceso" ascending="false"/>
+      </sortCriteria>
+    </iterator>
+    <invokeAction Binds="list_ProcesosISR" id="ExeProcesos" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+  </executables>
+  <bindings>
+    <methodAction id="procesosISR"
+                  InstanceName="QUERRYSDataControl.dataProvider"
+                  DataControl="QUERRYSDataControl" MethodName="procesosISR"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="false"
+                  ReturnName="QUERRYSDataControl.methodResults.QUERRYSDataControl_dataProvider_procesosISR_result">
+      <NamedData NDName="pTipoProceso" NDValue="${bindings.pTipoP1.inputValue}"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="pPeriodo" NDValue="${bindings.pPeriodo1.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pAnio" NDValue="${bindings.pAnio1.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pDisponibilidad"
+                 NDValue="${bindings.pDisp1.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+    </methodAction>
+    <attributeValues IterBinding="variables" id="pDisp1">
+      <AttrNames>
+        <Item Value="pDisp"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="pPeriodo1">
+      <AttrNames>
+        <Item Value="pPeriodo"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="pAnio1">
+      <AttrNames>
+        <Item Value="pAnio"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="pTipoP1">
+      <AttrNames>
+        <Item Value="pTipoP"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="pPeriodoCombo1">
+      <AttrNames>
+        <Item Value="pPeriodoCombo"/>
+      </AttrNames>
+    </attributeValues>
+    <table id="ProcesoVw" IterBinding="ProcesoVwIterator">
+      <AttrNames>
+        <Item Value="IdProceso"/>
+        <Item Value="ProcesoPadre"/>
+        <Item Value="Tipoproceso"/>
+        <Item Value="FechaInicio"/>
+        <Item Value="FechaFin"/>
+        <Item Value="Anio"/>
+        <Item Value="Periodo"/>
+        <Item Value="IdEstado"/>
+        <Item Value="Observaciones"/>
+        <Item Value="Nomtipoproceso"/>
+        <Item Value="Nomperiodo"/>
+        <Item Value="Nomestado"/>
+        <Item Value="operacion"/>
+        <Item Value="Datos_proceso_pago"/>
+        <Item Value="FechaRef"/>
+        <Item Value="Creadopor"/>
+      </AttrNames>
+    </table>
+    <action id="setFila" IterBinding="ProcesoVwIterator"
+            InstanceName="QUERRYSDataControl.ProcesoVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="96">
+      <NamedData NDName="rowKey" NDValue="${row.rowKeyStr}"
+                 NDType="java.lang.String"/>
+    </action>
+    <methodAction IterBinding="ProcesoVwIterator" id="filtrarProcesosAnuales"
+                  MethodName="filtrarProcesosAnuales" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.ProcesoVw">
+      <NamedData NDName="pTipoProceso" NDValue="22"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pFechaInicio"
+                 NDValue="${bindings.pFechaDesde1.inputValue}"
+                 NDType="oracle.jbo.domain.Date"/>
+    </methodAction>
+    <attributeValues IterBinding="variables" id="pFechaDesde1">
+      <AttrNames>
+        <Item Value="pFechaDesde"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="ProcesoVwIterator" id="aplicarProySR"
+                  MethodName="aplicarProySR" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.ProcesoVw">
+      <NamedData NDName="pAnio" NDValue="${bindings.pAnio1.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pPeriodo"
+                 NDValue="${bindings.pPeriodoCombo1.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+    </methodAction>
+    <table id="Sis_Procesos_revISR_vw"
+           IterBinding="Sis_Procesos_revISR_vwIterator">
+      <AttrNames>
+        <Item Value="IdProceso"/>
+        <Item Value="Nombre"/>
+        <Item Value="Anio"/>
+        <Item Value="Periodo"/>
+        <Item Value="NomPeriodo"/>
+        <Item Value="Fechacalculo"/>
+        <Item Value="FechaAuto"/>
+        <Item Value="Estado2"/>
+        <Item Value="Estado"/>
+        <Item Value="Observaciones"/>
+      </AttrNames>
+    </table>
+    <action IterBinding="Sis_Procesos_revISR_vwIterator" id="list_ProcesosISR"
+            InstanceName="QUERRYSDataControl.Sis_Procesos_revISR_vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pAnio" NDValue="${flujo_usuario.anioActual}"
+                 NDType="java.lang.String"/>
+    </action>
+    <attributeValues IterBinding="ProcesoVwIterator" id="IdProceso">
+      <AttrNames>
+        <Item Value="IdProceso"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="ProcesoVwIterator" id="IdEstadoProc">
+      <AttrNames>
+        <Item Value="IdEstado"/>
+      </AttrNames>
+    </attributeValues>
+  </bindings>
+</pageDefinition>

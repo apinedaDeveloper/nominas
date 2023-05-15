@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="subreporte_descuento_sicoin2"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="595"
+		 pageHeight="842"
+		 columnWidth="535"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="30"
+		 topMargin="0"
+		 bottomMargin="15"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pIdProceso" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pIdPartidaSicoin" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pIsAnulado" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[SELECT * FROM (select pl.ID_PARTIDA_SICOIN, s.renglon, des.id_ajuste, des.ajuste, des.cod_desc_sicoin, abs(sum(valor_aplicado)) VALOR_APLICADO
+from (select nm.id_puesto, nm.plaza, nm.correlativo, nm.id_partida, aj.id_ajuste, aj.nombre ajuste, aj.cod_desc_sicoin, sum(ca.VALOR_APLICADO) valor_aplicado
+from (select n.id_nomina,  n.id_puesto, n.numero_plaza plaza, n.correlativo,
+case when (n.id_partida_egreso is null or n.id_partida_egreso = n.id_partida ) then n.id_partida 
+     else 0 end id_partida
+, n.total_Bono, n.total_descuento
+from sis_nomina n  
+inner join sis_pago pg on pg.id_nomina = n.id_nomina
+inner join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where n.id_proceso = $P{pIdProceso}
+and (n.id_partida_egreso is null or n.id_partida_egreso = n.id_partida) 
+and doc.ID_TIPO_DOCUMENTO = 2
+and ( (exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)
+        and $P{pIsAnulado} = 1
+      )
+      or 
+      (not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)
+        and $P{pIsAnulado} = 0
+      )
+  )
+) nm
+inner join sis_det_calculo_ajuste ca on ca.id_nomina = nm.id_nomina
+inner join sis_ajuste aj on aj.id_ajuste = ca.id_ajuste
+group by nm.id_puesto, nm.plaza, nm.correlativo, nm.id_partida, aj.id_ajuste, aj.nombre ,  aj.cod_desc_sicoin) des
+inner join sis_plaza pl on pl.id_puesto = des.id_puesto
+                       and pl.correlativo = des.correlativo
+                       and pl.numero_plaza = des.plaza
+                       and pl.id_partida = des.id_partida
+inner join SICOIN_PARTIDA_EGRESOS s on s.ID_PARTIDA_EGRESOS = pl.id_partida_sicoin     
+where pl.id_partida_sicoin = $P{pIdPartidaSicoin}
+group by pl.id_partida_sicoin, s.renglon, des.id_ajuste, des.ajuste, des.cod_desc_sicoin
+UNION --PARA LAS PARTIDA_EGRESO
+select s.ID_PARTIDA_EGRESOS, s.renglon, des.id_ajuste, des.ajuste , des.cod_desc_sicoin , sum(valor_aplicado) VALOR_APLICADO
+from (select nm.id_puesto, nm.plaza, nm.correlativo, nm.id_partida, aj.id_ajuste, aj.nombre ajuste, aj.cod_desc_sicoin,  sum(ca.VALOR_APLICADO) valor_aplicado
+from (select n.id_nomina,  n.id_puesto, n.numero_plaza plaza, n.correlativo,
+case when (n.id_partida_egreso is not null and n.id_partida_egreso <> n.id_partida )  then n.id_partida_egreso
+     else 1 end id_partida
+, n.total_Bono, n.total_descuento
+from sis_nomina n  
+inner join sis_pago pg on pg.id_nomina = n.id_nomina
+inner join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+where n.id_proceso = $P{pIdProceso}
+and (n.id_partida_egreso is not null and n.id_partida_egreso <> n.id_partida) 
+and doc.ID_TIPO_DOCUMENTO = 2
+and ( (exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)
+        and $P{pIsAnulado} = 1
+      )
+      or 
+      (not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)
+        and $P{pIsAnulado} = 0
+      )
+)
+) nm
+inner join sis_det_calculo_ajuste ca on ca.id_nomina = nm.id_nomina
+inner join sis_ajuste aj on aj.id_ajuste = ca.id_ajuste
+group by nm.id_puesto, nm.plaza, nm.correlativo, nm.id_partida, aj.id_ajuste, aj.nombre, aj.cod_desc_sicoin) des
+inner join PARTIDA PT on PT.ID_PARTIDA = DES.ID_PARTIDA
+inner join SICOIN_PARTIDA_EGRESOS s on s.ID_PARTIDA_EGRESOS = PT.ID_PARTIDA_EGRESOS  
+where s.ID_PARTIDA_EGRESOS = $P{pIdPartidaSicoin}
+group by s.ID_PARTIDA_EGRESOS, s.renglon, des.id_ajuste, des.ajuste, des.cod_desc_sicoin)
+where id_ajuste <> 27
+ORDER BY AJUSTE]]></queryString>
+
+	<field name="ID_PARTIDA_SICOIN" class="java.math.BigDecimal"/>
+	<field name="RENGLON" class="java.math.BigDecimal"/>
+	<field name="ID_AJUSTE" class="java.math.BigDecimal"/>
+	<field name="AJUSTE" class="java.lang.String"/>
+	<field name="COD_DESC_SICOIN" class="java.math.BigDecimal"/>
+	<field name="VALOR_APLICADO" class="java.math.BigDecimal"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="33"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="91"
+						y="0"
+						width="474"
+						height="13"
+						key="staticText-1"/>
+					<box>					<topPen lineWidth="0.25" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="8" isBold="true" isUnderline="true"/>
+					</textElement>
+				<text><![CDATA[DESCUENTOS]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="92"
+						y="14"
+						width="49"
+						height="19"
+						key="staticText-2"/>
+					<box>					<bottomPen lineWidth="0.25" lineStyle="Solid"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[CODIGO SICOIN]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="140"
+						y="14"
+						width="361"
+						height="19"
+						key="staticText-3"/>
+					<box>					<bottomPen lineWidth="0.25" lineStyle="Solid"/>
+</box>
+					<textElement textAlignment="Left" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[AJUSTE]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="501"
+						y="14"
+						width="64"
+						height="19"
+						key="staticText-4"/>
+					<box>					<bottomPen lineWidth="0.25" lineStyle="Solid"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[VALOR]]></text>
+				</staticText>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="12"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="517"
+						y="1"
+						width="48"
+						height="11"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{VALOR_APLICADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="502"
+						y="1"
+						width="15"
+						height="11"
+						key="textField-2"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Q"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="140"
+						y="1"
+						width="362"
+						height="11"
+						forecolor="#000000"
+						backcolor="#FFFFFF"
+						key="textField-3"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{AJUSTE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="92"
+						y="1"
+						width="49"
+						height="11"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{COD_DESC_SICOIN}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

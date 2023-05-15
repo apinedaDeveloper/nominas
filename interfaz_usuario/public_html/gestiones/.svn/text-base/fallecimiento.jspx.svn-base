@@ -1,0 +1,398 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <f:view>
+    <afh:html binding="#{fallecimiento.html1}" id="html1">
+      <jsp:directive.page contentType="text/html;charset=ISO-8859-1"/>
+      <f:loadBundle basename="propiedades" var="tx"/>
+      <afh:head title="Fallecimiento" binding="#{fallecimiento.head1}" id="head1">
+        <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
+        <jsp:include page="/js/libJQ.js"/>
+        <script type="text/javascript" src="/${flujo_usuario.dominioApp}/js/gestiones/scrptFallecimiento.js">var xy;</script>
+        <script language="javascript" type="text/javascript"> 
+        function openNewWindow(nomArchivo){ 
+                window.open("../ver_documento?source="+nomArchivo,"preview","width=640,height=640,scrollbars=YES"); 
+        } 
+        //Función que Pide la Confirmación del Usuario antes de Grabar
+        function confirmarGuardar(){
+            return confirm("¿Desea guardar la información?");
+        }
+        function confirmarGuardarBeneficiario(){
+            return confirm("¿Desea guardar la información del beneficiario?");
+        }
+        function confirmarEliminarBeneficiario(){
+            return confirm("¿Desea eliminar el beneficiario seleccionado?");
+        }
+        function confirmarCancelarOperacion(){
+            return confirm("¿Desea cancelar la operación?");
+        }
+        //Abre el Reporte de Solicitud de Fallecimiento
+        function generarReporte(idSolicitud){ 
+            var link;
+            link = '/${flujo_usuario.dominioApp}/faces/verreportepdf?id='+idSolicitud+String.fromCharCode(38)+'rep=SOLICITUD_FALLECIMIENTO';
+            window.open(link,'preview','width=1200,height=723,scrollbars=YES,location=NO,directories=NO,resizable=1');
+            return false;
+        }
+        //Pregunta si está seguro de Confirmar el beneficiario
+        function confirmarBeneficiario(nombre) {
+            var mensaje = "¿Desea Confimar el beneficiario '" + nombre + "'?";
+            return confirm(mensaje);
+        }
+        //Verifica el numero de cuenta a través de un Web Services
+       function validarCuenta(){
+            var noCuentaObj, noCuenta, cuiObj, cui;
+            noCuentaObj = document.getElementById("page1:inptText_numCuenta");
+            cuiObj = document.getElementById("page1:inptText_cui");
+            if (noCuentaObj!=null &amp;&amp; cuiObj!=null) {
+                noCuenta = trimStrings(noCuentaObj.value);
+                noCuentaObj.value = noCuenta;
+                cui = trimStrings(cuiObj.value);
+                cuiObj.value = cui;
+                if( noCuenta.length &gt; 0 &amp;&amp; cui.length &gt; 0) {
+                    return checkCuenta(noCuenta, cui);
+                } else if( cui.length &lt;= 0 ) {
+                    alert("Ingrese CUI del beneficiario por favor.");
+                    cuiObj.focus();
+                } else {
+                    alert("Ingrese número de cuenta bancaria del beneficiario por favor.");
+                    noCuentaObj.focus();
+                }
+            } else  if (noCuentaObj==null) {
+                alert("No se encontró el campo de texto Número de Cuenta Bancaria.");
+            } else {
+                alert("No se encontró el campo de texto CUI (DPI).");
+            }
+            return false;
+       }
+      </script>
+      </afh:head>
+      <afh:body binding="#{fallecimiento.body1}" id="body1">
+        <af:messages binding="#{fallecimiento.messages1}" id="messages1"/>
+        <af:form binding="#{fallecimiento.form1}" id="form1">
+          <af:page value="#{modeloMenu.modeloBD}" var="node" chromeType="compact" title="#{flujo_usuario.datosEmpleadoSel}" binding="#{fallecimiento.page1}" id="page1">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}" actionListener="#{modeloMenu.listener_menu}" disabled="#{node.readOnly}" rendered="#{node.shown}" action="#{node.getOutcome}"
+                                  binding="#{fallecimiento.commandMenuItem1}" id="commandMenuItem1"/>
+            </f:facet>
+            <f:facet name="infoUser">
+              <f:subview id="info1" binding="#{fallecimiento.info1}">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="menuSwitch">
+              <f:subview id="menuSwt" binding="#{fallecimiento.menuSwt}">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo" binding="#{fallecimiento.logo}">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelBox text="ID Solicitud: #{bindings.IdSolicitud.inputValue}" partialTriggers="btn_autoriza" binding="#{fallecimiento.panelBox1}" id="panelBox1">
+              <af:panelHorizontal halign="center" valign="middle">
+                <af:outputFormatted value="Cuenta habilitada para pago: #{bindings.SisCuentaActualNumCuenta.inputValue}"
+                                    inlineStyle="font-size:medium; color:rgb(115,0,0); font-weight:bold; text-align:center; vertical-align:middle;"
+                                    rendered="#{bindings.SisCuentaActualNumCuenta.inputValue!=null &amp;&amp; flujo_usuario.vistaFallecimiento == 1}"/>
+              </af:panelHorizontal>
+              <af:panelHorizontal halign="center" valign="middle">
+                <af:outputFormatted value="Nombre completo del beneficiario: #{bindings.SisBeneficiarioCtaActualNombre.inputValue}"
+                                    inlineStyle="font-size:medium; color:rgb(115,0,0); font-weight:bold; text-align:center; vertical-align:middle;"
+                                    rendered="#{bindings.SisBeneficiarioCtaActualNombre.inputValue!=null &amp;&amp; flujo_usuario.vistaFallecimiento==1}"/>
+              </af:panelHorizontal>
+              <af:showOneTab position="above" binding="#{fallecimiento.showOneTab1}" id="showOneTab1">
+                <af:showDetailItem text="#{tx['fallecimiento.tab1.texto']}" binding="#{fallecimiento.showDetailItem2}" id="showDetailItem2" disclosed="#{flujo_usuario.vistaFallecimiento == 0}">
+                  <af:panelForm partialTriggers="btn_autoriza" binding="#{fallecimiento.panelForm1}" id="panelForm1">
+                    <af:panelHorizontal binding="#{fallecimiento.panelHorizontal5}" id="panelHorizontal5" halign="center">
+                      <af:outputFormatted value="Nueva Solicitud " binding="#{fallecimiento.outputFormatted1}" id="outputFormatted1" inlineStyle="color:rgb(132,0,0); font-weight:bold;"
+                                          rendered="#{flujo_usuario.vistaFallecimiento == 0}"/>
+                    </af:panelHorizontal>
+                    <af:selectInputDate value="#{bindings.FechaInicioRetiro.inputValue}" disabled="#{bindings.estContrl.inputValue}" label="Fecha baja nómina"
+                                        required="#{bindings.FechaInicioRetiro.mandatory}" binding="#{fallecimiento.selectInputDate1}" id="selectInputDate1" partialTriggers="btnAutorizacion">
+                      <af:validator binding="#{bindings.FechaInicioRetiro.validator}"/>
+                      <f:convertDateTime pattern="dd/MM/yyyy"/>
+                    </af:selectInputDate>
+                    <af:inputText value="#{bindings.Observaciones.inputValue}" label="#{tx['fallecimiento.inpObservaciones.texto']}" disabled="#{bindings.estContrl.inputValue}"
+                                  required="#{bindings.Observaciones.mandatory}" columns="60" rows="5" binding="#{fallecimiento.inputText1}" id="inputText1" partialTriggers="btnAutorizacion"
+                                  maximumLength="250">
+                      <af:validator binding="#{bindings.Observaciones.validator}"/>
+                    </af:inputText>
+                  </af:panelForm>
+                  <af:objectSpacer width="10" height="20" binding="#{fallecimiento.objectSpacer5}" id="objectSpacer5"/>
+                  <af:panelHorizontal halign="center" binding="#{fallecimiento.panelHorizontal2}" id="panelHorizontal2">
+                    <af:commandButton binding="#{fallecimiento.btnGuardarFallecimiento}" id="btnGuardarFallecimiento" action="#{fallecimiento.btnGuardarFallecimiento_action}"
+                                      text="#{tx['fallecimiento.btnGuardar.texto']}" disabled='#{bindings.logAutorizado == "false"?true: (bindings.estContrl.inputValue)}'
+                                      inlineStyle="font-weight:bold;" onclick="return confirmarGuardar();" partialTriggers="btnAutorizacion"/>
+                    <af:commandButton text="#{tx['fallecimiento.btnTrasladar.texto']}" useWindow="true" windowHeight="450" windowWidth="400" id="btnAutorizacion" partialSubmit="true"
+                                      binding="#{fallecimiento.btnAutorizacion}" launchListener="#{fallecimiento.Autorizar_Launch_Listener}" action="#{fallecimiento.btnAutorizacion_action}"
+                                      disabled="#{flujo_usuario.vistaFallecimiento == 0 || bindings.estContrl.inputValue == true}" inlineStyle="font-weight:bold;" partialTriggers="btnAutorizacion"/>
+                    <af:commandButton text="Imprimir Reporte" inlineStyle="font-weight:bold;" id="cmdBtn_imprimir_reporte" onclick='return generarReporte("#{bindings.IdSolicitud.inputValue}");'
+                                      disabled="#{flujo_usuario.vistaFallecimiento == 0}"/>
+                    <af:commandButton actionListener="#{bindings.Rollback.execute}" text="#{tx['fallecimiento.btnCancelar.texto']}" immediate="true" rendered="true"
+                                      binding="#{fallecimiento.btnCancelarFallecimiento}" id="btnCancelarFallecimiento" action="lst_empleado" inlineStyle="font-weight:bold;"
+                                      onclick="return confirmarCancelarOperacion();">
+                      <af:resetActionListener/>
+                    </af:commandButton>
+                    <f:facet name="separator">
+                      <af:objectSpacer width="25" height="10" binding="#{fallecimiento.objectSpacer4}" id="objectSpacer4"/>
+                    </f:facet>
+                  </af:panelHorizontal>
+                </af:showDetailItem>
+                <af:showDetailItem text="#{tx['fallecimiento.tab2.texto']}" disabled="#{flujo_usuario.vistaFallecimiento == 0}" binding="#{fallecimiento.showDetailItem1}" id="showDetailItem1">
+                  <af:objectSpacer width="10" height="25" binding="#{fallecimiento.objectSpacer3}" id="objectSpacer3"/>
+                  <af:table value="#{bindings.SisArchivoAdjuntoSol.collectionModel}" var="row" rows="#{bindings.SisArchivoAdjuntoSol.rangeSize}" first="#{bindings.SisArchivoAdjuntoSol.rangeStart}"
+                            emptyText="#{bindings.SisArchivoAdjuntoSol.viewable ? 'Ninguna Fila' : 'Ninguna Fila'}" selectionState="#{bindings.SisArchivoAdjuntoSol.collectionModel.selectedRow}"
+                            selectionListener="#{bindings.SisArchivoAdjuntoSol.collectionModel.makeCurrent}" width="600" binding="#{fallecimiento.table1}" id="table1">
+                    <f:facet name="selection">
+                      <af:tableSelectOne binding="#{fallecimiento.tableSelectOne1}" id="tableSelectOne1"/>
+                    </f:facet>
+                    <f:facet name="header">
+                      <af:outputText value="#{tx['tbl_adjuntar.header.texto']}" binding="#{fallecimiento.outputText4}" id="outputText4"/>
+                    </f:facet>
+                    <af:column sortProperty="NomArchivo" sortable="false" headerText="#{tx['tbl_adjuntar.nomArch.texto']}" binding="#{fallecimiento.column3}" id="column3">
+                      <h:outputLink value="javascript:openNewWindow('#{row.nomArchEncript}')" binding="#{fallecimiento.outputLink1}" id="outputLink1">
+                        <h:outputText value="#{row.NomArchivo}" binding="#{fallecimiento.outputText3}" id="outputText3"/>
+                      </h:outputLink>
+                    </af:column>
+                    <af:column sortProperty="Descripcion" sortable="false" headerText="#{tx['tbl_adjuntar.descrip.texto']}" width="60%" binding="#{fallecimiento.column2}" id="column2">
+                      <af:outputText value="#{row.Descripcion}" binding="#{fallecimiento.outputText2}" id="outputText2"/>
+                    </af:column>
+                    <af:column sortProperty="FechaCreacion" sortable="false" headerText="#{tx['tbl_adjuntar.fecha.texto']}" binding="#{fallecimiento.column1}" id="column1">
+                      <af:outputText value="#{row.FechaCreacion}" binding="#{fallecimiento.outputText1}" id="outputText1">
+                        <f:convertDateTime pattern="#{bindings.SisArchivoAdjuntoSol.formats.FechaCreacion}"/>
+                      </af:outputText>
+                    </af:column>
+                  </af:table>
+                  <af:objectSpacer width="10" height="20" binding="#{fallecimiento.objectSpacer2}" id="objectSpacer2"/>
+                  <af:panelHorizontal binding="#{fallecimiento.panelHorizontal1}" id="panelHorizontal1" halign="center">
+                    <af:commandButton text="#{tx['tbl_adjuntar.btn_adjuntar.texto']}" id="btnAdjuntarArchivo" disabled="#{flujo_usuario.vistaFallecimiento != 1}" partialSubmit="true"
+                                      binding="#{fallecimiento.btnAdjuntarArchivo}" action="#{fallecimiento.btnAdjuntarArchivo_action}" inlineStyle="font-weight:bold;"/>
+                    <af:commandButton actionListener="#{bindings.EjecutarDocsAdjuntos.execute}" text="#{tx['tbl_adjuntar.btn_actualizar.texto']}" disabled="#{flujo_usuario.vistaFallecimiento != 1}"
+                                      binding="#{fallecimiento.btnActualizar}" id="btnActualizar" inlineStyle="font-weight:bold;"/>
+                    <f:facet name="separator">
+                      <af:objectSpacer width="10" height="10" binding="#{fallecimiento.objectSpacer1}" id="objectSpacer1"/>
+                    </f:facet>
+                  </af:panelHorizontal>
+                </af:showDetailItem>
+                <af:showDetailItem text="#{tx['fallecimiento.tab3.texto']}" binding="#{fallecimiento.showDetailItem3}" id="showDetailItem3"
+                                   disabled='#{flujo_usuario.vistaFallecimiento==0 || bindings.logAutorizado=="true"}'
+                                   disclosed='#{flujo_usuario.vistaFallecimiento!=0 &amp;&amp; bindings.logAutorizado=="false"}'
+                                   shortDesc="vistaFallecimiento: 1=existente, 0=nueva. logAutorizado: true=NO, false=SI">
+                  <af:panelBox binding="#{fallecimiento.panelBox2}" id="panelBox2" text="Beneficiarios" width="800" rendered="#{!empty bindings.IdSolicitud.inputValue}">
+                    <af:commandLink actionListener="#{bindings.Create_beneficiario.execute}" action="Create1" text="#{tx['fallecimiento.cmdlink_sin_beneficiarios.texto']}"
+                                    binding="#{fallecimiento.commandLink1}" id="commandLink1"
+                                    rendered='#{bindings.SisBeneficiarioIterator.estimatedRowCount==0 &amp;&amp; (!empty bindings.IdSolicitud.inputValue) &amp;&amp; (roles_usuario.coordinadorSueldos==true || roles_usuario.administrador==true || roles_usuario.auxiliarSueldos==true || roles_usuario.analistaRecursosHum==true) &amp;&amp; (bindings.logAutorizado == "false")}'/>
+                    <af:outputText value="#{bindings.mensaje_eliminarBeneficiario.inputValue}" binding="#{fallecimiento.outputText15}" id="outputText15"
+                                   inlineStyle="font-weight:bold; color:rgb(231,115,0);"/>
+                    <af:table value="#{bindings.SisBeneficiario.collectionModel}" var="row" rows="#{bindings.SisBeneficiario.rangeSize}" first="0"
+                              emptyText="#{bindings.SisBeneficiario.viewable ? 'No rows yet.' : 'Access Denied.'}" selectionState="#{bindings.SisBeneficiario.collectionModel.selectedRow}"
+                              selectionListener="#{bindings.SisBeneficiario.collectionModel.makeCurrent}" id="tbl_beneficiarios" rendered="#{bindings.SisBeneficiarioIterator.estimatedRowCount>0}"
+                              banding="row" bandingInterval="1" width="100%">
+                      <f:facet name="actions">
+                        <af:panelGroup rendered="#{(roles_usuario.coordinadorSueldos==true || roles_usuario.administrador==true || roles_usuario.auxiliarSueldos==true || roles_usuario.analistaRecursosHum == true)}">
+                          <af:commandButton actionListener="#{bindings.Create_beneficiario.execute}" text="#{tx['fallecimiento.txt_btn_agregar_beneficiario.texto']}"
+                                            disabled='#{bindings.IdBeneficiario.inputValue==null}' binding="#{fallecimiento.commandButton5}" id="commandButton5" inlineStyle="font-weight:bold;"/>
+                          <af:objectSpacer height="10" width="10"/>
+                          <af:commandButton actionListener="#{bindings.borrarBeneficiario.execute}" text="#{tx['fallecimiento.txt_btn_eliminar_beneficiario.texto']}"
+                                            disabled='#{bindings.IdBeneficiario.inputValue==null}' binding="#{fallecimiento.commandButton3}" id="commandButton3" inlineStyle="font-weight:bold;"
+                                            onclick="return confirmarEliminarBeneficiario();"/>
+                        </af:panelGroup>
+                      </f:facet>
+                      <f:facet name="selection">
+                        <af:tableSelectOne binding="#{fallecimiento.tableSelectOne2}" id="tableSelectOne2" autoSubmit="true">
+                          <af:commandLink text="Seleccionar" rendered="false" partialSubmit="true"/>
+                        </af:tableSelectOne>
+                      </f:facet>
+                      <af:column headerText="Primer Nombre" sortable="false" formatType="text">
+                        <af:outputText value="#{row.Nombre1}" inlineStyle="padding:5.0pt;"/>
+                      </af:column>
+                      <af:column headerText="Segundo Nombre" sortable="false" formatType="text">
+                        <af:outputText value="#{row.Nombre2}" inlineStyle="padding:5.0pt;"/>
+                      </af:column>
+                      <af:column sortable="false" headerText="Tercer Nombre" formatType="text">
+                        <af:outputText value="#{row.Nombre3}" inlineStyle="padding:5.0pt;"/>
+                      </af:column>
+                      <af:column sortable="false" headerText="Primer Apellido" formatType="text">
+                        <af:outputText value="#{row.Apellido1}" inlineStyle="padding:5.0pt;"/>
+                      </af:column>
+                      <af:column sortable="false" headerText="Segundo Apellido" formatType="text">
+                        <af:outputText value="#{row.Apellido2}" inlineStyle="padding:5.0pt;"/>
+                      </af:column>
+                      <af:column sortProperty="Parentesco" binding="#{fallecimiento.column51}" id="column51" headerText="Parentesco" formatType="icon" sortable="false">
+                        <af:outputText value="#{row.Parentesco}" binding="#{fallecimiento.outputText9}" id="outputText9" inlineStyle="padding:5.0pt;"/>
+                      </af:column>
+                      <af:column sortProperty="Cui" binding="#{fallecimiento.column7}" id="column7" headerText="CUI" formatType="icon" sortable="false">
+                        <af:outputText value="#{row.Cui}" binding="#{fallecimiento.outputText13}" id="outputText13" inlineStyle="padding:5.0pt;">
+                          <f:convertNumber groupingUsed="false"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="RecibePago" headerText="¿Recibe Pago?" binding="#{fallecimiento.column5}" id="column5" rendered="true" formatType="icon" sortable="false">
+                        <af:outputText value="#{row.TxtRecibePago} " binding="#{fallecimiento.outputText91}" id="outputText91"
+                                       inlineStyle="#{row.RecibePago=='1'?'color:rgb(0,0,255);':'' }  padding:5.0pt;"/>
+                      </af:column>
+                      <af:column sortable="false" headerText="¿Confirmado?" formatType="icon">
+                        <af:outputText value="#{row.TxtConfirmado}" inlineStyle="#{row.Confirmado=='1'?'color:rgb(0,0,255);':'' }  padding:5.0pt;"/>
+                      </af:column>
+                      <af:column sortable="false" headerText="Tipo de Pago" formatType="icon">
+                        <af:outputText value="#{row.TxtTipoPago}" inlineStyle="padding:5.0pt;"/>
+                      </af:column>
+                      <af:column sortable="false" headerText="Número de Cuenta">
+                        <af:outputText value="#{row.NumeroCuenta}" inlineStyle="padding:5.0pt;"/>
+                      </af:column>
+                      <af:column sortable="false" headerText="Estado de la Cuenta" formatType="icon">
+                        <af:outputText value="#{row.EstadoCuenta=='1'?'Validada':'No Validada'}" inlineStyle="padding:5.0pt;"/>
+                      </af:column>
+                      <af:column headerText="Creado Por" formatType="icon" sortable="false">
+                        <af:outputText value="#{row.CreadoPor}" inlineStyle="padding:5.0pt;">
+                          <f:convertNumber groupingUsed="false"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="FechaCreacion" binding="#{fallecimiento.column10}" id="column10" headerText="Fecha Creación" formatType="icon" sortable="false">
+                        <af:outputText value="#{row.FechaCreacion}" binding="#{fallecimiento.outputText18}" id="outputText18" inlineStyle="padding:5.0pt;">
+                          <f:convertDateTime pattern="dd/MM/yyyy"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortable="false" headerText="Opciones" formatType="icon"
+                                 rendered="#{roles_usuario.coordinadorSueldos==true || roles_usuario.administrador==true || roles_usuario.auxiliarSueldos==true || roles_usuario.analistaRecursosHum==true}">
+                        <af:commandButton id="cmdBtn_confirmar_beneficiario" binding="#{fallecimiento.cmdBtn_confirmar_beneficiario}" text="Confirmar" inlineStyle="font-size:medium; font-weight:bold;"
+                                          rendered="#{row.Confirmado eq '1'?false:true}" onclick="return confirmarBeneficiario('#{row.Nombre1}'+' '+'#{row.Apellido1}');"
+                                          action="#{fallecimiento.cmdBtn_confirmar_beneficiario_action}" disabled="#{row.IdBeneficiario.value>0?false:true}"/>
+                      </af:column>
+                    </af:table>
+                    <af:panelForm binding="#{fallecimiento.panelForm2}" id="panelForm2"
+                                  rendered="#{bindings.SisBeneficiarioIterator.estimatedRowCount>0 &amp;&amp; (roles_usuario.coordinadorSueldos==true || roles_usuario.administrador==true || roles_usuario.auxiliarSueldos==true || roles_usuario.analistaRecursosHum==true)}">
+                      <af:outputText value="#{bindings.mensaje_guardarBeneficiario.inputValue}" binding="#{fallecimiento.outputText17}" id="outputText17"
+                                     inlineStyle="color:rgb(0,128,0); font-weight:bold;"/>
+                      <af:panelHorizontal halign="center">
+                        <af:panelLabelAndMessage label="Primer Nombre:">
+                          <af:inputText value="#{bindings.SisBeneficiarioNombre1.inputValue}" required="true" columns="10" id="inptText_primerNombre" binding="#{fallecimiento.inptText_primerNombre}"
+                                        partialTriggers="tbl_beneficiarios" maximumLength="20" inlineStyle="font-weight:bold;"
+                                        requiredMessageDetail="Debe ingresar Primer Nombre para continuar, por favor!!" disabled="#{bindings.SisBeneficiarioConfirmado.inputValue eq '1'?true:false}"/>
+                        </af:panelLabelAndMessage>
+                        <af:panelLabelAndMessage label="Segundo Nombre:">
+                          <af:inputText value="#{bindings.SisBeneficiarioNombre2.inputValue}" columns="10" id="inptText_segundoNombre" binding="#{fallecimiento.inptText_segundoNombre}"
+                                        partialTriggers="tbl_beneficiarios" maximumLength="20" inlineStyle="font-weight:bold;"
+                                        disabled="#{bindings.SisBeneficiarioConfirmado.inputValue eq '1'?true:false}"/>
+                        </af:panelLabelAndMessage>
+                        <af:panelLabelAndMessage label="Tercer Nombre:">
+                          <af:inputText value="#{bindings.SisBeneficiarioNombre3.inputValue}" columns="10" id="inptText_tercerNombre" binding="#{fallecimiento.inptText_tercerNombre}"
+                                        partialTriggers="tbl_beneficiarios" maximumLength="20" inlineStyle="font-weight:bold;"
+                                        disabled="#{bindings.SisBeneficiarioConfirmado.inputValue eq '1'?true:false}"/>
+                        </af:panelLabelAndMessage>
+                        <f:facet name="separator">
+                          <af:objectSpacer height="10" width="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                      <af:panelHorizontal halign="center">
+                        <af:panelLabelAndMessage label="Primer Apellido:">
+                          <af:inputText value="#{bindings.SisBeneficiarioApellido1.inputValue}" required="true" columns="12" id="inptText_primerApellido"
+                                        binding="#{fallecimiento.inptText_primerApellido}" partialTriggers="tbl_beneficiarios" maximumLength="20" inlineStyle="font-weight:bold;"
+                                        requiredMessageDetail="Debe ingresar Primer Apellido para continuar, por favor!!"
+                                        disabled="#{bindings.SisBeneficiarioConfirmado.inputValue eq '1'?true:false}"/>
+                        </af:panelLabelAndMessage>
+                        <af:panelLabelAndMessage label="Segundo Apellido:">
+                          <af:inputText value="#{bindings.SisBeneficiarioApellido2.inputValue}" columns="12" id="inptText_segundoApellido" binding="#{fallecimiento.inptText_segundoApellido}"
+                                        partialTriggers="tbl_beneficiarios" maximumLength="20" inlineStyle="font-weight:bold;"
+                                        disabled="#{bindings.SisBeneficiarioConfirmado.inputValue eq '1'?true:false}"/>
+                        </af:panelLabelAndMessage>
+                        <af:panelLabelAndMessage label="Parentesco:">
+                          <af:selectOneChoice value="#{bindings.SisBeneficiarioIdParentesco.inputValue}" binding="#{fallecimiento.selectOneChoice1}" id="selectOneChoice1" required="true"
+                                              partialTriggers="tbl_beneficiarios" inlineStyle="font-weight:bold;" requiredMessageDetail="Debe ingresar Parentesco para continuar, por favor!!"
+                                              disabled="#{bindings.SisBeneficiarioConfirmado.inputValue eq '1'?true:false}">
+                            <f:selectItems value="#{bindings.SisBeneficiarioIdParentesco.items}" binding="#{fallecimiento.selectItems1}" id="selectItems1"/>
+                          </af:selectOneChoice>
+                        </af:panelLabelAndMessage>
+                        <af:panelLabelAndMessage label="CUI (DPI):">
+                          <af:inputText value="#{bindings.Cui.inputValue}" required="#{bindings.Cui.mandatory}" columns="13" binding="#{fallecimiento.inputText7}" id="inptText_cui" maximumLength="13"
+                                        inlineStyle="text-align:center;font-weight:bold;" partialTriggers="tbl_beneficiarios"
+                                        disabled="#{bindings.SisBeneficiarioConfirmado.inputValue eq '1'?true:false}">
+                            <f:convertNumber groupingUsed="false"/>
+                          </af:inputText>
+                        </af:panelLabelAndMessage>
+                        <f:facet name="separator">
+                          <af:objectSpacer height="10" width="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                      <af:panelHorizontal halign="center">
+                        <af:panelLabelAndMessage label="¿Recibe Pago?" rendered="#{bindings.IdBeneficiario.inputValue!=null}">
+                          <af:selectOneChoice binding="#{fallecimiento.selectOneChoice2}" id="selectOneChoice2" value="#{bindings.RecibePago.inputValue}" partialTriggers="tbl_beneficiarios"
+                                              inlineStyle="font-weight:bold;" disabled="#{bindings.SisBeneficiarioConfirmado.inputValue eq '1'?true:false}">
+                            <af:selectItem label="NO" value="0" binding="#{fallecimiento.selectItem2}" id="selectItem2"/>
+                            <af:selectItem label="SI" value="1" binding="#{fallecimiento.selectItem1}" id="selectItem1"/>
+                          </af:selectOneChoice>
+                        </af:panelLabelAndMessage>
+                        <af:panelLabelAndMessage label="Tipo de Pago:" rendered="#{bindings.IdBeneficiario.inputValue!=null}">
+                          <af:selectOneChoice value="#{bindings.SisBeneficiarioTipoPago.inputValue}" partialTriggers="tbl_beneficiarios" inlineStyle="font-weight:bold;"
+                                              disabled="#{!(bindings.SisBeneficiarioConfirmado.inputValue eq '1' &amp;&amp; bindings.RecibePago.inputValue eq '1' &amp;&amp; bindings.SisBeneficiarioEstadoCuenta.inputValue ne '1')}"
+                                              autoSubmit="true" id="selectOneChoice_tipoPago">
+                            <af:selectItem label="Sueldos y Prestaciones" value="1"/>
+                            <af:selectItem label="Prestaciones Post-mortem" value="2"/>
+                          </af:selectOneChoice>
+                        </af:panelLabelAndMessage>
+                        <af:panelLabelAndMessage label="Número de Cuenta:" rendered="#{bindings.IdBeneficiario.inputValue!=null}">
+                          <af:inputText columns="12" maximumLength="15" value="#{bindings.SisBeneficiarioNumeroCuenta.inputValue}" inlineStyle="text-align:center;font-weight:bold;"
+                                        partialTriggers="tbl_beneficiarios selectOneChoice_tipoPago" id="inptText_numCuenta"
+                                        disabled="#{!(bindings.SisBeneficiarioConfirmado.inputValue eq '1' &amp;&amp; bindings.RecibePago.inputValue eq '1' &amp;&amp; bindings.SisBeneficiarioTipoPago.inputValue eq '1' &amp;&amp; bindings.SisBeneficiarioEstadoCuenta.inputValue ne '1')}"/>
+                        </af:panelLabelAndMessage>
+                        <f:facet name="separator">
+                          <af:objectSpacer height="10" width="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                      <af:panelHorizontal halign="center">
+                        <af:panelLabelAndMessage label="Nombre Cheque:" rendered="#{bindings.IdBeneficiario.inputValue!=null}">
+                          <af:outputText value="#{bindings.SisBeneficiarioNomcompletocheq.inputValue}" partialTriggers="tbl_beneficiarios" inlineStyle="font-weight:bold;"/>
+                        </af:panelLabelAndMessage>
+                      </af:panelHorizontal>
+                      <af:panelHorizontal halign="center">
+                        <af:commandButton text="Guardar" id="cmdBtn_guardar_beneficiario" inlineStyle="font-weight:bold;" onclick="return confirmarGuardarBeneficiario();"
+                                          rendered='#{(roles_usuario.coordinadorSueldos==true || roles_usuario.administrador==true || roles_usuario.auxiliarSueldos==true || roles_usuario.analistaRecursosHum==true) &amp;&amp; (bindings.logAutorizado == "false")}'
+                                          action="#{fallecimiento.cmdBtn_guardar_beneficiario_action}" binding="#{fallecimiento.cmdBtn_guardar_beneficiario}"/>
+                        <af:commandButton text="Validar Cuenta" onclick="return validarCuenta();" id="cmdBtn_validarCuenta" inlineStyle="font-weight:bold;"
+                                          partialTriggers="tbl_beneficiarios selectOneChoice_tipoPago"
+                                          disabled="#{!(bindings.SisBeneficiarioConfirmado.inputValue eq '1' &amp;&amp; bindings.RecibePago.inputValue eq '1' &amp;&amp; bindings.SisBeneficiarioTipoPago.inputValue eq '1' &amp;&amp; bindings.SisBeneficiarioEstadoCuenta.inputValue ne '1')}"
+                                          rendered='#{(roles_usuario.coordinadorSueldos==true || roles_usuario.administrador==true || roles_usuario.auxiliarSueldos==true || roles_usuario.analistaRecursosHum==true) &amp;&amp; (bindings.logAutorizado == "false")}'/>
+                        <af:commandButton text="Cancelar" immediate="true" id="cmdBtn_cancelar_beneficario" inlineStyle="font-weight:bold;"
+                                          rendered='#{(roles_usuario.coordinadorSueldos==true || roles_usuario.administrador==true || roles_usuario.auxiliarSueldos==true || roles_usuario.analistaRecursosHum==true) &amp;&amp; (bindings.logAutorizado == "false")}'
+                                          binding="#{fallecimiento.cmdBtn_cancelar_beneficiario}" action="lst_empleado"
+                                          onclick="return confirmarCancelarOperacion();" actionListener="#{bindings.Rollback.execute}">
+                          <af:resetActionListener/>
+                        </af:commandButton>
+                        <f:facet name="separator">
+                          <af:objectSpacer height="10" width="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                      <af:panelHorizontal>
+                        <af:outputFormatted value="" inlineStyle="color:rgb(148,0,0); font-size:medium; font-weight:bold;" id="lblErrorValidarCta"/>
+                        <af:outputFormatted value="" inlineStyle="color:rgb(0,173,255); font-size:medium; font-weight:bold; border-width:thin; border-color:rgb(255,156,49);" id="lblExitoValidarCta"/>
+                        <af:outputFormatted value="&lt;i>Cuenta validada en Banrural&lt;/i>" styleUsage="instruction"
+                                            inlineStyle="color:rgb(0,173,255); font-size:medium; font-weight:bold; border-width:thin; border-color:rgb(255,156,49);" shortDesc="&lt;br/>Hola"
+                                            rendered="false"/>
+                        <f:verbatim>
+                          <div id="ajaxBusy" style="display:none">
+                            <table>
+                              <tr>
+                                <td>
+                                  <img src="/${flujo_usuario.dominioApp}/imagenes/ajax-loader2.gif" alt="AJX LOADER"/>
+                                </td>
+                                <td class="ui-state-highlight">Verificando ....</td>
+                              </tr>
+                            </table>
+                          </div>
+                        </f:verbatim>
+                        <f:facet name="separator">
+                          <af:objectSpacer width="20" height="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                      <af:inputHidden id="inptHiddenEstadoCta" value="#{bindings.vValidarCuenta.inputValue}"/>
+                    </af:panelForm>
+                  </af:panelBox>
+                </af:showDetailItem>
+              </af:showOneTab>
+            </af:panelBox>
+          </af:page>
+        </af:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-binding-backing-bean-name:Fallecimiento-->
+</jsp:root>

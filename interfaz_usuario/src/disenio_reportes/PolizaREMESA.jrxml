@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="PolizaREMESA"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="791"
+		 pageHeight="611"
+		 columnWidth="735"
+		 columnSpacing="0"
+		 leftMargin="28"
+		 rightMargin="28"
+		 topMargin="56"
+		 bottomMargin="56"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="fechainicial" isForPrompting="true" class="java.util.Date"/>
+	<parameter name="fechafinal" isForPrompting="true" class="java.util.Date"/>
+	<queryString><![CDATA[select 1 AS ORDEN,spv.FORMATO AS PARTIDA,spR.ID_PROCESO AS PROCESO,SPR.OBSERVACIONES AS NOMBRE,ABS(SUM(SP.VALOR)) AS MONTO,MIN(SP.NO_POLIZA) AS POLIZA,ABS(SUM(SP.VALOR)) AS DEBE,0 AS HABER
+from sis_poliza sp
+left join sis_proceso spr on sp.ID_PROCESO=spr.ID_PROCESO
+left join sis_partida2_vw spv on sp.ID_PARTIDA=spv.ID_PARTIDA
+where not exists(select 1 from sis_ajuste_partida sap where sap.ID_PARTIDA=sp.ID_PARTIDA and rownum =1)
+and not exists(select 1 from cuenta_bancaria cb where cb.ID_PARTIDA=sp.ID_PARTIDA and rownum=1)
+and spr.FECHA_FIN between $P{fechainicial} and $P{fechafinal}
+group by spv.FORMATO,spR.ID_PROCESO,SPR.OBSERVACIONES
+UNION
+select 2 AS ORDEN,spv.FORMATO AS PARTIDA,spR.ID_PROCESO AS PROCESO,SPV.NOMBRE AS NOMBRE,abs(SUM(SP.VALOR)) AS MONTO,MIN(SP.NO_POLIZA) AS POLIZA,0 AS DEBE,ABS(SUM(SP.VALOR)) AS HABER
+from sis_poliza sp
+left join sis_proceso spr on sp.ID_PROCESO=spr.ID_PROCESO
+left join sis_partida2_vw spv on sp.ID_PARTIDA=spv.ID_PARTIDA
+where  exists (select 1 from sis_ajuste_partida sap where sap.ID_PARTIDA=sp.ID_PARTIDA and rownum=1)
+and spr.FECHA_FIN between $P{fechainicial} and $P{fechafinal}
+and not (spr.OBSERVACIONES like '%BONO%')
+group by spv.FORMATO,spR.ID_PROCESO,SPV.NOMBRE
+UNION
+select 3 AS ORDEN,spv.FORMATO AS PARTIDA,spR.ID_PROCESO AS PROCESO,SPV.NOMBRE AS NOMBRE,abs(SUM(SP.VALOR)) AS MONTO,MIN(SP.NO_POLIZA) AS POLIZA,0 AS DEBE,ABS(SUM(SP.VALOR)) AS HABER
+from sis_poliza sp
+left join sis_proceso spr on sp.ID_PROCESO=spr.ID_PROCESO
+left join sis_partida2_vw spv on sp.ID_PARTIDA=spv.ID_PARTIDA
+where exists(select 1 from cuenta_bancaria cb where cb.ID_PARTIDA=sp.ID_PARTIDA and rownum=1) 
+and not (spr.OBSERVACIONES like '%BONO%')
+and spr.FECHA_FIN between $P{fechainicial} and $P{fechafinal}
+group by spv.FORMATO,spR.ID_PROCESO,SPV.NOMBRE
+order by ORDEN,PROCESO,PARTIDA]]></queryString>
+
+	<field name="ORDEN" class="java.math.BigDecimal"/>
+	<field name="PARTIDA" class="java.lang.String"/>
+	<field name="PROCESO" class="java.math.BigDecimal"/>
+	<field name="NOMBRE" class="java.lang.String"/>
+	<field name="MONTO" class="java.math.BigDecimal"/>
+	<field name="POLIZA" class="java.math.BigDecimal"/>
+	<field name="DEBE" class="java.math.BigDecimal"/>
+	<field name="HABER" class="java.math.BigDecimal"/>
+
+	<variable name="suma_debe" class="java.math.BigDecimal" resetType="Group" resetGroup="dependencia" calculation="Sum">
+		<variableExpression><![CDATA[$F{DEBE}]]></variableExpression>
+	</variable>
+	<variable name="suma_haber" class="java.math.BigDecimal" resetType="Group" resetGroup="dependencia" calculation="Sum">
+		<variableExpression><![CDATA[$F{HABER}]]></variableExpression>
+	</variable>
+
+		<group  name="dependencia" >
+			<groupExpression><![CDATA[$F{NOMBRE}]]></groupExpression>
+			<groupHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="15"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="416"
+						y="0"
+						width="94"
+						height="14"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{suma_debe}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="556"
+						y="0"
+						width="71"
+						height="14"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{suma_haber}]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupFooter>
+		</group>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="76"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="2"
+						y="60"
+						width="119"
+						height="12"
+						key="staticText-1"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+				<text><![CDATA[PARTIDA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="127"
+						y="60"
+						width="119"
+						height="12"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+				<text><![CDATA[CONCEPTO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="266"
+						y="60"
+						width="119"
+						height="12"
+						key="staticText-3"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+				<text><![CDATA[PARCIALES]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="449"
+						y="60"
+						width="62"
+						height="12"
+						key="staticText-4"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+				<text><![CDATA[DEBE]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="556"
+						y="60"
+						width="70"
+						height="12"
+						key="staticText-5"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+				<text><![CDATA[HABER]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="260"
+						y="41"
+						width="221"
+						height="12"
+						key="staticText-6"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+				<text><![CDATA[P O L I Z A   D E   S U E L D O S]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="2"
+						y="0"
+						width="276"
+						height="40"
+						key="staticText-7"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="Courier" size="10"/>
+					</textElement>
+				<text><![CDATA[UNIVERSIDAD DE SAN CARLOS DE GUATEMALA
+DEPARTAMENTO DE PROCESAMIENTO
+ELECTRONICO DE DATOS]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="302"
+						y="0"
+						width="119"
+						height="12"
+						key="staticText-8"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+				<text><![CDATA[CONTABILIDAD]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="591"
+						y="0"
+						width="139"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["HOJA NO. "+$V{PAGE_NUMBER}.toString()]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="592"
+						y="14"
+						width="139"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new java.util.Date()]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="18"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="2"
+						y="0"
+						width="119"
+						height="13"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PARTIDA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="127"
+						y="0"
+						width="175"
+						height="13"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="302"
+						y="0"
+						width="83"
+						height="13"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{MONTO}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="Inconsistencia_fox2_subreport2"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="800"
+		 pageHeight="793"
+		 columnWidth="800"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pIdProceso" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pProcesoFox" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="pUsuario" isForPrompting="true" class="java.lang.String"/>
+	<queryString><![CDATA[select Extract (year from SysDate) AnioActual, 
+case when agrupe='ENFOX' THEN 
+(SELECT 
+sum(sumsuel)
+from sis_nominafox where procesonomina=$P{pProcesoFox}
+AND REGPER=D.REGPER
+AND PARTIDA=D.PARTIDA
+AND PLAZA=D.PLAZA)
+ELSE 
+(SELECT sum(NOMINAL)
+FROM SIS_NOMINA N, SEP_PARTIDA_VW PRT
+WHERE ID_PROCESO=$P{pIdProceso}
+AND REGISTRO_EMPLEADO=D.REGPER 
+AND PRT.ID_PARTIDA=N.ID_PARTIDA
+AND NUMERO_PLAZA=D.PLAZA
+AND FORMATO2=D.PARTIDA)
+END AS MONTO2,
+d.*, Trim(To_Char(empl.cui,'9999G99999G9999','NLS_NUMERIC_CHARACTERS= '', ''')) cui,
+empl.nombrecompleto,
+--sis_util_report_pkg.GETINFOPLAZAS(d.regper,d.partida,d.cod_clas,2012,d.plaza) as datosContrato,
+(
+select est.nombre ||'  '|| to_char(cnt.fecha_inicio,'dd/mm/yyyy')||'  '|| to_char(cnt.fecha_fin,'dd/mm/yyyy')
+from sis_contrato cnt, sis_partida_vw part,sis_estado est
+where correlativo in (2012,2011)
+and registro_Empleado=d.regper
+and numero_plaza=plaza
+and part.id_partida=cnt.id_partida
+and part.formato1=partida
+and est.id_estado=cnt.estatus
+and est.id_estado not in (decode(agrupe,'ENSIS',11,0) )
+and 
+( cnt.fecha_inicio between '01/01/2012' and sysdate
+or nvl(cnt.fecha_fin,sysdate) between '01/01/2012' and sysdate
+)
+and rownum<=1
+) 
+as datosContrato,
+(
+select id_proceso||' MES: '||periodo||' AÑO:'||anio
+from sis_proceso
+where id_proceso=$P{pIdProceso}
+) as datosproc
+from (
+select 
+'ENFOX'AS AGRUPE,
+regper,
+plaza,
+partida,
+--sumsuel as monto
+1 as monto
+from sis_nominafox where procesonomina=$P{pProcesoFox}
+minus
+select 
+'ENFOX'AS AGRUPE,
+registro_empleado,
+numero_plaza,
+part.formato1,
+--nominal as monto
+1 as monto
+from sis_nomina nom,sis_partida_vw part
+where id_proceso=$P{pIdProceso}
+and part.id_partida=nom.id_partida
+and nom.liquido>0
+union
+select 
+'ENSIS'AS AGRUPE,
+registro_empleado,
+numero_plaza,
+part.formato1,
+--nominal as monto
+1 as monto
+from sis_nomina nom,sis_partida_vw part
+where id_proceso=$P{pIdProceso}
+and part.id_partida=nom.id_partida
+and liquido>0
+minus
+select
+'ENSIS'AS AGRUPE, 
+regper,
+plaza,
+partida,
+--sumsuel as monto
+1 as monto
+from sis_nominafox
+where procesonomina=$P{pProcesoFox}
+)d, sis_empleado_vw empl, sep_partida_vw prt
+where d.regper=empl.registro_empleado
+and prt.formato2=d.partida
+and
+exists(
+select 1 from usuario_unidad b, partida c
+where b.id_partida=c.id_partida
+and usuario=$P{pUsuario}
+and b.tipo_usuario='TRABAJADOR'
+and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+and prt.aniomanual=c.aniomanual
+and prt.d1=c.d1
+and prt.d2=c.d2
+and prt.d3d4=c.d3d4
+and 
+(
+(
+prt.d7=c.d7
+and prt.d6=c.d6
+and prt.d5=c.d5
+)
+or
+(
+c.d5 is null
+and c.d6 is null
+and c.d7 is null 
+)
+)
+)
+order by agrupe,partida,plaza]]></queryString>
+
+	<field name="ANIOACTUAL" class="java.math.BigDecimal"/>
+	<field name="MONTO2" class="java.math.BigDecimal"/>
+	<field name="AGRUPE" class="java.lang.String"/>
+	<field name="REGPER" class="java.math.BigDecimal"/>
+	<field name="PLAZA" class="java.math.BigDecimal"/>
+	<field name="PARTIDA" class="java.lang.String"/>
+	<field name="MONTO" class="java.math.BigDecimal"/>
+	<field name="CUI" class="java.lang.String"/>
+	<field name="NOMBRECOMPLETO" class="java.lang.String"/>
+	<field name="DATOSCONTRATO" class="java.lang.String"/>
+	<field name="DATOSPROC" class="java.lang.String"/>
+
+
+		<group  name="Agrupe" isStartNewPage="true" >
+			<groupExpression><![CDATA[$F{AGRUPE}]]></groupExpression>
+			<groupHeader>
+			<band height="34"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="218"
+						y="4"
+						width="240"
+						height="13"
+						forecolor="#CC0000"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["PLAZAS QUE SALIERON "+$F{AGRUPE}]]></textFieldExpression>
+				</textField>
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="30"
+						width="680"
+						height="0"
+						key="line-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="3"
+						width="680"
+						height="0"
+						key="line-2"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="593"
+						y="17"
+						width="136"
+						height="15"
+						key="staticText-1"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Datos Plaza]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="397"
+						y="17"
+						width="45"
+						height="15"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Clasif]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="466"
+						y="17"
+						width="45"
+						height="15"
+						key="staticText-3"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Plaza]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="328"
+						y="17"
+						width="45"
+						height="15"
+						key="staticText-4"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Partida]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="527"
+						y="17"
+						width="45"
+						height="15"
+						key="staticText-5"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Monto]]></text>
+				</staticText>
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+			</groupFooter>
+		</group>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="20"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="200"
+						y="1"
+						width="270"
+						height="18"
+						forecolor="#CC0000"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" size="11" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["PROCESO: "+$F{DATOSPROC}]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="17"  isSplitAllowed="true" >
+				<line direction="TopDown">
+					<reportElement
+						x="-1"
+						y="15"
+						width="681"
+						height="1"
+						forecolor="#808080"
+						key="line"
+						positionType="FixRelativeToBottom"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.25" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="true" pattern="0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1"
+						y="0"
+						width="80"
+						height="15"
+						key="txtRegistroEmpleado">
+							<printWhenExpression><![CDATA[new Boolean($F{ANIOACTUAL}.compareTo(new BigDecimal(2017))< 0 )]]></printWhenExpression>
+						</reportElement>
+					<box leftPadding="2" rightPadding="2">					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right">
+						<font fontName="Times-Roman" size="12"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{REGPER}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="468"
+						y="0"
+						width="44"
+						height="15"
+						key="textField"/>
+					<box leftPadding="2" rightPadding="2">					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center">
+						<font fontName="Times-Roman" size="12"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{PLAZA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="316"
+						y="0"
+						width="79"
+						height="15"
+						key="textField"/>
+					<box leftPadding="2" rightPadding="2">					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement>
+						<font fontName="Times-Roman" size="12"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PARTIDA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="85"
+						y="0"
+						width="225"
+						height="15"
+						key="textField"/>
+					<box leftPadding="2" rightPadding="2">					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement>
+						<font fontName="Times-Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRECOMPLETO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="588"
+						y="0"
+						width="202"
+						height="15"
+						forecolor="#003366"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{DATOSCONTRATO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="396"
+						y="0"
+						width="70"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="11"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="520"
+						y="0"
+						width="60"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{MONTO2}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1"
+						y="0"
+						width="80"
+						height="15"
+						key="txtCUI">
+							<printWhenExpression><![CDATA[new Boolean($F{ANIOACTUAL}.compareTo(new BigDecimal(2017))>= 0 )]]></printWhenExpression>
+						</reportElement>
+					<box leftPadding="2" rightPadding="2">					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right">
+						<font fontName="Times-Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{CUI}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

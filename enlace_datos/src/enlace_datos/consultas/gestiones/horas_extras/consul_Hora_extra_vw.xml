@@ -1,0 +1,208 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="consul_Hora_extra_vw"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   ComponentClass="enlace_datos.consultas.gestiones.horas_extras.consul_Hora_extra_vwImpl"
+   ComponentInterface="enlace_datos.consultas.gestiones.horas_extras.common.consul_Hora_extra_vw"
+   ClientProxyName="enlace_datos.consultas.gestiones.horas_extras.client.consul_Hora_extra_vwClient"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="pUsuario"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select distinct (hora.ID_HORA_EXTRA), estado.NOMBRE, unidad.NOMBRE as unidad,hora.FECHA_CREACION, hora.MOTIVO, hora.FECHAINI, hora.FECHAFIN, hora.REFERENCIA, estado.tabla, per.perfil
+from sis_hora_extra hora, sis_unidad_ejecutora unidad, sis_estado estado, sis_autorizacion aut, sis_autorizacion_det det, usuario_perfil per
+where hora.ID_DEPENDENCIA = unidad.ID_DEPENDENCIA and hora.ID_UNIDAD = unidad.ID_UNIDAD and hora.ID_PROGRAMA = unidad.ID_PROGRAMA
+and hora.ID_HORA_EXTRA = aut.ID_HORA_EXTRA and aut.ID_AUTORIZACION = det.ID_AUTORIZACION and det.ID_ESTADO = estado.ID_ESTADO
+and det.USUARIO = per.USUARIO and tipo_usuario = 'TRABAJADOR'
+and exists(
+select 1
+from partida a 
+where a.D1||a.D2 = hora.ID_PROGRAMA
+and a.D3D4 = hora.ID_DEPENDENCIA
+and a.D5|| a.D6 || a.D7 =hora.ID_UNIDAD
+and
+(
+exists(
+select 1 from usuario_unidad b, partida c
+where b.id_partida=c.id_partida
+and b.usuario=:pUsuario
+and b.tipo_usuario='TRABAJADOR'
+and sysdate between b.vigencia_de and nvl(vigencia_a,sysdate)
+and c.aniomanual=a.aniomanual
+and a.d1=c.d1
+and a.d2=c.d2
+and a.d3d4=c.d3d4
+and
+(
+(
+c.d5 is null
+and c.d6 is null
+and c.d7 is null
+)
+or
+(
+c.d5=a.d5
+and c.d6=a.d6
+and c.d7=a.d7
+)
+)
+)
+)
+)
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="IdHoraExtra"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="15"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_HORA_EXTRA"
+      Expression="ID_HORA_EXTRA"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nombre"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBRE"
+      Expression="NOMBRE"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Unidad"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="250"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="UNIDAD"
+      Expression="UNIDAD"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="250" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaCreacion"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_CREACION"
+      Expression="FECHA_CREACION"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Motivo"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="500"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="MOTIVO"
+      Expression="MOTIVO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="500" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Fechaini"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHAINI"
+      Expression="FECHAINI"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Fechafin"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHAFIN"
+      Expression="FECHAFIN"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Referencia"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="20"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="REFERENCIA"
+      Expression="REFERENCIA"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="20" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Tabla"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="TABLA"
+      Expression="TABLA"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Perfil"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="30"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="PERFIL"
+      Expression="PERFIL"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="30" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

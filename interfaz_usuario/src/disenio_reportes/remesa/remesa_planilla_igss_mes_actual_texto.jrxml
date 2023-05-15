@@ -1,0 +1,814 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="remesa_planilla_igss_mes_actual_texto"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="1490"
+		 pageHeight="730"
+		 columnWidth="1431"
+		 columnSpacing="0"
+		 leftMargin="29"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pIdRemesa" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[select x.registro_empleado registro, empl.nombrecompleto nombre, part.formato1 partida, x.numero_plaza plaza,
+x.nominal sueldo, x.total_bono, x.valor,  (case when y.ajuste=21 then 0.0483 else 0.03 end) porcentaje,
+(to_char(x.periodo,'00') ||'/' ||x.correlativo) periodo, se.igss no_referencia,
+(case when y.ajuste=21 then 'IGSS 4.83 %' else 'IGSS 3 %' end) ajuste,
+ajuste no_ajuste,
+(select to_date(to_char(periodo,'00')||'/'||to_char(fecha_inicio,'yyyy'),'mm/yyyy') from sis_remesa where id_remesa=$P{pIdRemesa}) fechainicio,
+(select last_day(to_date(to_char(periodo,'00')||'/'||to_char(fecha_inicio,'yyyy'),'mm/yyyy')) from sis_remesa where id_remesa=$P{pIdRemesa}) fechafinal,
+doc.fecha_emision 
+from (
+select registro_empleado, max(ajuste) ajuste from (
+(
+select nom.registro_empleado, scal.id_ajuste ajuste
+from sis_documento_banco doc, sis_pago pago, sis_nomina nom, 
+sis_det_calculo_ajuste scal, sis_empleado ei
+where doc.id_documento_banco = pago.id_documento_banco
+and nom.id_nomina = pago.id_nomina
+and nom.registro_empleado= ei.registro_empleado
+and nom.id_tipo_nomina not in (2,3,5,6,8)
+and scal.id_nomina = nom.id_nomina
+and scal.id_ajuste in (21,25)
+and doc.id_remesa=$P{pIdRemesa}
+and (
+  (doc.id_estado <> 17 and doc.fecha_anulacion is null)  
+  or
+  (doc.id_estado = 17 and  
+   (trunc(doc.fecha_anulacion) > trunc((select fecha_fin from sis_remesa where id_remesa=$P{pIdRemesa})))
+  )
+)
+and nom.correlativo = (select to_char(fecha_inicio,'yyyy') from sis_remesa sr where sr.id_remesa = $P{pIdRemesa})
+and  nom.periodo = (select sr.periodo from sis_remesa sr where sr.id_remesa = $P{pIdRemesa})
+)
+union all -- EMPLEADOS CON SUELDO CERO SUSPENDIDOS EN EL MES
+(select nom_sus.registro_empleado, 
+  (select max(id_ajuste) from sis_ajuste_empleado where registro_empleado=nom_sus.registro_empleado and estado='A' and id_ajuste in (21,25)) ajuste
+  from
+(select sus.registro_empleado, min(sus.inicio) inicio, max(sus.fin) fin
+	from
+	(select sol.registro_empleado,
+	(case when sus.fecha_inicio_susp_igss<(select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pIdRemesa}) then (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pIdRemesa}) else sus.fecha_inicio_susp_igss end) as inicio,
+	(case when sus.fecha_alta_susp_igss>
+    (select last_day(to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy'))) from sis_remesa sr where sr.id_remesa = $P{pIdRemesa}) 
+    or sus.fecha_alta_susp_igss is null then (select last_day(to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy'))) from sis_remesa sr where sr.id_remesa = $P{pIdRemesa})
+    else sus.fecha_alta_susp_igss-1 end) as fin
+	from sis_solicitud sol, sis_suspencion_igss sus, sis_contrato cont, 
+	sis_autorizacion auto, sis_autorizacion_det det, sis_empleado ei
+	where sol.id_solicitud = sus.id_solicitud
+	and sol.registro_empleado= ei.registro_empleado
+	and sol.registro_empleado = cont.registro_empleado
+	and auto.id_solicitud = sol.id_solicitud
+	and det.id_autorizacion = auto.id_autorizacion
+	and sol.id_tipo_solicitud=2
+	and sol.id_estado=39
+	and det.id_estado = 39
+	and trunc(det.fecha) <= (select sr.fecha_fin from sis_remesa sr where sr.id_remesa = $P{pIdRemesa})
+	and (trunc(sus.fecha_inicio_susp_igss) <=(select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pIdRemesa})
+    and (trunc(sus.fecha_alta_susp_igss) > (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pIdRemesa}) 
+    or sus.fecha_alta_susp_igss is null)
+		or sus.fecha_inicio_susp_igss >(select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pIdRemesa})
+    and (sus.fecha_inicio_susp_igss< (select last_day(to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy'))) from sis_remesa sr where sr.id_remesa = $P{pIdRemesa}))
+	)
+	and (cont.fecha_inicio < (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pIdRemesa}) 
+  and ( cont.fecha_fin >= (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pIdRemesa})) 
+     and (select vx.id_estado from (
+        select sh.id_contrato, sh.id_estado from sis_historico_est_contrato sh 
+        where  trunc(sh.fecha) < (select sr.fecha_fin from sis_remesa sr where sr.id_remesa = $P{pIdRemesa})
+        order by sh.fecha desc) vx
+        where rownum <=1 and vx.id_contrato=cont.id_contrato) not in(43,15)	
+  )
+  ) sus
+ group by sus.registro_empleado) nom_sus
+/* 
+ se valida que los empleados que no tengan pago en remesa y 
+ esten suspendidos pero no el mes completo, se excluyan
+*/
+where exists(
+  (select nom.registro_empleado from 
+    sis_nomina nom, sis_documento_banco doc, sis_pago p
+    where nom.id_nomina = p.id_nomina
+      and doc.id_documento_banco = p.id_documento_banco
+      and nom.id_tipo_nomina not in (2,3,5,6,8)
+      and doc.id_remesa=$P{pIdRemesa}
+      and nom.registro_empleado = nom_sus.registro_empleado 
+      and(
+          (doc.id_estado <> 17 and doc.fecha_anulacion is null)  
+          or
+          (doc.id_estado = 17 and trunc(doc.fecha_anulacion) > trunc((select fecha_fin from sis_remesa where id_remesa=$P{pIdRemesa})))
+      )
+      and nom.correlativo = (select to_char(fecha_inicio,'yyyy') from sis_remesa sr where sr.id_remesa = $P{pIdRemesa})
+      and  nom.periodo = (select sr.periodo from sis_remesa sr where sr.id_remesa = $P{pIdRemesa})      
+  )
+)
+  or
+  (
+    inicio <= (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pIdRemesa}) 
+    and fin >=(select last_day(to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy'))) from sis_remesa sr where sr.id_remesa = $P{pIdRemesa})
+  )
+)
+union all -- EMPLEADOS CON SUELDO CERO CON LICENCIA EN EL MES
+(select  licencia.registro_empleado, 
+  (select max(id_ajuste) from sis_ajuste_empleado where registro_empleado=licencia.registro_empleado and estado='A' and id_ajuste in (21,25)) ajuste
+from 
+(select nom.registro_empleado, sum(nom.nominal) nominal 
+from sis_documento_banco doc, sis_pago pago, sis_nomina nom, sis_empleado ei
+where doc.id_documento_banco = pago.id_documento_banco
+and nom.id_nomina = pago.id_nomina
+and nom.registro_empleado= ei.registro_empleado
+and nom.id_tipo_nomina not in (2,3,5,6,8)
+and doc.id_remesa=$P{pIdRemesa}
+and  nom.correlativo = (select to_char(fecha_inicio,'yyyy') from sis_remesa sr where sr.id_remesa = $P{pIdRemesa})
+and  nom.periodo = (select sr.periodo from sis_remesa sr where sr.id_remesa = $P{pIdRemesa})
+
+group by nom.registro_empleado
+) nomina,
+(select sol.registro_empleado  
+from sis_solicitud sol, sis_det_licencia lic, sis_empleado ei
+where sol.id_solicitud = lic.id_solicitud
+and sol.registro_empleado= ei.registro_empleado
+and sol.id_tipo_solicitud=1
+and sol.id_estado=39
+and lic.tipo_licencia='SS'
+and lic.procede='SI'
+and trunc(lic.fecha_inicio) <= (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pIdRemesa}) 
+and trunc(lic.fecha_fin) >= (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pIdRemesa}) 
+group by sol.registro_empleado) licencia
+where nomina.registro_empleado(+) = licencia.registro_empleado
+and nomina.registro_empleado is null)
+) group by registro_empleado ) y,
+(
+select nom.*, abs(scal.valor_aplicado) valor
+from sis_documento_banco doc, sis_pago pago, sis_nomina nom, 
+sis_det_calculo_ajuste scal, sis_empleado ei
+where doc.id_documento_banco = pago.id_documento_banco
+and nom.id_nomina = pago.id_nomina
+and nom.registro_empleado= ei.registro_empleado
+and nom.id_tipo_nomina not in (2,3,5,6,8)
+and scal.id_nomina = nom.id_nomina
+and scal.id_ajuste in (21,25)
+and doc.id_remesa=$P{pIdRemesa}
+and (
+  (doc.id_estado <> 17 and doc.fecha_anulacion is null)  
+  or
+  (doc.id_estado = 17 and  
+   (trunc(doc.fecha_anulacion) > trunc((select fecha_fin from sis_remesa where id_remesa=$P{pIdRemesa})))
+  )
+)
+and nom.correlativo = (select to_char(fecha_inicio,'yyyy') from sis_remesa sr where sr.id_remesa = $P{pIdRemesa})
+and  nom.periodo = (select sr.periodo from sis_remesa sr where sr.id_remesa = $P{pIdRemesa}) 
+) x, sis_empleado_vw empl, sis_partida_vw part, sis_empleado se, 
+sis_pago pag, sis_documento_banco doc
+where y.registro_empleado = x.registro_empleado
+and x.registro_empleado = empl.registro_empleado
+and x.id_partida= part.id_partida
+and x.registro_empleado = se.registro_empleado
+and x.id_nomina = pag.id_nomina
+and pag.id_documento_banco = doc.id_documento_banco
+order by y.ajuste desc, x.registro_empleado]]></queryString>
+
+	<field name="REGISTRO" class="java.math.BigDecimal"/>
+	<field name="NOMBRE" class="java.lang.String"/>
+	<field name="PARTIDA" class="java.lang.String"/>
+	<field name="PLAZA" class="java.math.BigDecimal"/>
+	<field name="SUELDO" class="java.math.BigDecimal"/>
+	<field name="TOTAL_BONO" class="java.math.BigDecimal"/>
+	<field name="VALOR" class="java.math.BigDecimal"/>
+	<field name="PORCENTAJE" class="java.math.BigDecimal"/>
+	<field name="PERIODO" class="java.lang.String"/>
+	<field name="NO_REFERENCIA" class="java.lang.String"/>
+	<field name="AJUSTE" class="java.lang.String"/>
+	<field name="NO_AJUSTE" class="java.math.BigDecimal"/>
+	<field name="FECHAINICIO" class="java.sql.Timestamp"/>
+	<field name="FECHAFINAL" class="java.sql.Timestamp"/>
+	<field name="FECHA_EMISION" class="java.sql.Timestamp"/>
+
+	<variable name="total_descontado" class="java.math.BigDecimal" resetType="Group" resetGroup="no_ajuste" calculation="Sum">
+		<variableExpression><![CDATA[$F{VALOR}]]></variableExpression>
+	</variable>
+	<variable name="total_sueldos" class="java.math.BigDecimal" resetType="Group" resetGroup="no_ajuste" calculation="Sum">
+		<variableExpression><![CDATA[$F{SUELDO}]]></variableExpression>
+	</variable>
+	<variable name="total_empleados" class="java.lang.Long" resetType="Group" resetGroup="no_ajuste" calculation="DistinctCount">
+		<variableExpression><![CDATA[$F{REGISTRO}]]></variableExpression>
+	</variable>
+
+		<group  name="no_ajuste" isStartNewPage="true" isReprintHeaderOnEachPage="true" >
+			<groupExpression><![CDATA[$F{NO_AJUSTE}]]></groupExpression>
+			<groupHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="36"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="1"
+						y="24"
+						width="189"
+						height="12"
+						key="staticText-17"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Courier" size="7"/>
+					</textElement>
+				<text><![CDATA[TOTAL DE TRABAJADORES]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="191"
+						y="24"
+						width="180"
+						height="12"
+						key="textField-16"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Courier" size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.Long"><![CDATA[$V{total_empleados}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="551"
+						y="24"
+						width="163"
+						height="12"
+						key="textField-17"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{total_sueldos}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="901"
+						y="24"
+						width="130"
+						height="12"
+						key="textField-18"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{total_descontado}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="462"
+						y="24"
+						width="125"
+						height="12"
+						key="staticText-21"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="7"/>
+					</textElement>
+				<text><![CDATA[TOTAL SUELDOS]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="761"
+						y="24"
+						width="150"
+						height="12"
+						key="staticText-22"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Courier" size="7"/>
+					</textElement>
+				<text><![CDATA[TOTAL DESCONTADO]]></text>
+				</staticText>
+			</band>
+			</groupFooter>
+		</group>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="121"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="372"
+						y="30"
+						width="133"
+						height="12"
+						key="staticText-2"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="7"/>
+					</textElement>
+				<text><![CDATA[Fecha de Emisión ]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy h.mm a" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="510"
+						y="30"
+						width="100"
+						height="12"
+						key="textField-12"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new java.util.Date()]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="1130"
+						y="30"
+						width="55"
+						height="12"
+						key="staticText-3"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Courier" size="7"/>
+					</textElement>
+				<text><![CDATA[Página]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1190"
+						y="30"
+						width="40"
+						height="12"
+						key="textField-13"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Courier" size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="1230"
+						y="30"
+						width="21"
+						height="12"
+						key="staticText-4"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="7"/>
+					</textElement>
+				<text><![CDATA[de]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1259"
+						y="30"
+						width="50"
+						height="12"
+						key="textField-14"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Courier" size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="1"
+						y="56"
+						width="114"
+						height="12"
+						key="staticText-5"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="7"/>
+					</textElement>
+				<text><![CDATA[Reporte de Descuentos ]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="115"
+						y="56"
+						width="370"
+						height="12"
+						key="textField-15"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{AJUSTE}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="17"
+						y="101"
+						width="85"
+						height="16"
+						key="staticText-6"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="7" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Registro]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="108"
+						y="100"
+						width="289"
+						height="16"
+						key="staticText-7"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="7" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Empleado]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="433"
+						y="99"
+						width="89"
+						height="16"
+						key="staticText-8"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="7" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Partida]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="530"
+						y="99"
+						width="45"
+						height="16"
+						key="staticText-9"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="7" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Plaza]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="582"
+						y="99"
+						width="80"
+						height="16"
+						key="staticText-10"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="7" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Sueldo]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="850"
+						y="100"
+						width="104"
+						height="16"
+						key="staticText-12"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Courier-Bold" size="7" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Descontado]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="960"
+						y="100"
+						width="60"
+						height="16"
+						key="staticText-13"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Courier-Bold" size="7" isBold="true"/>
+					</textElement>
+				<text><![CDATA[%]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1028"
+						y="100"
+						width="102"
+						height="16"
+						key="staticText-14"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Courier-Bold" size="7" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Nomina]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1"
+						y="29"
+						width="340"
+						height="12"
+						key="staticText-18"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="7"/>
+					</textElement>
+				<text><![CDATA[Universidad de San Carlos de Guatemala]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="9"
+						y="2"
+						width="332"
+						height="15"
+						key="textField-20">
+							<printWhenExpression><![CDATA[new Boolean ($V{PAGE_NUMBER}.compareTo( new Integer (1) ) == 0)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[new String (new char[]{27,48,27,67,68,27,18,27,20,15})]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="1"
+						y="42"
+						width="340"
+						height="12"
+						key="staticText-19"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="7"/>
+					</textElement>
+				<text><![CDATA[Departamento de Caja]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="669"
+						y="100"
+						width="80"
+						height="16"
+						key="staticText-20"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="7" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Bonif  Sal.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1129"
+						y="46"
+						width="99"
+						height="12"
+						key="staticText-26"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Courier" size="7"/>
+					</textElement>
+				<text><![CDATA[Periodo del]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1229"
+						y="46"
+						width="100"
+						height="12"
+						key="textField-25"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[$F{FECHAINICIO}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="1328"
+						y="46"
+						width="16"
+						height="12"
+						key="staticText-27"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="7"/>
+					</textElement>
+				<text><![CDATA[al]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1343"
+						y="46"
+						width="86"
+						height="12"
+						key="textField-26"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[$F{FECHAFINAL}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="1309"
+						y="101"
+						width="117"
+						height="16"
+						key="staticText-28"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Courier-Bold" size="7" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Afiliacion]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1133"
+						y="101"
+						width="94"
+						height="16"
+						key="staticText-30"/>
+					<box></box>
+					<textElement textAlignment="Justified" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Courier-Bold" size="7" isBold="true"/>
+					</textElement>
+				<text><![CDATA[F.  Emision]]></text>
+				</staticText>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="11"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="16"
+						y="-1"
+						width="86"
+						height="12"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{REGISTRO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="109"
+						y="-1"
+						width="317"
+						height="12"
+						key="textField-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="434"
+						y="-1"
+						width="88"
+						height="12"
+						key="textField-3"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PARTIDA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="530"
+						y="-1"
+						width="44"
+						height="12"
+						key="textField-4"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{PLAZA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="850"
+						y="-1"
+						width="103"
+						height="12"
+						key="textField-6"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{VALOR}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00 %" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="960"
+						y="-1"
+						width="61"
+						height="12"
+						key="textField-7"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{PORCENTAJE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1028"
+						y="-1"
+						width="102"
+						height="12"
+						key="textField-8"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PERIODO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="582"
+						y="-1"
+						width="80"
+						height="12"
+						key="textField-19"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{SUELDO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="669"
+						y="-1"
+						width="80"
+						height="12"
+						key="textField-21"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_BONO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1308"
+						y="-1"
+						width="122"
+						height="12"
+						key="textField-27"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NO_REFERENCIA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1133"
+						y="-1"
+						width="94"
+						height="12"
+						key="textField-29"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.sql.Timestamp"><![CDATA[$F{FECHA_EMISION}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="14"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

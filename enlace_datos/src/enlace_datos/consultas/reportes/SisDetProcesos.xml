@@ -1,0 +1,274 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="SisDetProcesos"
+   OrderBy="fecha_inicio desc"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   RowClass="enlace_datos.consultas.reportes.SisDetProcesosRowImpl"
+   ComponentClass="enlace_datos.consultas.reportes.SisDetProcesosImpl"
+   MsgBundleClass="enlace_datos.consultas.reportes.common.SisDetProcesosRowImplMsgBundle"
+   ComponentInterface="enlace_datos.consultas.reportes.common.SisDetProcesos"
+   ClientProxyName="enlace_datos.consultas.reportes.client.SisDetProcesosClient"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isCodegen" Value="true" />
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|Msg|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="fechaI"
+      Kind="where"
+      Type="oracle.jbo.domain.Date" >
+   </Variable>
+   <Variable
+      Name="fechaF"
+      Kind="where"
+      Type="oracle.jbo.domain.Date" >
+   </Variable>
+   <Variable
+      Name="pUsuario"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <Variable
+      Name="pDep"
+      Kind="where"
+      Type="oracle.jbo.domain.Number"
+      DefaultValue="0" >
+   </Variable>
+   <SQLQuery><![CDATA[
+SELECT
+    b.NOMBRE NOMTIPOPROCESO,  
+    c.NOMBRE NOMPERIODO, 
+    d.NOMBRE NOMESTADO,
+    a.ANIO,  
+    a.ID_PROCESO, 
+    a.PROCESO_PADRE, 
+    a.TIPOPROCESO, 
+    a.FECHA_INICIO, 
+    a.FECHA_FIN, 
+    a.OBSERVACIONES,
+    (
+     select id_form_sis24
+        from
+    sis_form_sis24
+    where id_estado<>181
+    and creado_por=:pUsuario
+    and id_proceso=a.id_proceso
+    and rownum<=1
+    ) as id_sis24
+    
+FROM 
+    SIS_PROCESO a, 
+    SIS_TIPO_PROCESO b, 
+    SIS_PERIODO c, 
+    SIS_ESTADO_proceso_vw d
+    
+WHERE 
+a.TIPOPROCESO = b.ID_TIPOPROCESO AND a.ID_ESTADO = d.ID_ESTADO AND c.ID_PERIODO(+) = a.PERIODO
+and d.nombre in ('PROCESADO','APROBADO')
+and not exists(
+SELECT 1 FROM SIS_TIPO_PROCESO e
+where a.tipoproceso=e.ID_TIPOPROCESO
+and 
+(forma_utilizar='AUTO'
+or nombre in ('PAGO','AUMENTO SALARIAL')
+)
+) 
+and
+(
+(trunc(a.fecha_inicio) between :fechaI and :fechaF)
+or (
+:fechaI is null and :fechaF is null
+ and a.fecha_inicio between (sysdate-to_char(last_day(sysdate),'dd')) and sysdate
+))
+and 1 = (case when :pDep > 0 then (case when 1 in (
+select
+case when nomina.id_partida_egreso is not null
+ and (pp.d9d10 in (41,42)  or (pp.d2<>2 and pp.d8=9 and pp.d9d10=81)) then
+  case when pp.d3d4 = :pDep then 1 else 0 end
+   else
+    case when nomina.id_partida_egreso is not null and pp.d1=2 and pp.d3d4=16 and pp.d9d10=0 then
+      case when to_number(pp.d6||pp.d7) = :pDep then 1 else 0 end
+     else
+      case when pp2.d3d4 = :pDep then 1 else 0 end
+    end 
+ end
+from sis_nomina nomina
+left outer join partida pp on pp.id_partida=nomina.id_partida_egreso, 
+sep_partida_vw pp2 
+where  nomina.id_proceso=a.id_proceso
+and pp2.id_partida=nomina.id_partida
+) then 1 else 0 end) else 1 end)
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="Nomtipoproceso"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMTIPOPROCESO"
+      Expression="NOMTIPOPROCESO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomperiodo"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="50"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMPERIODO"
+      Expression="NOMPERIODO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="50" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomestado"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMESTADO"
+      Expression="NOMESTADO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Anio"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="4"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ANIO"
+      Expression="ANIO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdProceso"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_PROCESO"
+      Expression="ID_PROCESO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="ProcesoPadre"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="PROCESO_PADRE"
+      Expression="PROCESO_PADRE"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Tipoproceso"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="3"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="TIPOPROCESO"
+      Expression="TIPOPROCESO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaInicio"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_INICIO"
+      Expression="FECHA_INICIO"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaFin"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_FIN"
+      Expression="FECHA_FIN"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Observaciones"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="256"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="OBSERVACIONES"
+      Expression="OBSERVACIONES"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="256" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdSis24"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_SIS24"
+      Expression="ID_SIS24"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="shwAuto"
+      IsUpdateable="false"
+      IsSelected="false"
+      IsPersistent="false"
+      Type="java.lang.Boolean"
+      ColumnType="NUMBER"
+      AliasName="VIEW_ATTR"
+      SQLType="BIT" >
+   </ViewAttribute>
+</ViewObject>

@@ -1,0 +1,1002 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns="http://www.w3.org/1999/xhtml"
+          xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <f:loadBundle basename="propiedades2" var="tx"/>
+  <f:view>
+    <afh:html>
+      <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+      <afh:head title="#{tx['fich_empleado.title.texto']}">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+
+<jsp:directive.page import="java.util.ArrayList"/>
+<jsp:directive.page import="java.util.Iterator"/>
+<jsp:directive.page import="java.util.HashMap"/>
+<jsp:directive.page import="javax.faces.context.FacesContext" />
+<jsp:directive.page import="interfaz_usuario.util.JSFUtils" />
+<jsp:directive.page import="oracle.jbo.NameValuePairs" />
+<jsp:directive.page import="javax.servlet.jsp.tagext.Tag" />
+<jsp:directive.page import="interfaz_usuario.backing.gestiones.ficha_empleado_censo"/>
+<jsp:directive.page import="interfaz_usuario.util.gen_tag_pregunta"/>
+
+    
+       <jsp:include page="/js/libJQ.js"/>   
+      <script type="text/javascript" src="/${flujo_usuario.dominioApp}/js/gestiones/scrptFichEmpl.js">var xy;</script>
+       <style type="text/css">
+         .mostrar { display: none}
+         .mostrar2 { display: block }
+         .mostrar3 { color:#666666; }
+         .tituloscontrol1 { color:#666666; }
+         .titulosPreg { color:#01659f; font-weight:bold; }
+         .titulosTabla { color:#a77f32; font-weight:bold; }
+         
+        </style>
+
+      </afh:head>
+      <script language="javascript" type="text/javascript"> 
+        
+       function generaReporte(noFormulario){ 
+        
+                submitForm('_id3',1,{source:'_id3:_id4:btn_imprimir'}); 
+                setTimeout("", 3000);
+                window.open("../verreportepdf?id=0"+String.fromCharCode(38)+"rep=CONST_ACT_DATOSPER","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable=1"); 
+       
+       return false;
+       } 
+       
+        function openNewWindow(nomArchivo){ 
+                window.open("../ver_documento?source="+nomArchivo,"preview","width=640,height=640,scrollbars=YES,resizable=1"); 
+       return false;
+       }
+       
+       function generaConsA(){ 
+        
+          window.open("../verreportepdf?id=0"+String.fromCharCode(38)+"rep=CONSCENSOLAB1","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable=1"); 
+          return false;
+             
+       } 
+      
+      </script> 
+      
+      <afh:body>
+        <af:messages id="textErrors"
+                     binding="#{censo_laboral11.outputMensajes}"
+                     globalOnly="true"/>
+        <h:form id="form1">
+            <af:page value="#{modeloMenu.modeloBD}" var="node"
+                   chromeType="compact" id="page1">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                 actionListener="#{modeloMenu.listener_menu}"
+                                  action="#{node.getOutcome}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"/>
+            </f:facet>
+             <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx" flush="false"/>
+              </f:subview>
+            </f:facet>
+            <af:panelBox width="900">
+              <af:panelHorizontal halign="center"
+                                  inlineStyle="color:rgb(255,132,0);"
+                                  rendered="#{!(bindings.OrigenDatos.inputValue eq 'PL')}">
+                <af:outputFormatted value="&lt;b>Registro Empleado: &lt;/b>#{bindings.RegistroEmpleado.inputValue}"
+                                    inlineStyle="font-size:small; text-align:right;"
+                                    id="idRegEmpleado"
+                                    styleUsage="instruction"/>
+                <af:outputFormatted value="&lt;b>Nombre:&lt;/b> #{bindings.Nombrecompleto.inputValue}"
+                                    inlineStyle="font-size:small;"
+                                    styleUsage="instruction"/>
+                <f:facet name="separator">
+                  <af:objectSpacer width="10" height="10"/>
+                </f:facet>
+              </af:panelHorizontal>
+              <af:panelHorizontal halign="center"
+                                  rendered="#{(bindings.OrigenDatos.inputValue eq 'PL')}">
+                <af:outputFormatted value="&lt;b>Id: &lt;/b> #{bindings.NoFormulario.inputValue}"
+                                    inlineStyle="font-size:small; text-align:right;"/>
+                <af:outputFormatted value="&lt;b> Nombre: &lt;/b> #{bindings.NombreCompleto2.inputValue}"
+                                    inlineStyle="font-size:small; text-align:right;"/>
+                <f:facet name="separator">
+                  <af:objectSpacer width="10" height="10"/>
+                </f:facet>
+              </af:panelHorizontal>
+              <af:panelHorizontal halign="center">
+                <af:outputFormatted value="#{tx['censo.output_Encabezado.texto']}"
+                                    inlineStyle="font-size:large; color:rgb(66,132,255);"/>
+              </af:panelHorizontal>
+              <af:panelHeader text="#{tx['fich_empleado.pnl_instruc.texto']}"
+                              messageType="info" size="1">
+                <af:panelList inlineStyle="color:rgb(0,49,82); font-size:smaller;">
+                  <af:outputText value="#{tx['fich_empleado.tip1.texto']}"
+                                 rendered="false"/>
+                  <af:outputText value="#{tx['fich_empleado.tip2.texto']}"/>
+                  <af:outputText value="#{tx['fich_empleado.tip3.texto']}"/>
+                  <af:outputText value="#{tx['fich_empleado.tip4.texto']}"
+                                 rendered="false"/>
+                  <af:outputText value="#{tx['fich_empleado.tip5.texto']}"/>
+                  <af:outputText value="#{tx['fich_empleado.tip6.texto']}"/>
+                </af:panelList>
+              </af:panelHeader>
+              <af:panelForm binding="#{censo_laboral11.pnl_form1}" id="pnl_num1">
+                <f:facet name="footer"/>
+                <afh:tableLayout borderWidth="0" cellSpacing="10"
+                                 rendered="#{bindings.GrupoCenso.inputValue== bindings.vGrupoDP1.inputValue}">
+                  <afh:rowLayout>
+                    <afh:cellFormat columnSpan="3">
+                      <af:panelHeader text="#{tx['censol.pnl1.label']}" size="0"
+                                      messageType="info"/>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat columnSpan="3">
+                      <af:panelHeader text="#{tx['empleado.tab_dtsPer.inptIGSS.label']}"/>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+
+                  <afh:rowLayout>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.inptIGSS2.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat width="200">
+                      <af:inputText value="#{bindings.Igss.inputValue}"
+                                    required="#{bindings.Igss.mandatory}"
+                                    columns="8" showRequired="false"
+                                    id="inpt_igss"
+                                    tip="Ingresar el No Afiliación al IGSS sin guiones.">
+                        <af:validator binding="#{bindings.Igss.validator}"/>
+                      </af:inputText>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                 <afh:rowLayout>
+                    <afh:cellFormat columnSpan="3">
+                      <af:panelHeader text="#{tx['empleado.tab_dtsPer.inptNit.label']}"/>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.inptNit2.label']}"
+                                     styleClass="mostrar3"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat>
+                      <af:inputText value="#{bindings.Nit.inputValue}"
+                                    required="#{bindings.Nit.mandatory}"
+                                    columns="10" showRequired="false"
+                                    id="inpt_nit"
+                                    tip="Ingresar el No NIT sin guiones.">
+                        <af:validator binding="#{bindings.Nit.validator}"/>
+                      </af:inputText>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat columnSpan="3">
+                      <af:panelHeader text="#{tx['empleado.pnlhdr_nomyape.texto']}"/>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.inpNom1.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat>
+                      <af:inputText value="#{bindings.Nombre1.inputValue}"                                    
+                                    columns="10" id="inpt_nombre1">
+                        <af:validator binding="#{bindings.Nombre1.validator}"/>
+                      </af:inputText>
+                    </afh:cellFormat>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.inpNom2.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat>
+                      <af:inputText value="#{bindings.Nombre2.inputValue}"                                    
+                                    columns="10" required="false">
+                        <af:validator binding="#{bindings.Nombre2.validator}"/>
+                      </af:inputText>
+                    </afh:cellFormat>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.inpNom3.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat halign="left">
+                      <af:inputText value="#{bindings.Nombre3.inputValue}"
+                                    required="#{bindings.Nombre3.mandatory}"
+                                    columns="10">
+                        <af:validator binding="#{bindings.Nombre3.validator}"/>
+                      </af:inputText>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.inpApe1.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat>
+                      <af:inputText value="#{bindings.Apellido1.inputValue}"                                   
+                                    columns="10" id="inpt_apellido1">
+                        <af:validator binding="#{bindings.Apellido1.validator}"/>
+                      </af:inputText>
+                    </afh:cellFormat>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.inpApe2.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat>
+                      <af:inputText value="#{bindings.Apellido2.inputValue}"                                   
+                                    required="#{bindings.Apellido2.mandatory}"
+                                    columns="10">
+                        <af:validator binding="#{bindings.Apellido2.validator}"/>
+                      </af:inputText>
+                    </afh:cellFormat>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.inpApe3.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat>
+                      <af:inputText value="#{bindings.Apellidocasada.inputValue}"                                    
+                                    required="#{bindings.Apellidocasada.mandatory}"
+                                    columns="10">
+                        <af:validator binding="#{bindings.Apellidocasada.validator}"/>
+                      </af:inputText>
+                    </afh:cellFormat>
+
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat columnSpan="3">
+                      <af:panelHeader text="#{tx['censo.pnl_hdr.ln.label']}"/>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.inpfecNac.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat columnSpan="3" halign="left">
+                      <af:selectInputDate value="#{bindings.FechaNacimiento.inputValue}"                                          
+                                          showRequired="false"
+                                          id="inpt_fechanacimiento"
+                                          autoSubmit="true">
+                        <af:validator binding="#{bindings.FechaNacimiento.validator}"/>
+                        <f:convertDateTime pattern="#{bindings.FechaNacimiento.format}"/>
+                      </af:selectInputDate>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['censo.cmb_paisNacc.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat columnSpan="3">
+                      <af:selectOneChoice value="#{bindings.PaisNacimiento.inputValue}"                                          
+                                          required="false" id="cmb_paisnac"
+                                          onchange="verificarPaisNac();"
+                                          valuePassThru="true">
+                        <f:selectItems value="#{ficha_empleado_censo.listOfPaises1}"/>
+                      </af:selectOneChoice>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout id="row_muniNac">
+                    <afh:cellFormat>
+                      <af:outputText value="#{tx['censo.cmb_DepNacc.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat>
+                      <af:selectOneChoice id="cmb_deptsNac"
+                                          value="#{ficha_empleado_censo.listaDepts1}"
+                                          autoSubmit="true"
+                                          partialTriggers="cmb_munsNac">
+                        <f:selectItems value="#{ficha_empleado_censo.listOfDepts1}"/>
+                      </af:selectOneChoice>
+                    </afh:cellFormat>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['censo.cmb_MuniNacc.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat>
+                      <af:selectOneChoice value="#{bindings.MunicipioNacimiento.inputValue}"
+                                          partialTriggers="cmb_deptsNac"
+                                          id="cmb_munsnac">
+                        <f:selectItems value="#{ficha_empleado_censo.listOfmuniNac}"/>
+                      </af:selectOneChoice>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat columnSpan="3">
+                      <af:panelHeader text="#{tx['censo.pnl_docidenti.label']}"/>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat columnSpan="5">
+                      <af:panelHeader text="#{tx['censo.pnl_cedula.label']}"/>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.cmbOrCed.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat>
+                      <af:selectOneChoice value="#{bindings['todos_los_DepartamentosRegistro'].inputValue}"
+                                          autoSubmit="true" id="cmb_ordencedula"
+                                          showRequired="false"
+                                          valueChangeListener="#{censo_laboral11.cmb_orden_departamento}">
+                        <f:selectItems value="#{bindings['todos_los_DepartamentosRegistro'].items}"/>
+                      </af:selectOneChoice>
+                    </afh:cellFormat>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.inpOrReg.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat>
+                      <af:inputText value="#{bindings.RegistroCedula.inputValue}"
+                                    required="#{bindings.RegistroCedula.mandatory}"
+                                    columns="8" showRequired="false"
+                                    id="inpt_registrocedula">
+                        <af:validator binding="#{bindings.RegistroCedula.validator}"/>
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.RegistroCedula.format}"/>
+                      </af:inputText>
+                    </afh:cellFormat>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.cmbExtenCed.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat>
+                      <af:selectOneChoice value="#{bindings['municipio_by_ordcedNombre'].inputValue}"
+                                          partialTriggers="cmb_ordencedula"
+                                          showRequired="false"
+                                          id="cmb_municipiocedula"
+                                          binding="#{censo_laboral11.cmb_municipioCed}">
+                        <f:selectItems value="#{bindings['municipio_by_ordcedNombre'].items}"/>
+                      </af:selectOneChoice>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat columnSpan="3">
+                      <af:panelHeader text="#{tx['censo.pnl_dpi.label']}"/>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.inptcui.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat>
+                      <af:inputText value="#{bindings.Cui.inputValue}"
+                                    columns="15" id="inpt_cui"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['censo.cmb_DepNacc.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat>
+                      <af:selectOneChoice id="cmb_deptsDPI"
+                                          value="#{ficha_empleado_censo.listaDeptsDPI}"
+                                          autoSubmit="true">
+                        <f:selectItems value="#{ficha_empleado_censo.listOfDeptsDPI}"/>
+                      </af:selectOneChoice>
+                    </afh:cellFormat>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['censo.cmb_MuniNacc.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat>
+                      <af:selectOneChoice value="#{bindings.MunicipioDpi.inputValue}"
+                                          partialTriggers="cmb_deptsDPI"
+                                          id="cmb_munsDPI">
+                        <f:selectItems value="#{ficha_empleado_censo.listOfmuniDPI}"/>
+                      </af:selectOneChoice>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat columnSpan="3">
+                      <af:panelHeader text="#{tx['censo.pnl_pass.label']}"/>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['censo.inpt_no_pasaporte.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat>
+                      <af:inputText columns="10" id="inpt_nopasaporte"
+                                    value="#{bindings.NoPasaporte.inputValue}"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['censo.cmb_paisPass.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat columnSpan="2">
+                      <af:selectOneChoice value="#{bindings.PaisPasaporte.inputValue}"
+                                          id="cmb_paispasaporte">
+                        <f:selectItems value="#{ficha_empleado_censo.listOfPaisesPass}"/>
+                      </af:selectOneChoice>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout rendered="false">
+                    <afh:cellFormat columnSpan="5">
+                      <af:showOneRadio
+                                       alignment="start" position="top">
+                        <af:showDetailItem text="Cédula"/>
+                        <af:showDetailItem text="DPI"/>
+                        <af:showDetailItem text="Pasaporte"/>
+                      </af:showOneRadio>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat columnSpan="3">
+                      <af:panelHeader text="#{tx['empleado.pnlhdr_direccion.texto']}"/>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout halign="left">
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.inptDirec.label']}     "
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat halign="left" columnSpan="3">
+                      <af:panelHorizontal>
+                        <af:inputText columns="40" rows="1"
+                                      partialTriggers="tbl_direccion"
+                                      value="#{bindings.Direccion.inputValue}"
+                                      id="inpt_direccion" showRequired="false">
+                          <af:validator binding="#{bindings.Direccion.validator}"/>
+                        </af:inputText>
+                        <af:selectOneChoice label="#{tx['censo.cmbZona.label']}"
+                                            value="#{bindings.ZonaDirec.inputValue}">
+                          <af:selectItem label="-"/>
+                          <af:selectItem label="Zona 1" value="1"/>
+                          <af:selectItem label="Zona 2" value="2"/>
+                          <af:selectItem label="Zona 3" value="3"/>
+                          <af:selectItem label="Zona 4" value="4"/>
+                          <af:selectItem label="Zona 5" value="5"/>
+                          <af:selectItem label="Zona 6" value="6"/>
+                          <af:selectItem label="Zona 7" value="7"/>
+                          <af:selectItem label="Zona 8" value="8"/>
+                          <af:selectItem label="Zona 9" value="9"/>
+                          <af:selectItem label="Zona 10" value="10"/>
+                          <af:selectItem label="Zona 11" value="11"/>
+                          <af:selectItem label="Zona 12" value="12"/>
+                          <af:selectItem label="Zona 13" value="13"/>
+                          <af:selectItem label="Zona 14" value="14"/>
+                          <af:selectItem label="Zona 15" value="15"/>
+                          <af:selectItem label="Zona 16" value="16"/>
+                          <af:selectItem label="Zona 17" value="17"/>
+                          <af:selectItem label="Zona 18" value="18"/>
+                          <af:selectItem label="Zona 19" value="19"/>
+                          <af:selectItem label="Zona 20" value="20"/>
+                          <af:selectItem label="Zona 21" value="21"/>
+                          <af:selectItem label="Zona 22" value="22"/>
+                          <af:selectItem label="Zona 23" value="23"/>
+                          <af:selectItem label="Zona 24" value="24"/>
+                          <af:selectItem label="Zona 25" value="25"/>
+                        </af:selectOneChoice>
+                      </af:panelHorizontal>
+                    </afh:cellFormat>
+                    <afh:cellFormat/>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['censo.cmb_paisPass.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat columnSpan="2">
+                      <af:selectOneChoice value="#{bindings.PaisDirec.inputValue}">
+                        <f:selectItems value="#{ficha_empleado_censo.listOfPaisesDirec}"/>
+                      </af:selectOneChoice>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.cmbDepDirec.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat>
+                      <af:selectOneChoice
+                                          id="cmb_depDirec" autoSubmit="true"
+                                          value="#{ficha_empleado_censo.listaDeptsDirec}"
+                                          showRequired="false"
+                                          valueChangeListener="#{censo_laboral11.cmb_depDirec}">
+                        <f:selectItems value="#{ficha_empleado_censo.listOfDeptsDirec}"/>
+                      </af:selectOneChoice>
+                    </afh:cellFormat>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.cmbMunDirec.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat columnSpan="2">
+                      <af:selectOneChoice 
+                                          id="cmb_municipiodirec"
+                                          partialTriggers="cmb_depDirec"
+                                          value="#{bindings.MunicipioDirec.inputValue}"
+                                          showRequired="false"
+                                          >
+                        <f:selectItems value="#{ficha_empleado_censo.listOfmuniDirec}"/>
+                      </af:selectOneChoice>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat columnSpan="3">
+                    <af:panelHeader text="#{tx['censo.pnlhdr_direcNoti.texto']}"/>
+                    </afh:cellFormat>
+                 </afh:rowLayout>
+                  <afh:rowLayout>
+                   <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.inptDirec.label']}     "
+                                     styleClass="tituloscontrol1"/>
+                   </afh:cellFormat>
+                    <afh:cellFormat columnSpan="3">
+                      <af:inputText columns="60"
+                                    value="#{bindings.DirecNoti.inputValue}"
+                                    id="inpt_direccionnoti"/>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.cmbDepDirec.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat>
+                      <af:selectOneChoice
+                                          id="cmb_depDirecNoti" autoSubmit="true"
+                                          value="#{ficha_empleado_censo.listaDeptsDirecNoti}"
+                                          showRequired="false"
+                                          valueChangeListener="#{censo_laboral11.cmb_depDirec}">
+                        <f:selectItems value="#{ficha_empleado_censo.listOfDeptsDirecNoti}"/>
+                      </af:selectOneChoice>
+                    </afh:cellFormat>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.cmbMunDirec.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat columnSpan="2">
+                      <af:selectOneChoice 
+                                          id="cmb_municipiodirecnoti"
+                                          partialTriggers="cmb_depDirecNoti"
+                                          value="#{bindings.MunicipioNoti.inputValue}"
+                                          showRequired="false"
+                                          binding="#{censo_laboral11.cmb_munDirec}">
+                        <f:selectItems value="#{ficha_empleado_censo.listOfmuniDirecNoti}"/>
+                      </af:selectOneChoice>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat columnSpan="3">
+                    <af:panelHeader text="#{tx['censo.pnlhdr_direcAnt.texto']}"/>
+                    </afh:cellFormat>
+                </afh:rowLayout>
+                  <afh:rowLayout>
+                   <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['censo.cmb_paisPass.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat columnSpan="2">
+                      <af:selectOneChoice value="#{bindings.PaisDirecant.inputValue}"
+                                          id="cmb_paisdirecant"
+                                          onchange="verificarPaisAnt()"
+                                          valuePassThru="true">
+                        <f:selectItems value="#{ficha_empleado_censo.listOfPaisesDirecAnt}"/>
+                      </af:selectOneChoice>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout id="row_muniAnt">
+                  
+                  
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['censo.cmb_DepNacc.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat>
+                      <af:selectOneChoice
+                                          id="cmb_deptsDirecAnt"
+                                          value="#{ficha_empleado_censo.listaDeptsDirecAnt}"
+                                          autoSubmit="true">
+                        <f:selectItems value="#{ficha_empleado_censo.listOfDeptsDirecAnt}"/>
+                      </af:selectOneChoice>
+                    </afh:cellFormat>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['censo.cmb_MuniNacc.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat>
+                      <af:selectOneChoice
+                                          value="#{bindings.MunicipioDirecant.inputValue}"
+                                          partialTriggers="cmb_deptsDirecAnt"
+                                          id="cmb_munsdirecant">
+                        <f:selectItems value="#{ficha_empleado_censo.listOfmuniDirecAnt}"/>
+                      </af:selectOneChoice>
+                    </afh:cellFormat>
+
+                  
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat columnSpan="3">
+                      <af:panelHeader text="#{tx['censo.pnlhdr_tel.texto']}"/>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.inptTelCasa.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat>
+                      <af:inputText value="#{bindings.TelCasa.inputValue}"                                    
+                                    required="#{bindings.TelCasa.mandatory}"
+                                    columns="8" id="inpt_telcasa">
+                        <af:validator binding="#{bindings.TelCasa.validator}"/>
+                      </af:inputText>
+                    </afh:cellFormat>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.inptCel.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat>
+                      <af:inputText value="#{bindings.Celular.inputValue}"                                    
+                                    required="#{bindings.Celular.mandatory}"
+                                    columns="8" rows="1" id="inpt_celular">
+                        <af:validator binding="#{bindings.Celular.validator}"/>
+                        <f:convertNumber groupingUsed="false" pattern="0"/>
+                        <f:validateLength maximum="8"/>
+                      </af:inputText>
+                    </afh:cellFormat>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.inptTelTrab.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat>
+                      <af:inputText value="#{bindings.TelefonoTrabajo.inputValue}"
+                                    required="#{bindings.TelefonoTrabajo.mandatory}"
+                                    columns="10"                                    
+                                    showRequired="false"
+                                    id="inpt_telefonotrabajo">
+                        <af:validator binding="#{bindings.TelefonoTrabajo.validator}"/>
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.TelefonoTrabajo.format}"
+                                         integerOnly="true"/>
+                      </af:inputText>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat columnSpan="3">
+                      <af:panelHeader text="#{tx['censo.pnlhdr_correo.texto']}"/>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.inptEmail2.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat columnSpan="2">
+                      <af:inputText value="#{bindings.EmailInstitucional.inputValue}"
+                                    required="#{bindings.EmailInstitucional.mandatory}"
+                                    columns="40"                                    
+                                    id="inpt_emailinstitucional"
+                                    tip="#{tx['fich_empleado.inpt_correoIns.tip']}">
+                        <af:validator binding="#{bindings.EmailInstitucional.validator}"/>
+                      </af:inputText>
+                    </afh:cellFormat>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.inptEmail.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat columnSpan="2">
+                      <af:inputText value="#{bindings.Email.inputValue}"                                    
+                                    required="#{bindings.Email.mandatory}"
+                                    columns="25" id="inpt_email">
+                        <af:validator binding="#{bindings.Email.validator}"/>
+                      </af:inputText>
+                    </afh:cellFormat>
+                  </afh:rowLayout>                
+                 <afh:rowLayout>
+                    <afh:cellFormat columnSpan="3">
+                      <af:panelHeader text="#{tx['censo.pnlhdr_sexo.texto']}"/>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['censo.inputGenero.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat columnSpan="2">
+                      <af:selectOneRadio                                         
+                                         value="#{bindings.Genero.inputValue}"
+                                         valign="middle" showRequired="false"
+                                         id="sel_genero" layout="horizontal">
+                        <af:selectItem label="Masculino" value="M"/>
+                        <af:selectItem label="Femenino" value="F"/>
+                      </af:selectOneRadio>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  
+                 <afh:rowLayout>
+                    <afh:cellFormat columnSpan="3">
+                      <af:panelHeader text="#{tx['censo.pnlhdr_Estadociv.texto']}"/>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+
+                  <afh:rowLayout>
+                    <afh:cellFormat halign="right">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.inpEstadoC.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat columnSpan="3" halign="left">
+                      <af:selectOneRadio value="#{bindings.Estadocivil.inputValue}"
+                                         layout="horizontal" valign="middle"
+                                         showRequired="false"
+                                         id="sel_estadocivil">
+                        <af:selectItem label="Soltero (a)" value="S"/>
+                        <af:selectItem label="Casado (a)" value="C"/>
+                        <af:selectItem label="Unido (a)" value="U"/>
+                        <af:selectItem label="Divorciado (a)" value="D"/>
+                        <af:selectItem label="Viudo (a)" value="V"/>
+                      </af:selectOneRadio>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout/>
+                </afh:tableLayout>
+                <af:panelHeader text="#{tx['fich_empleado.pnlValCuenta.texto']}"
+                                rendered="false">
+                  <af:panelHorizontal>
+                    <af:inputText label="#{tx['fich_empleado.inptCuentaban.texto']}"
+                                  columns="20" id="NoCuenta"
+                                  value="#{bindings.Nocuenta.inputValue}"
+                                  disabled="#{bindings.Statuscuenta1.inputValue}"/>
+                    <af:commandButton text="#{tx['fich_empleado.btnValidarCuenta.texto']}"
+                                      onclick="return checkCuenta();"
+                                      disabled="#{bindings.Statuscuenta1.inputValue}"/>
+                    <f:verbatim>
+                      <div id="ajaxBusy" style="display:none">
+                        <table>
+                          <tr>
+                            <td>
+                              <img src="/${flujo_usuario.dominioApp}/imagenes/ajax-loader2.gif"/>
+                            </td>
+                            <td class="ui-state-highlight">
+                              Verificando ....
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
+                    </f:verbatim>
+                    <f:facet name="separator">
+                      <af:objectSpacer width="20" height="10"/>
+                    </f:facet>
+                    <af:inputHidden id="inpthdnNomCuenta"
+                                    value="#{bindings.Nombrecuenta.inputValue}"/>
+                  </af:panelHorizontal>
+                  <af:outputFormatted value="#{bindings.Nombrecuenta.inputValue}"
+                                      inlineStyle="color:rgb(0,107,165); font-size:medium; font-weight:bold;"
+                                      id="lblNomReg"/>
+                  <af:outputFormatted value=""
+                                      inlineStyle="color:rgb(148,0,0); font-size:medium; font-weight:bold;"
+                                      id="lblNomRegEr"/>
+                  <af:panelHorizontal id="divAviso" styleClass="mostrar">
+                    <af:selectBooleanCheckbox text="#{tx['fich_empleado.aviso.texto']}"
+                                              id="chkAvisoAcepta"
+                                              value="#{bindings.Statuscuenta1.inputValue}"
+                                              selected="#{bindings.Statuscuenta1.inputValue}"
+                                              disabled="#{bindings.Statuscuenta1.inputValue}"/>
+                  </af:panelHorizontal>
+                </af:panelHeader>
+                <afh:tableLayout id="tbl_preguntas1x" rendered="false">
+                  <afh:rowLayout>
+                    <afh:cellFormat columnSpan="2" header="false">
+                      <af:panelHeader text="panelHeader 2" size="0"
+                                      messageType="info"/>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout inlineStyle="background-color:rgb(255,247,214);">
+                    <afh:cellFormat halign="right" width="475">
+                      <af:outputText value="#{tx['empleado.tab_dtsPer.inpEstadoC.label']}"
+                                     styleClass="tituloscontrol1"/>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat/>
+                    <afh:cellFormat>
+                      <af:selectOneRadio>
+                        <af:selectItem label="uno" value="uno"/>
+                        <af:selectItem label="dos" value="dos"/>
+                        <af:selectItem label="tres" value="tres"/>
+                      </af:selectOneRadio>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                  <afh:rowLayout>
+                    <afh:cellFormat>
+                      <af:outputText value="outputText7"
+                                     styleClass="tituloscontrol1" id="labelx2"/>
+                    </afh:cellFormat>
+                    <afh:cellFormat>
+                      <af:showOneRadio alignment="top"
+                                       position="top"
+                                       binding="#{censo_laboral11.shwOneRadio}">
+                        <af:showDetailItem text="showDetailItem 1">
+                          <afh:rowLayout>
+                            <afh:cellFormat>
+                              <af:selectOneRadio>
+                                <af:selectItem label="uno" value="uno"/>
+                                <af:selectItem label="dos" value="dos"/>
+                                <af:selectItem label="tres" value="tres"/>
+                              </af:selectOneRadio>
+                            </afh:cellFormat>
+                          </afh:rowLayout>
+                          <f:attribute name="id_showdt" value="2"/>
+                        </af:showDetailItem>
+                        <af:showDetailItem text="showDetailItem 2">
+                          <f:attribute name="id_showdt" value="1"/>
+                        </af:showDetailItem>
+                      </af:showOneRadio>
+                    </afh:cellFormat>
+                  </afh:rowLayout>
+                </afh:tableLayout>
+                <jsp:scriptlet>
+                  
+                  ArrayList vListaPreguntas,vListaRespuestas;
+                  Iterator vPregunta;
+                  Iterator vRespuestas;
+                  String vCategoriaAnt="",vTextoPregunta="",vTipoControl="",vOpcionOtros="",vIdPregunta,vRegEmpl;
+                  Object vIdPadre,vGrupoP,vGrupoP2,vRespuestaVw;
+                  ficha_empleado_censo vDataPreguntas;
+                    
+                  String vCategoriaPreg;
+                  int vNumOpciones,vFila,vNumPregunta;
+                  NameValuePairs vValores,vValores2;
+                  
+                  vGrupoP2=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.GrupoCenso1.inputValue}");                  
+                  vGrupoP=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.GrupoCenso.inputValue}");
+                  
+
+                  
+                  vDataPreguntas=(ficha_empleado_censo)JSFUtils.getManagedBeanValue(FacesContext.getCurrentInstance(),"ficha_empleado_censo");
+                  vDataPreguntas.vGrupoPreguntas=vGrupoP.toString();
+                  
+                  //vRegEmpl=JSFUtils.getManagedBeanValue(FacesContext.getCurrentInstance(),"flujo_usuario.selRegEmpleado_login").toString();    
+                  
+                  vRegEmpl=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.RegistroEmpleado.inputValue}").toString();    
+                  vDataPreguntas.setRegistroEmpl(vRegEmpl);
+                  
+                  vListaPreguntas=(ArrayList)JSFUtils.getManagedBeanValue(FacesContext.getCurrentInstance(),"ficha_empleado_censo.preguntas");    
+                  
+                // System.out.println(vListaPreguntas.size());                  
+                // System.out.println("grupo actual " +  vGrupoP+" ,  "+ vGrupoP2+ "  regEmpl: "+vRegEmpl);
+                  
+                  vNumOpciones=vListaPreguntas.size();
+                  Tag vParentTag=null;
+                  
+                  
+                  vPregunta=vListaPreguntas.iterator();
+                  vParentTag=__jsp_taghandler_38;
+                  int vNivelTag=8;
+                  
+                  gen_tag_pregunta vControl;
+                  vControl=new gen_tag_pregunta(vDataPreguntas);
+                  
+                  //__jsp_taghandler_32.get
+                  
+                  if (vGrupoP==null)
+                  {
+                    vGrupoP="1";                  
+                  }
+                  
+                  
+                  vRespuestaVw=JSFUtils.EjecutarAcccion(FacesContext.getCurrentInstance(),"getRespuestas");
+                  
+                  vControl.setGrupoPreg(vGrupoP.toString());
+                  vControl.setRespuestasvw((HashMap)vRespuestaVw);
+                  vNumPregunta=0;
+                  
+                  
+                 //  System.out.println("  "+vRespuestaVw);   
+                  
+                oracle.adfinternal.view.faces.taglib.html.HtmlTableLayoutTag __jsp_taghandler_tableHtm1=(oracle.adfinternal.view.faces.taglib.html.HtmlTableLayoutTag)OracleJspRuntime.getTagHandler(pageContext,oracle.adfinternal.view.faces.taglib.html.HtmlTableLayoutTag.class,"oracle.adfinternal.view.faces.taglib.html.HtmlTableLayoutTag id");
+                 __jsp_taghandler_tableHtm1.setParent(vParentTag);
+                 __jsp_taghandler_tableHtm1.setId("tbl_preguntas2x");
+                // __jsp_taghandler_tableHtm1.setBorderWidth("1");
+                 __jsp_tag_starteval=__jsp_taghandler_tableHtm1.doStartTag();
+
+                 if (OracleJspRuntime.checkStartTagEval(__jsp_tag_starteval))
+                  {
+                                  
+                  
+                  while (vPregunta.hasNext())
+                      {
+                       vNumPregunta++;
+                      
+                        vValores=(NameValuePairs)vPregunta.next();
+                        
+                        if (vValores.getAttribute("id_pregunta_padre")==null)
+                        {
+                          vControl.GenerarUIControlTabla2(out,vValores,vParentTag,pageContext,__jsp_tag_starteval,vNivelTag+1,"Left","Left");
+                        }
+
+                      }
+                      
+                } 
+                if (__jsp_taghandler_tableHtm1.doEndTag()==javax.servlet.jsp.tagext.Tag.SKIP_PAGE)
+                     return;
+               OracleJspRuntime.releaseTagHandler(pageContext,__jsp_taghandler_tableHtm1,vNivelTag);
+           
+               
+              if (vNumPregunta >0 ){
+              
+                JSFUtils.EjecutarAcccion(FacesContext.getCurrentInstance(),"setValoresRespuestas");      
+                JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.vFin1.inputValue}",false);
+                vDataPreguntas.SetRespTabla();
+              
+              }else{
+               if (!vGrupoP.toString().equals("1"))
+                 JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.vFin1.inputValue}",true);
+              }
+               
+             //  JSFUtils.EjecutarAcccion(FacesContext.getCurrentInstance(),"resetQuerryDep");    
+               
+                  </jsp:scriptlet>
+              </af:panelForm>
+              <af:panelForm rendered="#{bindings.vFin1.inputValue}">
+                <f:facet name="footer"/>
+                <af:objectImage source="/imagenes/LOGO Censo2011.jpg"/>
+                <af:objectSpacer width="10" height="40"/>
+                <af:panelHorizontal>
+                  <af:objectImage source="/imagenes/finished-work.png"/>
+                  <af:outputFormatted value="#{tx['censo.output_fin.texto']}"/>
+                </af:panelHorizontal>
+                <af:objectSpacer width="10" height="30"/>
+                <af:objectSeparator/>
+                <af:commandButton text="#{tx['censo.btn_imprimirCons.label']}"
+                                  onclick="generaConsA();"
+                                  inlineStyle="color:rgb(0,33,115); font-size:large;"/>
+              </af:panelForm>
+              <af:panelHorizontal halign="center">
+                <af:commandButton text="Resetear Encuesta"
+                                  action="#{censo_laboral11.btn_resetear}"
+                                  rendered="#{flujo_usuario.censoReset}"/>
+                <af:commandButton text="#{tx['fich_empleado.btn_imprimir.texto']}"
+                                  onclick='return generaReporte("#{bindings.NoFormulario.inputValue}");'
+                                  disabled="#{bindings.NoFormulario.inputValue==null}"
+                                  action="#{censo_laboral11.btn_imprimir}"
+                                  id="btn_imprimir" rendered="false"/>
+                <af:commandButton text="#{tx['empleado.boton.guardar.texto']}"
+                                  action="#{censo_laboral11.btn_commit}"
+                                  rendered="#{!bindings.vFin1.inputValue}"
+                                  id="btn_guardar">
+                  <af:setActionListener from="#{bindings.IdTipoInstAcademica.inputValue}"
+                                        to="#{bindings.Id_tipo_inst_academica.inputValue}"/>
+                </af:commandButton>
+                <af:commandButton text="#{tx['fich_empleado.btn_sig.texto']}"
+                                  action="#{censo_laboral11.btn_siguente_action}"
+                                  rendered="#{!bindings.vFin1.inputValue}"/>
+                <f:facet name="separator">
+                  <af:objectSpacer width="30" height="10"/>
+                </f:facet>
+              </af:panelHorizontal>
+            </af:panelBox>
+          </af:page>
+        </h:form>        
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:censo_laboral11-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:censo_laboral11-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:censo_laboral11-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:censo_laboral11-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:censo_laboral11-->
+<script language="javascript" type="text/javascript"> 
+          verificarPaisNac();
+          verificarPaisAnt();          
+        </script>
+</jsp:root>

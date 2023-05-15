@@ -1,0 +1,2216 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="rep_historial_sal_excel"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="4900"
+		 pageHeight="200"
+		 columnWidth="4880"
+		 columnSpacing="0"
+		 leftMargin="10"
+		 rightMargin="10"
+		 topMargin="10"
+		 bottomMargin="10"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="cond" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pUsuario" isForPrompting="true" class="java.lang.String"/>
+	<queryString><![CDATA[select registro_empleado,nombrecompleto,cui,partida1,partida2,numero_plaza,tipoNomina,id_proceso, nombreProceso,periodo, 
+nominal,total_bono,num_doc_fisico,nombreBanco,to_char(fecha_anulacion,'DD/MM/YYYY') fecha_anulacion,
+--, (select id_doc_pago_anulado from sis_doc_pago_anulado where no_doc_fisico = num_doc_fisico and anulado<>1) sis_21     --SUBQUERY ORIGINAL
+(select id_doc_pago_anulado from sis_doc_pago_anulado where no_doc_fisico = num_doc_fisico and anulado<>1 and id_doc_pago=id_documento_banco) sis_21     --CAMBIO REALIZADO 20-04-2020, Rolando Anona
+, datos.nombre,nomCategoria,nomNivel,nomTipo,datos.id_programa,datos.id_dependencia,datos.id_unidad,datos.id_renglon,
+id_nomina,id_tipo_nomina,anio,datos.d8,datos.d9d10,datos.id_periodo,id_documento_banco,id_puesto,datos.D1D2,id_estado,to_char(fecha_emision,'DD/MM/YYYY') fecha_emision,
+correlativo,codigoNomina,req_prof,catepuesto,nivelpuesto,NOM_SERVICIO,sueldo_base,escalafon,compl_salarial
+,subprog,unie.nombre as nomsubprog,tipoproceso
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '01' group by cod_nomina),0) as dsc1
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '02' group by cod_nomina),0) as dsc2
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '03' group by cod_nomina),0) as dsc3
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '04' group by cod_nomina),0) as dsc4
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '05' group by cod_nomina),0) as dsc5
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '06' group by cod_nomina),0) as dsc6
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '07' group by cod_nomina),0) as dsc7
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '08' group by cod_nomina),0) as dsc8
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '09' group by cod_nomina),0) as dsc9
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '10' group by cod_nomina),0) as dsc10
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '11' group by cod_nomina),0) as dsc11
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '12' group by cod_nomina),0) as dsc12
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '13' group by cod_nomina),0) as dsc13
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '14' group by cod_nomina),0) as dsc14
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '15' group by cod_nomina),0) as dsc15
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '16' group by cod_nomina),0) as dsc16
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '17' group by cod_nomina),0) as dsc17
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '18' group by cod_nomina),0) as dsc18
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '19' group by cod_nomina),0) as dsc19
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '20' group by cod_nomina),0) as dsc20
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '21' group by cod_nomina),0) as dsc21
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '22' group by cod_nomina),0) as dsc22
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '23' group by cod_nomina),0) as dsc23
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '24' group by cod_nomina),0) as dsc24
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '25' group by cod_nomina),0) as dsc25
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '26' group by cod_nomina),0) as dsc26
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '27' group by cod_nomina),0) as dsc27
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '28' group by cod_nomina),0) as dsc28
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '29' group by cod_nomina),0) as dsc29
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '30' group by cod_nomina),0) as dsc30
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '31' group by cod_nomina),0) as dsc31
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '32' group by cod_nomina),0) as dsc32
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '33' group by cod_nomina),0) as dsc33
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '34' group by cod_nomina),0) as dsc34
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '35' group by cod_nomina),0) as dsc35
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '36' group by cod_nomina),0) as dsc36
+  , nvl((select  sum(abs(sis_det_calculo_ajuste.VALOR_APLICADO)) as valor from sis_det_calculo_ajuste  inner join sis_ajuste on sis_det_calculo_ajuste.ID_AJUSTE=sis_ajuste.ID_AJUSTE where  sis_det_calculo_ajuste.VALOR_APLICADO<0  and sis_det_calculo_ajuste.id_nomina=datos.id_nomina and sis_ajuste.COD_NOMINA = '37' group by cod_nomina),0) as dsc37
+, genero, id_contrato, formaObtPuesto, total_descuento, liquido,
+ nombreabr as nomTipoDoc
+from
+(
+select 
+a.registro_empleado,
+a.nombrecompleto,
+a.cui,
+d.formato2 as partida1,
+m.formato as partida2,
+c.numero_plaza,
+o.nombre as tipoNomina,
+p.nombre as periodo, 
+c.nominal,
+c.total_bono,
+i.num_doc_fisico,
+j.nombre as nombreBanco,
+i.fecha_anulacion,
+       Case when e.id_puesto in (999990,999994,999999) 
+	Then Decode(contr.nom_plaza,null,'',InitCap(contr.nom_plaza))||' F. C.'
+        Else e.nombre
+       End as nombre,
+f.nombre as nomCategoria,
+g.nombre as nomNivel,
+g.tipo as nomTipo,
+d.id_programa,
+d.id_dependencia,
+d.id_unidad,
+d.id_renglon,
+c.id_nomina,
+c.id_tipo_nomina,
+c.anio,
+m.d8,
+m.d9d10,
+c.periodo as id_periodo,
+i.id_documento_banco,
+e.id_puesto,
+m.d1||m.d2 as D1D2,
+i.id_estado,
+i.fecha_emision,
+nvl(c.anio_periodo,c.correlativo) as correlativo,
+(
+select codigo from
+sis_tiponomina_periodo tnp
+where tnp.id_tipo_nomina=c.id_tipo_nomina
+and tnp.ID_PERIODO=c.periodo
+and rownum<=1
+) as codigoNomina,
+decode(e.REQ_PROF,1,'SI',0,'NO') as req_prof,
+f.NOMBRE as catepuesto,
+g.NOMBRE as nivelpuesto,
+tsp.NOM_SERVICIO,
+c.sueldo_base,
+c.escalafon,
+c.compl_salarial,
+case when c.id_partida_egreso is not null and parte.d9d10 in (41,42) then
+    to_char(parte.d1)||to_char(parte.d2)||trim(to_char(parte.d3d4,'00'))||to_char(parte.d5)||to_char(parte.d6)||to_char(parte.d7) else to_char(d.id_programa)||trim(to_char(d.id_dependencia,'00'))||to_char(id_unidad) end as subprog,
+prc.tipoproceso,
+prc.id_proceso,
+decode(a.genero,'N','',a.genero) as genero,
+contr.id_contrato,
+fobt.nombre as formaObtPuesto,
+c.total_descuento,
+c.liquido,
+tipdoc.nombreabr,
+tproc.nombre nombreProceso,
+c.id_nomina partia_nom
+from
+    sis_empleado_vw a, 
+     sis_nomina c left outer join partida parte
+    on c.id_partida_egreso=parte.id_partida
+    left outer join sis_contrato contr
+    on contr.id_contrato=c.id_contrato
+    and exists (
+     select 1 from sis_autorizacion au, sis_autorizacion_det dt
+      where au.id_contrato=contr.id_contrato
+      and dt.id_autorizacion=au.id_autorizacion
+      and dt.id_estado=4
+    )
+    left outer join sis_forma_obt_puesto fobt
+    on fobt.id_forma_obt_puesto=contr.id_forma_obt_puesto, 
+    sis_partida_vw d,
+    sis_puesto e
+    left outer join sis_tiposerv_puesto tsp on e.id_tiposerv_puesto=tsp.id_tiposerv_puesto,
+    sis_categoria_puesto f,
+    sis_nivel_puesto g,
+    sis_pago h,
+    sis_documento_banco i,
+    sis_banco j,
+    sis_partida2_vw m,
+    sis_tipo_nomina o,
+    sis_periodo p,
+    sis_proceso prc,
+    sis_tipo_documento tipdoc,
+    sis_tipo_proceso tproc
+where a.registro_empleado=c.registro_empleado
+    and c.id_proceso=prc.id_proceso
+    and prc.tipoproceso = tproc.id_tipoproceso
+    and c.id_partida=d.id_partida
+    and e.id_puesto=c.id_puesto
+    and f.id_categoria=e.id_categoria
+    and g.id_nivel_puesto=f.id_nivel_puesto
+    and h.id_nomina=c.id_nomina
+    and c.id_tipo_nomina<>20
+    and h.id_documento_banco=i.id_documento_banco
+    and j.id_banco=i.id_banco
+    and m.id_partida=nvl(c.id_partida_egreso,(select part.id_partida from sis_det_partida_pago det,partida part where det.id_documento_banco=i.id_documento_banco and part.id_partida=det.id_partida and part.d9d10 not in (76,12,17,24) and rownum<=1))
+    and c.periodo=p.id_periodo
+    and c.id_tipo_nomina=o.id_tipo_nomina
+    and tipdoc.id_tipo_documento=i.id_tipo_documento
+    and $P{cond}<>0 
+    )datos left outer
+     join sis_unidad_ejecutora unie
+     on to_char(unie.id_programa)||trim(to_char(unie.id_dependencia,'00'))||to_char(unie.id_unidad)=datos.subprog
+     inner join partida part on part.id_partida = datos.partia_nom
+where
+  exists(
+  select 1 from usuario_unidad b, partida c, usuario_perfil up
+  where b.id_partida=c.id_partida
+  and up.usuario = b.usuario
+  and b.usuario=$P{pUsuario}
+  and b.tipo_usuario='TRABAJADOR'
+  and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+  and part.aniomanual=c.aniomanual
+  and ( 
+         (up.perfil not in ( 'analista_recursos_hum','auditor','coordinador_sueldos','contraloria','coordinador_isr','consulta_histsal_lab') and 
+          part.d1=c.d1
+          and part.d2=c.d2
+          and part.d3d4=c.d3d4
+          and 
+          (
+          (part.d7=c.d7
+          and part.d6=c.d6
+          and part.d5=c.d5
+          )
+          or
+          (
+          c.d5 is null
+          and c.d6 is null
+          and c.d7 is null 
+          )
+          ))
+           or 
+          up.perfil in ( 'analista_recursos_hum','auditor','coordinador_sueldos','contraloria','coordinador_isr','consulta_histsal_lab')
+      )
+  )]]></queryString>
+
+	<field name="REGISTRO_EMPLEADO" class="java.math.BigDecimal"/>
+	<field name="NOMBRECOMPLETO" class="java.lang.String"/>
+	<field name="CUI" class="java.lang.String"/>
+	<field name="PARTIDA1" class="java.lang.String"/>
+	<field name="PARTIDA2" class="java.lang.String"/>
+	<field name="NUMERO_PLAZA" class="java.math.BigDecimal"/>
+	<field name="TIPONOMINA" class="java.lang.String"/>
+	<field name="ID_PROCESO" class="java.math.BigDecimal"/>
+	<field name="NOMBREPROCESO" class="java.lang.String"/>
+	<field name="PERIODO" class="java.lang.String"/>
+	<field name="NOMINAL" class="java.math.BigDecimal"/>
+	<field name="TOTAL_BONO" class="java.math.BigDecimal"/>
+	<field name="NUM_DOC_FISICO" class="java.math.BigDecimal"/>
+	<field name="NOMBREBANCO" class="java.lang.String"/>
+	<field name="FECHA_ANULACION" class="java.lang.String"/>
+	<field name="SIS_21" class="java.math.BigDecimal"/>
+	<field name="NOMBRE" class="java.lang.String"/>
+	<field name="NOMCATEGORIA" class="java.lang.String"/>
+	<field name="NOMNIVEL" class="java.lang.String"/>
+	<field name="NOMTIPO" class="java.lang.String"/>
+	<field name="ID_PROGRAMA" class="java.math.BigDecimal"/>
+	<field name="ID_DEPENDENCIA" class="java.math.BigDecimal"/>
+	<field name="ID_UNIDAD" class="java.math.BigDecimal"/>
+	<field name="ID_RENGLON" class="java.math.BigDecimal"/>
+	<field name="ID_NOMINA" class="java.math.BigDecimal"/>
+	<field name="ID_TIPO_NOMINA" class="java.math.BigDecimal"/>
+	<field name="ANIO" class="java.math.BigDecimal"/>
+	<field name="D8" class="java.math.BigDecimal"/>
+	<field name="D9D10" class="java.math.BigDecimal"/>
+	<field name="ID_PERIODO" class="java.math.BigDecimal"/>
+	<field name="ID_DOCUMENTO_BANCO" class="java.math.BigDecimal"/>
+	<field name="ID_PUESTO" class="java.math.BigDecimal"/>
+	<field name="D1D2" class="java.lang.String"/>
+	<field name="ID_ESTADO" class="java.math.BigDecimal"/>
+	<field name="FECHA_EMISION" class="java.lang.String"/>
+	<field name="CORRELATIVO" class="java.math.BigDecimal"/>
+	<field name="CODIGONOMINA" class="java.lang.String"/>
+	<field name="REQ_PROF" class="java.lang.String"/>
+	<field name="CATEPUESTO" class="java.lang.String"/>
+	<field name="NIVELPUESTO" class="java.lang.String"/>
+	<field name="NOM_SERVICIO" class="java.lang.String"/>
+	<field name="SUELDO_BASE" class="java.math.BigDecimal"/>
+	<field name="ESCALAFON" class="java.math.BigDecimal"/>
+	<field name="COMPL_SALARIAL" class="java.math.BigDecimal"/>
+	<field name="SUBPROG" class="java.lang.String"/>
+	<field name="NOMSUBPROG" class="java.lang.String"/>
+	<field name="TIPOPROCESO" class="java.math.BigDecimal"/>
+	<field name="DSC1" class="java.math.BigDecimal"/>
+	<field name="DSC2" class="java.math.BigDecimal"/>
+	<field name="DSC3" class="java.math.BigDecimal"/>
+	<field name="DSC4" class="java.math.BigDecimal"/>
+	<field name="DSC5" class="java.math.BigDecimal"/>
+	<field name="DSC6" class="java.math.BigDecimal"/>
+	<field name="DSC7" class="java.math.BigDecimal"/>
+	<field name="DSC8" class="java.math.BigDecimal"/>
+	<field name="DSC9" class="java.math.BigDecimal"/>
+	<field name="DSC10" class="java.math.BigDecimal"/>
+	<field name="DSC11" class="java.math.BigDecimal"/>
+	<field name="DSC12" class="java.math.BigDecimal"/>
+	<field name="DSC13" class="java.math.BigDecimal"/>
+	<field name="DSC14" class="java.math.BigDecimal"/>
+	<field name="DSC15" class="java.math.BigDecimal"/>
+	<field name="DSC16" class="java.math.BigDecimal"/>
+	<field name="DSC17" class="java.math.BigDecimal"/>
+	<field name="DSC18" class="java.math.BigDecimal"/>
+	<field name="DSC19" class="java.math.BigDecimal"/>
+	<field name="DSC20" class="java.math.BigDecimal"/>
+	<field name="DSC21" class="java.math.BigDecimal"/>
+	<field name="DSC22" class="java.math.BigDecimal"/>
+	<field name="DSC23" class="java.math.BigDecimal"/>
+	<field name="DSC24" class="java.math.BigDecimal"/>
+	<field name="DSC25" class="java.math.BigDecimal"/>
+	<field name="DSC26" class="java.math.BigDecimal"/>
+	<field name="DSC27" class="java.math.BigDecimal"/>
+	<field name="DSC28" class="java.math.BigDecimal"/>
+	<field name="DSC29" class="java.math.BigDecimal"/>
+	<field name="DSC30" class="java.math.BigDecimal"/>
+	<field name="DSC31" class="java.math.BigDecimal"/>
+	<field name="DSC32" class="java.math.BigDecimal"/>
+	<field name="DSC33" class="java.math.BigDecimal"/>
+	<field name="DSC34" class="java.math.BigDecimal"/>
+	<field name="DSC35" class="java.math.BigDecimal"/>
+	<field name="DSC36" class="java.math.BigDecimal"/>
+	<field name="DSC37" class="java.math.BigDecimal"/>
+	<field name="GENERO" class="java.lang.String"/>
+	<field name="ID_CONTRATO" class="java.math.BigDecimal"/>
+	<field name="FORMAOBTPUESTO" class="java.lang.String"/>
+	<field name="TOTAL_DESCUENTO" class="java.math.BigDecimal"/>
+	<field name="LIQUIDO" class="java.math.BigDecimal"/>
+	<field name="NOMTIPODOC" class="java.lang.String"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="11"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="0"
+						y="0"
+						width="82"
+						height="11"
+						key="staticText-1"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[RegistroEmpleado]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="82"
+						y="0"
+						width="69"
+						height="11"
+						key="staticText-2"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[CUI]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="151"
+						y="0"
+						width="285"
+						height="11"
+						key="staticText-3"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Nombre Completo]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="436"
+						y="0"
+						width="31"
+						height="11"
+						key="staticText-4"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Sexo]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="467"
+						y="0"
+						width="88"
+						height="11"
+						key="staticText-5"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Partida]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="555"
+						y="0"
+						width="330"
+						height="11"
+						key="staticText-6"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[NomSubProg]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="885"
+						y="0"
+						width="69"
+						height="11"
+						key="staticText-7"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Plaza]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="954"
+						y="0"
+						width="69"
+						height="11"
+						key="staticText-8"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[IdContrato]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1023"
+						y="0"
+						width="67"
+						height="11"
+						key="staticText-9"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[FormObtPst]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1090"
+						y="0"
+						width="67"
+						height="11"
+						key="staticText-10"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[IdProceso]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1157"
+						y="0"
+						width="139"
+						height="11"
+						key="staticText-11"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Nombre Proceso]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1296"
+						y="0"
+						width="105"
+						height="11"
+						key="staticText-12"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[TipoNomina]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1493"
+						y="0"
+						width="31"
+						height="11"
+						key="staticText-13"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Año]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1524"
+						y="0"
+						width="57"
+						height="11"
+						key="staticText-14"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[CodigoNomina]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1581"
+						y="0"
+						width="68"
+						height="11"
+						key="staticText-15"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[SueldoBase]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1649"
+						y="0"
+						width="62"
+						height="11"
+						key="staticText-16"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Compl]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1711"
+						y="0"
+						width="45"
+						height="11"
+						key="staticText-17"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Escalaf]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1756"
+						y="0"
+						width="64"
+						height="11"
+						key="staticText-18"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Nominal]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1820"
+						y="0"
+						width="69"
+						height="11"
+						key="staticText-19"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[TotalBono]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1889"
+						y="0"
+						width="56"
+						height="11"
+						key="staticText-20"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[TotalDesc]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1945"
+						y="0"
+						width="54"
+						height="11"
+						key="staticText-21"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Liquido]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1999"
+						y="0"
+						width="75"
+						height="11"
+						key="staticText-22"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Nombre Banco]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="2074"
+						y="0"
+						width="48"
+						height="11"
+						key="staticText-23"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[TipoDoc]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="2122"
+						y="0"
+						width="64"
+						height="11"
+						key="staticText-24"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[NumDocumento]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="2186"
+						y="0"
+						width="53"
+						height="11"
+						key="staticText-25"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Fecha Emision]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="2239"
+						y="0"
+						width="65"
+						height="11"
+						key="staticText-26"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[FechaAnulacion]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="2304"
+						y="0"
+						width="61"
+						height="11"
+						key="staticText-27"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Sis21]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="2365"
+						y="0"
+						width="69"
+						height="11"
+						key="staticText-28"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Clasif]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="2434"
+						y="0"
+						width="286"
+						height="11"
+						key="staticText-29"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[NomPuesto]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="2720"
+						y="0"
+						width="145"
+						height="11"
+						key="staticText-30"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[TipoPuesto]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="2865"
+						y="0"
+						width="71"
+						height="11"
+						key="staticText-31"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[NivelPuesto]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="2936"
+						y="0"
+						width="105"
+						height="11"
+						key="staticText-32"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[CatPuesto]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3041"
+						y="0"
+						width="174"
+						height="11"
+						key="staticText-33"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[TipoServ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3215"
+						y="0"
+						width="47"
+						height="11"
+						key="staticText-34"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[ReqProf]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3262"
+						y="0"
+						width="47"
+						height="11"
+						key="staticText-35"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D01]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3309"
+						y="0"
+						width="45"
+						height="11"
+						key="staticText-36"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D02]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3354"
+						y="0"
+						width="46"
+						height="11"
+						key="staticText-37"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D03]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3400"
+						y="0"
+						width="45"
+						height="11"
+						key="staticText-38"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D04]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3445"
+						y="0"
+						width="41"
+						height="11"
+						key="staticText-39"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D05]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3486"
+						y="0"
+						width="40"
+						height="11"
+						key="staticText-40"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D06]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3526"
+						y="0"
+						width="39"
+						height="11"
+						key="staticText-41"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D07]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3565"
+						y="0"
+						width="39"
+						height="11"
+						key="staticText-42"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D08]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3604"
+						y="0"
+						width="40"
+						height="11"
+						key="staticText-43"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D09]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3644"
+						y="0"
+						width="42"
+						height="11"
+						key="staticText-44"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D10]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3686"
+						y="0"
+						width="43"
+						height="11"
+						key="staticText-45"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D11]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3729"
+						y="0"
+						width="43"
+						height="11"
+						key="staticText-46"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D12]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3772"
+						y="0"
+						width="42"
+						height="11"
+						key="staticText-47"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D13]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3814"
+						y="0"
+						width="44"
+						height="11"
+						key="staticText-48"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D14]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3858"
+						y="0"
+						width="43"
+						height="11"
+						key="staticText-49"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D15]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3901"
+						y="0"
+						width="41"
+						height="11"
+						key="staticText-50"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D16]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3942"
+						y="0"
+						width="43"
+						height="11"
+						key="staticText-51"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D17]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3985"
+						y="0"
+						width="43"
+						height="11"
+						key="staticText-52"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D18]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="4028"
+						y="0"
+						width="44"
+						height="11"
+						key="staticText-53"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D19]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="4072"
+						y="0"
+						width="41"
+						height="11"
+						key="staticText-54"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D20]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="4113"
+						y="0"
+						width="42"
+						height="11"
+						key="staticText-55"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D21]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="4155"
+						y="0"
+						width="42"
+						height="11"
+						key="staticText-56"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D22]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="4197"
+						y="0"
+						width="42"
+						height="11"
+						key="staticText-57"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D23]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="4239"
+						y="0"
+						width="44"
+						height="11"
+						key="staticText-58"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D24]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="4283"
+						y="0"
+						width="42"
+						height="11"
+						key="staticText-59"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D25]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="4325"
+						y="0"
+						width="42"
+						height="11"
+						key="staticText-60"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D26]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="4367"
+						y="0"
+						width="42"
+						height="11"
+						key="staticText-61"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D27]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="4409"
+						y="0"
+						width="41"
+						height="11"
+						key="staticText-62"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D28]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="4450"
+						y="0"
+						width="43"
+						height="11"
+						key="staticText-63"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D29]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="4493"
+						y="0"
+						width="45"
+						height="11"
+						key="staticText-64"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D30]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="4538"
+						y="0"
+						width="46"
+						height="11"
+						key="staticText-65"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D31]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1400"
+						y="0"
+						width="93"
+						height="11"
+						key="staticText-66"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[PERIODO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="4584"
+						y="0"
+						width="43"
+						height="11"
+						key="staticText-67"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D32]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="4627"
+						y="0"
+						width="45"
+						height="11"
+						key="staticText-68"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D33]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="4672"
+						y="0"
+						width="47"
+						height="11"
+						key="staticText-69"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D34]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="4719"
+						y="0"
+						width="44"
+						height="11"
+						key="staticText-70"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D35]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="4763"
+						y="0"
+						width="45"
+						height="11"
+						key="staticText-71"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D36]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="4808"
+						y="0"
+						width="49"
+						height="11"
+						key="staticText-72"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[D37]]></text>
+				</staticText>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="11"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="##0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="0"
+						width="82"
+						height="11"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{REGISTRO_EMPLEADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="82"
+						y="0"
+						width="69"
+						height="11"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{CUI}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="151"
+						y="0"
+						width="285"
+						height="11"
+						key="textField-2"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRECOMPLETO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="436"
+						y="0"
+						width="31"
+						height="11"
+						key="textField-3"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{GENERO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="467"
+						y="0"
+						width="88"
+						height="11"
+						key="textField-4"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PARTIDA2}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="555"
+						y="0"
+						width="330"
+						height="11"
+						key="textField-5"
+						stretchType="RelativeToBandHeight"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMSUBPROG}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="954"
+						y="0"
+						width="69"
+						height="11"
+						key="textField-6"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ID_CONTRATO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="885"
+						y="0"
+						width="69"
+						height="11"
+						key="textField-7"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{NUMERO_PLAZA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1023"
+						y="0"
+						width="67"
+						height="11"
+						key="textField-8"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{FORMAOBTPUESTO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1090"
+						y="0"
+						width="67"
+						height="11"
+						key="textField-9"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ID_PROCESO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1157"
+						y="0"
+						width="139"
+						height="11"
+						key="textField-10"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBREPROCESO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1296"
+						y="0"
+						width="105"
+						height="11"
+						key="textField-11"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{TIPONOMINA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1493"
+						y="0"
+						width="31"
+						height="11"
+						key="textField-12"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{CORRELATIVO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1649"
+						y="0"
+						width="62"
+						height="11"
+						key="textField-14"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{COMPL_SALARIAL}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1581"
+						y="0"
+						width="68"
+						height="11"
+						key="textField-15"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{SUELDO_BASE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1524"
+						y="0"
+						width="57"
+						height="11"
+						key="textField-16"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{CODIGONOMINA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1711"
+						y="0"
+						width="45"
+						height="11"
+						key="textField-17"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ESCALAFON}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1756"
+						y="0"
+						width="64"
+						height="11"
+						key="textField-18"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{NOMINAL}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1820"
+						y="0"
+						width="69"
+						height="11"
+						key="textField-19"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_BONO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1889"
+						y="0"
+						width="56"
+						height="11"
+						key="textField-20"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_DESCUENTO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="2122"
+						y="0"
+						width="64"
+						height="11"
+						key="textField-21"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{NUM_DOC_FISICO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="2074"
+						y="0"
+						width="48"
+						height="11"
+						key="textField-22"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMTIPODOC}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1999"
+						y="0"
+						width="75"
+						height="11"
+						key="textField-23"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBREBANCO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1945"
+						y="0"
+						width="54"
+						height="11"
+						key="textField-24"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{LIQUIDO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="2365"
+						y="0"
+						width="69"
+						height="11"
+						key="textField-25"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ID_PUESTO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="2304"
+						y="0"
+						width="61"
+						height="11"
+						key="textField-26"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{SIS_21}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="2239"
+						y="0"
+						width="65"
+						height="11"
+						key="textField-27"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{FECHA_ANULACION}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="2186"
+						y="0"
+						width="53"
+						height="11"
+						key="textField-28"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{FECHA_EMISION}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="2434"
+						y="0"
+						width="286"
+						height="11"
+						key="textField-29"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="2720"
+						y="0"
+						width="145"
+						height="11"
+						key="textField-30"/>
+					<box></box>
+					<textElement verticalAlignment="Bottom">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMTIPO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="2865"
+						y="0"
+						width="71"
+						height="11"
+						key="textField-31"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NIVELPUESTO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="2936"
+						y="0"
+						width="105"
+						height="11"
+						key="textField-32"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{CATEPUESTO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3041"
+						y="0"
+						width="174"
+						height="11"
+						key="textField-33"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOM_SERVICIO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3215"
+						y="0"
+						width="47"
+						height="11"
+						key="textField-34"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{REQ_PROF}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3262"
+						y="0"
+						width="47"
+						height="11"
+						key="textField-35"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC1}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3309"
+						y="0"
+						width="45"
+						height="11"
+						key="textField-36"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC2}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3354"
+						y="0"
+						width="46"
+						height="11"
+						key="textField-37"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC3}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3445"
+						y="0"
+						width="41"
+						height="11"
+						key="textField-38"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC5}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3400"
+						y="0"
+						width="45"
+						height="11"
+						key="textField-39"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC4}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3565"
+						y="0"
+						width="39"
+						height="11"
+						key="textField-40"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC8}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3526"
+						y="0"
+						width="39"
+						height="11"
+						key="textField-41"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC7}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3486"
+						y="0"
+						width="40"
+						height="11"
+						key="textField-42"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC6}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3772"
+						y="0"
+						width="42"
+						height="11"
+						key="textField-43"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC13}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3858"
+						y="0"
+						width="43"
+						height="11"
+						key="textField-44"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC15}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3814"
+						y="0"
+						width="44"
+						height="11"
+						key="textField-45"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC14}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3729"
+						y="0"
+						width="43"
+						height="11"
+						key="textField-46"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC12}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3686"
+						y="0"
+						width="43"
+						height="11"
+						key="textField-47"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC11}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3644"
+						y="0"
+						width="42"
+						height="11"
+						key="textField-48"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC10}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3604"
+						y="0"
+						width="40"
+						height="11"
+						key="textField-49"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC9}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3901"
+						y="0"
+						width="41"
+						height="11"
+						key="textField-50"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC16}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3942"
+						y="0"
+						width="43"
+						height="11"
+						key="textField-51"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC17}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3985"
+						y="0"
+						width="43"
+						height="11"
+						key="textField-52"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC18}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4028"
+						y="0"
+						width="44"
+						height="11"
+						key="textField-53"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC19}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4072"
+						y="0"
+						width="41"
+						height="11"
+						key="textField-54"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC20}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4113"
+						y="0"
+						width="42"
+						height="11"
+						key="textField-55"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC21}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4155"
+						y="0"
+						width="42"
+						height="11"
+						key="textField-56"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC22}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4197"
+						y="0"
+						width="42"
+						height="11"
+						key="textField-57"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC23}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4239"
+						y="0"
+						width="44"
+						height="11"
+						key="textField-58"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC24}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4283"
+						y="0"
+						width="42"
+						height="11"
+						key="textField-59"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC25}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4325"
+						y="0"
+						width="42"
+						height="11"
+						key="textField-60"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC26}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4367"
+						y="0"
+						width="42"
+						height="11"
+						key="textField-61"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC27}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4409"
+						y="0"
+						width="41"
+						height="11"
+						key="textField-62"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC28}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4450"
+						y="0"
+						width="43"
+						height="11"
+						key="textField-63"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC29}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4493"
+						y="0"
+						width="45"
+						height="11"
+						key="textField-64"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC30}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4538"
+						y="0"
+						width="46"
+						height="11"
+						key="textField-65"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC31}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1400"
+						y="0"
+						width="93"
+						height="11"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="8" isBold="false"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PERIODO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4584"
+						y="0"
+						width="43"
+						height="11"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC32}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4627"
+						y="0"
+						width="45"
+						height="11"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC33}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4672"
+						y="0"
+						width="47"
+						height="11"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC34}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4719"
+						y="0"
+						width="44"
+						height="11"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC35}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4763"
+						y="0"
+						width="45"
+						height="11"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC36}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4808"
+						y="0"
+						width="49"
+						height="11"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DSC37}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

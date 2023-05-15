@@ -1,0 +1,223 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <jsp:output omit-xml-declaration="true" doctype-root-element="HTML"
+              doctype-system="http://www.w3.org/TR/html4/loose.dtd"
+              doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN"/>
+  <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+  <f:loadBundle basename="propiedades" var="tx"/>
+  <f:view>
+    <afh:html>
+      <afh:head title=" #{tx['frm_contrato.title']}">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+      </afh:head>
+      <afh:body>
+        <af:messages/>
+        <h:form>
+          <af:page
+           value="#{modeloMenu.modeloBD}" var="node"  >
+           <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+          <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelHorizontal halign="center">
+              <af:panelBox>
+                <af:panelForm partialTriggers="tbl_firmas tbl_firmas:btn_editar btn_guardar">
+                  <af:selectOneChoice id="cmb_depe" autoSubmit="true"
+                                      value="#{bindings.dependencias.inputValue}"
+                                      label="#{tx['frm_contrato.cmb_dep.texto']}"
+                                      disabled="#{bindings.vEstado1.inputValue eq '0'}"
+                                      showRequired="true">
+                    <f:selectItems value="#{bindings.dependencias.items}"/>
+                  </af:selectOneChoice>
+                  <af:selectOneChoice id="navList2" autoSubmit="false"
+                                      value="#{bindings['unidades_ejec'].inputValue}"
+                                      label="#{tx['frm_contrato.cmb_un.texto']}"
+                                      partialTriggers="cmb_depe"
+                                      disabled="#{bindings.vEstado1.inputValue eq '0'}"
+                                      tip="Dejar en blanco si la persona firma en más de una unidad.">
+                    <f:selectItems value="#{bindings['unidades_ejec'].items}"/>
+                  </af:selectOneChoice>
+                  <af:selectInputText value="#{bindings.RegistroEmpleado.inputValue}"
+                                      label="#{tx['frm_contrato.reg_empl.texto']}"
+                                      required="#{bindings.RegistroEmpleado.mandatory}"
+                                      columns="10" action="dialog:buscaEmpl"
+                                      returnListener="#{firmas_contrato.inp_reg_empleado_listener}"
+                                      binding="#{firmas_contrato.inpt_registro_Empleado}"
+                                      readOnly="false"
+                                      disabled="#{bindings.vEstado1.inputValue eq '0'}"
+                                      windowHeight="600" windowWidth="400"
+                                      showRequired="true">
+                    <af:validator binding="#{bindings.RegistroEmpleado.validator}"/>
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.RegistroEmpleado.format}"/>
+                  </af:selectInputText>
+                  <af:inputText value="#{bindings.SisAuthContratoVwTitulo.inputValue}"
+                                label="#{tx['frm_contrato.inpt_titulo.texto']}"
+                                required="#{bindings.SisAuthContratoVwTitulo.mandatory}"
+                                columns="10"
+                                disabled="#{bindings.vEstado1.inputValue eq '0'}">
+                    <af:validator binding="#{bindings.SisAuthContratoVwTitulo.validator}"/>
+                  </af:inputText>
+                  <af:inputText value="#{bindings.Cargo.inputValue}"
+                                label="#{tx['frm_contrato.cargo.texto']}"
+                                required="#{bindings.Cargo.mandatory}"
+                                columns="30"
+                                disabled="#{bindings.vEstado1.inputValue eq '0'}"
+                                showRequired="true">
+                    <af:validator binding="#{bindings.Cargo.validator}"/>
+                  </af:inputText>
+                  <af:selectOneRadio label="#{tx['frm_contrato.nivel_firm.texto']}"
+                                     value="#{bindings.Nivel.inputValue}"
+                                     disabled="#{bindings.vEstado1.inputValue eq '0'}"
+                                     showRequired="true">
+                    <af:selectItem label="Nombramiento" value="1"/>
+                    <af:selectItem label="Acta posesión" value="2"/>
+                    <af:selectItem label="Tramite de sueldo" value="3"/>
+                    <af:selectItem label="Variacion Nómina" value="4"
+                                   rendered="false"/>
+                  </af:selectOneRadio>
+                </af:panelForm>
+                <af:panelHorizontal>
+                  <af:commandButton text=" #{tx['frm_contrato.btn_guardar.texto']}"
+                                    partialSubmit="true" id="btn_guardar"
+                                    action="#{firmas_contrato.btn_commit_action}"/>
+                  <af:commandButton actionListener="#{bindings.Create.execute}"
+                                    text="#{tx['frm_contrato.btn_nuevo.texto']}"
+                                    disabled="#{!bindings.Create.enabled}"
+                                    partialSubmit="true" id="btn_nuevo">
+                    <af:setActionListener from="#{'1'}"
+                                          to="#{bindings.vEstado1.inputValue}"/>
+                  </af:commandButton>
+                  <af:commandButton actionListener="#{bindings.Rollback.execute}"
+                                    text="#{tx['frm_contrato.btn_cancelar.texto']}"
+                                    immediate="true">
+                    <af:resetActionListener/>
+                    <af:setActionListener from="#{'0'}"
+                                          to="#{bindings.vEstado1.inputValue}"/>
+                  </af:commandButton>
+                  <f:facet name="separator">
+                    <af:objectSpacer width="15" height="10"/>
+                  </f:facet>
+                </af:panelHorizontal>
+                <af:table value="#{bindings.SisAuthContratoVw.collectionModel}"
+                          var="row"
+                          rows="#{bindings.SisAuthContratoVw.rangeSize}"
+                          first="#{bindings.SisAuthContratoVw.rangeStart}"
+                          emptyText="#{tx['frm_contrato.tbl_emptyText.texto']}"
+                          selectionState="#{bindings.SisAuthContratoVw.collectionModel.selectedRow}"
+                          selectionListener="#{bindings.SisAuthContratoVw.collectionModel.makeCurrent}"
+                          partialTriggers="btn_nuevo btn_guardar btn_editar cmb_depe" id="tbl_firmas"
+                          banding="row" bandingInterval="1">
+                  <f:facet name="selection">
+                    <af:tableSelectOne autoSubmit="true"
+                                       partialTriggers="btn_nuevo btn_guardar btn_editar"
+                                       disabled="#{bindings.vEstado1.inputValue eq '1'}">
+                      <af:commandButton text=" #{tx['frm_contrato.btn_editar.texto']}"
+                                        id="btn_editar" partialSubmit="false"
+                                        partialTriggers="btn_nuevo"
+                                        disabled="#{bindings.FechaBaja.inputValue!=null}">
+                        <af:setActionListener from="#{'1'}"
+                                              to="#{bindings.vEstado1.inputValue}"/>
+                      </af:commandButton>
+                      <af:objectSpacer width="20" height="10"/>
+                      <af:commandButton actionListener="#{bindings.Delete.execute}"
+                                        text=" #{tx['frm_contrato.btn_borrar.texto']}"
+                                        disabled="#{bindings.FechaCreacion.inputValue!=null}"/>
+                    </af:tableSelectOne>
+                  </f:facet>
+                  <af:column sortable="false"
+                             headerText="#{tx['frm_contrato.tbl_nomDep.texto']}"
+                             noWrap="true">
+                    <af:outputText value="#{row.Nomdependencia}"/>
+                  </af:column>
+                  <af:column sortable="false"
+                             headerText="#{tx['frm_contrato.tbl_nomUni.texto']}">
+                    <af:outputText value="#{row.Nomunidad}"/>
+                  </af:column>
+                  <af:column sortProperty="RegistroEmpleado" sortable="false"
+                             headerText="#{tx['frm_contrato.tbl_regEmpl.texto']}">
+                    <af:outputText value="#{row.RegistroEmpleado}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.SisAuthContratoVw.formats.RegistroEmpleado}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortable="false" headerText="CUI">
+                    <af:outputText value="#{row.Cui}"/>
+                  </af:column>
+                  <af:column sortable="false"
+                             headerText="#{tx['frm_contrato.inpt_titulo.texto']}">
+                    <af:outputText value="#{row.Titulo}"/>
+                  </af:column>
+                  <af:column sortProperty="IdUnidad" sortable="false"
+                             headerText="#{tx['frm_contrato.tbl_Nombre.texto']}"
+                             noWrap="true">
+                    <af:outputText value="#{row.Nombrecompleto}"/>
+                  </af:column>
+                  <af:column sortProperty="Cargo" sortable="false"
+                             headerText="#{tx['frm_contrato.tbl_cargo.texto']}">
+                    <af:outputText value="#{row.Cargo}"/>
+                  </af:column>
+                  <af:column sortable="false"
+                             headerText="#{tx['frm_contrato.tbl_nivel.texto']}">
+                    <af:outputText value="#{row.Nivel2}"/>
+                  </af:column>
+                  <af:column sortProperty="FechaInicio" sortable="false"
+                             headerText="#{tx['frm_contrato.tbl_fechaI.texto']}">
+                    <af:outputText value="#{row.FechaInicio}">
+                      <f:convertDateTime pattern="#{bindings.SisAuthContratoVw.formats.FechaInicio}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="FechaBaja" sortable="false"
+                             headerText="#{tx['frm_contrato.tbl_fechaB.texto']}">
+                    <af:outputText value="#{row.FechaBaja}">
+                      <f:convertDateTime pattern="#{bindings.SisAuthContratoVw.formats.FechaBaja}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="Creadopor" sortable="false"
+                             headerText="#{tx['frm_contrato.tbl_creadopor.texto']}">
+                    <af:outputText value="#{row.Creadopor}"/>
+                  </af:column>
+                  <af:column sortProperty="FechaCreacion" sortable="false"
+                             headerText="#{tx['frm_contrato.tbl_fechaCreacion.texto']}">
+                    <af:outputText value="#{row.FechaCreacion}">
+                      <f:convertDateTime pattern="#{bindings.SisAuthContratoVw.formats.FechaCreacion}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortable="false" noWrap="true" headerText="">
+                    <af:commandLink action="#{firmas_contrato.cmd_darBaja}"
+                                    text="#{tx['frm_contrato.cmd_darBaja.texto']}"
+                                    disabled="#{row.FechaBaja!=null}"/>
+                  </af:column>
+                </af:table>
+                <af:objectSpacer width="10" height="30"/>
+              </af:panelBox>
+            </af:panelHorizontal>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+</jsp:root>

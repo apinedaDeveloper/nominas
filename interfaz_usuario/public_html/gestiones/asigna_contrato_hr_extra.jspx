@@ -1,0 +1,355 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <jsp:output omit-xml-declaration="true" doctype-root-element="HTML"
+              doctype-system="http://www.w3.org/TR/html4/loose.dtd"
+              doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN"/>
+  <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+  <f:view>
+    <afh:html>
+      <f:loadBundle var="txt" basename="propiedades"/>
+      <afh:head title="#{txt['asigna_contratoHr_extra.title_pagina']}">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+        <jsp:include page="/js/libJQ.js"/>          
+        <jsp:include page="/js/libMask.js"/>          
+
+
+      </afh:head>
+      <afh:body>
+        <af:messages/>
+        <h:form>
+          <af:page title="#{txt['asigna_contratoHr_extra.title.texto']}"
+            value="#{modeloMenu.modeloBD}" var="node"
+                   chromeType="compact">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+            <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelHorizontal halign="center">
+              <af:panelBox width="1200">
+                <af:panelHorizontal>
+                  <af:inputText value="#{bindings.pCui.inputValue}"
+                                required="#{bindings.pCui.mandatory}"
+                                columns="#{bindings.pCui.displayWidth}"
+                                label="CUI">
+                    <af:validator binding="#{bindings.pCui.validator}"/>
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.pCui.format}"/>
+                  </af:inputText>
+                  <af:inputText label="#{txt['asigna_contratoHr_extra.inp_RegEmpleado.texto']}"
+                                value="#{bindings.regEmpleado1.inputValue}"
+                                binding="#{tiempo_extra.inp_regEmpleado}">
+                    <af:validator binding="#{bindings.regEmpleado1.validator}"/>
+                    <f:convertNumber pattern="#{bindings.regEmpleado1.format}"
+                                     groupingUsed="false"/>
+                  </af:inputText>
+                  <af:commandButton text="#{txt['asigna_contratoHr_extra.btn_crearHrExtra.texto']}"
+                                    disabled="#{bindings.logEstado.inputValue ==false &amp;&amp; flujo_usuario.operacion == 0?false:true}"
+                                    action="#{tiempo_extra.crear_empleado}"
+                                    binding="#{tiempo_extra.btn_crearEmpleado}"
+                                    id="btnAsignaContrato"
+                                    rendered="#{ !bindings.logEstado.inputValue}"/>
+                  <f:facet name="separator">
+                    <af:objectSpacer width="15" height="10"/>
+                  </f:facet>
+                </af:panelHorizontal>
+                <af:objectSpacer width="15" height="10"/>
+                <af:panelLabelAndMessage label="#{txt['asigna_contratoHr_extra.out_NomEmpleado.texto']}"
+                                         partialTriggers="btn_actualizar">
+                  <af:outputText value="#{bindings.Nombre1.inputValue}  #{bindings.Nombre2.inputValue}  #{bindings.Apellido1.inputValue}  #{bindings.Apellido2.inputValue}"
+                                 partialTriggers="btn_actualizar"/>
+                </af:panelLabelAndMessage>
+                <af:table value="#{bindings['consul_contratosAdmin_byReg_vw1'].collectionModel}"
+                          var="row"
+                          rows="#{bindings['consul_contratosAdmin_byReg_vw1'].rangeSize}"
+                          first="#{bindings['consul_contratosAdmin_byReg_vw1'].rangeStart}"
+                          emptyText="#{txt['tbl_empty.texto']}"
+                          selectionState="#{bindings['consul_contratosAdmin_byReg_vw1'].collectionModel.selectedRow}"
+                          selectionListener="#{bindings['consul_contratosAdmin_byReg_vw1'].collectionModel.makeCurrent}"
+                          partialTriggers="btnAsignaContrato" banding="row"
+                          bandingInterval="1" id="tbl_selec_plaza">
+                  <f:facet name="selection">
+                    <af:tableSelectOne text="Select and"
+                                       binding="#{tiempo_extra.selecDatEmpleado}"
+                                       id="selec_contrato" autoSubmit="true"/>
+                  </f:facet>
+                  <f:facet name="header">
+                    <af:outputText value="Listado de plazas"/>
+                  </f:facet>
+                  <af:column sortProperty="RegistroEmpleado" sortable="false"
+                             headerText="#{txt['asigna_contratoHr_extra.tbl_col_regEmpleado.texto']}">
+                    <af:outputText value="#{row.RegistroEmpleado}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings['consul_contratosAdmin_byReg_vw1'].formats.RegistroEmpleado}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="IdContrato" sortable="false"
+                             headerText="#{txt['asigna_contratoHr_extra.tbl_col_idContrato.texto']}">
+                    <af:outputText value="#{row.IdContrato}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings['consul_contratosAdmin_byReg_vw1'].formats.IdContrato}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="Partida" sortable="false"
+                             headerText="#{txt['asigna_contratoHr_extra.tbl_col_partida.texto']}">
+                    <af:outputText value="#{row.Partida}"/>
+                  </af:column>
+                  <af:column sortProperty="NomPuesto" sortable="false"
+                             headerText="#{txt['asigna_contratoHr_extra.tbl_col_puesto.texto']}">
+                    <af:outputText value="#{row.NomPuesto}"/>
+                  </af:column>
+                  <af:column sortProperty="NumeroPlaza" sortable="false"
+                             headerText="#{txt['asigna_contratoHr_extra.tbl_col_NoPlaza.texto']}">
+                    <af:outputText value="#{row.NumeroPlaza}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings['consul_contratosAdmin_byReg_vw1'].formats.NumeroPlaza}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="Horascontratadas" sortable="false"
+                             headerText="#{txt['asigna_contratoHr_extra.tbl_col_hrContratadas.texto']}">
+                    <af:outputText value="#{row.Horascontratadas}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings['consul_contratosAdmin_byReg_vw1'].formats.Horascontratadas}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="Nomdependencia" sortable="false"
+                             headerText="#{txt['asigna_contratoHr_extra.tbl_col_dependencia.texto']}">
+                    <af:outputText value="#{row.Nomdependencia}"/>
+                  </af:column>
+                  <af:column sortProperty="FechaInicio" sortable="false"
+                             headerText="#{txt['asigna_contratoHr_extra.tbl_col_fechaIni.texto']}">
+                    <af:outputText value="#{row.FechaInicio}">
+                      <f:convertDateTime pattern="#{bindings['consul_contratosAdmin_byReg_vw1'].formats.FechaInicio}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="FechaFin" sortable="false"
+                             headerText="#{txt['asigna_contratoHr_extra.tbl_col_fechaFin.texto']}">
+                    <af:outputText value="#{row.FechaFin}">
+                      <f:convertDateTime pattern="#{bindings['consul_contratosAdmin_byReg_vw1'].formats.FechaFin}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="Estado" sortable="false"
+                             headerText="#{bindings['consul_contratosAdmin_byReg_vw1'].labels.Estado}">
+                    <af:outputText value="#{row.Estado}"/>
+                  </af:column>
+                </af:table>
+                <af:panelHorizontal halign="center">
+                  <af:table value="#{bindings['consul_contratosAdmin_byReg_vw1SisHorarioContrato1'].collectionModel}"
+                            var="row"
+                            rows="#{bindings['consul_contratosAdmin_byReg_vw1SisHorarioContrato1'].rangeSize}"
+                            first="#{bindings['consul_contratosAdmin_byReg_vw1SisHorarioContrato1'].rangeStart}"
+                            emptyText="#{txt['tbl_empty.texto']}"
+                            partialTriggers="selec_contrato tbl_selec_plaza">
+                    <af:column sortProperty="IdContrato" sortable="false"
+                               headerText="#{txt['asigna_contratoHr_extra.tbl_col_idContrato.texto']}">
+                      <af:outputText value="#{row.IdContrato}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['consul_contratosAdmin_byReg_vw1SisHorarioContrato1'].formats.IdContrato}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="nomDia" sortable="false"
+                               headerText="#{txt['asigna_contratoHr_extra.tbl2_col_nomDia.texto']}">
+                      <af:outputText value="#{row.nomDia}"/>
+                    </af:column>
+                    <af:column sortProperty="HoraEntrada2" sortable="false"
+                               headerText="#{txt['asigna_contratoHr_extra.tbl2_col_horaEntrada.texto']}">
+                      <af:outputText value="#{row.HoraEntrada2}"/>
+                    </af:column>
+                    <af:column sortProperty="HoraSalida2" sortable="false"
+                               headerText="#{txt['asigna_contratoHr_extra.tbl2_col_horaSalida.texto']}">
+                      <af:outputText value="#{row.HoraSalida2}"/>
+                    </af:column>
+                    <f:facet name="header">
+                      <af:outputText value="Horario"/>
+                    </f:facet>
+                  </af:table>
+                </af:panelHorizontal>
+                <af:objectSpacer width="10" height="10"/>
+                <af:selectOneChoice value="#{bindings['sis_tiempo_extraordinario_vw1PartidaGasto'].inputValue}"
+                                    label="#{txt['asigna_contratoHr_extra.cmb_partidaGasto.texto']}"
+                                    id="partidaGasto" autoSubmit="true">
+                  <f:selectItems value="#{bindings['sis_tiempo_extraordinario_vw1PartidaGasto'].items}"/>
+                </af:selectOneChoice>
+                <af:commandButton actionListener="#{bindings.execPartidaSICOIN.execute}"
+                                  text="execPartidaSICOIN"
+                                  disabled="#{!bindings.execPartidaSICOIN.enabled}"
+                                  rendered="false"/>
+                <af:selectOneChoice value="#{bindings['sis_tiempo_extraordinario_vw1PartidaSicoin'].inputValue}"
+                                    label="#{bindings['sis_tiempo_extraordinario_vw1PartidaSicoin'].label}"
+                                    rendered="false">
+                  <f:selectItems value="#{bindings['sis_tiempo_extraordinario_vw1PartidaSicoin'].items}"/>
+                </af:selectOneChoice>
+                <af:objectSpacer width="10" height="30"/>
+                <af:commandButton
+                                  text="#{txt['asigna_contratoHr_extra.btn_crearActividad.texto']}"
+                                  disabled="true"
+                                  action="#{tiempo_extra.crear_actividad}"
+                                  binding="#{tiempo_extra.btn_actividad}"
+                                  id="btn_crearActividad"
+                                  partialTriggers="partidaGasto"/>
+                <af:objectSpacer width="10" height="30"/>
+                <af:panelForm binding="#{tiempo_extra.formActividad}"
+                              partialTriggers="btn_crearActividad tabla_actividad">
+                  <af:inputText value="#{bindings.DescActividad.inputValue}"
+                                label="#{txt['asigna_contratoHr_extra.inp_actividad.texto']}"
+                                required="#{bindings.DescActividad.mandatory}"
+                                columns="70"
+                                rows="5"
+                                binding="#{tiempo_extra.inp_actividad}"
+                                disabled="true">
+                    <af:validator binding="#{bindings.DescActividad.validator}"/>
+                  </af:inputText>
+                  <af:selectInputDate value="#{bindings.Fecha.inputValue}"
+                                      label="#{txt['asigna_contratoHr_extra.inp_fecha.texto']}"
+                                      required="#{bindings.Fecha.mandatory}"
+                                      binding="#{tiempo_extra.inp_fecha}"
+                                      disabled="true" id="inptFechaHE"
+                                      onfocus="setMaskFechaHE();">
+                    <af:validator binding="#{bindings.Fecha.validator}"/>
+                    <f:convertDateTime pattern="#{bindings.Fecha.format}"
+                                       dateStyle="default"/>
+                  </af:selectInputDate>
+                  <af:inputText value="#{bindings['sis_det_tiempo_extra_vw1hrFictisia1'].inputValue}"
+                                label="#{txt['asigna_contratoHr_extra.inp_horaIni.texto']}"
+                                required="#{bindings['sis_det_tiempo_extra_vw1hrFictisia1'].mandatory}"
+                                columns="#{bindings['sis_det_tiempo_extra_vw1hrFictisia1'].displayWidth}"
+                                binding="#{tiempo_extra.inp_hrInicio}"
+                                disabled="true" id="inptHoraI"
+                                onfocus="setMask();">
+                    <af:validator binding="#{bindings['sis_det_tiempo_extra_vw1hrFictisia1'].validator}"/>
+                  </af:inputText>
+                  <af:inputText value="#{bindings['sis_det_tiempo_extra_vw1hrFictisia2'].inputValue}"
+                                label="#{txt['asigna_contratoHr_extra.inp_horaFin.texto']}"
+                                required="#{bindings['sis_det_tiempo_extra_vw1hrFictisia2'].mandatory}"
+                                columns="#{bindings['sis_det_tiempo_extra_vw1hrFictisia2'].displayWidth}"
+                                binding="#{tiempo_extra.inp_hrFin}"
+                                disabled="true" id="inptHoraFin"
+                                onfocus="setMask();">
+                    <af:validator binding="#{bindings['sis_det_tiempo_extra_vw1hrFictisia2'].validator}"/>
+                  </af:inputText>
+                  <af:objectSpacer width="15" height="10"/>
+                  <af:panelHorizontal halign="center">
+                    <af:showOneRadio label="#{''}" position="start"
+                                     binding="#{tiempo_extra.show_rango}">
+                      <af:showDetailItem text="#{txt['asigna_contratoHr_extra.Deatil_title.texto']}"
+                                         binding="#{tiempo_extra.detailDia}"/>
+                      <af:showDetailItem text="#{txt['asigna_contratoHr_extra.Deatil2_title.texto']}">
+                        <af:panelHorizontal halign="center">
+                          <af:selectInputDate label="#{txt['asigna_contratoHr_extra.inp_fechaFin.texto']}"
+                                              value="#{bindings.FechaFinal2.inputValue}"
+                                              binding="#{tiempo_extra.inp_fechaFin}"
+                                              onfocus="setMaskFechaHE();"/>
+                          <af:objectSpacer width="10" height="20"/>
+                          <af:commandButton text="#{txt['asigna_contratoHr_extra.btn_crearDetalle.texto']}"
+                                            action="#{tiempo_extra.autollenado}"
+                                            binding="#{tiempo_extra.btn_CrearDetalle}"/>
+                        </af:panelHorizontal>
+                      </af:showDetailItem>
+                    </af:showOneRadio>
+                  </af:panelHorizontal>
+                </af:panelForm>
+                <af:panelHorizontal>
+                  <af:panelButtonBar>
+                    <af:commandButton actionListener="#{bindings.Delete.execute}"
+                                      text="#{txt['asigna_contratoHr_extra.btn_borrar.texto']}"
+                                      disabled="true"
+                                      binding="#{tiempo_extra.btn_borrar}"/>
+                    <af:commandButton text="#{txt['asigna_contratoHr_extra.btn_actualiza.texto']}"
+                                      disabled="#{bindings.logEstado.inputValue}"
+                                      action="#{tiempo_extra.btn_actualizar}"
+                                      id="btn_actualizar"
+                                      rendered="#{ !bindings.logEstado.inputValue}"/>
+                  </af:panelButtonBar>
+                  <af:table value="#{bindings['sis_tiempo_extraordinario_vw1sis_det_tiempo_extra_vw1'].collectionModel}"
+                            var="row"
+                            rows="#{bindings['sis_tiempo_extraordinario_vw1sis_det_tiempo_extra_vw1'].rangeSize}"
+                            first="#{bindings['sis_tiempo_extraordinario_vw1sis_det_tiempo_extra_vw1'].rangeStart}"
+                            emptyText="#{txt['tbl_empty.texto']}"
+                            selectionState="#{bindings['sis_tiempo_extraordinario_vw1sis_det_tiempo_extra_vw1'].collectionModel.selectedRow}"
+                            selectionListener="#{bindings['sis_tiempo_extraordinario_vw1sis_det_tiempo_extra_vw1'].collectionModel.makeCurrent}"
+                            id="tabla_actividad"
+                            binding="#{tiempo_extra.tblActividad}">
+                    <f:facet name="selection">
+                      <af:tableSelectOne autoSubmit="true"
+                                         onclick="resetGlobalMask();"/>
+                    </f:facet>
+                    <af:column sortProperty="IdDetHoraExtra" sortable="false"
+                               headerText="#{txt['det_act_tiempo_extra.tbl_col_idActividad.texto']}">
+                      <af:outputText value="#{row.IdDetHoraExtra}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['sis_tiempo_extraordinario_vw1sis_det_tiempo_extra_vw1'].formats.IdDetHoraExtra}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="DescActividad" sortable="false"
+                               headerText="#{txt['det_act_tiempo_extra.tbl_col_actividad.texto']}">
+                      <af:outputText value="#{row.DescActividad}"/>
+                    </af:column>
+                    <af:column sortProperty="Fecha" sortable="false"
+                               headerText="#{txt['det_act_tiempo_extra.tbl_col_fecha.texto']}">
+                      <af:outputText value="#{row.Fecha}">
+                        <f:convertDateTime pattern="#{bindings['sis_tiempo_extraordinario_vw1sis_det_tiempo_extra_vw1'].formats.Fecha}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="hrFictisia1" sortable="false"
+                               headerText="#{txt['det_act_tiempo_extra.tbl_col_HoraIni.texto']}">
+                      <af:outputText value="#{row.hrFictisia1}"/>
+                    </af:column>
+                    <af:column sortProperty="hrFictisia2" sortable="false"
+                               headerText="#{txt['det_act_tiempo_extra.tbl_col_horaFin.texto']}">
+                      <af:outputText value="#{row.hrFictisia2}"/>
+                    </af:column>
+                    <af:column sortProperty="cantHoras" sortable="false"
+                               headerText="#{txt['asigna_contratoHr_extra.tbl2_col_canthoras.texto']}">
+                      <af:outputText value="#{row.cantHoras}"/>
+                      <f:facet name="footer">
+                        <af:outputText binding="#{tiempo_extra.totalHrextra}"
+                                       truncateAt="0"/>
+                      </f:facet>
+                    </af:column>
+                    <f:facet name="footer">
+                      <af:outputText value="Total Horas Extras" truncateAt="0"/>
+                    </f:facet>
+                  </af:table>
+                </af:panelHorizontal>
+                <af:panelButtonBar>
+                  <af:commandButton
+                                    text="#{txt['asigna_contratoHr_extra.btn_guardar.texto']}"
+                                    disabled="true"
+                                    binding="#{tiempo_extra.btn_guardar}"
+                                    action="#{tiempo_extra.guardar}"/>
+                  <af:commandButton
+                                    text="#{txt['asigna_contratoHr_extra.btn_cancelar.texto']}" immediate="true"
+                                    action="#{tiempo_extra.btn_Cancelar}"
+                                    id="btn_cancelar">
+                    <af:resetActionListener/>
+                  </af:commandButton>
+                </af:panelButtonBar>
+              </af:panelBox>
+            </af:panelHorizontal>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+    <script type="text/javascript" src="/${flujo_usuario.dominioApp}/js/gestiones/scrptAsCnHrEx.js">var xy;</script>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:tiempo_extra-->
+</jsp:root>

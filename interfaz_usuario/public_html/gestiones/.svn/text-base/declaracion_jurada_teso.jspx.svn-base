@@ -1,0 +1,310 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html"
+          xmlns:af="http://xmlns.oracle.com/adf/faces">
+  <jsp:directive.page contentType="text/html;charset=windows-1252"
+                      autoFlush="true" language="java"/>
+  <f:view>
+    <f:loadBundle basename="propiedades_trab" var="tx"/>
+    <afh:html>
+      <afh:head title="#{tx['dec_jurada.tbl_decj.title']}">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+        <jsp:include page="/js/libJQ.js"/>          
+        <jsp:include page="/js/libMask.js"/>
+      
+        <script language="javascript" type="text/javascript"> 
+        
+       function generarReporte(){ 
+        
+                window.open("/${flujo_usuario.dominioApp}/faces/verreportepdf?id=0"+String.fromCharCode(38)+"rep=SIS-06","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable=1"); 
+       
+       return false;
+       } 
+            
+      </script>        
+      <script type="text/javascript" src="/${flujo_usuario.dominioApp}/js/gestiones/scrptDecJurada.js">var xy=new Date().getMilliseconds();</script>        
+      </afh:head>
+      <afh:body>
+        <af:messages/>
+        <h:form id="form1">
+          <af:page value="#{modeloMenu.modeloBD}" var="node" id="page1"
+                   title="#{flujo_usuario.datosEmpleadoSel}">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+             <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelBox>
+              <af:panelHeader text="#{tx['dec_jurada.tbl_decj.title']}"
+                              messageType="info" size="1"/>
+              <af:table value="#{bindings.SisDeclaracionJuradaVw.collectionModel}"
+                        var="row"
+                        rows="#{bindings.SisDeclaracionJuradaVw.rangeSize}"
+                        first="#{bindings.SisDeclaracionJuradaVw.rangeStart}"
+                        emptyText="#{tx['table.no_rows']}"
+                        selectionListener="#{bindings.SisDeclaracionJuradaVw.collectionModel.makeCurrent}"
+                        selectionState="#{bindings.SisDeclaracionJuradaVw.collectionModel.selectedRow}"
+                        banding="row" bandingInterval="1" id="tbl_declaracion"
+                        partialTriggers="cmb_partida tbl_declaracion:cmbTipo cmb_declaraJ">
+                <f:facet name="actions">
+                  <af:panelButtonBar>
+                    <af:commandButton text="#{tx['dec_jurada.tbl_hora.btnAgD.texto']}"                                      
+                                      id="btn_crear"
+                                      action="#{declaracionjurada.btn_crear_action}"
+                                      binding="#{declaracionjurada.btn_CrearDecJurada}"/>
+                    <af:commandButton text="#{tx['dec_jurada.tbl_hora.btnEd.texto']}"
+                                      action="#{declaracionjurada.edtiarDecJurada_action}"
+                                      binding="#{declaracionjurada.btn_EdDecla}"/>
+                    <af:commandButton text="#{tx['dec_jurada.tbl_hora.btnEl.texto']}"
+                                      action="#{declaracionjurada.btBorrar_DecJurada_action}"
+                                      binding="#{declaracionjurada.btn_delDeclara}"/>
+                    <af:commandButton text="#{tx['dec_jurada.tbl_decj.btnok.texto']}"
+                                      action="#{declaracionjurada.ok_decJurada_action}"/>
+                  </af:panelButtonBar>
+                </f:facet>
+                <f:facet name="selection">
+                  <af:tableSelectOne autoSubmit="true"
+                                     binding="#{declaracionjurada.sele_tbl_declaraMaster}"/>
+                </f:facet>
+                <f:facet name="header">
+                  <af:outputText value="#{tx['dec_jurada.tbl_decj.title']}"
+                                 inlineStyle="color:rgb(165,41,0);"/>
+                </f:facet>
+                <af:column sortProperty="TipoDeclaracion" sortable="false"
+                           headerText="#{tx['dec_jurada.tbl_decj.hdtipode.texto']}"
+                           noWrap="true">
+                  <af:outputText value="#{row.NombreCargo}" id="lbl_nombreCarga"
+                                 rendered="#{not row.Selected}"/>
+                  <af:selectOneChoice label="Label 2"
+                                      value="#{bindings.TipoDeclaracion.inputValue}"
+                                      rendered="#{row.Selected}"
+                                      autoSubmit="true" id="cmbTipo"
+                                      partialTriggers="cmb_partida"
+                                      valuePassThru="true" disabled="true">
+                    <af:selectItem label="Cargos Extrauniversitarios"
+                                   value="E"/>
+                    <af:selectItem label="Cargos Universitarios" value="U"/>
+                  </af:selectOneChoice>
+                </af:column>
+                <af:column sortable="false"
+                           headerText="#{tx['dec_jurada.tbl_decj.hdsubprog.texto']}"
+                           rendered="false">
+                  <af:selectOneChoice value="#{bindings['SisUnidadesEjecutoras_Id_vwSubprograma'].inputValue}"
+                                      label="#{bindings['SisUnidadesEjecutoras_Id_vwSubprograma'].label}"
+                                      autoSubmit="true"
+                                      valueChangeListener="#{declaracionjurada.cmbSubprograma_valuechange}"
+                                      id="cmb_partida"
+                                      binding="#{declaracionjurada.cmb_subprograma}"
+                                      rendered="#{row.Selected}"
+                                      tip="Dejar en blanco si es cargo Extrauniversitario">
+                    <f:selectItems value="#{bindings['SisUnidadesEjecutoras_Id_vwSubprograma'].items}"/>
+                  </af:selectOneChoice>
+                  <af:outputText value="#{row.NomSubprograma}"
+                                 rendered="#{not row.Selected}"/>
+                </af:column>
+                <af:column sortable="false" headerText="No. Plaza"
+                           rendered="false">
+                  <af:outputText value="#{row.NumeroPlaza}"
+                                 rendered="#{not row.Selected}"/>
+                  <af:inputText label="Label 10" columns="5"
+                                tip="Dejar en blanco si es cargo Extrauniversitario"
+                                rendered="#{row.Selected}" id="inptNPlaza"
+                                value="#{row.NumeroPlaza}"/>
+                </af:column>
+                <af:column sortProperty="Empresa" sortable="false"
+                           headerText="#{tx['dec_jurada.tbl_decj.hdtempresa2.texto']}">
+                  <af:outputText value="#{row.Empresa}"
+                                 rendered="#{not row.Selected}"/>
+                  <af:inputText label="Label 2" value="#{row.Empresa}"
+                                rendered="#{row.Selected}" showRequired="true"
+                                columns="20"
+                                binding="#{declaracionjurada.inpt_empresa}"
+                                partialTriggers="cmb_partida"/>
+                </af:column>
+                <af:column sortable="false"
+                           headerText="#{tx['dec_jurada.tbl_decj.hddirec.texto']}">
+                  <af:outputText value="#{row.Direccion}"
+                                 rendered="#{not row.Selected}"/>
+                  <af:inputText label="Label 7" rendered="#{row.Selected}"
+                                value="#{row.Direccion}" columns="20"
+                                binding="#{declaracionjurada.inpt_direccion}"
+                                partialTriggers="cmb_partida" rows="1"/>
+                </af:column>
+                <af:column sortProperty="Telefono" sortable="false"
+                           headerText="#{tx['dec_jurada.tbl_decj.hdtel.texto']}">
+                  <af:outputText value="#{row.Telefono}"
+                                 rendered="#{not row.Selected}"/>
+                  <af:inputText label="Label 3" columns="8"
+                                value="#{row.Telefono}"
+                                rendered="#{row.Selected}"/>
+                </af:column>
+                <af:column sortProperty="Ext" sortable="false"
+                           headerText="#{bindings.SisDeclaracionJuradaVw.labels.Ext}">
+                  <af:outputText value="#{row.Ext}"
+                                 rendered="#{not row.Selected}"/>
+                  <af:inputText label="Label 4" columns="5"
+                                rendered="#{row.Selected}"/>
+                </af:column>
+                <af:column sortProperty="FechaInicio" sortable="false"
+                           headerText="#{tx['dec_jurada.tbl_decj.hdfi.texto']}"
+                           noWrap="true">
+                  <af:outputText value="#{row.FechaInicio}"
+                                 rendered="#{not row.Selected}">
+                    <f:convertDateTime pattern="#{bindings.SisDeclaracionJuradaVw.formats.FechaInicio}"/>
+                  </af:outputText>
+                  <af:selectInputDate label="Label 1" value="#{row.FechaInicio}"
+                                      rendered="#{row.Selected}"
+                                      showRequired="true"/>
+                </af:column>
+                <af:column sortProperty="FechaFin" sortable="false"
+                           headerText="#{tx['dec_jurada.tbl_decj.hdff.texto']}"
+                           noWrap="true">
+                  <af:outputText value="#{row.FechaFin}"
+                                 rendered="#{not row.Selected}">
+                    <f:convertDateTime pattern="#{bindings.SisDeclaracionJuradaVw.formats.FechaFin}"/>
+                  </af:outputText>
+                  <af:selectInputDate label="Label 2" value="#{row.FechaFin}"
+                                      rendered="#{row.Selected}"
+                                      tip="Dejar en blanco si es indefinido"/>
+                </af:column>
+                <af:column sortable="false"
+                           headerText="#{tx['dec_jurada.tbl_decj.horas.texto']}"
+                           formatType="number">
+                  <af:outputText value="#{row.HorasContratadas}"
+                                 rendered="#{not row.Selected}"/>
+                  <af:inputText label="Label 8" columns="3"
+                                value="#{row.HorasContratadas}"
+                                rendered="#{row.Selected}"/>
+                </af:column>
+              </af:table>
+              <af:objectSeparator/>
+              <af:panelHeader text="#{tx['dec_jurada.tbl_hora.title.texto']} #{bindings.Empresa.inputValue}"
+                              partialTriggers="tbl_declaracion"
+                              messageType="info" size="1">
+                <af:selectOneChoice
+                                    value="#{bindings.NombreCargo.inputValue}"
+                                    autoSubmit="true" id="cmb_declaraJ">
+                  <f:selectItems value="#{bindings.NombreCargo.items}"/>
+                </af:selectOneChoice>
+              </af:panelHeader>
+              <af:table value="#{bindings.SisDeclaracionJuradaVwSisHorarioDecJuradaVw.collectionModel}"
+                        var="row"
+                        rows="#{bindings.SisDeclaracionJuradaVwSisHorarioDecJuradaVw.rangeSize}"
+                        first="#{bindings.SisDeclaracionJuradaVwSisHorarioDecJuradaVw.rangeStart}"
+                        emptyText="#{tx['table.no_rows']}"
+                        selectionState="#{bindings.SisDeclaracionJuradaVwSisHorarioDecJuradaVw.collectionModel.selectedRow}"
+                        selectionListener="#{bindings.SisDeclaracionJuradaVwSisHorarioDecJuradaVw.collectionModel.makeCurrent}"
+                        partialTriggers="tbl_declaracion" banding="none"
+                        bandingInterval="1">
+                <f:facet name="selection">
+                  <af:tableSelectOne autoSubmit="true"
+                                     binding="#{declaracionjurada.sele_tbl_horario}"/>
+                </f:facet>
+                <f:facet name="actions">
+                  <af:panelButtonBar>
+                    <af:commandButton text="#{tx['dec_jurada.tbl_hora.btnAg.texto']}"
+                                      action="#{declaracionjurada.btn_agregarHorario}"
+                                      binding="#{declaracionjurada.btn_crearHorario}"/>
+                    <af:commandButton text="#{tx['dec_jurada.tbl_hora.btnEd.texto']}"
+                                      action="#{declaracionjurada.btnEditarH}"
+                                      binding="#{declaracionjurada.btn_editHorario}"/>
+                    <af:commandButton text="#{tx['dec_jurada.tbl_hora.btnEl.texto']}"
+                                      binding="#{declaracionjurada.btn_eliminarHorario}"
+                                      action="#{declaracionjurada.btn_eliminar_action}"/>
+                    <af:commandButton text="#{tx['dec_jurada.tbl_decj.btnok.texto']}"
+                                      action="#{declaracionjurada.btn_commit}"
+                                      binding="#{declaracionjurada.btn_ok_horario}"/>
+                  </af:panelButtonBar>
+                </f:facet>
+                <f:facet name="header">
+                  <af:outputText value="#{tx['dec_jurada.tbl_hora.title.texto']} #{bindings.Empresa.inputValue}"
+                                 inlineStyle="color:rgb(165,41,0);"/>
+                </f:facet>
+                <af:column sortProperty="IdDia" sortable="false"
+                           headerText="#{tx['dec_jurada.tbl_hora.dia']}">
+                  <af:outputText value="#{row.NombreDia}"
+                                 rendered="#{not row.Selected}"/>
+                  <af:selectOneChoice label="Label 3" value="#{row.IdDia}"
+                                      rendered="#{row.Selected}">
+                    <af:selectItem value="L" label="Lunes"/>
+                    <af:selectItem value="M" label="Martes"/>
+                    <af:selectItem value="MI" label="Miercoles"/>
+                    <af:selectItem value="J" label="Jueves"/>
+                    <af:selectItem value="V" label="Viernes"/>
+                    <af:selectItem label="Sabado" value="S"/>
+                    <af:selectItem label="Domingo" value="D"/>
+                    <af:selectItem value="L-V" label="Lunes a viernes"/>
+                    <af:selectItem value="L-S" label="Lunes a sábado"/>
+                    <af:selectItem value="L-D" label="Lunes a domingo"/>
+                  </af:selectOneChoice>
+                </af:column>
+                <af:column sortProperty="HoraInicio" sortable="false"
+                           headerText="#{tx['dec_jurada.tbl_hora.hI']}">
+                  <af:outputText value="#{row.HoraInicio2}"
+                                 rendered="#{not row.Selected}"/>
+                  <af:inputText label="Label 5" columns="4"
+                                value="#{row.HoraInicio2}"
+                                rendered="#{row.Selected}"
+                                onfocus="setMask(this);"/>
+                </af:column>
+                <af:column sortProperty="HoraFin" sortable="false"
+                           headerText="#{tx['dec_jurada.tbl_hora.hf']}">
+                  <af:outputText value="#{row.HoraFin2}"
+                                 rendered="#{not row.Selected}"/>
+                  <af:inputText label="Label 6" columns="4"
+                                value="#{row.HoraFin2}"
+                                rendered="#{row.Selected}"
+                                onfocus="setMask2(this);"/>
+                </af:column>
+                <af:column sortable="false"
+                           headerText="#{tx['dec_jurada.tbl_hora.choras']}">
+                  <af:outputText value="#{row.NumHoras}"/>
+                </af:column>
+              </af:table>
+              <af:panelButtonBar>
+                <af:commandButton text="#{tx['dec_jurada.btn_constancia.texto']}"
+                                  id="btn_imprimir"
+                                  action="#{declaracionjurada.btn_imprimir_action}"
+                                  onclick="generarReporte();" rendered="false"/>
+                <af:commandButton text="#{tx['dec_jurada.tbl_hora.btnRoll.texto']}"
+                                  actionListener="#{bindings.Rollback.execute}"
+                                  immediate="true"
+                                  action="#{declaracionjurada.btn_rollback}">
+                  <af:resetActionListener/>
+                </af:commandButton>
+              </af:panelButtonBar>
+            </af:panelBox>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:declaracionjurada-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:declaracionjurada-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:declaracionjurada-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:declaracionjurada-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:declaracionjurada-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:declaracionjurada-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:declaracionjurada-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:declaracionjurada-->
+</jsp:root>

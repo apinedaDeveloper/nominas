@@ -1,0 +1,141 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <jsp:output omit-xml-declaration="true" doctype-root-element="HTML"
+              doctype-system="http://www.w3.org/TR/html4/loose.dtd"
+              doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN"/>
+  <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+  <f:view>
+    <afh:html>
+      <f:loadBundle basename="propiedades" var="txt"/>
+      <afh:head title="#{txt['new_varia_nomina.title']}">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+       <jsp:include page="/js/libJQ.js"/>       
+       <jsp:include page="/js/librariesDialog.js"/>           
+      <script type="text/javascript" src="/${flujo_usuario.dominioApp}/js/gestiones/scrptAutorizacion.js">
+      var xy=new Date().getMilliseconds();      
+      </script>
+      <script language="javascript" type="text/javascript"> 
+       gbl_form="form1";
+       gbl_actionId="form1:page1:cmdRefresh";
+      </script>     
+      </afh:head>
+      <afh:body>
+        <af:messages/>
+        <h:form id="form1">
+          <af:page title="#{flujo_usuario.datosEmpleadoSel}"
+           value="#{modeloMenu.modeloBD}" var="node" id="page1">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+               <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+         
+            <af:panelBox>
+              <f:verbatim>
+                <input type="hidden" name="hdn_tipo" id="hdn_tipo" value="8"/>
+                <input type="hidden" name="hdn_Id" id="hdn_Id"
+                       value="${bindings.pIdVar1.inputValue}"/>
+              </f:verbatim>
+              <af:panelHeader text="Id: #{bindings.pIdVar1.inputValue}"/>
+              <af:panelForm>
+                <af:selectOneChoice value="#{bindings['SisAjusteActivos_vwNombre'].inputValue}"
+                                    label="#{txt['new_varia_nomina.cmb_IdAjuste.txt']}"
+                                    autoSubmit="true" id="cmbDescuento">
+                  <f:selectItems value="#{bindings['SisAjusteActivos_vwNombre'].items}"/>
+                </af:selectOneChoice>
+                <af:selectOneChoice value="#{bindings['contratos_del_tesorero_vwNopartida'].inputValue}"
+                                    label="#{txt['new_varia_nomina.out_IdContrato.txt']}"
+                                    partialTriggers="cmbDescuento"
+                                    disabled="#{bindings.pNivelAjuste1.inputValue eq 'E'}">
+                  <f:selectItems value="#{bindings['contratos_del_tesorero_vwNopartida'].items}"/>
+                </af:selectOneChoice>
+                <af:selectInputDate value="#{bindings.pFechaInicio.inputValue}"
+                                    label="#{txt['new_varia_nomina.inp_fechaInicio']}"
+                                    required="#{bindings.pFechaInicio.mandatory}">
+                  <af:validator binding="#{bindings.pFechaInicio.validator}"/>
+                  <f:convertDateTime pattern="#{bindings.pFechaInicio.format}"/>
+                </af:selectInputDate>
+                <af:selectInputDate value="#{bindings.pFechaFin.inputValue}"
+                                    label="#{txt['new_varia_nomina.inp_fechaFin']}"
+                                    required="#{bindings.pFechaFin.mandatory}">
+                  <af:validator binding="#{bindings.pFechaFin.validator}"/>
+                  <f:convertDateTime pattern="#{bindings.pFechaFin.format}"/>
+                </af:selectInputDate>
+                <af:inputText value="#{bindings.pValor.inputValue}"
+                              label="#{txt['new_varia_nomina.inp_Valor.txt']}"
+                              required="#{bindings.pValor.mandatory}"
+                              columns="#{bindings.pValor.displayWidth}">
+                  <af:validator binding="#{bindings.pValor.validator}"/>
+                  <f:convertNumber groupingUsed="false"
+                                   pattern="#{bindings.pValor.format}"/>
+                </af:inputText>
+                <af:inputText value="#{bindings.pPorcentaje.inputValue}"
+                              label="#{txt['new_varia_nomina.inp_Porce.txt']}"
+                              required="#{bindings.pPorcentaje.mandatory}"
+                              columns="#{bindings.pPorcentaje.displayWidth}">
+                  <af:validator binding="#{bindings.pPorcentaje.validator}"/>
+                  <f:convertNumber groupingUsed="false"
+                                   pattern="#{bindings.pPorcentaje.format}"/>
+                </af:inputText>
+                <af:inputText value="#{bindings.pObservaciones.inputValue}"
+                              label="#{txt['new_varia_nomina.inp_Descripcion.txt']}"
+                              required="#{bindings.pObservaciones.mandatory}"
+                              columns="60" rows="4">
+                  <af:validator binding="#{bindings.pObservaciones.validator}"/>
+                </af:inputText>
+              </af:panelForm>
+              <af:panelHorizontal>
+                <af:commandButton text="#{txt['new_varia_nomina.btn_grabar_ajuste']}"
+                                  disabled="#{!bindings['nuevo_ajuste'].enabled}"
+                                  action="#{backing_bean_comun.btn_commit_new_descuento_action}"/>
+                <af:commandButton actionListener="#{bindings.Rollback.execute}"
+                                  text="#{txt['new_varia_nomina.btn_cancelar']}"
+                                  immediate="true" action="lst_desc_empleado">
+                  <af:resetActionListener/>
+                </af:commandButton>
+                <f:facet name="separator">
+                  <af:objectSpacer width="30" height="10"/>
+                </f:facet>
+                <af:commandLink onclick="return OpenDialogo(1);">
+                  <af:objectImage source="/imagenes/btn_trasladar.png"/>
+                </af:commandLink>
+                <af:commandLink
+                                onclick="return OpenDialogo(2);">
+                  <af:objectImage source="/imagenes/btn_anular.png"/>
+                </af:commandLink>
+                <af:commandLink id="cmdRefresh"
+                                action="lst_desc_empleado" disabled="true"/>
+              </af:panelHorizontal>
+            </af:panelBox>
+          </af:page>
+          <f:verbatim>
+          <jsp:include page="../util/dialog_autoriza.txt"/>     
+          </f:verbatim>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:backing_bean_comun-->
+</jsp:root>

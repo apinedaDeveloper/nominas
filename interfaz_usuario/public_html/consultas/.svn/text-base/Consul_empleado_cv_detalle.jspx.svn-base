@@ -1,0 +1,263 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:h="http://java.sun.com/jsf/html">
+  <f:view>
+    <afh:html binding="#{Consul_empleado_cv_detalle.html1}" id="html1">
+      <jsp:output omit-xml-declaration="false" doctype-root-element="html"
+                  doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
+                  doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"/>
+      <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+      <afh:head title="Detalle de Consulta de Empleados para Impresión de CV.">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+        <title>Consulta de Empleados para Impresión de CV Detalle</title>
+        <script language="javascript" type="text/javascript"> 
+            function openFoto(nomArchivo){ 
+                window.open("/${flujo_usuario.dominioApp}/faces/ver_documento?source="+nomArchivo,"preview","width=640,height=640,scrollbars=YES");
+            }
+            function confirmarRevertirConfirmacionFoto(idFoto){
+                if( confirm("¿Desea desconfirmar la foto con ID: " + idFoto) == true ) {
+                    alert("Operación exitosa.");
+                    return true;
+                }
+                return false;
+            }
+            function confirmarRevertirConfirmacionDocumentoAdj(idDocumentoAdjunto){
+                if( confirm("¿Desea desconfirmar el documento adjunto con ID: " + idDocumentoAdjunto) == true ) {
+                    alert("Operación exitosa.");   
+                    return true;
+                }
+                return false;
+            }
+            function verCV(noRegistroEmpleado){ 
+                var link;
+                link = "/${flujo_usuario.dominioApp}/faces/verreportepdf?id="+noRegistroEmpleado+String.fromCharCode(38)+"rep=EMPLEADO_CURRICULUM_VITAE_CONSULTA"
+                window.open(link,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable=1"); 
+                return false;
+            } 
+        </script>
+      </afh:head>
+      <afh:body>
+        <af:messages id="messages1"
+                     binding="#{Consul_empleado_cv_detalle.messages1}"/>
+        <af:form id="form1" binding="#{Consul_empleado_cv_detalle.form1}">
+          <af:page title="Detalle Consulta de Currículum Vitae"
+                   value="#{modeloMenu.modeloBD}" var="node" id="page1"
+                   binding="#{Consul_empleado_cv_detalle.page1}">
+            <f:facet name="branding">
+              <f:subview id="logo"
+                         binding="#{Consul_empleado_cv_detalle.logo}">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  action="#{node.getOutcome}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  id="cmdMenuItem"
+                                  binding="#{Consul_empleado_cv_detalle.cmdMenuItem}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"/>
+            </f:facet>
+            <f:facet name="infoUser">
+              <f:subview id="infoUsuario">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelHorizontal halign="center" id="panelHorizontal1"
+                                binding="#{Consul_empleado_cv_detalle.panelHorizontal1}">
+              <af:panelBox id="panelBox1"
+                           binding="#{Consul_empleado_cv_detalle.panelBox1}"
+                           width="100%">
+                <af:panelHorizontal halign="center"
+                                    inlineStyle="color:rgb(255,132,0);">
+                  <af:outputFormatted value="&lt;b>Registro Empleado: &lt;/b> #{bindings.RegistroEmpleado.inputValue}"
+                                      styleUsage="instruction"
+                                      id="outputRegistroEmpleado"
+                                      inlineStyle="font-size:small; text-align:center; font-weight:bold;"/>
+                  <af:objectSpacer width="20" height="10"/>
+                  <af:outputFormatted value="&lt;b>Nombre: &lt;/b> #{bindings.Nombre1.inputValue} #{bindings.Nombre2.inputValue} #{bindings.Apellido1.inputValue} #{bindings.Apellido2.inputValue}"
+                                      styleUsage="instruction"
+                                      id="outputNombre"
+                                      inlineStyle="font-size:small; text-align:center; font-weight:bold;"/>
+                  <af:objectSpacer width="20" height="10"/>
+                  <af:outputFormatted value="&lt;b>Número de Ficha: &lt;/b> #{bindings.NoFormulario.inputValue}"
+                                      styleUsage="instruction"
+                                      id="outputNoFormularioFicha"
+                                      inlineStyle="font-size:small; text-align:center; font-weight:bold;"/>
+                </af:panelHorizontal>
+                <af:table emptyText="#{bindings['Foto_empleado'].viewable ? 'Ninguna Fila Aún.' : 'Acceso Denegado.'}"
+                          value="#{bindings.Foto_empleado.collectionModel}"
+                          var="row" banding="row" bandingInterval="1"
+                          id="Sis_foto_empleado_table"
+                          rows="#{bindings.Foto_empleado.rangeSize}"
+                          selectionState="#{bindings.Foto_empleado.collectionModel.selectedRow}"
+                          binding="#{Consul_empleado_cv_detalle.sis_foto_empleado_table}"
+                          first="#{bindings.Foto_empleado.rangeStart}"
+                          width="100%"
+                          selectionListener="#{bindings.Foto_empleado.collectionModel.makeCurrent}"
+                          rendered="#{ roles_usuario.administrador || roles_usuario.curriculum }">
+                  <af:column sortable="false" headerText="Foto ID" formatType="icon">
+                    <h:outputLink value="javascript:openFoto('#{row.nomArchEncript}')">
+                      <af:outputText value="#{row.IdArchivoAdjunto}">
+                        <af:convertNumber groupingUsed="false"/>
+                      </af:outputText>
+                    </h:outputLink>
+                  </af:column>
+                  <af:column sortable="false" headerText="Nombre del Archivo">
+                    <af:outputText value="#{row.NomArchivo}" inlineStyle="padding:5.0pt;"/>
+                  </af:column>
+                  <af:column headerText="Fecha Adjuntado" sortable="false" formatType="icon">
+                    <af:outputText value="#{row.FechaCreacion}" inlineStyle="padding:5.0pt;"/>
+                  </af:column>
+                  <af:column headerText="Estado" sortable="false" formatType="icon">
+                    <af:outputText value="#{row.Validado eq '1'?'CONFIRMADA':'NO CONFIRMADA'}"
+                                   inlineStyle="background-color:#{row.Validado eq '1' ? 'green' : 'red'}"/>
+                  </af:column>
+                  <af:column sortable="false" headerText="Opciones" formatType="icon">
+                    <af:commandButton text="Desconfirmar"
+                                      onclick="return confirmarRevertirConfirmacionFoto(#{row.IdArchivoAdjunto});"
+                                      id="btn_revertir_confirmacion_foto"
+                                      action="#{Consul_empleado_cv_detalle.btn_revertir_confirmacion_foto_action}"
+                                      inlineStyle="font-size:large; font-weight:bold;"/>
+                  </af:column>
+                  <f:facet name="header">
+                    <h:panelGroup>
+                      <af:outputText value="Foto del Empleado (aparecerá únicamente si ya fue confirmada)"/>
+                      <af:objectSpacer width="10" height="10"/>
+                      <af:objectSeparator/>
+                    </h:panelGroup>
+                  </f:facet>
+                </af:table>
+                <af:table emptyText="#{bindings['Documentos_adjuntos'].viewable ? 'Ninguna Fila Aún.' : 'Acceso Denegado.'}"
+                          value="#{bindings.Documentos_adjuntos.collectionModel}"
+                          var="row" banding="row" bandingInterval="1"
+                          id="Sis_documentos_adjuntos_table"
+                          selectionState="#{bindings.Documentos_adjuntos.collectionModel.selectedRow}"
+                          binding="#{Consul_empleado_cv_detalle.sis_documentos_adjuntos_table}"
+                          first="#{bindings.Documentos_adjuntos.rangeStart}"
+                          width="100%"
+                          rows="#{bindings.Documentos_adjuntos.rangeSize}"
+                          selectionListener="#{bindings.Documentos_adjuntos.collectionModel.makeCurrent}"
+                          rendered="#{ roles_usuario.administrador || roles_usuario.curriculum || roles_usuario.consulCurriculum }">
+                  <af:column sortProperty="IdArchivoAdjunto" sortable="true"
+                             headerText="Doc. ID" formatType="icon">
+                    <h:outputLink value="javascript:openFoto('#{row.nomArchEncript}')">
+                      <af:outputText value="#{row.IdArchivoAdjunto}">
+                        <af:convertNumber groupingUsed="false"/>
+                      </af:outputText>
+                    </h:outputLink>
+                  </af:column>
+                  <af:column sortProperty="NomArchivo" sortable="true"
+                             headerText="Nombre del Documento">
+                    <af:outputText value="#{row.NomArchivo}" inlineStyle="padding:5.0pt;"/>
+                  </af:column>
+                  <af:column sortable="true" headerText="Tipo de Documento"
+                             sortProperty="TipoArchivo_nombre" formatType="icon">
+                    <af:outputText value="#{row.TipoArchivo_nombre}"/>
+                  </af:column>
+                  <af:column sortProperty="FechaCreacion" sortable="true"
+                             headerText="Fecha Adjuntado" formatType="icon">
+                    <af:outputText value="#{row.FechaCreacion}" inlineStyle="padding:5.0pt;">
+                      <af:convertDateTime pattern="dd/MM/yyyy"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortable="true" headerText="Estado"
+                             sortProperty="Validado" formatType="icon">
+                    <af:outputText value="#{row.Validado eq '1'?'CONFIRMADO':'NO CONFIRMADO'}"
+                                   inlineStyle="background-color:#{row.Validado eq '1' ? 'green' : 'red'}"/>
+                  </af:column>
+                  <af:column sortable="false"
+                             headerText="Opciones" rendered="#{roles_usuario.administrador || roles_usuario.curriculum}" formatType="icon">
+                    <af:commandButton text="Desconfirmar"
+                                      onclick="return confirmarRevertirConfirmacionDocumentoAdj(#{row.IdArchivoAdjunto});"
+                                      id="btn_revertir_confirmacion_documento"
+                                      action="#{Consul_empleado_cv_detalle.btn_revertir_confirmacion_documento_action}"
+                                      inlineStyle="font-size:large; font-weight:bold;"/>
+                  </af:column>
+                  <f:facet name="header">
+                    <h:panelGroup>
+                      <af:outputText value="Documentos Adjuntos (aparecerán únicamente los confirmados)"/>
+                      <af:objectSpacer width="10" height="10"/>
+                      <af:objectSeparator/>
+                    </h:panelGroup>
+                  </f:facet>
+                </af:table>
+                <af:table value="#{bindings['Boleto_ornato'].collectionModel}"
+                          var="row"
+                          rows="#{bindings['Boleto_ornato'].rangeSize}"
+                          first="#{bindings['Boleto_ornato'].rangeStart}"
+                          emptyText="#{bindings['Boleto_ornato'].viewable ? 'Ninguna Fila Aún.' : 'Acceso Denegado.'}"
+                          banding="row" bandingInterval="1"
+                          id="Sis_boleto_ornato_table"
+                          selectionListener="#{bindings['Boleto_ornato'].collectionModel.makeCurrent}"
+                          selectionState="#{bindings['Boleto_ornato'].collectionModel.selectedRow}"
+                          binding="#{Consul_empleado_cv_detalle.sis_boleto_ornato_table}"
+                          width="100%"
+                          rendered="#{roles_usuario.administrador || roles_usuario.revBoletoOrnato}">
+                  <af:column sortProperty="IdArchivoAdjunto" sortable="true"
+                             headerText="Doc. ID" formatType="icon">
+                    <h:outputLink value="javascript:openFoto('#{row.nomArchEncript}')">
+                      <af:outputText value="#{row.IdArchivoAdjunto}">
+                        <af:convertNumber groupingUsed="false"/>
+                      </af:outputText>
+                    </h:outputLink>
+                  </af:column>
+                  <af:column sortProperty="NomArchivo" sortable="true"
+                             headerText="Nombre del Documento">
+                    <af:outputText value="#{row.NomArchivo}" inlineStyle="padding:5.0pt;"/>
+                  </af:column>
+                  <af:column sortProperty="TipoarchivoNombre" sortable="true"
+                             headerText="Tipo de Documento" formatType="icon">
+                    <af:outputText value="#{row.TipoarchivoNombre}"/>
+                  </af:column>
+                  <af:column sortProperty="FechaCreacion" sortable="true"
+                             headerText="Fecha Adjuntado" formatType="icon">
+                    <af:outputText value="#{row.FechaCreacion}" inlineStyle="padding:5.0pt;">
+                      <af:convertDateTime pattern="dd/MM/yyyy"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="Validado" sortable="true"
+                             headerText="Estado" formatType="icon">
+                    <af:outputText value="#{row.Validado eq '1'?'CONFIRMADA':'NO CONFIRMADA'}"
+                                   inlineStyle="background-color:#{row.Validado eq '1' ? 'green' : 'red'}"/>
+                  </af:column>
+                  <f:facet name="header">
+                    <h:panelGroup>
+                      <af:outputText value="Boleto de Ornato (aparecerá únicamente si ya fue confirmado por el trabajador)"/>
+                      <af:objectSpacer width="10" height="10"/>
+                      <af:objectSeparator/>
+                    </h:panelGroup>
+                  </f:facet>
+                </af:table>
+                <af:panelHorizontal>
+                  <af:commandButton text="Retornar" id="btn_retornar"
+                                    immediate="true"
+                                    binding="#{Consul_empleado_cv_detalle.btn_retornar}"
+                                    action="#{Consul_empleado_cv_detalle.btn_retornar_action}"
+                                    inlineStyle="font-size:larger; font-weight:bold;">
+                    <af:resetActionListener/>
+                  </af:commandButton>
+                  <af:objectSpacer width="10" height="10"/>
+                  <af:commandButton text="Imprimir CV" id="btn_ver_cv"
+                                    binding="#{Consul_empleado_cv_detalle.btn_ver_cv}"
+                                    inlineStyle="font-weight:bold; font-size:large;"
+                                    onclick='return verCV("#{bindings.RegistroEmpleado.inputValue}");'/>
+                </af:panelHorizontal>
+              </af:panelBox>
+            </af:panelHorizontal>
+          </af:page>
+        </af:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:Consul_empleado_cv_detalle-->
+</jsp:root>

@@ -1,0 +1,707 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel"
+                version="10.1.3.42.70" id="gestiones_censo_laboralPageDef"
+                Package="interfaz_usuario.pageDefs"
+                MsgBundleClass="interfaz_usuario.pageDefs.gestiones_censo_laboralPageDefMsgBundle">
+  <parameters/>
+  <executables>
+    <iterator id="SisFichaEmpleadoVwIterator" RangeSize="10"
+              Binds="SisFichaEmpleadoVw" DataControl="QUERRYSDataControl"/>
+    <iterator id="todos_los_DepartamentosIterator" RangeSize="-1"
+              Binds="todos_los_Departamentos" DataControl="QUERRYSDataControl">
+      <sortCriteria>
+        <sort attribute="Registro" ascending="true"/>
+      </sortCriteria>
+    </iterator>
+    <invokeAction Binds="SinOpcionGenerica" id="ExeDeparta"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <iterator id="nacionalidadIterator" RangeSize="-1" Binds="nacionalidad"
+              DataControl="QUERRYSDataControl">
+      <sortCriteria>
+        <sort attribute="Nombre" ascending="true"/>
+      </sortCriteria>
+    </iterator>
+    <iterator id="municipio_by_ordcedIterator" RangeSize="-1"
+              Binds="municipio_by_ordced" DataControl="QUERRYSDataControl"/>
+    <iterator id="SisNivelAcadIterator" RangeSize="-1" Binds="SisNivelAcad"
+              DataControl="QUERRYSDataControl">
+      <sortCriteria>
+        <sort attribute="IdNivel" ascending="true"/>
+      </sortCriteria>
+    </iterator>
+    <iterator id="Sis_Colegio_profesionalIterator" RangeSize="-1"
+              Binds="Sis_Colegio_profesional" DataControl="QUERRYSDataControl"/>
+    <iterator id="Sis_Institucion_academicaIterator" RangeSize="-1"
+              Binds="Sis_Institucion_academica"
+              DataControl="QUERRYSDataControl"/>
+    <iterator id="municipios_dep_by_munIterator1" RangeSize="-1"
+              Binds="municipios_dep_by_mun2" DataControl="QUERRYSDataControl"/>
+    <invokeAction Binds="empleadoActual" id="exeEmpleadoActual"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback and empty bindings.exceptionsList and flujo_usuario.censoLaboralVista==0}"/>
+    <invokeAction Binds="InstAcadem" id="ExeInstAcadem" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback and empty bindings.exceptionsList}"/>
+    <invokeAction Binds="ExeMunCed" id="EjeMunCed" Refresh="renderModel"/>
+    <iterator id="municipios_dep_by_munIterator" RangeSize="-1"
+              Binds="municipios_dep_by_mun" DataControl="QUERRYSDataControl"/>
+    <invokeAction Binds="listado_munbynumNoPost" id="ExeNumNoPost"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+     <invokeAction Binds="listado_munbynumNoPost2" id="ExeNumNoPost2"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <invokeAction Binds="listado_munbynumPost" id="ExeNumPost"
+                  Refresh="renderModel"
+                  RefreshCondition="${adfFacesContext.postback}"/>
+    <invokeAction Binds="listado_munbynumPost2" id="ExeNumPost2"
+                  Refresh="renderModel"
+                  RefreshCondition="${adfFacesContext.postback}"/>              
+    <iterator id="SisTipoJubiladoVwIterator" RangeSize="-1"
+              Binds="SisTipoJubiladoVw" DataControl="QUERRYSDataControl"
+              Refresh="ifNeeded">
+      <sortCriteria>
+        <sort attribute="IdTipoJubilado" ascending="true"/>
+      </sortCriteria>
+    </iterator>
+    <invokeAction Binds="actuRowNivelAca" id="ExeNivelAca" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback || (adfFacesContext.postback &amp;&amp; ficha_empleado.cambioNivelAcademico)}"/>
+    <iterator id="Sis_Arch_adjuntoIterator" RangeSize="10"
+              Binds="Sis_Arch_adjunto" DataControl="QUERRYSDataControl"/>
+    <variableIterator id="variables">
+      <variable Name="vResp" Type="java.lang.Object"/>
+      <variable Name="vGrupoDP" Type="oracle.jbo.domain.Number"
+                DefaultValue="1"/>
+      <variable Name="vFin" Type="java.lang.Boolean" DefaultValue="false"/>
+      <variable Name="ptipoGest" Type="java.lang.String" DefaultValue="2"/>
+    </variableIterator>
+    <invokeAction Binds="setActualizaValResp" id="ExeValResp"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <iterator id="SisRespuestaCensoVwIterator" Binds="SisRespuestaCensoVw"
+              RangeSize="-1" DataControl="QUERRYSDataControl"/>
+    <iterator id="puesto1Iterator" RangeSize="-1" Binds="puesto1"
+              DataControl="QUERRYSDataControl"/>
+    <iterator id="Sis_UniversidadesVwIterator" RangeSize="-1"
+              Binds="Sis_UniversidadesVw" DataControl="QUERRYSDataControl"/>
+    <iterator id="SisUnidadAcademicaVwIterator" Binds="SisUnidadAcademicaVw"
+              RangeSize="-1" DataControl="QUERRYSDataControl">
+      <sortCriteria>
+        <sort attribute="CodUnidad" ascending="true"/>
+      </sortCriteria>
+    </iterator>
+    <iterator id="todos_los_DepartamentosIterator1"
+              Binds="Sis_Departamentos2_vw" RangeSize="-1"
+              DataControl="QUERRYSDataControl" Refresh="ifNeeded"/>
+  </executables>
+  <bindings>
+    <attributeValues id="RegistroEmpleado"
+                     IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="RegistroEmpleado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="IdNivelAcademico"
+                     IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="IdNivelAcademico"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="IdNacionalidad"
+                     IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="IdNacionalidad"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="IdColegioProfesional"
+                     IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="IdColegioProfesional"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="IdInstitucionAcademica"
+                     IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="IdInstitucionAcademica"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Apellido1" IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="Apellido1"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Apellido2" IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="Apellido2"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Apellidocasada"
+                     IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="Apellidocasada"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Nombre1" IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="Nombre1"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Nombre2" IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="Nombre2"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Nombre3" IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="Nombre3"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Estadocivil" IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="Estadocivil"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Genero" IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="Genero"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="FechaNacimiento"
+                     IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="FechaNacimiento"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="OrdenCedula" IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="OrdenCedula"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="RegistroCedula"
+                     IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="RegistroCedula"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="MunicipioCedula"
+                     IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="MunicipioCedula"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="MunicipioDirec"
+                     IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="MunicipioDirec"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Cui" IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="Cui"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Nit" IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="Nit"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Igss" IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="Igss"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="TelCasa" IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="TelCasa"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Celular" IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="Celular"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Email" IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="Email"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="EmailInstitucional"
+                     IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="EmailInstitucional"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="TelefonoTrabajo"
+                     IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="TelefonoTrabajo"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Estado" IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="Estado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="FechaModificacion"
+                     IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="FechaModificacion"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="CreadoPor" IterBinding="SisFichaEmpleadoVwIterator">
+      <AttrNames>
+        <Item Value="CreadoPor"/>
+      </AttrNames>
+    </attributeValues>
+    <list StaticList="false" ListOperMode="0"
+          IterBinding="SisFichaEmpleadoVwIterator"
+          ListIter="todos_los_DepartamentosIterator" id="todos_los_DepartamentosRegistro"
+          NullValueFlag="1" NullValueId="todos_los_DepartamentosRegistro_null">
+      <AttrNames>
+        <Item Value="OrdenCedula"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="Registro"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Registro"/>
+        <Item Value="Nombre"/>
+      </ListDisplayAttrNames>
+    </list>
+    <list StaticList="false" ListOperMode="0"
+          IterBinding="SisFichaEmpleadoVwIterator"
+          ListIter="municipio_by_ordcedIterator" id="municipio_by_ordcedNombre"
+          NullValueFlag="1" NullValueId="municipio_by_ordcedNombre_null">
+      <AttrNames>
+        <Item Value="MunicipioCedula"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdMunicipio"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Nombre"/>
+      </ListDisplayAttrNames>
+    </list>
+    <list StaticList="false" ListOperMode="0"
+          IterBinding="SisFichaEmpleadoVwIterator"
+          ListIter="Sis_Colegio_profesionalIterator" id="Sis_Colegio_profesionalNombre"
+          NullValueFlag="1" NullValueId="Sis_Colegio_profesionalNombre_null">
+      <AttrNames>
+        <Item Value="IdColegioProfesional"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdColegioProfesional"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Nombre"/>
+      </ListDisplayAttrNames>
+    </list>
+    <list StaticList="false" ListOperMode="0"
+          IterBinding="SisFichaEmpleadoVwIterator"
+          ListIter="Sis_Institucion_academicaIterator"
+          id="Sis_Institucion_academicaNombreInstitucion" NullValueFlag="1"
+          NullValueId="Sis_Institucion_academicaNombreInstitucion_null">
+      <AttrNames>
+        <Item Value="IdInstitucionAcademica"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdInstitucionAcademica"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="NombreInstitucion"/>
+      </ListDisplayAttrNames>
+    </list>
+    <action IterBinding="SisFichaEmpleadoVwIterator" id="empleadoActual"
+            InstanceName="QUERRYSDataControl.SisFichaEmpleadoVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pRegEmpleado"
+                 NDValue="${flujo_usuario.usuarioLogueadoNumber?flujo_usuario.selRegEmpleado_login:0}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pNumFormulario" NDValue=""
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <action IterBinding="Sis_Institucion_academicaIterator" id="InstAcadem"
+            InstanceName="QUERRYSDataControl.Sis_Institucion_academica"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pTipoInst" NDValue="UNIVERSIDAD"
+                 NDType="java.lang.String"/>
+    </action>
+    <action IterBinding="municipio_by_ordcedIterator" id="ExeMunCed"
+            InstanceName="QUERRYSDataControl.municipio_by_ordced"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="ordced"
+                 NDValue="${bindings.todos_los_DepartamentosRegistro.currentRow['ordenCedula']}"
+                 NDType="java.lang.String"/>
+    </action>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator" id="estContrl1">
+      <AttrNames>
+        <Item Value="estContrl1"/>
+      </AttrNames>
+    </attributeValues>
+    <action id="Commit" InstanceName="QUERRYSDataControl"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="100"/>
+    <action IterBinding="municipios_dep_by_munIterator" id="listado_munbynumPost"
+            InstanceName="QUERRYSDataControl.municipios_dep_by_mun"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="id_mun" NDValue="" NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="id_dept"
+                 NDValue="${bindings.todos_los_DepartamentosNombre.currentRow['idDepartamento']==null?1:bindings.todos_los_DepartamentosNombre.currentRow['idDepartamento']}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <action IterBinding="municipios_dep_by_munIterator1" id="listado_munbynumPost2"
+            InstanceName="QUERRYSDataControl.municipios_dep_by_mun"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="id_mun" NDValue="" NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="id_dept"
+                 NDValue="${bindings.DepartamentoF.currentRow['idDepartamento']==null?1:bindings.DepartamentoF.currentRow['idDepartamento']}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <action IterBinding="municipios_dep_by_munIterator" id="listado_munbynumNoPost"
+            InstanceName="QUERRYSDataControl.municipios_dep_by_mun"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="id_mun" NDValue="${bindings.MunicipioDirec.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="id_dept" NDType="oracle.jbo.domain.Number"/>
+    </action>
+    
+    <action IterBinding="municipios_dep_by_munIterator1" id="listado_munbynumNoPost2"
+            InstanceName="QUERRYSDataControl.municipios_dep_by_mun2"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="id_mun"
+                 NDValue="${bindings.MunicipioFiscal1.inputValue==null?1:bindings.MunicipioFiscal1.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="id_dept" NDType="oracle.jbo.domain.Number"/>
+    </action>
+    
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator" id="Direccion">
+      <AttrNames>
+        <Item Value="Direccion"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="SisNivelAcadIterator" id="actuRowNivelAca"
+                  MethodName="setRowxValue" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisNivelAcad">
+      <NamedData NDName="pValor"
+                 NDValue="${bindings.IdNivelAcademico.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </methodAction>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator"
+                     id="Id_tipo_inst_academica">
+      <AttrNames>
+        <Item Value="Id_tipo_inst_academica"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisNivelAcadIterator"
+                     id="IdTipoInstAcademica">
+      <AttrNames>
+        <Item Value="IdTipoInstAcademica"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator" id="EstContrl2">
+      <AttrNames>
+        <Item Value="EstContrl2"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator" id="Aprobado">
+      <AttrNames>
+        <Item Value="Aprobado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator" id="OtroTrabajo">
+      <AttrNames>
+        <Item Value="OtroTrabajo"/>
+      </AttrNames>
+    </attributeValues>
+    <table id="SisFichaEmpleadoVwSis_Arch_adjunto"
+           IterBinding="Sis_Arch_adjuntoIterator">
+      <AttrNames>
+        <Item Value="IdArchivoAdjunto"/>
+        <Item Value="IdTipoArchivo"/>
+        <Item Value="IdContrato"/>
+        <Item Value="IdSolicitud"/>
+        <Item Value="NomArchivo"/>
+        <Item Value="Descripcion"/>
+        <Item Value="FechaCreacion"/>
+        <Item Value="RegistroEmpleado"/>
+        <Item Value="IdAnexo"/>
+        <Item Value="FechaBaja"/>
+        <Item Value="BajaPor"/>
+        <Item Value="nomArchEncript"/>
+      </AttrNames>
+    </table>
+    <action IterBinding="SisFichaEmpleadoVwIterator" id="actFichaEmpleado"
+            InstanceName="QUERRYSDataControl.SisFichaEmpleadoVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="2"/>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator"
+                     id="Nombrecompleto">
+      <AttrNames>
+        <Item Value="Nombrecompleto"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="SisFichaEmpleadoVwIterator"
+                  id="PrepararRespuestasCenso"
+                  MethodName="PrepararRespuestasCenso"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisFichaEmpleadoVw">
+      <NamedData NDName="vRespuestas"
+                 NDValue="${ficha_empleado_censo.todasRespuestas}"
+                 NDType="java.util.List"/>
+    </methodAction>
+    <attributeValues IterBinding="variables" id="vResp1">
+      <AttrNames>
+        <Item Value="vResp"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="SisFichaEmpleadoVwIterator"
+                  id="setValoresRespuestas" MethodName="setValoresRespuestas"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisFichaEmpleadoVw">
+      <NamedData NDName="vRespuestas"
+                 NDValue="${ficha_empleado_censo.todasRespuestas}"
+                 NDType="java.util.List"/>
+    </methodAction>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator"
+                     id="EstadoControl3">
+      <AttrNames>
+        <Item Value="EstadoControl3"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="SisFichaEmpleadoVwIterator"
+                  id="setActualizaValResp" MethodName="setActualizaValResp"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisFichaEmpleadoVw">
+      <NamedData NDName="pValor" NDValue="false" NDType="boolean"/>
+    </methodAction>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator"
+                     id="MunicipioFiscal1">
+      <AttrNames>
+        <Item Value="MunicipioFiscal"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator" id="Nocuenta">
+      <AttrNames>
+        <Item Value="Nocuenta"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator" id="Statuscuenta">
+      <AttrNames>
+        <Item Value="Statuscuenta"/>
+      </AttrNames>
+    </attributeValues>
+    <button IterBinding="SisFichaEmpleadoVwIterator" id="Statuscuenta1">
+      <AttrNames>
+        <Item Value="Statuscuenta"/>
+      </AttrNames>
+      <ValueList>
+        <Item Value="1"/>
+        <Item Value="0"/>
+      </ValueList>
+    </button>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator" id="Nombrecuenta">
+      <AttrNames>
+        <Item Value="Nombrecuenta"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator"
+                     id="PaisNacimiento">
+      <AttrNames>
+        <Item Value="PaisNacimiento"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator"
+                     id="MunicipioNacimiento">
+      <AttrNames>
+        <Item Value="MunicipioNacimiento"/>
+      </AttrNames>
+    </attributeValues>
+    <action IterBinding="municipios_dep_by_munIterator" id="ListMuniCombos"
+            InstanceName="QUERRYSDataControl.municipios_dep_by_mun"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="id_mun"
+                 NDValue="${ficha_empleado_censo.vMuniSelGeneral}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="id_dept"
+                 NDValue="${ficha_empleado_censo.vDepSelGeneral}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <attributeValues IterBinding="municipios_dep_by_munIterator"
+                     id="IdDepartamentoMuni">
+      <AttrNames>
+        <Item Value="IdDepartamento"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator" id="MunicipioDpi">
+      <AttrNames>
+        <Item Value="MunicipioDpi"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator" id="NoPasaporte">
+      <AttrNames>
+        <Item Value="NoPasaporte"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator"
+                     id="PaisPasaporte">
+      <AttrNames>
+        <Item Value="PaisPasaporte"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator" id="GrupoCenso">
+      <AttrNames>
+        <Item Value="GrupoCenso"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="SisFichaEmpleadoVwIterator" id="nextGrupo"
+                  MethodName="nextGrupo" RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisFichaEmpleadoVw"/>
+    <attributeValues IterBinding="variables" id="vGrupoDP1">
+      <AttrNames>
+        <Item Value="vGrupoDP"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator" id="PaisDirec">
+      <AttrNames>
+        <Item Value="PaisDirec"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator" id="PaisDirecant">
+      <AttrNames>
+        <Item Value="PaisDirecant"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator"
+                     id="MunicipioDirecant">
+      <AttrNames>
+        <Item Value="MunicipioDirecant"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator"
+                     id="MunicipioNoti">
+      <AttrNames>
+        <Item Value="MunicipioNoti"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator" id="DirecNoti">
+      <AttrNames>
+        <Item Value="DirecNoti"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisRespuestaCensoVwIterator" id="GrupoCenso1">
+      <AttrNames>
+        <Item Value="GrupoCenso"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="SisFichaEmpleadoVwIterator" id="getRespuestas"
+                  MethodName="getRespuestas" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisFichaEmpleadoVw"
+                  ReturnName="QUERRYSDataControl.methodResults.QUERRYSDataControl_SisFichaEmpleadoVw_getRespuestas_result"/>
+    <attributeValues IterBinding="variables" id="vFin1">
+      <AttrNames>
+        <Item Value="vFin"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="SisFichaEmpleadoVwIterator" id="setTipoGestion"
+                  MethodName="setTipoGestion" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisFichaEmpleadoVw">
+      <NamedData NDName="vTipo" NDValue="${bindings.ptipoGest1.inputValue}"
+                 NDType="java.lang.String"/>
+    </methodAction>
+    <attributeValues IterBinding="variables" id="ptipoGest1">
+      <AttrNames>
+        <Item Value="ptipoGest"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="puesto1Iterator" id="IdPuesto">
+      <AttrNames>
+        <Item Value="IdPuesto"/>
+      </AttrNames>
+    </attributeValues>
+    <action IterBinding="puesto1Iterator" id="ExePuestos"
+            InstanceName="QUERRYSDataControl.puesto1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="VarPuesto" NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="VarNombre" NDType="java.lang.String"/>
+    </action>
+    <attributeValues IterBinding="Sis_UniversidadesVwIterator"
+                     id="IdInstitucionAcademica1">
+      <AttrNames>
+        <Item Value="IdInstitucionAcademica"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="SisFichaEmpleadoVwIterator"
+                  id="resetearBaseCenso" MethodName="resetearBaseCenso"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisFichaEmpleadoVw">
+      <NamedData NDName="pRegistroEmpleado"
+                 NDValue="${bindings.RegistroEmpleado.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </methodAction>
+    <methodAction IterBinding="todos_los_DepartamentosIterator1" id="DatosCensoDep"
+                  MethodName="DatosCenso" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.Sis_Departamentos2_vw"/>
+    <methodAction IterBinding="todos_los_DepartamentosIterator1" id="resetQuerryDep"
+                  MethodName="resetQuerry" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.Sis_Departamentos2_vw"/>
+    <action IterBinding="todos_los_DepartamentosIterator" id="EjecutarDeps"
+            InstanceName="QUERRYSDataControl.todos_los_Departamentos"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="2"/>
+    <methodAction IterBinding="todos_los_DepartamentosIterator"
+                  id="SinOpcionGenerica" MethodName="SinOpcionGenerica"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.todos_los_Departamentos"/>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator" id="ZonaDirec">
+      <AttrNames>
+        <Item Value="ZonaDirec"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="SisFichaEmpleadoVwIterator" id="crearFichaCenso"
+                  MethodName="crearFichaCenso" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisFichaEmpleadoVw"/>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator" id="OrigenDatos">
+      <AttrNames>
+        <Item Value="OrigenDatos"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator" id="NoFormulario">
+      <AttrNames>
+        <Item Value="NoFormulario"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisFichaEmpleadoVwIterator"
+                     id="NombreCompleto2">
+      <AttrNames>
+        <Item Value="NombreCompleto2"/>
+      </AttrNames>
+    </attributeValues>
+  </bindings>
+</pageDefinition>

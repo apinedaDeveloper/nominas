@@ -1,0 +1,307 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <jsp:output omit-xml-declaration="true" doctype-root-element="HTML"
+              doctype-system="http://www.w3.org/TR/html4/loose.dtd"
+              doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN"/>
+  <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+  <f:view>
+    <afh:html>
+      <f:loadBundle basename="propiedades" var="tx"/>
+      <afh:head title="Nominas Empleado">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+      </afh:head>
+      <afh:body>
+        <af:messages/>
+        <h:form>
+        <af:page title="#{flujo_usuario.datosEmpleadoSel}"
+           value="#{modeloMenu.modeloBD}" var="node"  >
+           <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+            <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet> 
+          <af:panelBox>
+              <af:panelHorizontal>
+                <af:selectOneChoice id="cmb_procesos" autoSubmit="true"
+                                    value="#{bindings['tipo_proceso_vw'].inputValue}"
+                                    label="#{tx['nomina_empleado.cmb_proceso.texto']}"
+                                    validator="#{nomina_empleado.cmb_tipo_proceso}"
+                                    valueChangeListener="#{nomina_empleado.cmb_tipo_proceso_change}">
+                  <f:selectItems value="#{bindings['tipo_proceso_vw'].items}"/>
+                </af:selectOneChoice>
+                <af:selectOneChoice id="cmb_periodos" autoSubmit="false"
+                                    value="#{bindings['tipo_proceso_vwperiodos_proc_vw'].inputValue}"
+                                    label="#{tx['nomina_empleado.cmb_periodo.texto']}"
+                                    partialTriggers="cmb_procesos">
+                  <f:selectItems value="#{bindings['tipo_proceso_vwperiodos_proc_vw'].items}"/>
+                </af:selectOneChoice>
+                <af:commandButton text="#{tx['nomina_empleado.btn_calcular']}"
+                                  id="btn_calcular_nomina"
+                                  action="#{nomina_empleado.btn_calcular_nomina}"/>
+                <f:facet name="separator">
+                  <af:objectSpacer width="30" height="10"/>
+                </f:facet>
+              </af:panelHorizontal>
+              <af:panelGroup>
+                <af:panelHeader text="#{tx['nomina_empleado.pnl_header1.texto']}">
+                  <af:table id="tbl_contratos"
+                            rows="#{bindings['contrato_busqueda'].rangeSize}"
+                            first="#{bindings['contrato_busqueda'].rangeStart}"
+                            emptyText="#{tx['nomina_empleado.tbl_empty.texto']}"
+                            var="row"
+                            value="#{bindings['contrato_busqueda'].collectionModel}"
+                            selectionState="#{bindings['contrato_busqueda'].collectionModel.selectedRow}"
+                            selectionListener="#{bindings['contrato_busqueda'].collectionModel.makeCurrent}"
+                            partialTriggers="btn_calcular_nomina" banding="row"
+                            bandingInterval="1">
+                    <f:facet name="selection">
+                      <af:tableSelectOne autoSubmit="true" text="Select and "/>
+                    </f:facet>
+                    <f:facet name="header">
+                      <af:outputText value="#{tx['nomina_empleado.tbl1_header.texto']}"/>
+                    </f:facet>
+                    <af:column headerText="#{bindings['contrato_busqueda'].labels.RegistroEmpleado}"
+                               sortable="false" sortProperty="RegistroEmpleado">
+                      <af:outputText value="#{row.RegistroEmpleado}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['contrato_busqueda'].formats.RegistroEmpleado}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortable="false"
+                               headerText="#{bindings['contrato_busqueda'].labels.Cui}">
+                      <af:outputText value="#{row.Cui}"/>
+                    </af:column>
+                    <af:column headerText="#{bindings['contrato_busqueda'].labels.IdContrato}"
+                               sortable="false" sortProperty="IdContrato">
+                      <af:outputText value="#{row.IdContrato}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['contrato_busqueda'].formats.IdContrato}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column headerText="#{bindings['contrato_busqueda'].labels.Partida}"
+                               sortable="false" sortProperty="Partida">
+                      <af:outputText value="#{row.Partida}"/>
+                    </af:column>
+                    <af:column headerText="#{bindings['contrato_busqueda'].labels.NumeroPlaza}"
+                               sortable="false" sortProperty="NumeroPlaza">
+                      <af:outputText value="#{row.NumeroPlaza}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['contrato_busqueda'].formats.NumeroPlaza}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column headerText="#{bindings['contrato_busqueda'].labels.NomPuesto}"
+                               sortable="false" sortProperty="NomPuesto">
+                      <af:outputText value="#{row.NomPuesto}"/>
+                    </af:column>
+                    <af:column headerText="#{bindings['contrato_busqueda'].labels.NomDependencia}"
+                               sortable="false" sortProperty="NomDependencia">
+                      <af:outputText value="#{row.NomDependencia}"/>
+                    </af:column>
+                    <af:column headerText="#{bindings['contrato_busqueda'].labels.Horascontratadas}"
+                               sortable="false" sortProperty="Horascontratadas">
+                      <af:outputText value="#{row.Horascontratadas}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['contrato_busqueda'].formats.Horascontratadas}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column headerText="#{bindings['contrato_busqueda'].labels.FechaInicio}"
+                               sortable="false" sortProperty="FechaInicio">
+                      <af:outputText value="#{row.FechaInicio}">
+                        <f:convertDateTime pattern="#{bindings['contrato_busqueda'].formats.FechaInicio}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column headerText="#{bindings['contrato_busqueda'].labels.FechaFin}"
+                               sortable="false" sortProperty="FechaFin">
+                      <af:outputText value="#{row.FechaFin}">
+                        <f:convertDateTime pattern="#{bindings['contrato_busqueda'].formats.FechaFin}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column headerText="#{bindings['contrato_busqueda'].labels.Estado}"
+                               sortable="false" sortProperty="Estado">
+                      <af:outputText value="#{row.Estado}"/>
+                    </af:column>
+                    <af:column headerText="#{bindings['contrato_busqueda'].labels.ComentarioEstado}"
+                               sortable="false" sortProperty="ComentarioEstado">
+                      <af:outputText value="#{row.ComentarioEstado}"/>
+                    </af:column>
+                  </af:table>
+                  <af:objectSeparator/>
+                  <af:objectSpacer width="10" height="25"/>
+                  <af:table partialTriggers="tbl_contratos"
+                            rows="#{bindings['contrato_busquedaSisNominaVw1'].rangeSize}"
+                            first="#{bindings['contrato_busquedaSisNominaVw1'].rangeStart}"
+                            emptyText="#{tx['nomina_empleado.tbl_empty.texto']}"
+                            var="row"
+                            value="#{bindings['contrato_busquedaSisNominaVw1'].collectionModel}"
+                            selectionState="#{bindings['contrato_busquedaSisNominaVw1'].collectionModel.selectedRow}"
+                            selectionListener="#{bindings['contrato_busquedaSisNominaVw1'].collectionModel.makeCurrent}"
+                            id="tbl_nomina" banding="row" bandingInterval="1">
+                    <f:facet name="selection">
+                      <af:tableSelectOne text="Select and " autoSubmit="true"/>
+                    </f:facet>
+                    <f:facet name="header">
+                      <af:outputText value="#{tx['nomina_empleado.tbl2_header.texto']}"/>
+                    </f:facet>
+                    <af:column headerText="#{bindings['contrato_busquedaSisNominaVw1'].labels.Nomtipnomina}"
+                               sortable="false" sortProperty="Nomtipnomina">
+                      <af:outputText value="#{row.Nomtipnomina}"/>
+                    </af:column>
+                    <af:column headerText="#{bindings['contrato_busquedaSisNominaVw1'].labels.RegistroEmpleado}"
+                               sortable="false" sortProperty="RegistroEmpleado">
+                      <af:outputText value="#{row.RegistroEmpleado}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['contrato_busquedaSisNominaVw1'].formats.RegistroEmpleado}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortable="false"
+                               headerText="#{bindings['contrato_busquedaSisNominaVw1'].labels.Cui}">
+                      <af:outputText value="#{row.Cui}"/>
+                    </af:column>
+                    <af:column headerText="#{bindings['contrato_busquedaSisNominaVw1'].labels.IdNomina}"
+                               sortable="false" sortProperty="IdNomina">
+                      <af:outputText value="#{row.IdNomina}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['contrato_busquedaSisNominaVw1'].formats.IdNomina}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column headerText="#{bindings['contrato_busquedaSisNominaVw1'].labels.IdContrato}"
+                               sortable="false" sortProperty="IdContrato">
+                      <af:outputText value="#{row.IdContrato}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['contrato_busquedaSisNominaVw1'].formats.IdContrato}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column headerText="#{bindings['contrato_busquedaSisNominaVw1'].labels.Anio}"
+                               sortable="false" sortProperty="Anio">
+                      <af:outputText value="#{row.Anio}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['contrato_busquedaSisNominaVw1'].formats.Anio}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column headerText="#{bindings['contrato_busquedaSisNominaVw1'].labels.Periodo}"
+                               sortable="false" sortProperty="Periodo">
+                      <af:outputText value="#{row.Periodo}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['contrato_busquedaSisNominaVw1'].formats.Periodo}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column headerText="#{bindings['contrato_busquedaSisNominaVw1'].labels.SueldoBase}"
+                               sortable="false" sortProperty="SueldoBase"
+                               formatType="number">
+                      <af:outputText value="#{row.SueldoBase}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['contrato_busquedaSisNominaVw1'].formats.SueldoBase}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column headerText="#{bindings['contrato_busquedaSisNominaVw1'].labels.Escalafon}"
+                               sortable="false" sortProperty="Escalafon"
+                               formatType="number">
+                      <af:outputText value="#{row.Escalafon}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['contrato_busquedaSisNominaVw1'].formats.Escalafon}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column headerText="#{bindings['contrato_busquedaSisNominaVw1'].labels.ComplSalarial}"
+                               sortable="false" sortProperty="ComplSalarial"
+                               formatType="number">
+                      <af:outputText value="#{row.ComplSalarial}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['contrato_busquedaSisNominaVw1'].formats.ComplSalarial}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column headerText="#{bindings['contrato_busquedaSisNominaVw1'].labels.Nominal}"
+                               sortable="false" sortProperty="Nominal"
+                               formatType="number">
+                      <af:outputText value="#{row.Nominal}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['contrato_busquedaSisNominaVw1'].formats.Nominal}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column headerText="#{bindings['contrato_busquedaSisNominaVw1'].labels.TotalBono}"
+                               sortable="false" sortProperty="TotalBono"
+                               formatType="number">
+                      <af:outputText value="#{row.TotalBono}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['contrato_busquedaSisNominaVw1'].formats.TotalBono}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column headerText="#{bindings['contrato_busquedaSisNominaVw1'].labels.TotalDescuento}"
+                               sortable="false" sortProperty="TotalDescuento"
+                               formatType="number">
+                      <af:outputText value="#{row.TotalDescuento}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['contrato_busquedaSisNominaVw1'].formats.TotalDescuento}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortable="false"
+                               headerText="#{bindings['contrato_busquedaSisNominaVw1'].labels.Liquido}"
+                               formatType="number">
+                      <af:outputText value="#{row.Liquido}"/>
+                    </af:column>
+                  </af:table>
+                  <af:objectSeparator/>
+                  <af:objectSpacer width="10" height="25"/>
+                  <af:panelHorizontal halign="center">
+                    <af:table value="#{bindings.SisNominaVw1SisDetCalculoAjusteVw1.collectionModel}"
+                              var="row"
+                              rows="#{bindings.SisNominaVw1SisDetCalculoAjusteVw1.rangeSize}"
+                              first="#{bindings.SisNominaVw1SisDetCalculoAjusteVw1.rangeStart}"
+                              emptyText="#{tx['nomina_empleado.tbl_empty.texto']}"
+                              partialTriggers="tbl_nomina">
+                      <f:facet name="header">
+                        <af:outputText value="#{tx['nomina_empleado.tbl3_header.texto']}"/>
+                      </f:facet>
+                      <af:column sortProperty="Nombre" sortable="false"
+                                 headerText="#{bindings.SisNominaVw1SisDetCalculoAjusteVw1.labels.Nombre}">
+                        <af:outputText value="#{row.CodNomina} - #{row.Nombre} "/>
+                      </af:column>
+                      <af:column sortProperty="ValorAplicado" sortable="false"
+                                 headerText="#{bindings.SisNominaVw1SisDetCalculoAjusteVw1.labels.ValorAplicado}"
+                                 formatType="number">
+                        <af:outputText value="#{row.ValorAplicado}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisNominaVw1SisDetCalculoAjusteVw1.formats.ValorAplicado}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="IdNomina" sortable="false"
+                                 headerText="#{bindings.SisNominaVw1SisDetCalculoAjusteVw1.labels.IdNomina}">
+                        <af:outputText value="#{row.IdNomina}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisNominaVw1SisDetCalculoAjusteVw1.formats.IdNomina}"/>
+                        </af:outputText>
+                      </af:column>
+                    </af:table>
+                  </af:panelHorizontal>
+                </af:panelHeader>
+              </af:panelGroup>
+            </af:panelBox>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:backing_bean_comun-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:nomina_empleado-->
+</jsp:root>

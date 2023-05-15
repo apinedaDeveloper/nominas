@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="arch_acreditacion_anulado"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="907"
+		 pageHeight="992"
+		 columnWidth="907"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="IdProceso" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[select distinct 
+Case when Extract (year from a.FECHA_ANULACION) < 2017
+Then To_Char(d.registro_empleado)
+Else case when (select to_number(to_char(a.fecha_anulacion,'yyyymm')) from dual) < 201807
+     Then d.cui
+     Else d.cui--||'<br>'||d.registro_empleado  --se comento esta linea porque no era necesario el registro, pero para no afectar, solo se comento el registro
+     End 
+End Reg_CUI
+, a.id_documento_banco, a.num_doc_fisico,d.registro_empleado, d.cui,d.nombrecompleto,c.numero as num_cuenta,a.valor,a.fecha_anulacion,docb2.FECHA_CREACION as fechasis21
+from sis_documento_banco a
+left outer join sis_doc_pago_anulado docb2 on docb2.id_doc_pago=a.id_documento_banco,
+sis_tipo_documento b, sis_cuenta c, sis_empleado_vw d,sis_pago e,sis_nomina f, sis_estado_docbanco_vw g
+where a.id_tipo_documento=b.id_tipo_documento
+and a.id_cuenta=c.id_cuenta and b.nombre='ACREDITACION'
+and e.id_documento_banco=a.id_documento_banco and e.id_nomina=f.id_nomina
+and f.registro_empleado=d.registro_empleado
+and e.id_proceso=$P{IdProceso}
+and a.id_estado=g.id_estado
+and( a.FECHA_ANULACION is not null
+   or docb2.fecha_creacion is not null   
+)
+order by a.num_doc_fisico asc]]></queryString>
+
+	<field name="REG_CUI" class="java.lang.String"/>
+	<field name="ID_DOCUMENTO_BANCO" class="java.math.BigDecimal"/>
+	<field name="NUM_DOC_FISICO" class="java.math.BigDecimal"/>
+	<field name="REGISTRO_EMPLEADO" class="java.math.BigDecimal"/>
+	<field name="CUI" class="java.lang.String"/>
+	<field name="NOMBRECOMPLETO" class="java.lang.String"/>
+	<field name="NUM_CUENTA" class="java.lang.String"/>
+	<field name="VALOR" class="java.math.BigDecimal"/>
+	<field name="FECHA_ANULACION" class="java.sql.Timestamp"/>
+	<field name="FECHASIS21" class="java.sql.Timestamp"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="16"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="700"
+						y="1"
+						width="94"
+						height="15"
+						key="staticText-1"/>
+					<box></box>
+					<textElement>
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Fecha Anulacion]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="381"
+						y="1"
+						width="319"
+						height="15"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Nombre]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="1"
+						width="78"
+						height="15"
+						key="staticText-4"/>
+					<box></box>
+					<textElement>
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Boleta]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="78"
+						y="1"
+						width="128"
+						height="15"
+						key="staticText-5"/>
+					<box></box>
+					<textElement>
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Cuenta]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="206"
+						y="1"
+						width="90"
+						height="15"
+						key="staticText-6"/>
+					<box></box>
+					<textElement>
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Monto]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="296"
+						y="1"
+						width="90"
+						height="15"
+						key="staCUI"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[CUI / RegPer]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="794"
+						y="1"
+						width="94"
+						height="15"
+						key="staticText-8"/>
+					<box></box>
+					<textElement>
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Fecha SIS21]]></text>
+				</staticText>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="15"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="384"
+						y="0"
+						width="316"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font fontName="Arial"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRECOMPLETO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="78"
+						y="0"
+						width="128"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font fontName="Arial"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NUM_CUENTA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="206"
+						y="0"
+						width="90"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font fontName="Arial"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{VALOR}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="0"
+						width="78"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font fontName="Arial"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{NUM_DOC_FISICO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="296"
+						y="0"
+						width="89"
+						height="15"
+						key="txtCUI"/>
+					<box>					<pen lineWidth="0.0"/>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+</box>
+					<textElement textAlignment="Right" markup="html">
+						<font fontName="Arial"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{REG_CUI}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="700"
+						y="0"
+						width="94"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Arial"/>
+					</textElement>
+				<textFieldExpression   class="java.sql.Timestamp"><![CDATA[$F{FECHA_ANULACION}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="793"
+						y="0"
+						width="94"
+						height="15"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Arial"/>
+					</textElement>
+				<textFieldExpression   class="java.sql.Timestamp"><![CDATA[$F{FECHASIS21}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

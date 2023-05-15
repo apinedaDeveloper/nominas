@@ -1,0 +1,543 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html"
+          xmlns:af="http://xmlns.oracle.com/adf/faces">
+  <jsp:directive.page contentType="text/html;charset=windows-1252"
+                      autoFlush="true" language="java"/>
+  <f:view>
+    <afh:html>
+      <afh:head title="Revisión reposición pagos ISR">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+       
+             <jsp:include page="/js/libJQ.js"/>       
+       <jsp:include page="/js/librariesDialog.js"/>           
+      <script type="text/javascript" src="/${flujo_usuario.dominioApp}/js/gestiones/scrptAutorizacion.js">
+      var xy=new Date().getMilliseconds();      
+      </script>
+      <script language="javascript" type="text/javascript"> 
+       gbl_form="form1";
+       gbl_actionId="form1:page1:cmdRefresh";
+    
+        function verRepoCompIgss(IdC){
+         
+           window.open("../verreportepdf?id="+IdC+String.fromCharCode(38)+"rep=SIS-15","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+           return false;    
+   
+         }
+         
+         function verRepo(IdC){
+         
+           window.open("../verreportepdf?id="+IdC+String.fromCharCode(38)+"rep=SIS10REPO","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+           return false;    
+   
+         }
+         
+        function verRepo21(IdC){
+         
+           window.open("../verreportepdf?id="+IdC+String.fromCharCode(38)+"rep=SIS-21","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+           return false;    
+   
+         }
+      
+      
+       function genReporte25(idDocumento)
+         { 
+                
+                window.open("../verreportepdf?id="+idDocumento+String.fromCharCode(38)+"rep=SIS-25","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+         } 
+         
+         
+        function genNomina(idReporte){ 
+                window.open("../verreportepdf?id="+idReporte+String.fromCharCode(38)+"rep=NOMPROC","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+        } 
+  
+      
+      </script>
+        
+      </afh:head>
+      <afh:body>
+        <af:messages/>
+        <h:form>
+          <af:page title="Revisión de reposición pagos ISR" value="#{modeloMenu.modeloBD}" var="node">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+             <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelBox>
+            <f:verbatim>
+                <input type="hidden" name="hdn_tipo" id="hdn_tipo" value="12"/>
+                <input type="hidden" name="hdn_Id" id="hdn_Id"
+                       value="${bindings.pIdVar1.inputValue}"/>
+              </f:verbatim>
+              <af:showOneTab>
+                <af:showDetailItem text="Pendientes">
+                  <af:table value="#{bindings.SisCompleRevPendVw.collectionModel}"
+                            var="row"
+                            rows="#{bindings.SisCompleRevPendVw.rangeSize}"
+                            first="#{bindings.SisCompleRevPendVw.rangeStart}"
+                            emptyText="Ningún Complemento"
+                            selectionState="#{bindings.SisCompleRevPendVw.collectionModel.selectedRow}"
+                            selectionListener="#{bindings.SisCompleRevPendVw.collectionModel.makeCurrent}"
+                            banding="row" bandingInterval="1"
+                            id="tbl_complementos"
+                            partialTriggers="tbl_complementos:btn_refrescar">
+                    <f:facet name="actions">
+                      <af:panelButtonBar>
+                        <af:commandButton actionListener="#{bindings.EjecutarPend.execute}"
+                                          text="Refrescar tabla"
+                                          disabled="#{!bindings.EjecutarPend.enabled}"
+                                          id="btn_refrescar"
+                                          binding="#{pago_complementos.btn_refrescaPendientes}"/>
+                      </af:panelButtonBar>
+                    </f:facet>
+                    <af:column sortable="false" headerText="Visto Bueno">
+                      <af:commandLink action="#{reposicion_pago.cmd_ok_pago}">
+                        <af:objectImage source="/imagenes/ok.png"/>
+                      </af:commandLink>
+                    </af:column>
+                    <af:column sortable="false" headerText="Objetar">
+                      <af:commandLink action="#{pago_complementos.cmd_objetar}"
+                                      useWindow="true" windowHeight="450"
+                                      windowWidth="600"
+                                      launchListener="#{pago_complementos.launch_objetar}"
+                                      returnListener="#{pago_complementos.return_listener_objetar}">
+                        <af:objectImage source="/imagenes/fail.png"/>
+                      </af:commandLink>
+                    </af:column>
+                    <af:column sortProperty="IdComplemento" sortable="false"
+                               headerText="Id">
+                      <af:commandLink text="#{row.IdComplemento}"
+                                      onclick="verRepo('#{row.IdComplemento}');"/>
+                    </af:column>
+                    <af:column sortProperty="TipoComplemento" sortable="false"
+                               headerText="Detalle reposición"
+                               noWrap="true">
+                      <af:panelButtonBar>
+                        <af:commandButton text="Mostrar"
+                                          action="#{reposicion_pago.bnt_mostrar_det_revRepo}"/>
+                        <af:commandButton text="Ocultar"
+                                          action="#{reposicion_pago.btn_ocultar_det_revRepo}"/>
+                      </af:panelButtonBar>
+                      <af:table value="#{bindings.SisComplementoDetVw.collectionModel}"
+                                var="row"
+                                rows="#{bindings.SisComplementoDetVw.rangeSize}"
+                                first="#{bindings.SisComplementoDetVw.rangeStart}"
+                                emptyText="Ninguna fila"
+                                banding="row" bandingInterval="1"
+                                rendered="#{row.isSel}">
+                        <af:column sortProperty="IdSis21" sortable="false"
+                                   headerText="#{bindings.SisComplementoDetVw.labels.IdSis21}">
+                          <af:commandLink text="#{row.IdSis21}"
+                                          onclick="verRepo21('#{row.IdSis21}')"/>
+                        </af:column>
+                        <af:column sortProperty="RegistroEmpleado"
+                                   sortable="false"
+                                   headerText="#{bindings.SisComplementoDetVw.labels.RegistroEmpleado}">
+                          <af:outputText value="#{row.RegistroEmpleado}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.SisComplementoDetVw.formats.RegistroEmpleado}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="Nombrecompleto"
+                                   sortable="false"
+                                   headerText="#{bindings.SisComplementoDetVw.labels.Nombrecompleto}">
+                          <af:outputText value="#{row.Nombrecompleto}"/>
+                        </af:column>
+                        <af:column sortProperty="Tiponomina" sortable="false"
+                                   headerText="#{bindings.SisComplementoDetVw.labels.Tiponomina}">
+                          <af:outputText value="#{row.Tiponomina}"/>
+                        </af:column>
+                        <af:column sortProperty="Formato1" sortable="false"
+                                   headerText="Partida">
+                          <af:outputText value="#{row.Formato1}"/>
+                        </af:column>
+                        <af:column sortProperty="NumeroPlaza" sortable="false"
+                                   headerText="#{bindings.SisComplementoDetVw.labels.NumeroPlaza}">
+                          <af:outputText value="#{row.NumeroPlaza}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.SisComplementoDetVw.formats.NumeroPlaza}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="Anio" sortable="false"
+                                   headerText="Año">
+                          <af:outputText value="#{row.Anio}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.SisComplementoDetVw.formats.Anio}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="Periodo" sortable="false"
+                                   headerText="#{bindings.SisComplementoDetVw.labels.Periodo}">
+                          <af:outputText value="#{row.Periodo}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.SisComplementoDetVw.formats.Periodo}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="SueldoBase" sortable="false"
+                                   headerText="#{bindings.SisComplementoDetVw.labels.SueldoBase}">
+                          <af:outputText value="#{row.SueldoBase}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.SisComplementoDetVw.formats.SueldoBase}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="Escalafon" sortable="false"
+                                   headerText="#{bindings.SisComplementoDetVw.labels.Escalafon}">
+                          <af:outputText value="#{row.Escalafon}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.SisComplementoDetVw.formats.Escalafon}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="ComplSalarial" sortable="false"
+                                   headerText="#{bindings.SisComplementoDetVw.labels.ComplSalarial}">
+                          <af:outputText value="#{row.ComplSalarial}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.SisComplementoDetVw.formats.ComplSalarial}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="Nominal" sortable="false"
+                                   headerText="#{bindings.SisComplementoDetVw.labels.Nominal}">
+                          <af:outputText value="#{row.Nominal}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.SisComplementoDetVw.formats.Nominal}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="TotalBono" sortable="false"
+                                   headerText="#{bindings.SisComplementoDetVw.labels.TotalBono}">
+                          <af:outputText value="#{row.TotalBono}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.SisComplementoDetVw.formats.TotalBono}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="TotalDescuento"
+                                   sortable="false"
+                                   headerText="#{bindings.SisComplementoDetVw.labels.TotalDescuento}">
+                          <af:outputText value="#{row.TotalDescuento}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.SisComplementoDetVw.formats.TotalDescuento}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="Liquido" sortable="false"
+                                   headerText="#{bindings.SisComplementoDetVw.labels.Liquido}">
+                          <af:outputText value="#{row.Liquido}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.SisComplementoDetVw.formats.Liquido}"/>
+                          </af:outputText>
+                        </af:column>
+                      </af:table>
+                    </af:column>
+                    <af:column sortProperty="Anio" sortable="false"
+                               headerText="#{bindings.SisCompleRevPendVw.labels.Anio}">
+                      <af:outputText value="#{row.Anio}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.SisCompleRevPendVw.formats.Anio}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Periodo" sortable="false"
+                               headerText="#{bindings.SisCompleRevPendVw.labels.Periodo}">
+                      <af:outputText value="#{row.Periodo}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.SisCompleRevPendVw.formats.Periodo}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Formato2" sortable="false"
+                               headerText="Subprograma" noWrap="true">
+                      <af:outputText value="#{row.Formato2} - #{row.Nomsubprog}"/>
+                    </af:column>
+                    <af:column sortProperty="Nomunidad" sortable="false"
+                               headerText="#{bindings.SisCompleRevPendVw.labels.Nomunidad}"
+                               noWrap="true">
+                      <af:outputText value="#{row.Codunidad} - #{row.Nomunidad}"/>
+                    </af:column>
+                    <af:column sortProperty="Nomestado" sortable="false"
+                               headerText="#{bindings.SisCompleRevPendVw.labels.Nomestado}">
+                      <af:outputText value="#{row.Nomestado}"/>
+                    </af:column>
+                    <af:column sortProperty="CreadoPor" sortable="false"
+                               headerText="#{bindings.SisCompleRevPendVw.labels.CreadoPor}"
+                               noWrap="true">
+                      <af:outputText value="#{row.CreadoPor} - #{row.Nomusuario}"/>
+                    </af:column>
+                  </af:table>
+                </af:showDetailItem>
+                <af:showDetailItem text="Revisados" disclosed="false">
+                  <af:table value="#{bindings['Sis_CompleRevisados_vw'].collectionModel}"
+                            var="row"
+                            rows="#{bindings['Sis_CompleRevisados_vw'].rangeSize}"
+                            first="#{bindings['Sis_CompleRevisados_vw'].rangeStart}"
+                            emptyText="Ninguna fila"
+                            selectionState="#{bindings['Sis_CompleRevisados_vw'].collectionModel.selectedRow}"
+                            selectionListener="#{bindings['Sis_CompleRevisados_vw'].collectionModel.makeCurrent}"
+                            banding="row" bandingInterval="1">
+                    <f:facet name="selection">
+                      <af:tableSelectOne text="Select and">
+                        <af:commandButton text="Submit" rendered="false"/>
+                      </af:tableSelectOne>
+                    </f:facet>
+                    <f:facet name="actions">
+                      <af:panelButtonBar>
+                        <af:commandButton actionListener="#{bindings['EjecutarRev'].execute}"
+                                          text="Refrescar tabla"/>
+                      </af:panelButtonBar>
+                    </f:facet>
+                    <af:column sortProperty="IdComplemento" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.IdComplemento}">
+                      <af:commandLink text="#{row.IdComplemento}"
+                                      onclick="verRepo('#{row.IdComplemento}');"/>
+                    </af:column>
+                    <af:column sortProperty="TipoComplemento" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.TipoComplemento}"
+                               formatType="number" noWrap="true">
+                      <af:outputText value="#{row.TipoComplemento}"/>
+                    </af:column>
+                    <af:column sortProperty="Anio" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.Anio}"
+                               formatType="number">
+                      <af:outputText value="#{row.Anio}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_CompleRevisados_vw'].formats.Anio}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Periodo" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.Periodo}"
+                               formatType="number">
+                      <af:outputText value="#{row.Periodo}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_CompleRevisados_vw'].formats.Periodo}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Nomperiodo" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.Nomperiodo}">
+                      <af:outputText value="#{row.Nomperiodo}"/>
+                    </af:column>
+                    <af:column sortProperty="Formato2" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.Formato2}"
+                               rendered="false">
+                      <af:outputText value="#{row.Formato2}"/>
+                    </af:column>
+                    <af:column sortProperty="Nomsubprog" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.Nomsubprog}"
+                               noWrap="true">
+                      <af:outputText value="#{row.Nomsubprog}"/>
+                    </af:column>
+                    <af:column sortProperty="Codunidad" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.Codunidad}"
+                               formatType="number">
+                      <af:outputText value="#{row.Codunidad}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_CompleRevisados_vw'].formats.Codunidad}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Nomunidad" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.Nomunidad}"
+                               noWrap="true">
+                      <af:outputText value="#{row.Nomunidad}"/>
+                    </af:column>
+                    <af:column sortProperty="IdEstado" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.IdEstado}"
+                               rendered="false">
+                      <af:outputText value="#{row.IdEstado}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_CompleRevisados_vw'].formats.IdEstado}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Nomestado" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.Nomestado}">
+                      <af:outputText value="#{row.Nomestado}"/>
+                    </af:column>
+                    <af:column sortProperty="CreadoPor" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.CreadoPor}"
+                               noWrap="true">
+                      <af:outputText value="#{row.CreadoPor}-#{row.Nomusuario}"/>
+                    </af:column>
+                    <af:column sortProperty="FechaPresentacion" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.FechaPresentacion}"
+                               rendered="false">
+                      <af:outputText value="#{row.FechaPresentacion}">
+                        <f:convertDateTime pattern="#{bindings['Sis_CompleRevisados_vw'].formats.FechaPresentacion}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Nomusuario" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.Nomusuario}"
+                               rendered="false">
+                      <af:outputText value="#{row.Nomusuario}"/>
+                    </af:column>
+                    <af:column sortProperty="IdTipoComplemento" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.IdTipoComplemento}"
+                               rendered="false">
+                      <af:outputText value="#{row.IdTipoComplemento}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_CompleRevisados_vw'].formats.IdTipoComplemento}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Ultimoestado" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.Ultimoestado}">
+                      <af:outputText value="#{row.Ultimoestado}"/>
+                    </af:column>
+                    <af:column sortProperty="Usuarioauto" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.Usuarioauto}"
+                               noWrap="true">
+                      <af:outputText value="#{row.Usuarioauto} - #{row.Nombreauto}"/>
+                    </af:column>
+                    <af:column sortProperty="Nombreauto" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.Nombreauto}"
+                               rendered="false">
+                      <af:outputText value="#{row.Nombreauto}"/>
+                    </af:column>
+                    <af:column sortProperty="Fechaauto" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.Fechaauto}">
+                      <af:outputText value="#{row.Fechaauto}">
+                        <f:convertDateTime pattern="#{bindings['Sis_CompleRevisados_vw'].formats.Fechaauto}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Proceso" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.Proceso}"
+                               noWrap="true">
+                      <af:outputText value="#{row.Proceso}"/>
+                    </af:column>
+                  </af:table>
+                </af:showDetailItem>
+                <af:showDetailItem text="Procesar reposiciones ISR Autorizados"
+                                   disclosed="false">
+                  <af:panelForm labelWidth="150">
+                    <f:facet name="footer"/>
+                    <af:panelHeader text="Detalle">
+                      <af:inputText label="Observaciones" rows="3"
+                                    value="#{bindings.vDescrip1.inputValue}"/>
+                      <af:objectSpacer width="10" height="25"/>
+                      <af:commandButton text="Generar Proceso"
+                                        action="#{pago_complementos.btn_gen_proc_isr}"
+                                        id="btn_gen_proc"
+                                        binding="#{pago_complementos.btn_gen_proc}"/>
+                    </af:panelHeader>
+                  </af:panelForm>
+                  <af:objectSeparator/>
+                  <af:table value="#{bindings.ProcesoVw.collectionModel}"
+                            var="row" rows="#{bindings.ProcesoVw.rangeSize}"
+                            first="#{bindings.ProcesoVw.rangeStart}"
+                            emptyText="Ningun proceso"
+                            banding="row" bandingInterval="1"
+                            partialTriggers="btn_gen_proc">
+                    <f:facet name="header">
+                      <h:panelGroup>
+                        <af:outputText value="Listado de procesos"/>
+                        <af:panelHeader text="Parámetros de búsqueda">
+                          <af:panelHorizontal>
+                            <af:selectInputDate label="Fecha Inicio"
+                                                value="#{bindings.vFechaI1.inputValue}"/>
+                            <af:selectInputDate label="Fecha Fin"
+                                                value="#{bindings.vFechaF1.inputValue}"/>
+                            <af:commandButton text="Buscar"
+                                              action="#{pago_complementos.btn_buscar_repoISR}"/>
+                            <f:facet name="separator">
+                              <af:objectSpacer width="10" height="10"/>
+                            </f:facet>
+                          </af:panelHorizontal>
+                        </af:panelHeader>
+                        <af:objectSeparator/>
+                      </h:panelGroup>
+                    </f:facet>
+                    <af:column sortable="false" headerText="-">
+                      <af:commandButton text="Autorizar"
+                                        action="dialog:auto_sol"
+                                        useWindow="true" windowHeight="450"
+                                        windowWidth="400"
+                                        launchListener="#{pago_complementos.launch_repo_isr_auto}"
+                                        returnListener="#{pago_complementos.return_listener_repISR}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="SIS-25"
+                               noWrap="true">
+                      <af:commandLink text="ver Sis-25"
+                                      onclick="genReporte25('#{row.IdProceso}');"/>
+                    </af:column>
+                    <af:column sortProperty="IdProceso" sortable="false"
+                               headerText="#{bindings.ProcesoVw.labels.IdProceso}">
+                      <af:commandLink text="#{row.IdProceso}"
+                                      onclick="genNomina('#{row.IdProceso}');"/>
+                    </af:column>
+                    <af:column sortProperty="FechaInicio" sortable="false"
+                               headerText="#{bindings.ProcesoVw.labels.FechaInicio}">
+                      <af:outputText value="#{row.FechaInicio}">
+                        <f:convertDateTime pattern="#{bindings.ProcesoVw.formats.FechaInicio}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="FechaFin" sortable="false"
+                               headerText="#{bindings.ProcesoVw.labels.FechaFin}">
+                      <af:outputText value="#{row.FechaFin}">
+                        <f:convertDateTime pattern="#{bindings.ProcesoVw.formats.FechaFin}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Anio" sortable="false"
+                               headerText="Año">
+                      <af:outputText value="#{row.Anio}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.ProcesoVw.formats.Anio}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Observaciones" sortable="false"
+                               headerText="#{bindings.ProcesoVw.labels.Observaciones}">
+                      <af:outputText value="#{row.Observaciones}"/>
+                    </af:column>
+                    <af:column sortProperty="Nomperiodo" sortable="false"
+                               headerText="Mes">
+                      <af:outputText value="#{row.Nomperiodo}"/>
+                    </af:column>
+                    <af:column sortProperty="Nomestado" sortable="false"
+                               headerText="Estado">
+                      <af:outputText value="#{row.Nomestado}"/>
+                    </af:column>
+                    <af:column sortProperty="Creadopor" sortable="false"
+                               headerText="#{bindings.ProcesoVw.labels.Creadopor}">
+                      <af:outputText value="#{row.Creadopor}"/>
+                    </af:column>
+                    <af:column sortProperty="Totalnominal" sortable="false"
+                               headerText="#{bindings.ProcesoVw.labels.Totalnominal}">
+                      <af:outputText value="#{row.Totalnominal}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.ProcesoVw.formats.Totalnominal}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="FechaAuto" sortable="false"
+                               headerText="#{bindings.ProcesoVw.labels.FechaAuto}"
+                               noWrap="true">
+                      <af:outputText value="#{row.FechaAuto}">
+                        <f:convertDateTime pattern="#{bindings.ProcesoVw.formats.FechaAuto}"/>
+                      </af:outputText>
+                    </af:column>
+                    <f:facet name="actions"/>
+                  </af:table>
+                </af:showDetailItem>
+              </af:showOneTab>
+            </af:panelBox>
+          </af:page>
+             <f:verbatim>
+          <jsp:include page="../util/dialog_autoriza.txt"/>     
+          </f:verbatim>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:pago_complementos-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:pago_complementos-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:pago_complementos-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:pago_complementos-->
+</jsp:root>

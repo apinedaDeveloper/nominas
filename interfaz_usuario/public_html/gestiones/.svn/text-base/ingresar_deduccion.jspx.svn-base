@@ -1,0 +1,1072 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns="http://www.w3.org/1999/xhtml"
+          xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <f:view>
+    <afh:html>
+      <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+      <f:loadBundle basename="propiedades_trab" var="tx"/>
+      <f:loadBundle basename="propiedades" var="txtdeducs"/>
+      <afh:head title="#{txtdeducs['ingresar_deducciones.title']}">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+              
+      <script language="javascript" type="text/javascript"> 
+        function genReporte(pReg){ 
+                submitForm('form1',1,{source:'form1:page1:btn_generarRep'});
+                window.open("/${flujo_usuario.dominioApp}/faces/verreportepdf?id="+pReg+String.fromCharCode(38)+"rep=REPPAGOISR2","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+       } 
+
+        function genReporteMensual(pReg){ 
+                submitForm('form1',1,{source:'form1:page1:btn_generarRep'});
+                window.open("/${flujo_usuario.dominioApp}/faces/verreportepdf?id="+pReg+String.fromCharCode(38)+"rep=REPPAGOISRMSUL","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+       } 
+
+              
+        function genRep(pAnio,preg){ 
+                submitForm('form1',1,{source:'form1:page1:btn_generarRep'});
+                window.open("/${flujo_usuario.dominioApp}/faces/verreportepdf?id="+pAnio+String.fromCharCode(38)+ "id2="+preg+String.fromCharCode(38)+"rep=DECJURADPAT2","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+       } 
+       
+       
+       function verificarTipo(vControl){
+       
+         var vIndice=vControl.selectedIndex;             
+         var vInputN=document.getElementById('form1:page1:inptNit');
+          
+          
+         if (vControl.options[vIndice].text=='SUELDO OTROS PATRONOS' || vControl.options[vIndice].text=='SUELDO OTRO PATRONO' || vControl.options[vIndice].text=='RENTA NETA OTROS PATRONOS' || vControl.options[vIndice].text=='RETENCIONES OTROS PATRONOS'){
+         
+            vInputN.disabled=false;
+         
+         } else{
+         
+            vInputN.disabled=true;
+            vInputN.value="";
+            
+         }
+         return false;
+       }
+       
+       function genOtrasRentas(vRegPer){
+
+             var lista=document.getElementById('form1:page1:cmbAnioTrabajo');
+             var indice=lista.selectedIndex;
+             var vAnio1 = lista.options[indice].text; 
+             
+             var vMes = 12;
+                    
+             window.open("/${flujo_usuario.dominioApp}/faces/verreportepdf?id="+vAnio1+String.fromCharCode(38)+"rep=OTRASRENTAS"+String.fromCharCode(38)+"id2="+vMes+String.fromCharCode(38)+"id3="+vRegPer,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+       
+       }
+       
+      </script>         
+      </afh:head>
+      <afh:body>
+        <af:messages/>
+        <h:form id="form1">
+        <af:page  value="#{modeloMenu.modeloBD}" var="node"
+                 title="#{flujo_usuario.datosEmpleadoSel}" id="page1">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+             <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            
+            <af:panelHorizontal halign="center">
+              <af:panelBox text="Año: #{flujo_usuario.anioActual}">
+                <af:showOneTab>
+                  <af:showDetailItem text="Ingreso deducciones">
+                    <af:panelLabelAndMessage label="NIT"
+                                             inlineStyle="font-size:large; color:rgb(0,74,115);">
+                      <af:inputText
+                                    value="#{bindings.Nit.inputValue}"
+                                    inlineStyle="font-size:large;"
+                                    columns="10"/>
+                    </af:panelLabelAndMessage>
+                    <af:panelLabelAndMessage label="Tipo"
+                                             inlineStyle="font-size:large; color:rgb(0,74,115);">
+                      <af:panelHorizontal>
+                        <af:selectOneChoice value="#{bindings.pIdTipoCalc1.inputValue}">
+                          <af:selectItem label="Proyección" value="1"/>
+                          <af:selectItem label="Final" value="2"/>
+                        </af:selectOneChoice>
+                        <af:commandButton text="Actualizar"
+                                          action="#{Ingresar_deduccion.btn_Actualizar_tipo}"/>
+                        <f:facet name="separator">
+                          <af:objectSpacer width="15" height="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                    </af:panelLabelAndMessage>
+                    <af:objectSeparator/>
+                    <af:subform>
+                      <af:panelForm>
+                        <af:inputText value="#{bindings['reg_empleado'].inputValue}"
+                                      label="#{txtdeducs['ingresar_deducciones.inpt_registro_empleado.texto']}"
+                                      required="#{bindings['reg_empleado'].mandatory}"
+                                      columns="#{bindings['reg_empleado'].displayWidth}"
+                                      binding="#{backing_bean_comun.inp_regEmpleadoBusqueda}"
+                                      rendered="false">
+                          <af:validator binding="#{bindings['reg_empleado'].validator}"/>
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['reg_empleado'].format}"/>
+                        </af:inputText>
+                        <af:inputText value="#{bindings.anio.inputValue}"
+                                      label="#{txtdeducs['ingresar_deducciones.inpt_anio.texto']}"
+                                      required="#{bindings.anio.mandatory}"
+                                      columns="#{bindings.anio.displayWidth}"
+                                      binding="#{Ingresar_deduccion.inpAnioBusqueda}"
+                                      rendered="false">
+                          <af:validator binding="#{bindings.anio.validator}"/>
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.anio.format}"/>
+                        </af:inputText>
+                        <af:commandButton text="#{txtdeducs['ingresar_deducciones.btn_buscar_empleado.texto']}"
+                                          disabled="#{''}"
+                                          action="#{Ingresar_deduccion.commandButton_action}"
+                                          rendered="false"/>
+                      </af:panelForm>
+                      <af:panelHeader text="#{txtdeducs['ingresar_deducciones.hdrpnl_datos.texto']}"
+                                      rendered="false">
+                        <af:panelHorizontal>
+                          <af:outputLabel value="#{txtdeducs['ingresar_deducciones.lbl_nombre_empleado.texto']} : "/>
+                          <af:outputFormatted value="&lt;b>#{bindings['empleado_cont_by_regNombreCompleto'].inputValue}&lt;/b>"
+                                              styleUsage="instruction"/>
+                        </af:panelHorizontal>
+                        <af:panelHorizontal>
+                          <af:outputLabel value="#{txtdeducs['ingresar_deducciones.outpt_lbl.texto']}"/>
+                          <af:outputFormatted value="&lt;b>#{bindings.empleado_cont_by_reg_reg_empleado}&lt;/b>"
+                                              styleUsage="instruction"/>
+                        </af:panelHorizontal>
+                      </af:panelHeader>
+                    </af:subform>
+                    <af:panelHeader text="#{txtdeducs['ingresar_deducciones.pnl_1.header']}"/>
+                    <af:panelForm partialTriggers="Radio tabla_deduccion_isr">
+                      <af:panelLabelAndMessage label="#{txtdeducs['cambioAnio.cmb_anios.title']}">
+                        <af:panelHorizontal>
+                          <af:selectOneChoice value="#{bindings.vAnio1.inputValue}"
+                                              id="cmbAnioTrabajo">
+                            <f:selectItems value="#{backing_bean_comun.listaComboAniosTrabajo}"/>
+                          </af:selectOneChoice>
+                          <af:commandButton action="#{Ingresar_deduccion.btn_cambiar_anio}"
+                                            text="#{txtdeducs['cambioAnio.btn_cambiarAnio.text']}"/>
+                        </af:panelHorizontal>
+                      </af:panelLabelAndMessage>
+                      <af:inputText value="#{bindings.RegistroEmpleado.inputValue}"
+                                    label="#{txtdeducs['ingresar_deducciones.inpt_registro_empleado_ingresado.texto']}"
+                                    required="#{bindings.RegistroEmpleado.mandatory}"
+                                    columns="#{bindings.RegistroEmpleado.displayWidth}"
+                                    partialTriggers="btn_crear"
+                                    binding="#{Ingresar_deduccion.inpt_regEmpleado}"
+                                    disabled="true" rendered="false">
+                        <af:validator binding="#{bindings.RegistroEmpleado.validator}"/>
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.RegistroEmpleado.format}"/>
+                      </af:inputText>
+                      <af:selectOneChoice value="#{bindings['sis_deduccion_isrIdTipoDeduccionIsr'].inputValue}"
+                                          label="#{txtdeducs['ingresar_deducciones.cmb_tipo_deduccion_ingresada']}"
+                                          disabled="true"
+                                          binding="#{Ingresar_deduccion.tipo_deduccion}"
+                                          showRequired="true"
+                                          valuePassThru="true"
+                                          id="cmb_tipoDedu"
+                                          onchange="verificarTipo(this);">
+                        <f:selectItems value="#{bindings['sis_deduccion_isrIdTipoDeduccionIsr'].items}"/>
+                      </af:selectOneChoice>
+                      <af:inputText value="#{bindings.Cantidad.inputValue}"
+                                    label="#{txtdeducs['ingresar_deducciones.inpt_cantidad_ingresada.texto']}"
+                                    required="#{bindings.Cantidad.mandatory}"
+                                    columns="#{bindings.Cantidad.displayWidth}"
+                                    disabled="true"
+                                    binding="#{Ingresar_deduccion.cantidad}"
+                                    showRequired="true">
+                        <af:validator binding="#{bindings.Cantidad.validator}"/>
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.Cantidad.format}"/>
+                      </af:inputText>
+                      <af:inputText value="#{bindings.Anio.inputValue}"
+                                    label="#{txtdeducs['ingresar_deducciones.inpt_anio_ingresado.texto']}"
+                                    required="#{bindings.Anio.mandatory}"
+                                    columns="#{bindings.Anio.displayWidth}"
+                                    disabled="true"
+                                    binding="#{Ingresar_deduccion.anio}"
+                                    rendered="false">
+                        <af:validator binding="#{bindings.Anio.validator}"/>
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.Anio.format}"/>
+                      </af:inputText>
+                      <af:inputText label="Nit" columns="10"
+                                    value="#{bindings.NitDedu.inputValue}"
+                                    id="inptNit" disabled="true"
+                                    binding="#{Ingresar_deduccion.inptNitDedu}"/>
+                      <af:inputText label="Descripción" rows="2"
+                                    value="#{bindings.Descripcion.inputValue}"
+                                    disabled="true"
+                                    binding="#{Ingresar_deduccion.inpt_descrip}"/>
+                    </af:panelForm>
+                    <af:panelHorizontal>
+                      <af:commandButton text="#{txtdeducs['ingresar_deducciones.btn_crear.texto']}"
+                                        disabled="#{!bindings.Create.enabled}"
+                                        action="#{Ingresar_deduccion.CreateNuevaDeduccion}"
+                                        id="btn_crear"/>
+                      <af:commandButton actionListener="#{bindings.Execute.execute}"
+                                        text="#{txtdeducs['ingresar_deducciones.btn_ejecutar.texto']}"
+                                        disabled="#{!bindings.Execute.enabled}"/>
+                      <af:commandButton text="#{txtdeducs['ingresar_deducciones.btn_commint.texto']}"
+                                        action="#{Ingresar_deduccion.commandButton_commit}"
+                                        id="btn_commit"/>
+                      <af:commandButton text="#{txtdeducs['ingresar_deducciones.btn_rollback.texto']}"
+                                        immediate="true"
+                                        action="#{Ingresar_deduccion.commandButton_Rollback}">
+                        <af:resetActionListener/>
+                      </af:commandButton>
+                      <f:facet name="separator">
+                        <af:objectSpacer width="20" height="10"/>
+                      </f:facet>
+                    </af:panelHorizontal>
+                    <af:objectSpacer width="10" height="25"/>
+                    <af:table value="#{bindings['sis_deduccion_isr1'].collectionModel}"
+                              var="row"
+                              rows="#{bindings['sis_deduccion_isr1'].rangeSize}"
+                              first="#{bindings['sis_deduccion_isr1'].rangeStart}"
+                              emptyText="#{bindings['sis_deduccion_isr1'].viewable ? 'Ninguna fila.' : 'Ninguna fila'}"
+                              selectionState="#{bindings['sis_deduccion_isr1'].collectionModel.selectedRow}"
+                              selectionListener="#{bindings['sis_deduccion_isr1'].collectionModel.makeCurrent}"
+                              id="tabla_deduccion_isr"
+                              partialTriggers="btn_commit" banding="row"
+                              bandingInterval="1">
+                      <f:facet name="selection">
+                        <af:tableSelectOne text="Select and" autoSubmit="true"
+                                           id="Radio"/>
+                      </f:facet>
+                      <f:facet name="header">
+                        <af:outputText value="#{txtdeducs['ingresar_deducciones.tbl_resumen.titulo1.texto']}"/>
+                      </f:facet>
+                      <af:column sortable="false" headerText="-">
+                        <af:commandLink action="#{Ingresar_deduccion.cmd_editar}">
+                          <af:objectImage source="/imagenes/form_edit.png"/>
+                        </af:commandLink>
+                      </af:column>
+                      <af:column sortable="false" headerText="-">
+                        <af:commandLink action="#{Ingresar_deduccion.cmd_eliminar}"
+                                        disabled="#{bindings.pIdTipoCalc1.inputValue eq '2'}">
+                          <af:objectImage source="/imagenes/borrar.png"
+                                          shortDesc="Eliminar"/>
+                        </af:commandLink>
+                      </af:column>
+                      <af:column sortProperty="Nombre" sortable="false"
+                                 headerText="#{txtdeducs['ingresar_deducciones.tbl_resumen.col_tipo_deduccion.texto']}"
+                                 noWrap="true">
+                        <af:outputText value="#{row.Nombre}"/>
+                      </af:column>
+                      <af:column sortProperty="Cantidad" sortable="false"
+                                 headerText="#{txtdeducs['ingresar_deducciones.tbl_deducciones.col_cantidad.texto']}"
+                                 formatType="number">
+                        <af:outputText value="#{row.Cantidad}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['sis_deduccion_isr1'].formats.Cantidad}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortable="false" headerText="Nit">
+                        <af:outputText value="#{row.Nit}"/>
+                      </af:column>
+                      <af:column sortProperty="FechaCreacion" sortable="false"
+                                 headerText="#{bindings['sis_deduccion_isr1'].labels.FechaCreacion}"
+                                 noWrap="true">
+                        <af:outputText value="#{row.FechaCreacion}">
+                          <f:convertDateTime pattern="#{bindings['sis_deduccion_isr1'].formats.FechaCreacion}"/>
+                        </af:outputText>
+                      </af:column>
+                    </af:table>
+                    <af:objectSeparator/>
+                    <af:table value="#{bindings['sis_resumen_deduccion_isr'].collectionModel}"
+                              var="row"
+                              rows="#{bindings['sis_resumen_deduccion_isr'].rangeSize}"
+                              first="#{bindings['sis_resumen_deduccion_isr'].rangeStart}"
+                              emptyText="#{bindings['sis_resumen_deduccion_isr'].viewable ? 'Ninguna fila' : 'Ninguna fila'}"
+                              partialTriggers="tabla_deduccion_isr"
+                              banding="row" bandingInterval="1">
+                      <f:facet name="footer">
+                        <af:outputText value="TOTAL"/>
+                      </f:facet>
+                      <f:facet name="header">
+                        <af:outputText value="#{txtdeducs['ingresar_deducciones.tbl_resumen.titulo.texto']}"/>
+                      </f:facet>
+                      <af:column sortProperty="Nombre" sortable="false"
+                                 headerText="#{txtdeducs['ingresar_deducciones.tbl_resumen.col_tipo_deduccion.texto']}">
+                        <af:outputText value="#{row.Nombre}"/>
+                      </af:column>
+                      <af:column sortProperty="SumSisDeduccionIsrCantidad"
+                                 sortable="false"
+                                 headerText="#{txtdeducs['ingresar_deducciones.tbl_resumen.col_cantidad.texto']}"
+                                 formatType="number">
+                        <af:outputText value="#{row.Monto}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['sis_resumen_deduccion_isr'].formats.SumSisDeduccionIsrCantidad}"/>
+                        </af:outputText>
+                        <f:facet name="footer">
+                          <h:panelGroup>
+                            <af:outputText value="#{bindings['sis_resumen_deduccion_isrTotal'].inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings['sis_resumen_deduccion_isrTotal'].format}"/>
+                            </af:outputText>
+                          </h:panelGroup>
+                        </f:facet>
+                      </af:column>
+                    </af:table>
+                    <af:objectSeparator/>
+                    <af:panelButtonBar>
+                      <af:commandButton text="Generar Isr Definitivo"
+                                        action="#{Ingresar_deduccion.btn_isr_definitivo}"/>
+                      <af:commandButton text="#{txtdeducs['ingresar_deducciones.btn_calcularProy.texto']}"
+                                        action="#{Ingresar_deduccion.btn_reprocesar}"/>
+                      <af:commandButton text="#{txtdeducs['ingresar_deducciones.btn_imprimir_bolpago.texto']}"
+                                        onclick="genReporte(#{flujo_usuario.selRegEmpleado});"/>
+                      <af:commandButton text="Boleta ISR Mensual"
+                                        onclick="genReporteMensual('#{flujo_usuario.selRegEmpleado}');"/>
+                      <af:commandButton text="Detalle Otras Rentas"
+                                        onclick="genOtrasRentas('#{flujo_usuario.selRegEmpleado}');"
+                                        rendered="true"/>
+                    </af:panelButtonBar>
+                  </af:showDetailItem>
+                  <af:showDetailItem text="Salarios" disclosed="false"
+                                     disclosureListener="#{Ingresar_deduccion.tab_deduccion}">
+                    <af:table value="#{bindings['SisSueldosEmpl_ISR_vw'].collectionModel}"
+                              var="row"
+                              rows="#{bindings['SisSueldosEmpl_ISR_vw'].rangeSize}"
+                              first="#{bindings['SisSueldosEmpl_ISR_vw'].rangeStart}"
+                              emptyText="#{txtdeducs['tbl_empty.texto']}"
+                              banding="row" bandingInterval="1">
+                      <f:facet name="footer">
+                        <af:panelGroup layout="vertical">
+                          <af:outputText value="Total"/>
+                          <af:outputText value="Total Anulados"/>
+                          <af:outputText value="Total - Anulados"/>
+                        </af:panelGroup>
+                      </f:facet>
+                      <af:column sortProperty="Partida1" sortable="false"
+                                 headerText="Partida">
+                        <af:outputText value="#{row.Partida1}"/>
+                      </af:column>
+                      <af:column sortProperty="NumeroPlaza" sortable="false"
+                                 headerText="NumPlaza">
+                        <af:outputText value="#{row.NumeroPlaza}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['SisSueldosEmpl_ISR_vw'].formats.NumeroPlaza}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Tiponomina" sortable="false"
+                                 headerText="#{bindings['SisSueldosEmpl_ISR_vw'].labels.Tiponomina}"
+                                 noWrap="true">
+                        <af:outputText value="#{row.Tiponomina}"/>
+                      </af:column>
+                      <af:column sortProperty="Periodo" sortable="false"
+                                 headerText="#{bindings['SisSueldosEmpl_ISR_vw'].labels.Periodo}">
+                        <af:outputText value="#{row.Periodo}"/>
+                      </af:column>
+                      <af:column sortProperty="Nominal" sortable="false"
+                                 headerText="#{bindings['SisSueldosEmpl_ISR_vw'].labels.Nominal}"
+                                 formatType="number">
+                        <af:outputText value="#{row.Nominal}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['SisSueldosEmpl_ISR_vw'].formats.Nominal}"/>
+                        </af:outputText>
+                        <f:facet name="footer">
+                          <af:panelGroup layout="vertical">
+                            <af:outputText value="#{bindings.getTotalNominalSA1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalNominalSA1.format}"/>
+                            </af:outputText>
+                            <af:outputText value="#{bindings.getTotalNominal1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalNominal1.format}"/>
+                            </af:outputText>
+                            <af:outputText value="#{bindings.getTotalNominalDiff1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalNominalDiff1.format}"/>
+                            </af:outputText>
+                          </af:panelGroup>
+                        </f:facet>
+                      </af:column>
+                      <af:column sortProperty="TotalBono" sortable="false"
+                                 headerText="#{bindings['SisSueldosEmpl_ISR_vw'].labels.TotalBono}"
+                                 formatType="number">
+                        <af:outputText value="#{row.TotalBono}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['SisSueldosEmpl_ISR_vw'].formats.TotalBono}"/>
+                        </af:outputText>
+                        <f:facet name="footer">
+                          <af:panelGroup layout="vertical">
+                            <af:outputText value="#{bindings.getTotalBonoSA1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalBonoSA1.format}"/>
+                            </af:outputText>
+                            <af:outputText value="#{bindings.getTotalBono1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalBono1.format}"/>
+                            </af:outputText>
+                            <af:outputText value="#{bindings.getTotalBonoDiff1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalBonoDiff1.format}"/>
+                            </af:outputText>
+                          </af:panelGroup>
+                        </f:facet>
+                      </af:column>
+                      <af:column sortable="false" headerText="IGSS"
+                                 formatType="number">
+                        <af:outputText value="#{row.Totaligss}"/>
+                        <f:facet name="footer">
+                          <af:panelGroup layout="vertical">
+                            <af:outputText value="#{bindings.getTotalIgssSA1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalIgssSA1.format}"/>
+                            </af:outputText>
+                            <af:outputText value="#{bindings.getTotalIgss1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalIgss1.format}"/>
+                            </af:outputText>
+                            <af:outputText value="#{bindings.getTotalIgssDiff1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalIgssDiff1.format}"/>
+                            </af:outputText>
+                          </af:panelGroup>
+                        </f:facet>
+                      </af:column>
+                      <af:column sortProperty="Totalisr" sortable="false"
+                                 headerText="#{bindings['SisSueldosEmpl_ISR_vw'].labels.Totalisr}"
+                                 formatType="number">
+                        <af:outputText value="#{row.Totalisr}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['SisSueldosEmpl_ISR_vw'].formats.Totalisr}"/>
+                        </af:outputText>
+                        <f:facet name="footer">
+                          <af:panelGroup layout="vertical">
+                            <af:outputText value="#{bindings.getTotalISRSA1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalISRSA1.format}"/>
+                            </af:outputText>
+                            <af:outputText value="#{bindings.getTotalISR1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalISR1.format}"/>
+                            </af:outputText>
+                            <af:outputText value="#{bindings.getTotalISRDiff1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalISRDiff1.format}"/>
+                            </af:outputText>
+                          </af:panelGroup>
+                        </f:facet>
+                      </af:column>
+                      <af:column sortProperty="Totalplan" sortable="false"
+                                 headerText="#{bindings['SisSueldosEmpl_ISR_vw'].labels.Totalplan}"
+                                 formatType="number">
+                        <af:outputText value="#{row.Totalplan}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['SisSueldosEmpl_ISR_vw'].formats.Totalplan}"/>
+                        </af:outputText>
+                        <f:facet name="footer">
+                          <af:panelGroup layout="vertical">
+                            <af:outputText value="#{bindings.getTotalPlanSA1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalPlanSA1.format}"/>
+                            </af:outputText>
+                            <af:outputText value="#{bindings.getTotalPlan1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalPlan1.format}"/>
+                            </af:outputText>
+                            <af:outputText value="#{bindings.getTotalPlanDiff1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalPlanDiff1.format}"/>
+                            </af:outputText>
+                          </af:panelGroup>
+                        </f:facet>
+                      </af:column>
+                      <af:column sortProperty="Totaljudiciales" sortable="false"
+                                 headerText="#{bindings['SisSueldosEmpl_ISR_vw'].labels.Totaljudiciales}"
+                                 formatType="number">
+                        <af:outputText value="#{row.Totaljudiciales}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['SisSueldosEmpl_ISR_vw'].formats.Totaljudiciales}"/>
+                        </af:outputText>
+                        <f:facet name="footer">
+                          <af:panelGroup layout="vertical">
+                            <af:outputText value="#{bindings.getTotalJudiSA1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalJudiSA1.format}"/>
+                            </af:outputText>
+                            <af:outputText value="#{bindings.getTotalJudi1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalJudi1.format}"/>
+                            </af:outputText>
+                            <af:outputText value="#{bindings.getTotalJudiDiff1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalJudiDiff1.format}"/>
+                            </af:outputText>
+                          </af:panelGroup>
+                        </f:facet>
+                      </af:column>
+                      <af:column sortProperty="TotalDescuento" sortable="false"
+                                 headerText="#{bindings['SisSueldosEmpl_ISR_vw'].labels.TotalDescuento}"
+                                 formatType="number">
+                        <af:outputText value="#{row.TotalDescuento}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['SisSueldosEmpl_ISR_vw'].formats.TotalDescuento}"/>
+                        </af:outputText>
+                        <f:facet name="footer">
+                          <af:panelGroup layout="vertical">
+                            <af:outputText value="#{bindings.getTotalDescSA1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalDescSA1.format}"/>
+                            </af:outputText>
+                            <af:outputText value="#{bindings.getTotalDesc1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalDesc1.format}"/>
+                            </af:outputText>
+                            <af:outputText value="#{bindings.getTotalDescDiff1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalDescDiff1.format}"/>
+                            </af:outputText>
+                          </af:panelGroup>
+                        </f:facet>
+                      </af:column>
+                      <af:column sortProperty="Liquido" sortable="false"
+                                 headerText="#{bindings['SisSueldosEmpl_ISR_vw'].labels.Liquido}"
+                                 formatType="number">
+                        <af:outputText value="#{row.Liquido}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['SisSueldosEmpl_ISR_vw'].formats.Liquido}"/>
+                        </af:outputText>
+                        <f:facet name="footer">
+                          <af:panelGroup layout="vertical">
+                            <af:outputText value="#{bindings.getTotalLiquidoSA1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalLiquidoSA1.format}"/>
+                            </af:outputText>
+                            <af:outputText value="#{bindings.getTotalLiquido1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalLiquido1.format}"/>
+                            </af:outputText>
+                            <af:outputText value="#{bindings.getTotalLiquidoDiff1.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalLiquidoDiff1.format}"/>
+                            </af:outputText>
+                          </af:panelGroup>
+                        </f:facet>
+                      </af:column>
+                      <af:column sortProperty="NumDocFisico" sortable="false"
+                                 headerText="NumDoc">
+                        <af:outputText value="#{row.NumDocFisico}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['SisSueldosEmpl_ISR_vw'].formats.NumDocFisico}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortable="false" headerText="TipoPago">
+                        <af:outputText value="#{row.Nombreabr}"/>
+                      </af:column>
+                      <af:column sortProperty="Nombrebanco" sortable="false"
+                                 headerText="#{bindings['SisSueldosEmpl_ISR_vw'].labels.Nombrebanco}">
+                        <af:outputText value="#{row.Nombrebanco}"/>
+                      </af:column>
+                      <af:column sortProperty="FechaAnulacion" sortable="false"
+                                 headerText="#{bindings['SisSueldosEmpl_ISR_vw'].labels.FechaAnulacion}">
+                        <af:outputText value="#{row.FechaAnulacion}">
+                          <f:convertDateTime pattern="#{bindings['SisSueldosEmpl_ISR_vw'].formats.FechaAnulacion}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="FechaEmision" sortable="false"
+                                 headerText="#{bindings['SisSueldosEmpl_ISR_vw'].labels.FechaEmision}">
+                        <af:outputText value="#{row.FechaEmision}">
+                          <f:convertDateTime pattern="#{bindings['SisSueldosEmpl_ISR_vw'].formats.FechaEmision}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Anio" sortable="false"
+                                 headerText="#{bindings['SisSueldosEmpl_ISR_vw'].labels.Anio}">
+                        <af:outputText value="#{row.Anio}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['SisSueldosEmpl_ISR_vw'].formats.Anio}"/>
+                        </af:outputText>
+                      </af:column>
+                    </af:table>
+                  </af:showDetailItem>
+                  <af:showDetailItem text="Devolución ISR" disclosed="false">
+                    <af:objectSpacer width="10" height="10"/>
+                    <af:table value="#{bindings['Sis_historial_salarial_Isr'].collectionModel}"
+                              var="row"
+                              rows="#{bindings['Sis_historial_salarial_Isr'].rangeSize}"
+                              first="#{bindings['Sis_historial_salarial_Isr'].rangeStart}"
+                              emptyText="Ninguna Fila" banding="row"
+                              bandingInterval="1" id="tbl_devISR">
+                      <f:facet name="footer">
+                        <af:outputText value="Total"/>
+                      </f:facet>
+                      <af:column sortProperty="Partida1" sortable="true"
+                                 headerText="#{txtdeducs['histSal.tblRsl_partida.texto']}">
+                        <af:outputText value="#{row.Partida1}"/>
+                      </af:column>
+                      <af:column sortProperty="NumeroPlaza" sortable="true"
+                                 headerText="#{txtdeducs['histSal.tblRsl_plaza.texto']}">
+                        <af:outputText value="#{row.NumeroPlaza}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['Sis_historial_salarial'].formats.NumeroPlaza}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Tiponomina" sortable="true"
+                                 headerText="#{txtdeducs['histSal.tblRsl_nomina.texto']}"
+                                 noWrap="true">
+                        <af:outputText value="#{row.Tiponomina}"/>
+                      </af:column>
+                      <af:column sortProperty="Periodo" sortable="true"
+                                 headerText="#{bindings['Sis_historial_salarial'].labels.Periodo}">
+                        <af:outputText value="#{row.Periodo}"/>
+                      </af:column>
+                      <af:column sortProperty="Anio" sortable="true"
+                                 headerText="#{txtdeducs['histSal.tblRsl_anio.texto']}">
+                        <af:outputText value="#{row.Correlativo}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['Sis_historial_salarial'].formats.Anio}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Nominal" sortable="true"
+                                 headerText="#{bindings['Sis_historial_salarial'].labels.Nominal}"
+                                 formatType="number" noWrap="true">
+                        <af:outputText value="Q.#{row.Nominal}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['Sis_historial_salarial'].formats.Nominal}"/>
+                        </af:outputText>
+                        <f:facet name="footer">
+                          <h:panelGroup>
+                            <af:outputText value="Q.#{bindings.getTotalNominal3.inputValue}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.getTotalNominal3.format}"/>
+                            </af:outputText>
+                          </h:panelGroup>
+                        </f:facet>
+                      </af:column>
+                      <af:column sortProperty="NumDocFisico" sortable="true"
+                                 headerText="#{txtdeducs['histSal.tblRsl_nodoc.texto']}">
+                        <af:commandLink text="#{row.NumDocFisico}"
+                                        disabled="true"
+                                        action="#{historial_salarial.cmd_num_pago_tabla1}"/>
+                      </af:column>
+                      <af:column sortable="true" headerText="Fecha Emisión"
+                                 sortProperty="FechaEmision">
+                        <af:outputText value="#{row.FechaEmision}"/>
+                      </af:column>
+                      <af:column sortProperty="FechaAnulacion" sortable="true"
+                                 headerText="#{bindings['Sis_historial_salarial'].labels.FechaAnulacion}">
+                        <af:outputText value="#{row.FechaAnulacion}">
+                          <f:convertDateTime pattern="#{bindings['Sis_historial_salarial'].formats.FechaAnulacion}"/>
+                        </af:outputText>
+                      </af:column>
+                    </af:table>
+                    <af:objectSpacer width="10" height="25"/>
+                  </af:showDetailItem>
+                  <af:showDetailItem text="#{tx['isrEmpl.tab3.texto']}"
+                                   disclosed="false">
+                  <af:panelBox width="650" background="transparent"
+                               text="#{tx['isrEmpl.pnldetisr.texto']} #{bindings.Anio1.inputValue}">
+                    <af:panelHeader text="#{tx['isrEmpl.pnl_direcF.label']}"/>
+                    <afh:tableLayout cellSpacing="8">
+                      <afh:rowLayout styleClass="textLabel">
+                        <afh:cellFormat>
+                          <af:outputLabel value="#{tx['isrEmpl.tbldf.calle.label']}"
+                                          styleClass="textLabel"/>
+                        </afh:cellFormat>
+                        <afh:cellFormat>
+                          <af:outputLabel value="#{tx['isrEmpl.tbldf.casa.label']}"
+                                          styleClass="textLabel"/>
+                        </afh:cellFormat>
+                        <afh:cellFormat>
+                          <af:outputLabel value="#{tx['isrEmpl.tbldf.apto.label']}"
+                                          styleClass="textLabel"/>
+                        </afh:cellFormat>
+                        <afh:cellFormat>
+                          <af:outputLabel value="#{tx['isrEmpl.tbldf.zona.label']}"
+                                          styleClass="textLabel"/>
+                        </afh:cellFormat>
+                        <afh:cellFormat>
+                          <af:outputLabel value="#{tx['isrEmpl.tbldf.colonia.label']}"
+                                          styleClass="textLabel"/>
+                        </afh:cellFormat>
+                        <afh:cellFormat>
+                          <af:outputLabel value="#{tx['isrEmpl.tbldf.dep.label']}"
+                                          styleClass="textLabel"/>
+                        </afh:cellFormat>
+                      </afh:rowLayout>
+                      <afh:rowLayout>
+                        <afh:cellFormat>
+                          <af:inputText value="#{bindings.CalleAve.inputValue}"
+                                        required="#{bindings.CalleAve.mandatory}"
+                                        columns="10">
+                            <af:validator binding="#{bindings.CalleAve.validator}"/>
+                          </af:inputText>
+                        </afh:cellFormat>
+                        <afh:cellFormat>
+                          <af:inputText value="#{bindings.NoCasa.inputValue}"
+                                        required="#{bindings.NoCasa.mandatory}"
+                                        columns="3">
+                            <af:validator binding="#{bindings.NoCasa.validator}"/>
+                          </af:inputText>
+                        </afh:cellFormat>
+                        <afh:cellFormat>
+                          <af:inputText value="#{bindings.AptoSim.inputValue}"
+                                        required="#{bindings.AptoSim.mandatory}"
+                                        columns="5">
+                            <af:validator binding="#{bindings.AptoSim.validator}"/>
+                          </af:inputText>
+                        </afh:cellFormat>
+                        <afh:cellFormat>
+                          <af:inputText value="#{bindings.Zona.inputValue}"
+                                        required="#{bindings.Zona.mandatory}"
+                                        columns="3">
+                            <af:validator binding="#{bindings.Zona.validator}"/>
+                          </af:inputText>
+                        </afh:cellFormat>
+                        <afh:cellFormat>
+                          <af:inputText value="#{bindings.ColoniaBarrio.inputValue}"
+                                        required="#{bindings.ColoniaBarrio.mandatory}"
+                                        columns="10">
+                            <af:validator binding="#{bindings.ColoniaBarrio.validator}"/>
+                          </af:inputText>
+                        </afh:cellFormat>
+                        <afh:cellFormat>
+                          <af:selectOneChoice value="#{bindings['DepartamentoF'].inputValue}"
+                                              autoSubmit="true" id="cmb_dep">
+                            <f:selectItems value="#{bindings['DepartamentoF'].items}"/>
+                          </af:selectOneChoice>
+                        </afh:cellFormat>
+                      </afh:rowLayout>
+                      <afh:rowLayout>
+                        <afh:cellFormat>
+                          <af:outputLabel value="#{tx['isrEmpl.tbldf.muni.label']}"
+                                          styleClass="textLabel"/>
+                        </afh:cellFormat>
+                        <afh:cellFormat>
+                          <af:outputLabel value="#{tx['isrEmpl.tbldf.tel.label']}"
+                                          styleClass="textLabel"/>
+                        </afh:cellFormat>
+                        <afh:cellFormat>
+                          <af:outputLabel value="#{tx['isrEmpl.tbldf.fax.label']}"
+                                          styleClass="textLabel"/>
+                        </afh:cellFormat>
+                        <afh:cellFormat>
+                          <af:outputLabel value="#{tx['isrEmpl.tbldf.postal.label']}"
+                                          styleClass="textLabel"/>
+                        </afh:cellFormat>
+                        <afh:cellFormat>
+                          <af:outputLabel value="#{tx['isrEmpl.tbldf.correo.label']}"
+                                          styleClass="textLabel"/>
+                        </afh:cellFormat>
+                      </afh:rowLayout>
+                      <afh:rowLayout>
+                        <afh:cellFormat>
+                          <af:selectOneChoice value="#{bindings['MunicipioFiscal'].inputValue}"
+                                              partialTriggers="cmb_dep">
+                            <f:selectItems value="#{bindings['MunicipioFiscal'].items}"/>
+                          </af:selectOneChoice>
+                        </afh:cellFormat>
+                        <afh:cellFormat>
+                          <af:inputText columns="6"
+                                        value="#{bindings.Celular.inputValue}"/>
+                        </afh:cellFormat>
+                        <afh:cellFormat>
+                          <af:inputText value="#{bindings.Fax.inputValue}"
+                                        required="#{bindings.Fax.mandatory}"
+                                        columns="6">
+                            <af:validator binding="#{bindings.Fax.validator}"/>
+                          </af:inputText>
+                        </afh:cellFormat>
+                        <afh:cellFormat>
+                          <af:inputText value="#{bindings.ApartadoPostal.inputValue}"
+                                        required="#{bindings.ApartadoPostal.mandatory}"
+                                        columns="5">
+                            <af:validator binding="#{bindings.ApartadoPostal.validator}"/>
+                          </af:inputText>
+                        </afh:cellFormat>
+                        <afh:cellFormat>
+                          <af:inputText value="#{bindings.Email.inputValue}"
+                                        required="#{bindings.Email.mandatory}"
+                                        columns="20">
+                            <af:validator binding="#{bindings.Email.validator}"/>
+                          </af:inputText>
+                        </afh:cellFormat>
+                      </afh:rowLayout>
+                    </afh:tableLayout>
+                    <af:panelHeader text="#{tx['isrEmpl.tbl_opat.title']}"/>
+                    <af:table value="#{bindings.SisIsrForm1101VwSisIsrForm1101OtrosptrnosVw.collectionModel}"
+                              var="row"
+                              rows="#{bindings.SisIsrForm1101VwSisIsrForm1101OtrosptrnosVw.rangeSize}"
+                              first="#{bindings.SisIsrForm1101VwSisIsrForm1101OtrosptrnosVw.rangeStart}"
+                              emptyText="#{tx['isrEmpl.tbl_opat.nodata']}"
+                              selectionState="#{bindings.SisIsrForm1101VwSisIsrForm1101OtrosptrnosVw.collectionModel.selectedRow}"
+                              selectionListener="#{bindings.SisIsrForm1101VwSisIsrForm1101OtrosptrnosVw.collectionModel.makeCurrent}">
+                      <af:column sortProperty="Nit" sortable="false"
+                                 headerText="#{bindings.SisIsrForm1101VwSisIsrForm1101OtrosptrnosVw.labels.Nit}">
+                        <af:outputText value="#{row.Nit}"
+                                       rendered="#{not row.Seleccionado}"/>
+                        <af:inputText columns="10" value="#{row.Nit}"
+                                      rendered="#{row.Seleccionado}"/>
+                      </af:column>
+                      <af:column sortProperty="NombrePatrono" sortable="false"
+                                 headerText="#{bindings.SisIsrForm1101VwSisIsrForm1101OtrosptrnosVw.labels.NombrePatrono}">
+                        <af:outputText value="#{row.NombrePatrono}"
+                                       rendered="#{not row.Seleccionado}"/>
+                        <af:inputText columns="20"
+                                      rendered="#{row.Seleccionado}"
+                                      value="#{row.NombrePatrono}"/>
+                      </af:column>
+                      <af:column sortProperty="RentaNeta" sortable="false"
+                                 headerText="#{bindings.SisIsrForm1101VwSisIsrForm1101OtrosptrnosVw.labels.RentaNeta}"
+                                 formatType="number">
+                        <af:outputText value="#{row.RentaNeta}"
+                                       rendered="#{not row.Seleccionado}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisIsrForm1101VwSisIsrForm1101OtrosptrnosVw.formats.RentaNeta}"/>
+                        </af:outputText>
+                        <af:inputText columns="10"
+                                      rendered="#{row.Seleccionado}"
+                                      value="#{row.RentaNeta}"/>
+                        <f:facet name="footer">
+                          <af:outputText value="#{bindings.TotalRenta.inputValue}"/>
+                        </f:facet>
+                      </af:column>
+                      <f:facet name="selection">
+                        <af:tableSelectOne autoSubmit="true"
+                                           binding="#{Isr_Empl.tblOP_selOne}"/>
+                      </f:facet>
+                      <f:facet name="actions">
+                        <h:panelGroup>
+                          <af:panelButtonBar>
+                            <af:commandButton text="#{tx['isrEmpl.tbl_opat.crear.texto']}"
+                                              binding="#{Isr_Empl.btn_tblOp_crear}"
+                                              action="#{Isr_Empl.btn_OP_crear}"
+                                              disabled="#{not (bindings.SisIsrForm1101OtrosptrnosVwIterator.estimatedRowCount&lt;=1)}"/>
+                            <af:commandButton text="#{tx['isrEmpl.tbl_opat.edit.texto']}"
+                                              binding="#{Isr_Empl.btn_tblOp_edit}"
+                                              action="#{Isr_Empl.btn_OP_edit_action}"/>
+                            <af:commandButton text="#{tx['isrEmpl.tbl_opat.del.texto']}"
+                                              binding="#{Isr_Empl.btn_tblOp_del}"
+                                              action="#{Isr_Empl.btn_OP_del_action}"/>
+                            <af:commandButton text="#{tx['isrEmpl.tbl_opat.ok.texto']}"
+                                              binding="#{Isr_Empl.btn_tblOp_ok}"
+                                              action="#{Isr_Empl.btn_OP_ok_action}"
+                                              id="btn_aceptarOp"/>
+                          </af:panelButtonBar>
+                        </h:panelGroup>
+                      </f:facet>
+                      <f:facet name="footer">
+                        <af:outputText value="Total"/>
+                      </f:facet>
+                      <f:facet name="header">
+                        <af:outputText value="#{tx['isrEmpl.tbl_opat.title']}"
+                                       inlineStyle="color:rgb(0,132,198);"/>
+                      </f:facet>
+                    </af:table>
+                    <af:panelHeader text="#{tx['isrEmpl.pnl_detfrm.label']}"/>
+                    <afh:tableLayout borderWidth="1">
+                      <afh:rowLayout>
+                        <afh:cellFormat>
+                          <af:outputText value="#{tx['isrEmpl.labelrenta2.texto']}"
+                                         styleClass="textLabel"/>
+                        </afh:cellFormat>
+                        <afh:cellFormat halign="right">
+                          <af:inputText value="Q.#{bindings.RentaNetaUsac.inputValue}"
+                                        required="#{bindings.RentaNetaUsac.mandatory}"
+                                        columns="10" readOnly="true">
+                            <af:validator binding="#{bindings.RentaNetaUsac.validator}"/>
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.RentaNetaUsac.format}"/>
+                          </af:inputText>
+                        </afh:cellFormat>
+                      </afh:rowLayout>
+                      <afh:rowLayout>
+                        <afh:cellFormat>
+                          <af:outputText value="#{tx['isrEmpl.labeldeduc2.texto']}"
+                                         styleClass="textLabel"/>
+                        </afh:cellFormat>
+                        <afh:cellFormat halign="right">
+                          <af:inputText value="Q.#{bindings.DeduccionUnica.inputValue}"
+                                        required="#{bindings.DeduccionUnica.mandatory}"
+                                        columns="10" disabled="true"
+                                        readOnly="true"
+                                        inlineStyle="text-align:right;">
+                            <af:validator binding="#{bindings.DeduccionUnica.validator}"/>
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.DeduccionUnica.format}"/>
+                          </af:inputText>
+                        </afh:cellFormat>
+                      </afh:rowLayout>
+                      <afh:rowLayout>
+                        <afh:cellFormat>
+                          <af:outputText value="#{tx['isrEmpl.labeliggs2.texto']}"
+                                         styleClass="textLabel"/>
+                        </afh:cellFormat>
+                        <afh:cellFormat halign="right">
+                          <af:inputText value="Q.#{bindings.Igssplan.inputValue}"
+                                        required="#{bindings.Igssplan.mandatory}"
+                                        columns="10" disabled="true"
+                                        readOnly="true">
+                            <af:validator binding="#{bindings.Igssplan.validator}"/>
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.Igssplan.format}"/>
+                          </af:inputText>
+                        </afh:cellFormat>
+                      </afh:rowLayout>
+                      <afh:rowLayout>
+                        <afh:cellFormat>
+                          <af:outputText value="#{tx['isrEmpl.labelpension2.texto']}"
+                                         styleClass="textLabel"/>
+                        </afh:cellFormat>
+                        <afh:cellFormat halign="right">
+                          <af:inputText value="#{bindings.PrimasSeguros.inputValue}"
+                                        required="#{bindings.PrimasSeguros.mandatory}"
+                                        columns="10"
+                                        inlineStyle="text-align:right;"
+                                        label="Q.">
+                            <af:validator binding="#{bindings.PrimasSeguros.validator}"/>
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.PrimasSeguros.format}"/>
+                          </af:inputText>
+                        </afh:cellFormat>
+                      </afh:rowLayout>
+                      <afh:rowLayout>
+                        <afh:cellFormat>
+                          <af:outputText value="#{tx['isrEmpl.labelmedicos2.texto']}"
+                                         styleClass="textLabel"/>
+                        </afh:cellFormat>
+                        <afh:cellFormat halign="right">
+                          <af:inputText value="#{bindings.Gtosmedicos.inputValue}"
+                                        required="#{bindings.Gtosmedicos.mandatory}"
+                                        columns="10"
+                                        inlineStyle="text-align:right;"
+                                        label="Q.">
+                            <af:validator binding="#{bindings.Gtosmedicos.validator}"/>
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.Gtosmedicos.format}"/>
+                          </af:inputText>
+                        </afh:cellFormat>
+                      </afh:rowLayout>
+                      <afh:rowLayout rendered="#{bindings.shwOpt.inputValue eq '1'}">
+                        <afh:cellFormat>
+                          <af:outputText value="#{tx['isrEmpl.labelpensionjud2.texto']}"
+                                         styleClass="textLabel"/>
+                        </afh:cellFormat>
+                        <afh:cellFormat halign="right">
+                          <af:inputText value="#{bindings.PensionesAlimen.inputValue}"                                        
+                                        required="#{bindings.PensionesAlimen.mandatory}"
+                                        columns="10"
+                                        inlineStyle="text-align:right;"
+                                        label="Q.">
+                            <af:validator binding="#{bindings.PensionesAlimen.validator}"/>
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.PensionesAlimen.format}"/>
+                          </af:inputText>
+                        </afh:cellFormat>
+                      </afh:rowLayout>
+                      <afh:rowLayout>
+                        <afh:cellFormat>
+                          <af:outputText value="#{tx['isrEmpl.labelrentase2.texto']}"
+                                         styleClass="textLabel"/>
+                        </afh:cellFormat>
+                        <afh:cellFormat halign="right">
+                          <af:inputText value="Q.#{bindings.RentaExcenta.inputValue}"
+                                        required="#{bindings.RentaExcenta.mandatory}"
+                                        columns="10" disabled="true"
+                                        readOnly="true">
+                            <af:validator binding="#{bindings.RentaExcenta.validator}"/>
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.RentaExcenta.format}"/>
+                          </af:inputText>
+                        </afh:cellFormat>
+                      </afh:rowLayout>
+                      <afh:rowLayout>
+                          <afh:cellFormat>
+                          <af:outputText value="#{tx['isrEmpl.labelcolegios2.texto']}"
+                                         styleClass="textLabel"
+                                         rendered="#{bindings.shwOpt.inputValue eq '1'}"/>
+                            <af:outputText value="Otros gastos: (donaciones y otros)"
+                                           styleClass="textLabel"
+                                           rendered="#{bindings.shwOpt.inputValue eq '2'}"/>
+                          </afh:cellFormat>
+                        <afh:cellFormat halign="right">
+                          <af:inputText value="#{bindings.Colegiosyotros.inputValue}"                                      
+                                        required="#{bindings.Colegiosyotros.mandatory}"
+                                        columns="10"
+                                        inlineStyle="text-align:right;"
+                                        label="Q.">
+                            <af:validator binding="#{bindings.Colegiosyotros.validator}"/>
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.Colegiosyotros.format}"/>
+                          </af:inputText>
+                        </afh:cellFormat>
+                      </afh:rowLayout>
+                      <afh:rowLayout>
+                        <afh:cellFormat>
+                          <af:outputText value="#{tx['isrEmpl.labelRentaImp.texto']}"
+                                         styleClass="textLabel"/>
+                        </afh:cellFormat>
+                        <afh:cellFormat halign="right">
+                          <af:inputText value="Q.#{bindings.RentaImponible.inputValue}"
+                                        required="#{bindings.RentaImponible.mandatory}"
+                                        columns="10"
+                                        inlineStyle="text-align:right;"
+                                        readOnly="true">
+                            <af:validator binding="#{bindings.RentaImponible.validator}"/>
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.RentaImponible.format}"/>
+                          </af:inputText>
+                        </afh:cellFormat>
+                      </afh:rowLayout>
+                      <afh:rowLayout>
+                        <afh:cellFormat>
+                          <af:outputText value="#{tx['isrEmpl.labelpresenta.texto']}"
+                                         styleClass="textLabel"/>
+                        </afh:cellFormat>
+                        <afh:cellFormat halign="right">
+                          <af:selectInputDate
+                                              value="#{bindings.FechaPresentacion.inputValue}"/>
+                        </afh:cellFormat>
+                      </afh:rowLayout>
+                    </afh:tableLayout>
+                    <af:panelForm/>
+                  </af:panelBox>
+                  <af:objectSeparator/>
+                  <af:commandButton actionListener="#{bindings.Commit.execute}"
+                                    text="#{tx['isrEmpl.btn_genRep.texto']}"
+                                    onclick="genRep('#{bindings.Anio1.inputValue}','#{flujo_usuario.selRegEmpleado}');"
+                                    id="btn_generarRep"/>
+                </af:showDetailItem>
+                </af:showOneTab>
+              </af:panelBox>
+            </af:panelHorizontal>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:Ingresar_deduccion-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:Ingresar_deduccion-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:Ingresar_deduccion-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:Ingresar_deduccion-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:Ingresar_deduccion-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:Ingresar_deduccion-->
+</jsp:root>

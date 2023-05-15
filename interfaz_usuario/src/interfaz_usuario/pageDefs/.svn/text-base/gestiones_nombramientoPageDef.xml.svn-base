@@ -1,0 +1,648 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel"
+                version="10.1.3.41.57" id="gestiones_nombramientoPageDef"
+                Package="interfaz_usuario.pageDefs"
+                MsgBundleClass="interfaz_usuario.pageDefs.gestiones_nombramientoPageDefMsgBundle">
+  <parameters/>
+  <executables>
+    <invokeAction id="ExeRollback" Binds="Rollback" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback &amp;&amp; ((flujo_usuario.vistaContrato==0||flujo_usuario.vistaContrato==3)) &amp;&amp; bindings.Rollback.enabled}"/>
+    <invokeAction Binds="Resetear" id="Eje_reset" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback &amp;&amp; (flujo_usuario.vistaContrato==0||flujo_usuario.vistaContrato==3)}"/>
+    <invokeAction id="crear_contrato" Binds="Create" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback &amp;&amp; (flujo_usuario.vistaContrato==0||flujo_usuario.vistaContrato==3)}"/>
+    <iterator id="empleado_cont_by_regIterator" RangeSize="10"
+              Binds="empleado_cont_by_reg" DataControl="QUERRYSDataControl"/>
+    <variableIterator id="variables">
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="empleado_cont_by_reg.variablesMap.reg_empleado"
+                     Name="empleado_cont_by_reg_reg_empleado"
+                     IsQueriable="false"/>
+     <variable Name="valorCero" Type="oracle.jbo.domain.Number" DefaultValue="0"/>
+    </variableIterator>
+    <iterator id="SisContrato_vwIterator" RangeSize="10" Binds="SisContrato_vw"
+              DataControl="QUERRYSDataControl"/>
+    <iterator id="tipo_contratoIterator" RangeSize="-1" Binds="tipo_contrato"
+              DataControl="QUERRYSDataControl"/>
+    <iterator id="formas_obt_puestoIterator" RangeSize="-1"
+              Binds="formas_obt_puesto" DataControl="QUERRYSDataControl"/>
+    <iterator id="SisHorarioContratoIterator" RangeSize="10"
+              Binds="SisHorarioContrato" DataControl="QUERRYSDataControl"
+              Refresh="ifNeeded"/>
+    <iterator id="dias_Semana_vwIterator" RangeSize="-1" Binds="dias_Semana_vw"
+              DataControl="QUERRYSDataControl"/>
+    <invokeAction id="buscar_contrato" Binds="Ejec_buscar_contrato"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback &amp;&amp; flujo_usuario.vistaContrato==1}"/>
+    <invokeAction id="buscar_datosEmpl" Binds="exe_datosPersonales"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <iterator id="contrato_det_puestoIterator" RangeSize="10"
+              Binds="Sis_det_plaza_contrato1" DataControl="QUERRYSDataControl"/>
+    <iterator id="municipios_dep_by_munIterator" RangeSize="-1"
+              Binds="municipios_dep_by_mun" DataControl="QUERRYSDataControl"/>
+    <iterator id="todos_los_DepartamentosIterator" RangeSize="-1"
+              Binds="todos_los_Departamentos" DataControl="QUERRYSDataControl"/>
+    <invokeAction Binds="Mun_nopost"
+                  RefreshCondition="${!adfFacesContext.postback}"
+                  Refresh="renderModel" id="eje_Mun_No_post"/>
+    <invokeAction id="eje_mun_post" Binds="Mun_post" Refresh="renderModel"
+                  RefreshCondition="${adfFacesContext.postback &amp;&amp; backing_gestiones_nombramiento.selDepto}"/>
+    <iterator id="contrato_desc_y_bonosIterator" RangeSize="10"
+              Binds="contrato_desc_y_bonos" DataControl="QUERRYSDataControl"/>
+    <invokeAction Binds="bonos" id="ejec_bonos" Refresh="renderModel"
+                  RefreshCondition="${flujo_usuario.vistaContrato==1||flujo_usuario.vistaContrato==3}"/>
+    <iterator id="arch_adjunto_contrato_vwIterator" RangeSize="50"
+              Binds="arch_adjunto_contrato_vw"
+              DataControl="QUERRYSDataControl"/>
+    <iterator id="SisPartidaProvisionVwIterator" RangeSize="-1"
+              Binds="SisPartidaProvisionVw" DataControl="QUERRYSDataControl"/>
+    <invokeAction Binds="provPartida" id="ExePartida" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+  </executables>
+  <bindings>
+    <attributeValues id="empleado_cont_by_regRegistroEmpleado"
+                     IterBinding="empleado_cont_by_regIterator">
+      <AttrNames>
+        <Item Value="RegistroEmpleado"/>
+      </AttrNames>
+    </attributeValues>
+    <action id="exe_datosPersonales" IterBinding="empleado_cont_by_regIterator"
+            InstanceName="QUERRYSDataControl.empleado_cont_by_reg"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="reg_empleado" NDValue="${flujo_usuario.selRegEmpleado}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <attributeValues id="reg_empleado" IterBinding="variables">
+      <AttrNames>
+        <Item Value="empleado_cont_by_reg_reg_empleado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="NombreCompleto"
+                     IterBinding="empleado_cont_by_regIterator">
+      <AttrNames>
+        <Item Value="NombreCompleto"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="NumCedula" IterBinding="empleado_cont_by_regIterator">
+      <AttrNames>
+        <Item Value="NumCedula"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Extendida" IterBinding="empleado_cont_by_regIterator">
+      <AttrNames>
+        <Item Value="Extendida"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Edad" IterBinding="empleado_cont_by_regIterator">
+      <AttrNames>
+        <Item Value="Edad"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Estadocivil"
+                     IterBinding="empleado_cont_by_regIterator">
+      <AttrNames>
+        <Item Value="Estadocivil"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Nacionalidad"
+                     IterBinding="empleado_cont_by_regIterator">
+      <AttrNames>
+        <Item Value="Nacionalidad"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Descripcion"
+                     IterBinding="empleado_cont_by_regIterator">
+      <AttrNames>
+        <Item Value="Descripcion"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Direccion" IterBinding="empleado_cont_by_regIterator">
+      <AttrNames>
+        <Item Value="Direccion"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="empleado_cont_by_regIterator"
+                     id="RegistroEmpleado">
+      <AttrNames>
+        <Item Value="RegistroEmpleado"/>
+      </AttrNames>
+    </attributeValues>
+    <action id="Create" RequiresUpdateModel="true" Action="41"
+            IterBinding="SisContrato_vwIterator"
+            InstanceName="QUERRYSDataControl.SisContrato_vw"
+            DataControl="QUERRYSDataControl">
+      
+    </action>
+    <attributeValues id="Sueldobase" IterBinding="SisContrato_vwIterator">
+      <AttrNames>
+        <Item Value="Sueldobase"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="ComplSal" IterBinding="SisContrato_vwIterator">
+      <AttrNames>
+        <Item Value="ComplSal"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Escalaf" IterBinding="SisContrato_vwIterator">
+      <AttrNames>
+        <Item Value="Escalaf"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Atribucion" IterBinding="SisContrato_vwIterator">
+      <AttrNames>
+        <Item Value="Atribucion"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="FechaInicio" IterBinding="SisContrato_vwIterator">
+      <AttrNames>
+        <Item Value="FechaInicio"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="FechaFin" IterBinding="SisContrato_vwIterator">
+      <AttrNames>
+        <Item Value="FechaFin"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="FechaPosesion" IterBinding="SisContrato_vwIterator">
+      <AttrNames>
+        <Item Value="FechaPosesion"/>
+      </AttrNames>
+    </attributeValues>
+    <list id="tipo_contratoNombre" IterBinding="SisContrato_vwIterator"
+          StaticList="false" ListOperMode="0" ListIter="tipo_contratoIterator"
+          NullValueFlag="1" NullValueId="tipo_contratoNombre_null">
+      <AttrNames>
+        <Item Value="IdTipoContrato"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdTipoContrato"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Nombre"/>
+      </ListDisplayAttrNames>
+    </list>
+    <list id="formas_obt_puestoNombre" IterBinding="SisContrato_vwIterator"
+          StaticList="false" ListOperMode="0"
+          ListIter="formas_obt_puestoIterator" NullValueFlag="1"
+          NullValueId="formas_obt_puestoNombre_null">
+      <AttrNames>
+        <Item Value="IdFormaObtPuesto"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdFormaObtPuesto"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Nombre"/>
+      </ListDisplayAttrNames>
+    </list>
+    <action id="Commit" InstanceName="QUERRYSDataControl"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="100"/>
+    <action id="Rollback" InstanceName="QUERRYSDataControl"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="101"/>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="NumeroPlaza">
+      <AttrNames>
+        <Item Value="NumeroPlaza"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisContrato_vwIterator"
+                     id="RegistroEmpleado1">
+      <AttrNames>
+        <Item Value="RegistroEmpleado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="IdPartida">
+      <AttrNames>
+        <Item Value="IdPartida"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="IdPuesto">
+      <AttrNames>
+        <Item Value="IdPuesto"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="Correlativo">
+      <AttrNames>
+        <Item Value="Correlativo"/>
+      </AttrNames>
+    </attributeValues>
+    <table id="SisContrato_vwSisHorarioContrato"
+           IterBinding="SisHorarioContratoIterator">
+      <AttrNames>
+        <Item Value="IdContrato"/>
+        <Item Value="IdDia"/>
+        <Item Value="HoraEntrada"/>
+        <Item Value="HoraSalida"/>
+        <Item Value="FechaCreacion"/>
+        <Item Value="HoraEntrada2"/>
+        <Item Value="HoraSalida2"/>
+        <Item Value="nomDia"/>
+        <Item Value="Selected"/>
+      </AttrNames>
+    </table>
+    <action id="Create1" IterBinding="SisHorarioContratoIterator"
+            InstanceName="QUERRYSDataControl.SisHorarioContrato"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="41"/>
+    <action id="Delete" IterBinding="SisHorarioContratoIterator"
+            InstanceName="QUERRYSDataControl.SisHorarioContrato"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="30"/>
+    <action id="Execute" IterBinding="SisHorarioContratoIterator"
+            InstanceName="QUERRYSDataControl.SisHorarioContrato"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="2"/>
+    <attributeValues id="SisHorarioContratoHoraEntrada"
+                     IterBinding="SisHorarioContratoIterator">
+      <AttrNames>
+        <Item Value="HoraEntrada2"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="SisHorarioContratoHoraSalida"
+                     IterBinding="SisHorarioContratoIterator">
+      <AttrNames>
+        <Item Value="HoraSalida2"/>
+      </AttrNames>
+    </attributeValues>
+    <list id="dias_Semana_vwNombre" IterBinding="SisHorarioContratoIterator"
+          StaticList="false" ListOperMode="0" ListIter="dias_Semana_vwIterator">
+      <AttrNames>
+        <Item Value="IdDia"/>
+        <Item Value="nomDia"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdDia"/>
+        <Item Value="Nombre"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Nombre"/>
+      </ListDisplayAttrNames>
+    </list>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="numHoras">
+      <AttrNames>
+        <Item Value="numHoras"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="Horascontratadas">
+      <AttrNames>
+        <Item Value="Horascontratadas"/>
+      </AttrNames>
+    </attributeValues>
+    <action IterBinding="SisContrato_vwIterator" id="Ejec_buscar_contrato"
+            InstanceName="QUERRYSDataControl.SisContrato_vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="numContrato" NDValue="${flujo_usuario.selContrato}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <attributeValues IterBinding="contrato_det_puestoIterator" id="Partida">
+      <AttrNames>
+        <Item Value="Partida"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="contrato_det_puestoIterator"
+                     id="NumeroPlaza1">
+      <AttrNames>
+        <Item Value="NumeroPlaza"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="contrato_det_puestoIterator" id="Puesto">
+      <AttrNames>
+        <Item Value="Puesto"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="contrato_det_puestoIterator" id="Dependencia">
+      <AttrNames>
+        <Item Value="Dependencia"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="contrato_det_puestoIterator" id="Unidad">
+      <AttrNames>
+        <Item Value="Unidad"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="contrato_det_puestoIterator" id="IdPuesto1">
+      <AttrNames>
+        <Item Value="IdPuesto"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="IdContrato">
+      <AttrNames>
+        <Item Value="IdContrato"/>
+      </AttrNames>
+    </attributeValues>
+    <list StaticList="false" ListOperMode="0"
+          IterBinding="SisContrato_vwIterator"
+          ListIter="municipios_dep_by_munIterator" id="todos_municipiosNombre">
+      <AttrNames>
+        <Item Value="LugarPosesion"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdMunicipio"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Nombre"/>
+      </ListDisplayAttrNames>
+    </list>
+    <list StaticList="false" ListOperMode="0"
+          IterBinding="municipios_dep_by_munIterator"
+          ListIter="todos_los_DepartamentosIterator" id="todos_los_Departamentos">
+      <AttrNames>
+        <Item Value="IdDepartamento"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdDepartamento"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Nombre"/>
+      </ListDisplayAttrNames>
+    </list>
+    <action IterBinding="municipios_dep_by_munIterator" id="Mun_nopost"
+            InstanceName="QUERRYSDataControl.municipios_dep_by_mun"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="id_mun"
+                 NDValue="${bindings.LugarPosesion.inputValue!=null?bindings.LugarPosesion.inputValue:1}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="id_dept" NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <action IterBinding="municipios_dep_by_munIterator" id="Mun_post"
+            InstanceName="QUERRYSDataControl.municipios_dep_by_mun"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="id_mun" NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="id_dept"
+                 NDValue="${bindings.IdDepartamento1.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="LugarPosesion">
+      <AttrNames>
+        <Item Value="LugarPosesion"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="municipios_dep_by_munIterator"
+                     id="IdDepartamento1">
+      <AttrNames>
+        <Item Value="IdDepartamento"/>
+      </AttrNames>
+    </attributeValues>
+    <table IterBinding="contrato_desc_y_bonosIterator"
+           id="contrato_desc_y_bonos">
+      <AttrNames>
+        <Item Value="IdAjuste"/>
+        <Item Value="Calculado"/>
+        <Item Value="FechaFin"/>
+        <Item Value="FechaInicio"/>
+        <Item Value="IdTipoajuste"/>
+        <Item Value="Nivel"/>
+        <Item Value="Nombre"/>
+        <Item Value="Nomoperacion"/>
+        <Item Value="Opcional"/>
+        <Item Value="Operacion"/>
+      </AttrNames>
+    </table>
+    <action IterBinding="contrato_desc_y_bonosIterator" id="bonos"
+            InstanceName="QUERRYSDataControl.contrato_desc_y_bonos"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="numContrato"
+                 NDValue="${bindings.IdContrato.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <attributeValues IterBinding="SisContrato_vwIterator"
+                     id="NumContratoFormato">
+      <AttrNames>
+        <Item Value="numContratoFormato"/>
+      </AttrNames>
+    </attributeValues>
+    <table id="SisContrato_vwarch_adjunto_contrato_vw"
+           IterBinding="arch_adjunto_contrato_vwIterator">
+      <AttrNames>
+        <Item Value="NomArchivo"/>
+        <Item Value="Descripcion"/>
+        <Item Value="FechaCreacion"/>
+        <Item Value="nomArchEncript"/>
+      </AttrNames>
+    </table>
+    <action id="ExeArchAdjunto" IterBinding="arch_adjunto_contrato_vwIterator"
+            InstanceName="QUERRYSDataControl.arch_adjunto_contrato_vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="2"/>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="BaseLegal">
+      <AttrNames>
+        <Item Value="BaseLegal"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="Estatus">
+      <AttrNames>
+        <Item Value="Estatus"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="estadoContrl">
+      <AttrNames>
+        <Item Value="estadoContrl"/>
+      </AttrNames>
+    </attributeValues>
+    <action id="Execute1" IterBinding="SisContrato_vwIterator"
+            InstanceName="QUERRYSDataControl.SisContrato_vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="2"/>
+    <action IterBinding="contrato_det_puestoIterator" id="EjecutarDetPuesto"
+            InstanceName="QUERRYSDataControl.Sis_det_plaza_contrato1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="2"/>
+    <attributeValues IterBinding="contrato_det_puestoIterator"
+                     id="CantidadHorasDet">
+      <AttrNames>
+        <Item Value="CantidadHoras"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="empleado_cont_by_regIterator" id="Colegiado">
+      <AttrNames>
+        <Item Value="Colegiado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="FechaCreacion">
+      <AttrNames>
+        <Item Value="FechaCreacion"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="SisContrato_vwIterator" id="Resetear"
+                  MethodName="Resetear" RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisContrato_vw"/>
+    <attributeValues id="SisContrato_vwObservFormaobtpuesto"
+                     IterBinding="SisContrato_vwIterator">
+      <AttrNames>
+        <Item Value="ObservFormaobtpuesto"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="HoraPosesion">
+      <AttrNames>
+        <Item Value="HoraPosesion"/>
+      </AttrNames>
+    </attributeValues>
+    <button IterBinding="SisContrato_vwIterator" id="ContractVacacion">
+      <AttrNames>
+        <Item Value="ContractVacacion"/>
+      </AttrNames>
+      <ValueList>
+        <Item Value="1"/>
+        <Item Value="0"/>
+      </ValueList>
+    </button>
+    <attributeValues id="SisContrato_vwNomPlaza"
+                     IterBinding="SisContrato_vwIterator">
+      <AttrNames>
+        <Item Value="NomPlaza"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="SisContrato_vwObservhorario"
+                     IterBinding="SisContrato_vwIterator">
+      <AttrNames>
+        <Item Value="Observhorario"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="ValHorario">
+      <AttrNames>
+        <Item Value="ValHorario"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="empleado_cont_by_regIterator" id="Cui">
+      <AttrNames>
+        <Item Value="Cui"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="SisContrato_vwIterator" id="clonarActual"
+                  MethodName="clonarActual" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisContrato_vw"/>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="FirmaJefeUnidad">
+      <AttrNames>
+        <Item Value="FirmaJefeUnidad"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="FirmaJefeSubprog">
+      <AttrNames>
+        <Item Value="FirmaJefeSubprog"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="FirmaTesorero">
+      <AttrNames>
+        <Item Value="FirmaTesorero"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="AtribucionAnexo">
+      <AttrNames>
+        <Item Value="AtribucionAnexo"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="TipoValidez">
+      <AttrNames>
+        <Item Value="TipoValidez"/>
+      </AttrNames>
+    </attributeValues>
+    <button IterBinding="SisContrato_vwIterator" id="PrimerIngreso">
+      <AttrNames>
+        <Item Value="PrimerIngreso"/>
+      </AttrNames>
+      <ValueList>
+        <Item Value="1"/>
+        <Item Value="0"/>
+      </ValueList>
+    </button>
+    <methodAction IterBinding="SisHorarioContratoIterator" id="crearHorario"
+                  MethodName="crearHorario" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisHorarioContrato"/>
+    <methodAction IterBinding="SisHorarioContratoIterator" id="DisableAll"
+                  MethodName="DisableAll" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisHorarioContrato"/>
+    <methodAction IterBinding="SisHorarioContratoIterator" id="Habilitar"
+                  MethodName="Habilitar" RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisHorarioContrato"/>
+    <action IterBinding="SisHorarioContratoIterator" id="FilaActualH"
+            InstanceName="QUERRYSDataControl.SisHorarioContrato"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="96">
+      <NamedData NDName="rowKey" NDValue="${row.rowKeyStr}"
+                 NDType="java.lang.String"/>
+    </action>
+    <attributeValues IterBinding="SisContrato_vwIterator"
+                     id="InstalacionPosesion">
+      <AttrNames>
+        <Item Value="InstalacionPosesion"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="FechaFirma">
+      <AttrNames>
+        <Item Value="FechaFirma"/>
+      </AttrNames>
+    </attributeValues>
+    <button IterBinding="SisContrato_vwIterator" id="PagaBono">
+      <AttrNames>
+        <Item Value="PagaBono"/>
+      </AttrNames>
+      <ValueList>
+        <Item Value="1"/>
+        <Item Value="0"/>
+      </ValueList>
+    </button>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="NoExcedaDe">
+      <AttrNames>
+        <Item Value="NoExcedaDe"/>
+      </AttrNames>
+    </attributeValues>
+    <list id="SisPartidaProvisionVwFormato"
+          IterBinding="SisContrato_vwIterator" StaticList="false"
+          ListOperMode="0" ListIter="SisPartidaProvisionVwIterator"
+          NullValueFlag="1" NullValueId="SisPartidaProvisionVwFormato_null">
+      <AttrNames>
+        <Item Value="IdPartidaProv"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdPartida"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Formato"/>
+        <Item Value="Nombre"/>
+      </ListDisplayAttrNames>
+    </list>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="showProv">
+      <AttrNames>
+        <Item Value="showProv"/>
+      </AttrNames>
+    </attributeValues>
+    <action IterBinding="SisPartidaProvisionVwIterator" id="provPartida"
+            InstanceName="QUERRYSDataControl.SisPartidaProvisionVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+    </action>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="HabilitaBono">
+      <AttrNames>
+        <Item Value="HabilitaBono"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="OpcionIndef">
+      <AttrNames>
+        <Item Value="OpcionIndef"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisContrato_vwIterator" id="isAuxCatedra">
+      <AttrNames>
+        <Item Value="isAuxCatedra"/>
+      </AttrNames>
+    </attributeValues>
+  </bindings>
+</pageDefinition>

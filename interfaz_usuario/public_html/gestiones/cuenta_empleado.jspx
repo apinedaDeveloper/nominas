@@ -1,0 +1,548 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns="http://www.w3.org/1999/xhtml"
+          xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <f:view>
+    <afh:html>
+      <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+      <afh:head title="cuenta_empleado">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+      <jsp:include page="/js/libJQ.js"/>   
+
+      </afh:head>
+      <script language="javascript" type="text/javascript"> 
+     
+      $(document).ajaxStart(function()
+      { 
+	$('#ajaxBusy').show(); 
+        }).ajaxStop(function(){ 
+                
+        $('#ajaxBusy').fadeOut(700,function(){$('#ajaxBusy').hide();
+      }
+       );
+     });
+ 
+     
+     function datoscompletos()
+     {
+        var xbanco = vBanco=document.getElementById('form1:page1:cmbBanco'); 
+        xmoneda = document.getElementById('form1:page1:cmbMoneda'); 
+        cuentaok = document.getElementById('form1:page1:txtCuentaOk'); 
+        ibanco=xbanco.selectedIndex;
+        imoneda=xmoneda.selectedIndex;
+        txtbanco = xbanco.options[ibanco].value;
+        txtmoneda = xmoneda.options[imoneda].value;
+        mensajes = "";
+        if (txtbanco=="") 
+        {
+          mensajes += "[Banco no Seleccionado] ";
+        }
+        if (xmoneda=="") 
+        {
+           mensajes += " [Moneda no Seleccionada] ";
+        }
+        if (cuentaOk.value != "1")
+          {
+             mensajes += " [Cuenta bancaria no validada] ";      
+          }
+        if (mensajes != "")
+        {
+           //alert("ERRORES: "+mensajes);
+           $(xvalidar).html("ERRORES: "+mensajes);
+           xvalidar.style.display= "block";
+
+        }
+      }
+           
+     function bgcolornormal(id)
+     {
+        var xid = document.getElementById(id);
+        xid.style.backgroundColor = "white";
+     }
+     
+     function validarBancoyMoneda()
+     {
+        var vBanco=document.getElementById('form1:page1:cmbBanco'); 
+        var vMoneda=document.getElementById('form1:page1:cmbMoneda'); 
+        var vIndice1, Indice2;
+
+        vIndice1=vBanco.selectedIndex;
+        vIndice2=vMoneda.selectedIndex;
+        txtBanco = vBanco.options[vIndice1].value;
+        txtMoneda = vMoneda.options[vIndice2].value;
+        //alert('banco: '+vBanco+', moneda: '+vMoneda);
+     }
+     
+     function cuentavalidada()
+     {
+       xcuenta = document.getElementById('form1:page1:txtCuentaOk');
+       xorden = document.getElementById('form1:page1:vOrden').value;
+       xvalidar = document.getElementById('form1:page1:vValidar');
+       i = document.getElementById("form1:page1:cmbBanco").selectedIndex;
+       i2 = document.getElementById("form1:page1:cmbMoneda").selectedIndex;
+       
+       if (datos_correctos())
+       {
+         return true; 
+       }
+       else
+       {
+         return false;
+       }
+     }
+     
+     
+      function validarCuenta(id)
+       {
+           var xid = document.getElementById(id);
+           xcui = document.getElementById('form1:page1:vCui').value;
+           xnocuenta = document.getElementById('form1:page1:noCuenta');
+           xcuenta = document.getElementById('form1:page1:txtCuentaOk');
+           xcuenta2 = document.getElementById('form1:page1:txtOK2');
+           xorden = document.getElementById('form1:page1:vOrden').value;
+           xvalidar = document.getElementById('form1:page1:vValidar');
+           xcontrol = document.getElementById('form1:page1:txtControl');
+           i = document.getElementById("form1:page1:cmbBanco").selectedIndex;
+           i2 = document.getElementById("form1:page1:cmbMoneda").selectedIndex;
+
+           xbanco = document.getElementById("form1:page1:cmbBanco").options[i].text;
+           xmoneda =  document.getElementById("form1:page1:cmbMoneda").options[i2].text;
+           
+           bGuardar = document.getElementById('form1:page1:btn_guardar');
+           lGuardar = document.getElementById('form1:page1:lnkActivar');
+           lGuardarOff = document.getElementById('form1:page1:lnkDesactivar');
+           
+           if (xorden.length = 2)
+           {
+             xorden2 = xorden.substr(0,1)+"0"+xorden.substr(1,1);
+           }
+           xregistro = document.getElementById('form1:page1:vRegistro').value;
+           
+           xcedula = xorden2+ " " + xregistro;
+           
+           // SI SE SELECCIONA UN BANCO DIFERENTE A "BANRURAL" O NO SE SELECCIONA NINGUNO, AUTOMATICAMENTE ANTES DE VALIDAR SELECCIONA BANRURAL 
+           // ESTA VALIDACION DEBE CARBIARSE EN CUANTO SE AGREGUEN NUEVOS BANCOS PARA ACREDITAMIENTO DE CUENTAS
+           if (document.getElementById("form1:page1:cmbBanco").selectedIndex!=1)
+           {
+             //document.getElementById("form1:page1:cmbBanco").style.backgroundColor = "red"
+             document.getElementById("form1:page1:cmbBanco").selectedIndex = 1;
+           }
+           
+           if (document.getElementById("form1:page1:cmbMoneda").selectedIndex!=1)
+           {
+             //document.getElementById("form1:page1:cmbMoneda").style.backgroundColor = "red"
+             document.getElementById("form1:page1:cmbMoneda").selectedIndex = 1;
+           }
+                      
+           if ((xid.value == null) || (xid.value == ""))
+           {
+                $(xvalidar).html('el numero de cuenta está vacío !');
+                xvalidar.style.display="block";
+                xvalidar.style.color = "red";
+                xid.style.backgroundColor="red";
+                $(xcuenta).html('0');
+                $(xcuenta2).html('0');;
+           }
+           else 
+             if (xid.value.length != 10)
+             {
+                $(xvalidar).html('el numero de cuenta debe ser de 10 dígitos !');
+                xvalidar.style.display="block";
+                xvalidar.style.color = "red";
+                xid.style.backgroundColor="red";
+                $(xcuenta).html('0');
+                $(xcuenta2).html('0');
+                //bGuardar.disabled = "true";
+             }
+             else 
+             {
+                 $.getJSON("/Nomina/faces/consuljson?codop=4"+String.fromCharCode(38)+"var1="+xid.value+String.fromCharCode(38)+"var2="+xcedula+String.fromCharCode(38)+"var3="+xcui, function(json)
+                 {
+                    if (json.resul=='ok')
+                    {
+                      $(xvalidar).html('Cuenta Validada exitosamente !!');
+                      xvalidar.style.display= "block";
+                      xvalidar.style.color = "blue";
+                      $(xcuenta).html('1');
+                      $(xcuenta2).html('1');
+                      //$(lGuardar).click();
+                      xnocuenta.readonly= "readonly";
+                      xnocuenta.style.color = "green";
+                      xnocuenta.style.backgroundColor="silver"
+                      xvalidar.disabled = "true";
+                      document.getElementById("form1:page1:cmbBanco").disabled="true";
+                      document.getElementById("form1:page1:cmbMoneda").disabled="true";
+                      //submitForm('form1',1,{source:'form1:page1:btn_guardar'});return false;
+                      //$(bGuardar).removeAttr("onclick");
+                      //$(bGuardar).attr("href","");
+                    }
+                    else 
+                    {
+                       $(xvalidar).html(json.msg)
+                       xvalidar.style.display="block";
+                       xvalidar.style.color = "red";
+                       xid.style.backgroundColor="red";
+                       $(xcuenta).html('0');
+                       $(xcuenta2).html('0');
+                       //$(bGuardar).attr("disabled","true");
+                    }
+                                     
+                 });  
+             }             
+
+          return false;
+       }
+      
+      </script> 
+      
+      <f:loadBundle basename="propiedades" var="tx"/>
+      <afh:body>
+        <af:messages/>
+        <h:form id="form1">
+             <af:page  value="#{modeloMenu.modeloBD}" var="node"
+                      title="#{flujo_usuario.datosEmpleadoSel}" id="page1">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"
+                                  action="#{node.getOutcome}"                               
+                                  />
+            </f:facet>
+            <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+          
+            <af:panelHorizontal halign="center" id="panelh1">
+              <af:panelBox id="panelbox1">
+                <af:panelForm rows="1" id="panelform1">
+                  <af:inputText value="#{bindings['reg_empleado'].inputValue}"
+                                label="#{tx['cuenta_empleado.inpt_registroEmpleado.label']}"
+                                required="#{bindings['reg_empleado'].mandatory}"
+                                columns="#{bindings['reg_empleado'].displayWidth}"
+                                autoSubmit="false"
+                                binding="#{backing_bean_comun.inp_regEmpleadoBusqueda}"
+                                rendered="false">
+                    <af:validator binding="#{bindings['reg_empleado'].validator}"/>
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings['reg_empleado'].format}"/>
+                  </af:inputText>
+                  <af:commandButton actionListener="#{bindings.ExecuteWithParams.execute}"
+                                    text="#{tx['cuenta_empleado.btn_buscar.label']}"
+                                    disabled="#{!bindings.ExecuteWithParams.enabled}"
+                                    rendered="false"/>
+                </af:panelForm>
+                <af:panelHeader text="#{bindings.RegistroEmpleado.inputValue}    #{bindings.NombreCompleto.inputValue}  "
+                                id="panelheader1">
+                  <af:showOneTab position="above" id="showonetab1">
+                    <af:showDetailItem text="#{tx['cuenta_empleado.pest_formaPago.texto']}"
+                                       disclosed="false"
+                                       id="pestFormaPago">
+                      <af:panelForm
+                                    partialTriggers="tbl_forma_pago">
+                        <af:showOneRadio label="#{tx['cuenta_empleado.shw_pricipal.label']}"
+                                         position="top" alignment="center"
+                                         id="shw_radio">
+                          <af:showDetailItem text="#{tx['cuenta_empleado.shw_radioChe.label']}"
+                                             disclosed="#{bindings.IdTipoDocumento.inputValue==bindings.tipo_pago1.inputValue}"
+                                             id="shw_cheque"
+                                             binding="#{empl_cuenta.shw_detail_cheque}"
+                                             rendered="#{roles_usuario.administrador}">
+                            <af:panelForm>
+                              <f:facet name="footer"/>
+                              <af:selectOneChoice value="#{bindings.banco1Nombre1.inputValue}"
+                                                  label="#{tx['cuenta_empleado.cmb_banco.label']}"
+                                                  disabled="#{bindings.FechaCreacion.inputValue!=null}">
+                                <f:selectItems value="#{bindings.banco1Nombre1.items}"/>
+                              </af:selectOneChoice>
+                              <af:selectOneChoice value="#{bindings['SisMoneda_vwNombre'].inputValue}"
+                                                  label="#{tx['cuenta_empleado.cmb_moneda.label']}"
+                                                  disabled="#{bindings.FechaCreacion.inputValue!=null}">
+                                <f:selectItems value="#{bindings['SisMoneda_vwNombre'].items}"/>
+                              </af:selectOneChoice>
+                            </af:panelForm>
+                          </af:showDetailItem>
+                          <af:showDetailItem text="#{tx['cuenta_empleado.shw_radioAcre.label']}"
+                                             disclosed="#{bindings.IdTipoDocumento.inputValue!=bindings.tipo_pago1.inputValue}"
+                                             id="shw_acre"
+                                             binding="#{empl_cuenta.shw_datail_acred}">
+                            <af:selectOneChoice value="#{bindings.SisCuentaVwNumero.inputValue}"
+                                                label="#{tx['cuenta_empleado.cmb_cuentas.label']}"
+                                                partialTriggers="btn_guardar"
+                                                disabled="#{bindings.FechaCreacion.inputValue!=null}">
+                              <f:selectItems value="#{bindings.SisCuentaVwNumero.items}"/>
+                            </af:selectOneChoice>
+                          </af:showDetailItem>
+                        </af:showOneRadio>
+                        <af:panelHorizontal>
+                          <af:commandButton actionListener="#{empl_cuenta.agregar_Action}"
+                                            text="#{tx['cuenta_empleado.btn_Agregar_FP.label']}"
+                                            disabled="#{bindings.RegistroEmpleado.inputValue==null}"
+                                            action="#{backing_bean_comun.btn_actualizaCreadoPor2}"/>
+                          <af:commandButton actionListener="#{bindings.Execute1.execute}"
+                                            text="#{tx['cuenta_empleado.btn_actualizarFP.label']}"
+                                            disabled="#{bindings.RegistroEmpleado.inputValue==null}"
+                                            action="#{empl_cuenta.btn_actualizar_formaPago}"/>
+                          <f:facet name="separator">
+                            <af:objectSpacer width="40" height="10"/>
+                          </f:facet>
+                          <af:commandButton text="Guardar"                                            
+                                            action="#{empl_cuenta.btn_guardar_Action}"/>
+                          <af:commandButton text="Cancelar"
+                                            actionListener="#{bindings.Rollback.execute}"
+                                            disabled="#{!bindings.Rollback.enabled}"
+                                            immediate="true">
+                            <af:resetActionListener/>
+                          </af:commandButton>
+                        </af:panelHorizontal>
+                        <af:inputHidden value="#{bindings.ModPor.inputValue}"
+                                        binding="#{backing_bean_comun.inpt_hidden_creadoPor2}"/>
+                      </af:panelForm>
+                      <af:objectSpacer width="10" height="30"/>
+                      <af:table value="#{bindings.SisEmpleadoVwSisFormaPagoVw.collectionModel}"
+                                var="row"
+                                rows="#{bindings.SisEmpleadoVwSisFormaPagoVw.rangeSize}"
+                                first="#{bindings.SisEmpleadoVwSisFormaPagoVw.rangeStart}"
+                                emptyText="#{bindings.SisEmpleadoVwSisFormaPagoVw.viewable ? 'Ninguna Fila' : 'Ninguna Fila'}"
+                                selectionState="#{bindings.SisEmpleadoVwSisFormaPagoVw.collectionModel.selectedRow}"
+                                selectionListener="#{bindings.SisEmpleadoVwSisFormaPagoVw.collectionModel.makeCurrent}"
+                                id="tbl_forma_pago"
+                                partialTriggers="shw_cheque shw_acre">
+                        <f:facet name="selection">
+                          <af:tableSelectOne text="Select and"
+                                             autoSubmit="true"
+                                             partialTriggers="shw_radio"/>
+                        </f:facet>
+                        <af:column sortProperty="RegistroEmpleado"
+                                   sortable="false"
+                                   headerText="#{tx['cuenta_empleado.tbl_fp_reg_empleado.label']}">
+                          <af:outputText value="#{row.RegistroEmpleado}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.SisEmpleadoVwSisFormaPagoVw.formats.RegistroEmpleado}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="IdTipoDocumento"
+                                   sortable="false"
+                                   headerText="#{tx['cuenta_empleado.tbl_fp_reg_FormaPago.label']}">
+                          <af:outputText value="#{row.Nomtipopago}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.SisEmpleadoVwSisFormaPagoVw.formats.IdTipoDocumento}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="IdBanco" sortable="false"
+                                   headerText="#{tx['cuenta_empleado.tbl_banco.label']}">
+                          <af:outputText value="#{row.Banco}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.SisEmpleadoVwSisFormaPagoVw.formats.IdBanco}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="IdCuenta" sortable="false"
+                                   headerText="#{tx['cuenta_empleado.tbl_cuenta.label']}">
+                          <af:outputText value="#{row.NumCuenta}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.SisEmpleadoVwSisFormaPagoVw.formats.IdCuenta}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="FechaCreacion" sortable="false"
+                                   headerText="#{tx['cuenta_empleado.tbl_fp_reg_FechaCreacion.label']}">
+                          <af:outputText value="#{row.FechaCreacion}">
+                            <f:convertDateTime pattern="#{bindings.SisEmpleadoVwSisFormaPagoVw.formats.FechaCreacion}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="FechaBaja" sortable="false"
+                                   headerText="#{tx['cuenta_empleado.tbl_fp_reg_FechaBaja.label']}">
+                          <af:outputText value="#{row.FechaBaja}">
+                            <f:convertDateTime pattern="#{bindings.SisEmpleadoVwSisFormaPagoVw.formats.FechaBaja}"/>
+                          </af:outputText>
+                        </af:column>
+                      </af:table>
+                    </af:showDetailItem>
+                    <af:showDetailItem text="#{tx['cuenta_empleado.pest_cuentas.texto']}"
+                                       disclosed="true"
+                                       id="pestCuentas">
+                      <af:panelForm id="panelCreacion"
+                                    partialTriggers="tabla_cuentas">
+                        <af:inputHidden value="#{bindings.SisEmpleadoVwCui.inputValue}"
+                                        id="vCui"/>
+                        <af:inputHidden value="#{bindings.SisEmpleadoVwOrdenCedula.inputValue}"
+                                        id="vOrden"/>
+                        <af:inputHidden value="#{bindings.SisEmpleadoVwRegistroCedula.inputValue}"
+                                        id="vRegistro">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisEmpleadoVwRegistroCedula.format}"/>
+                        </af:inputHidden>
+                        <af:selectOneChoice value="#{bindings.banco1Nombre.inputValue}"
+                                            label="#{tx['cuenta_empleado.cmb_banco.label']}"
+                                            binding="#{empl_cuenta.cmb_banco}"
+                                            disabled="#{bindings.NombreBanco.inputValue!=null}"
+                                            valuePassThru="true" id="cmbBanco"
+                                            onfocus="bgcolornormal('form1:page1:cmbBanco')"
+                                            autoSubmit="false">
+                          <f:selectItems value="#{bindings.banco1Nombre.items}"/>
+                        </af:selectOneChoice>
+                        <af:selectOneChoice value="#{bindings['SisMoneda_vwNombre1'].inputValue}"
+                                            disabled="#{bindings.NombreBanco.inputValue!=null}"
+                                            label="#{tx['cuenta_empleado.cmb_moneda.label']}"
+                                            id="cmbMoneda"
+                                            onfocus="bgcolornormal('form1:page1:cmbMoneda')"
+                                            autoSubmit="false">
+                          <f:selectItems value="#{bindings['SisMoneda_vwNombre1'].items}"/>
+                        </af:selectOneChoice>
+                        <af:inputText value="#{bindings.Numero.inputValue}"
+                                      label="#{tx['cuenta_empleado.inpt_cuenta.label']}"
+                                      required="#{bindings.Numero.mandatory}"
+                                      columns="20"
+                                      binding="#{empl_cuenta.inpt_cuenta}"
+                                      disabled="#{bindings.NombreBanco.inputValue!=null}"
+                                      onblur="validarCuenta('form1:page1:noCuenta') "
+                                      shortDesc="Cuenta Bancaria"
+                                      rendered="true"
+                                      onfocus="bgcolornormal('form1:page1:noCuenta')"
+                                      id="noCuenta" onchange="datoscompletos()"
+                                      autoSubmit="false">
+                          <af:validator binding="#{bindings.Numero.validator}"/>
+                        </af:inputText>
+                        <af:panelHorizontal halign="center">
+                          <af:outputFormatted id="vValidar"
+                                              inlineStyle="color:rgb(0,173,255); font-size:medium; font-weight:bold;"
+                                              styleUsage="instruction"
+                                              attributeChangeListener="#{empl_cuenta.cuentaValidada}"
+                                              binding="#{empl_cuenta.vvalidar}"/>
+                        </af:panelHorizontal>
+                        <af:outputFormatted id="txtCuentaOk"
+                                            binding="#{empl_cuenta.txtOK}"
+                                            rendered="false"/>
+                        <af:inputText id="txtOK2" autoSubmit="true"
+                                      binding="#{empl_cuenta.txtOK2}"
+                                      rendered="false"/>
+                        <af:selectInputDate value="#{bindings.FechaBaja.inputValue}"
+                                            label="#{tx['cuenta_empleado.inpt_fechaBaja.label']}"
+                                            required="#{bindings.FechaBaja.mandatory}"
+                                            disabled="#{bindings.FechaBaja.inputValue!=null}"
+                                            binding="#{empl_cuenta.inpt_fecha_baja}">
+                          <af:validator binding="#{bindings.FechaBaja.validator}"/>
+                          <f:convertDateTime pattern="#{bindings.FechaBaja.format}"/>
+                        </af:selectInputDate>
+                        <af:inputHidden value="#{bindings.Mod_Por.inputValue}"
+                                        binding="#{backing_bean_comun.inpt_hidden_creado_por}"/>
+                        <af:panelHorizontal halign="center">
+                          <af:commandButton actionListener="#{bindings.Create.execute}"
+                                            text="#{tx['cuenta_empleado.btn_agregarCuenta.label']}"
+                                            disabled="#{bindings.RegistroEmpleado.inputValue==null}"
+                                            action="#{backing_bean_comun.btn_actualizaCreadoPor}"
+                                            rendered="true"
+                                            partialTriggers="txtControl"
+                                            id="btnAgregar"/>
+                          <af:commandButton
+                                            text="#{tx['cuenta_empleado.btn_actualizar.label']}"
+                                            disabled="#{bindings.RegistroEmpleado.inputValue==null}"
+                                            id="btn_actualizar"
+                                            action="#{empl_cuenta.btn_actualizar_action}"
+                                            binding="#{empl_cuenta.btn_actualizar}"
+                                            partialSubmit="false"/>
+                          <f:facet name="separator">
+                            <af:objectSpacer width="30" height="10"/>
+                          </f:facet>
+                        </af:panelHorizontal>
+                      </af:panelForm>
+                      <af:objectSpacer width="10" height="25"/>
+                      <af:panelTip>
+                        <af:outputText value="Antes de validar/crear una nueva cuenta, debe dar de baja la cuenta que se encuentra activa."
+                                       inlineStyle="color:rgb(0,128,0); font-weight:bold;"/>
+                      </af:panelTip>
+                      <af:commandButton actionListener="#{bindings.Execute.execute}"
+                                        text="Execute"
+                                        disabled="#{!bindings.Execute.enabled}"
+                                        rendered="false"/>
+                      <af:table value="#{bindings.SisEmpleadoVwSisCuentaVw.collectionModel}"
+                                var="row"
+                                rows="#{bindings.SisEmpleadoVwSisCuentaVw.rangeSize}"
+                                first="#{bindings.SisEmpleadoVwSisCuentaVw.rangeStart}"
+                                emptyText="#{bindings.SisEmpleadoVwSisCuentaVw.viewable ?'Ninguna Fila' : 'Ninguna Fila'}"
+                                selectionState="#{bindings.SisEmpleadoVwSisCuentaVw.collectionModel.selectedRow}"
+                                selectionListener="#{bindings.SisEmpleadoVwSisCuentaVw.collectionModel.makeCurrent}"
+                                id="tabla_cuentas" width="450">
+                        <f:facet name="selection">
+                          <af:tableSelectOne autoSubmit="true"/>
+                        </f:facet>
+                        <af:column sortProperty="IdBanco" sortable="false"
+                                   headerText="#{tx['cuenta_empleado.tbl_banco.label']}">
+                          <af:outputText value="#{row.NombreBanco}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.SisEmpleadoVwSisCuentaVw.formats.IdBanco}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="Numero" sortable="false"
+                                   headerText="#{tx['cuenta_empleado.tbl_cuenta.label']}">
+                          <af:outputText value="#{row.Numero}"/>
+                        </af:column>
+                        <af:column sortProperty="FechaBaja" sortable="false"
+                                   headerText="#{tx['cuenta_empleado.tbl_fechaBaja.label']}">
+                          <af:outputText value="#{row.FechaBaja}"
+                                         id="txtFechaBaja"
+                                         rendered="#{!empty row.FechaBaja}">
+                            <f:convertDateTime pattern="#{bindings.SisEmpleadoVwSisCuentaVw.formats.FechaBaja}"/>
+                          </af:outputText>
+                          <af:outputText value="Cuenta Activa"
+                                         inlineStyle="color:rgb(0,128,0); font-weight:bold;"
+                                         rendered="#{empty row.FechaBaja}"/>
+                        </af:column>
+                        <f:facet name="header">
+                          <af:outputText value="#{tx['cuenta_empleado.tbl_header.label']}"/>
+                        </f:facet>
+                      </af:table>
+                      <af:panelHorizontal halign="center">
+                        <af:commandButton text="#{tx['cuenta_empleado.btn_guardar.label']}"
+                                          action="#{empl_cuenta.btn_guardar_Action}"
+                                          id="btn_guardar"
+                                          binding="#{empl_cuenta.btn_guardar}"
+                                          rendered="true"/>
+                        <af:commandButton actionListener="#{bindings.Rollback.execute}"
+                                          text="#{tx['cuenta_empleado.btn_cancelar.label']}"
+                                          immediate="true"
+                                          onmouseover="document.getElementById('form1:page1:btn_guardar').disabled = 'true';">
+                          <af:resetActionListener/>
+                        </af:commandButton>
+                        <f:facet name="separator">
+                          <h:panelGroup>
+                            <af:commandButton actionListener="#{bindings.Commit.execute}"
+                                              text="Commit"
+                                              disabled="#{!bindings.Commit.enabled}"
+                                              rendered="false"/>
+                            <af:objectSpacer width="30" height="10"/>
+                          </h:panelGroup>
+                        </f:facet>
+                      </af:panelHorizontal>
+                    </af:showDetailItem>
+                  </af:showOneTab>
+                </af:panelHeader>
+                <af:commandLink
+                                id="lnkActivar"
+                                action="#{empl_cuenta.activarGuardar}"/>
+                <af:commandLink id="lnkDesactivar"
+                                action="#{empl_cuenta.desactivarGuardar}"/>
+              </af:panelBox>
+            </af:panelHorizontal>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:empl_cuenta-->
+</jsp:root>

@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel"
+                version="10.1.3.42.70" id="gestiones_reintegroPageDef"
+                Package="interfaz_usuario.pageDefs">
+  <parameters/>
+  <executables>
+    <iterator id="consul_cheque_reintegro1Iterator" RangeSize="10"
+              Binds="consul_cheque_reintegro1"
+              DataControl="QUERRYSDataControl"/>
+    <variableIterator id="variables">
+      <variable Name="pNuevo" Type="java.lang.String" />
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="consul_cheque_reintegro1.variablesMap.var_NumCheque"
+                     Name="consul_buscheque_anular1_var_NumCheque"
+                     IsQueriable="false"/>
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="consul_cheque_reintegro1.variablesMap.var_tipoDoc"
+                     Name="consul_buscheque_anular1_var_tipoDoc"
+                     IsQueriable="false"/>
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="sis_reintegro_vw1.variablesMap.pFechaInicio"
+                     Name="sis_reintegro_vw1_pFechaInicio" IsQueriable="false"/>
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="sis_reintegro_vw1.variablesMap.pFechaFin"
+                     Name="sis_reintegro_vw1_pFechaFin" IsQueriable="false"/>
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="sis_reintegro_vw1.variablesMap.pUsuario"
+                     Name="sis_reintegro_vw1_pUsuario" IsQueriable="false"/>
+      <variable Name="varTodos" Type="java.lang.String" DefaultValue="1"/>
+      <variable Type="java.lang.String" Name="varObservacion"/>
+      <variable Name="varValorDesc" Type="oracle.jbo.domain.Number"
+                IsQueriable="false"/>
+      <variable Type="oracle.jbo.domain.Number"
+                Name="varIdAjuste" IsQueriable="false"/>
+      <variable Name="varIdDetReintegro" Type="oracle.jbo.domain.Number"/>
+    </variableIterator>
+    
+    <iterator id="sis_reintegro_vw1Iterator" RangeSize="10"
+              Binds="sis_reintegro_vw1" DataControl="QUERRYSDataControl"/>
+    <invokeAction Binds="BuscarReintporFechas" id="ExeReintegro" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <iterator id="SisDetalleReintegroVw1Iterator" RangeSize="10"
+              Binds="SisDetalleReintegroVw1" DataControl="QUERRYSDataControl"/>
+    <iterator id="SisDescuentoReintegroVw1Iterator" RangeSize="10"
+              Binds="SisDescuentoReintegroVw1"
+              DataControl="QUERRYSDataControl"/>
+  </executables>
+  <bindings>
+    <attributeValues id="var_NumCheque1" IterBinding="variables">
+      <AttrNames>
+        <Item Value="consul_buscheque_anular1_var_NumCheque"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="var_tipoDoc1" IterBinding="variables">
+      <AttrNames>
+        <Item Value="consul_buscheque_anular1_var_tipoDoc"/>
+      </AttrNames>
+    </attributeValues>
+    <table id="consul_buscheque_anular1"
+           IterBinding="consul_cheque_reintegro1Iterator">
+      <AttrNames>
+        <Item Value="NumDocFisico"/>
+        <Item Value="IdDocumentoBanco"/>
+        <Item Value="Mes"/>
+        <Item Value="RegistroEmpleado"/>
+        <Item Value="Valor"/>
+        <Item Value="Anio"/>
+        <Item Value="Nombrecompleto"/>
+        <Item Value="Nomestado"/>
+        <Item Value="Tiponom"/>
+        <Item Value="NumeroPlaza"/>
+        <Item Value="Fechasis21"/>
+        <Item Value="Sis21"/>
+        <Item Value="Formato"/>
+        <Item Value="Correlativo"/>
+        <Item Value="FechaEmision"/>
+        <Item Value="Liquido"/>
+        <Item Value="IdNomina"/>
+        <Item Value="Cui"/>
+      </AttrNames>
+    </table>
+    <action IterBinding="consul_cheque_reintegro1Iterator"
+            id="ExecuteWithParams"
+            InstanceName="QUERRYSDataControl.consul_buscheque_anular1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="var_NumCheque"
+                 NDValue="${bindings.consul_buscheque_anular1_var_NumCheque}"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="var_tipoDoc"
+                 NDValue="${bindings.consul_buscheque_anular1_var_tipoDoc}"
+                 NDType="java.lang.Integer"/>
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>      
+    </action>
+    <attributeValues IterBinding="consul_cheque_reintegro1Iterator"
+                     id="IdNomina">
+      <AttrNames>
+        <Item Value="IdNomina"/>
+      </AttrNames>
+    </attributeValues>
+    <action id="BuscarReintporFechas" IterBinding="sis_reintegro_vw1Iterator"
+            InstanceName="QUERRYSDataControl.sis_reintegro_vw1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pFechaInicio" NDType="oracle.jbo.domain.Date"
+                 NDValue="${bindings.sis_reintegro_vw1_pFechaInicio}"/>
+      <NamedData NDName="pFechaFin" NDType="oracle.jbo.domain.Date"
+                 NDValue="${bindings.sis_reintegro_vw1_pFechaFin}"/>
+      <NamedData NDName="pUsuario" NDType="java.lang.String"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"/>
+    </action>
+    <attributeValues id="pFechaInicio" IterBinding="variables">
+      <AttrNames>
+        <Item Value="sis_reintegro_vw1_pFechaInicio"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="pFechaFin" IterBinding="variables">
+      <AttrNames>
+        <Item Value="sis_reintegro_vw1_pFechaFin"/>
+      </AttrNames>
+    </attributeValues>
+    <table id="sis_reintegro_vw1" IterBinding="sis_reintegro_vw1Iterator">
+      <AttrNames>
+        <Item Value="CreadoPor"/>
+        <Item Value="FechaCreacion"/>
+        <Item Value="FechaMod"/>
+        <Item Value="IdDocumentoBanco"/>
+        <Item Value="IdEstado"/>
+        <Item Value="IdReintegro"/>
+        <Item Value="IdTipoDocumento"/>
+        <Item Value="ModPor"/>
+        <Item Value="NumDocFisico"/>
+        <Item Value="Observaciones"/>
+        <Item Value="TipoDoc"/>
+        <Item Value="TotalPagar"/>
+        <Item Value="Estado"/>
+        <Item Value="EstadoOrden"/>
+      </AttrNames>
+    </table>
+    <action IterBinding="sis_reintegro_vw1Iterator" id="setCurrentRowWithKey"
+            InstanceName="QUERRYSDataControl.sis_reintegro_vw1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="96">
+      <NamedData NDName="rowKey" NDValue="${row.rowKeyStr}"
+                 NDType="java.lang.String"/>
+    </action>
+    <attributeValues IterBinding="sis_reintegro_vw1Iterator" id="IdReintegro">
+      <AttrNames>
+        <Item Value="IdReintegro"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="sis_reintegro_vw1Iterator" id="NumDocFisico">
+      <AttrNames>
+        <Item Value="NumDocFisico"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="sis_reintegro_vw1Iterator"
+                     id="IdTipoDocumento">
+      <AttrNames>
+        <Item Value="IdTipoDocumento"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="pTodos">
+      <AttrNames>
+        <Item Value="varTodos"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="pNuevo1">
+      <AttrNames>
+        <Item Value="pNuevo"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="consul_cheque_reintegro1Iterator"
+                     id="IdDocumentoBanco">
+      <AttrNames>
+        <Item Value="IdDocumentoBanco"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="sis_reintegro_vw1Iterator" id="generaReintegro"
+                  MethodName="generaReintegro" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.sis_reintegro_vw1">
+      <NamedData NDName="pIdReintegro" NDValue="${bindings.pNuevo}"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="pIdDocumento"
+                 NDValue="${bindings.IdDocumentoBanco.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pIdNomina" NDValue="${bindings.varTodos}"
+                 NDType="java.lang.String"/>
+    </methodAction>
+    <table id="SisDetalleReintegroVw1"
+           IterBinding="SisDetalleReintegroVw1Iterator">
+      <AttrNames>
+        <Item Value="IdDetalleReintegro"/>
+        <Item Value="IdReintegro"/>
+        <Item Value="IdNomina"/>
+        <Item Value="SueldoBase"/>
+        <Item Value="Escalafon"/>
+        <Item Value="ComplSalarial"/>
+        <Item Value="CreadoPor"/>
+        <Item Value="FechaCreacion"/>
+        <Item Value="ModPor"/>
+        <Item Value="FechaMod"/>
+        <Item Value="Tiponom"/>
+        <Item Value="Mes"/>
+        <Item Value="Formato"/>
+        <Item Value="NumeroPlaza"/>
+        <Item Value="isSel"/>
+        <Item Value="Liquido"/>
+        <Item Value="Nominal"/>
+        <Item Value="TotalBono"/>
+        <Item Value="TotalDescuentos"/>
+        <Item Value="Diaslaborados"/>
+      </AttrNames>
+    </table>
+    <action IterBinding="SisDetalleReintegroVw1Iterator" id="BusDetReint"
+            InstanceName="QUERRYSDataControl.SisDetalleReintegroVw1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pReintegro" NDValue="${bindings.pNuevo}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <methodAction IterBinding="sis_reintegro_vw1Iterator" id="crearReintegro"
+                  MethodName="crearReintegro" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.sis_reintegro_vw1">
+      <NamedData NDName="pIdDocumento"
+                 NDValue="${bindings.IdDocumentoBanco.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pObserva" NDValue="${bindings.varObservacion}"
+                 NDType="java.lang.String"/>
+    </methodAction>
+    <action id="Confirmar" InstanceName="QUERRYSDataControl"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="100"/>
+    <attributeValues IterBinding="variables" id="pObserva">
+      <AttrNames>
+        <Item Value="varObservacion"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="sis_reintegro_vw1Iterator" id="Observaciones">
+      <AttrNames>
+        <Item Value="Observaciones"/>
+      </AttrNames>
+    </attributeValues>
+    <action IterBinding="SisDetalleReintegroVw1Iterator"
+            id="setCurrentRowDetReint"
+            InstanceName="QUERRYSDataControl.SisDetalleReintegroVw1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="96">
+      <NamedData NDName="rowKey" NDType="java.lang.String" NDValue="${row.rowKeyStr}"/>
+    </action>
+    <methodAction IterBinding="SisDetalleReintegroVw1Iterator"
+                  id="borrarDetReintegro" MethodName="borrarDetReintegro"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisDetalleReintegroVw1"/>
+    <attributeValues IterBinding="sis_reintegro_vw1Iterator" id="IsFormaActiva">
+      <AttrNames>
+        <Item Value="IsFormaActiva"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="SisDetalleReintegroVw1Iterator"
+                  id="cambiarEstadoTodos" MethodName="cambiarEstadoTodos"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisDetalleReintegroVw1">
+      <NamedData NDName="pValor" NDValue="false" NDType="java.lang.Boolean"/>
+    </methodAction>
+    <methodAction IterBinding="SisDetalleReintegroVw1Iterator"
+                  id="cambiarEstadoActual" MethodName="cambiarEstadoActual"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisDetalleReintegroVw1">
+      <NamedData NDName="pValor" NDValue="true" NDType="java.lang.Boolean"/>
+    </methodAction>
+    <table id="SisDescuentoReintegroVw1"
+           IterBinding="SisDescuentoReintegroVw1Iterator">
+      <AttrNames>
+        <Item Value="IdAjuste"/>
+        <Item Value="IdDetalleReintegro"/>
+        <Item Value="ValorAplicado"/>
+        <Item Value="CodNomina"/>
+        <Item Value="Correlativo"/>
+        <Item Value="MontoAjuste"/>
+        <Item Value="Nombre"/>
+        <Item Value="Operacion"/>
+        <Item Value="Nomajusteabre"/>
+      </AttrNames>
+    </table>
+    <attributeValues IterBinding="variables" id="pValorDesc">
+      <AttrNames>
+        <Item Value="varValorDesc"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="pIdAjuste">
+      <AttrNames>
+        <Item Value="varIdAjuste"/>
+      </AttrNames>
+    </attributeValues>
+    <action IterBinding="SisDescuentoReintegroVw1Iterator"
+            id="BusDescReintegro"
+            InstanceName="QUERRYSDataControl.SisDescuentoReintegroVw1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pIdDetReintegro"
+                 NDValue="${bindings.varIdDetReintegro}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <attributeValues IterBinding="SisDetalleReintegroVw1Iterator"
+                     id="IdDetalleReintegro">
+      <AttrNames>
+        <Item Value="IdDetalleReintegro"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="SisDetalleReintegroVw1Iterator"
+                  id="agregarDescuento" MethodName="agregarDescuento"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisDetalleReintegroVw1">
+      <NamedData NDName="pIdReintegroDet"
+                 NDValue="${bindings.IdDetalleReintegro.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pIdAjuste" NDValue="${bindings.varIdAjuste}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pValor" NDValue="${bindings.varValorDesc}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+    </methodAction>
+    <methodAction IterBinding="SisDetalleReintegroVw1Iterator"
+                  id="posicionaSeleccionado" MethodName="posicionaSeleccionado"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisDetalleReintegroVw1"/>
+    <action IterBinding="SisDescuentoReintegroVw1Iterator" id="delDetAjuste"
+            InstanceName="QUERRYSDataControl.SisDescuentoReintegroVw1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="99">
+      <NamedData NDName="rowKey" NDValue="${row.rowKeyStr}"
+                 NDType="java.lang.String"/>
+    </action>
+    <methodAction IterBinding="SisDetalleReintegroVw1Iterator"
+                  id="actualiza_desc_bono" MethodName="actualiza_desc_bono"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisDetalleReintegroVw1"/>
+    <methodAction IterBinding="SisDetalleReintegroVw1Iterator"
+                  id="generarAutomaticoDesc" MethodName="generarAutomaticoDesc"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisDetalleReintegroVw1">
+      <NamedData NDName="pIdDetReintegro"
+                 NDValue="${bindings.IdDetalleReintegro.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </methodAction>
+    <action id="Rollback" InstanceName="QUERRYSDataControl"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="101"/>
+    <action IterBinding="sis_reintegro_vw1Iterator"
+            id="setCurrentRowWithKeyValue"
+            InstanceName="QUERRYSDataControl.sis_reintegro_vw1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="98">
+      <NamedData NDName="rowKey" NDValue="${bindings.pNuevo}"
+                 NDType="java.lang.String"/>
+    </action>
+    <methodAction IterBinding="SisDetalleReintegroVw1Iterator"
+                  id="actualizaTotalPagoReintegro"
+                  MethodName="actualizaTotalPagoReintegro"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisDetalleReintegroVw1">
+      <NamedData NDName="pIdReintegro"
+                 NDValue="${bindings.IdReintegro.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </methodAction>
+    <attributeValues IterBinding="sis_reintegro_vw1Iterator" id="EmailAnalista">
+      <AttrNames>
+        <Item Value="EmailAnalista"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="sis_reintegro_vw1Iterator" id="EmailEmpleado">
+      <AttrNames>
+        <Item Value="EmailEmpleado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="sis_reintegro_vw1Iterator" id="IdOrdenPago">
+      <AttrNames>
+        <Item Value="IdOrdenPago"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="varIdDetReintegro1">
+      <AttrNames>
+        <Item Value="varIdDetReintegro"/>
+      </AttrNames>
+    </attributeValues>
+  </bindings>           
+                </pageDefinition>

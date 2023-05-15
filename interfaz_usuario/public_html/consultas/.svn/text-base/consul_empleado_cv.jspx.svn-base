@@ -1,0 +1,173 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html"
+          xmlns:af="http://xmlns.oracle.com/adf/faces">
+  <f:view>
+    <afh:html>
+      <jsp:output omit-xml-declaration="false" doctype-root-element="html"
+                  doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
+                  doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"/>
+      <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+      <afh:head title="Consulta de Empleados para Impresión de CV.">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+        <title>Consulta de Empleados para Impresión de CV</title>
+        <script language="javascript" type="text/javascript"> 
+            
+            function comprobarCamposTexto() {
+                var cui, registroEmpleado;
+                var prosigue = false; //decidirá si se sigue el procedimiento o no
+                document.getElementById('page1:inptCui').value = document.getElementById('page1:inptCui').value.trim();
+                document.getElementById('page1:inptRegistroPersonal').value = document.getElementById('page1:inptRegistroPersonal').value.trim();
+                cui = document.getElementById('page1:inptCui').value;
+                registroEmpleado = document.getElementById('page1:inptRegistroPersonal').value;
+                if ( cui == "") {
+                    if ( registroEmpleado == "") {
+                        alert("Ingrese un número de CUI o Registro de Empleado por favor.");
+                        document.getElementById('page1:inptCui').focus();
+                    } else {
+                        prosigue = true;
+                    }
+                } else {
+                    prosigue = true;
+                }
+                return prosigue;
+            }
+            
+        </script> 
+      </afh:head>
+      <afh:body initialFocusId="page1:inptCui">
+        <af:messages id="messages1" binding="#{Consul_empleado_cv.messages1}"/>
+        <af:form binding="#{Consul_empleado_cv.form1}" id="form1">
+          <af:page title="Consulta de Empleados" binding="#{Consul_empleado_cv.page1}"
+                   id="page1" value="#{modeloMenu.modeloBD}" var="node">
+            <f:facet name="branding">
+              <f:subview id="logo" binding="#{Consul_empleado_cv.logo}">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  action="#{node.getOutcome}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  id="cmdMenuItem"
+                                  binding="#{Consul_empleado_cv.cmdMenuItem}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"/>
+            </f:facet>
+            <f:facet name="infoUser">
+              <f:subview id="infoUsuario">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelHorizontal id="panelHorizontal1" halign="center"
+                                binding="#{Consul_empleado_cv.panelHorizontal1}">
+              <af:panelBox id="panelBox1"
+                           binding="#{Consul_empleado_cv.panelBox1}"
+                           width="100%">
+                <af:panelHeader text="Filtro de Búsqueda:" messageType="info"/>
+                <af:panelHorizontal halign="center">
+                  <af:inputText id="inptCui" label="CUI" columns="13"
+                                maximumLength="13"
+                                value="#{bindings.cui.inputValue}"
+                                binding="#{Consul_empleado_cv.inptCui}"
+                                converter="oracle.adf.Number"
+                                inlineStyle="font-size:medium; font-weight:bold;"
+                                tip="Digite el dato sin espacios">
+                    <f:convertNumber groupingUsed="false" integerOnly="true"
+                                     pattern="#############"/>
+                  </af:inputText>
+                  <af:objectSpacer width="10" height="10"/>
+                  <af:inputText columns="8" maximumLength="8"
+                                inlineStyle="font-size:medium; font-weight:bold;"
+                                id="inptRegistroPersonal"
+                                converter="oracle.adf.Number"
+                                tip="Digite el dato sin espacios"
+                                binding="#{Consul_empleado_cv.inptRegistroPersonal}"
+                                value="#{bindings.registro_empleado.inputValue}"
+                                label="Registro Empleado">
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="########" integerOnly="true"
+                                     type="number"/>
+                  </af:inputText>
+                  <af:objectSpacer width="10" height="10"/>
+                  <af:commandButton text="Buscar"
+                                    inlineStyle="font-size:large; font-weight:bold;"
+                                    id="btn_buscar"
+                                    binding="#{Consul_empleado_cv.btn_buscar}"
+                                    action="#{Consul_empleado_cv.btn_buscar_action}"
+                                    onclick="return comprobarCamposTexto();"/>
+                  <af:objectSpacer width="10" height="10"/>
+                  <af:commandButton text="Limpiar Filtro"
+                                    id="btn_cancelar"
+                                    binding="#{Consul_empleado_cv.btn_cancelar}"
+                                    inlineStyle="font-size:large; font-weight:bold;"
+                                    action="#{Consul_empleado_cv.btn_cancelar_action}"
+                                    immediate="true">
+                    <af:resetActionListener/>
+                  </af:commandButton>
+                </af:panelHorizontal>
+                <af:panelHeader text="Resultado de la Búsqueda:"
+                                messageType="info"/>
+                <af:table emptyText="Ninguna Fila"
+                          value="#{bindings.lista_empleados.collectionModel}"
+                          var="row" banding="row" bandingInterval="1"
+                          id="tbl_empleados"
+                          selectionState="#{bindings.lista_empleados.collectionModel.selectedRow}"
+                          first="#{bindings.lista_empleados.rangeStart}"
+                          binding="#{Consul_empleado_cv.tbl_empleados}">
+                  <af:column sortProperty="RegistroEmpleado" sortable="true"
+                             headerText="Registro Empleado">
+                    <af:commandLink text="#{row.RegistroEmpleado}"
+                                    id="cmlnk_reg_empleado"
+                                    action="#{Consul_empleado_cv.cmlnk_reg_empleado_action}">
+                      <af:setActionListener from="#{row.RegistroEmpleado}"
+                                            to="#{processScope.CE_CV_reg_empleado}"/>
+                      <af:setActionListener from="#{row.NoFormulario}"
+                                            to="#{processScope.CE_CV_no_formulario}"/>
+                    </af:commandLink>
+                  </af:column>
+                  <af:column sortProperty="Nombre1" sortable="true"
+                             headerText="Primer Nombre">
+                    <af:outputText value="#{row.Nombre1}"/>
+                  </af:column>
+                  <af:column sortable="true" headerText="Segundo Nombre"
+                             sortProperty="Nombre2">
+                    <af:outputText value="#{row.Nombre2}"/>
+                  </af:column>
+                  <af:column sortable="true" headerText="Primer Apellido"
+                             sortProperty="Apellido1">
+                    <af:outputText value="#{row.Apellido1}"/>
+                  </af:column>
+                  <af:column sortable="true" headerText="Segundo Apellido"
+                             sortProperty="Apellido2">
+                    <af:outputText value="#{row.Apellido2}"/>
+                  </af:column>
+                  <af:column sortable="true" headerText="CUI"
+                             sortProperty="Cui">
+                    <af:outputText value="#{row.Cui}"/>
+                  </af:column>
+                  <af:column sortable="true" headerText="No. Cédula"
+                             sortProperty="Cedula">
+                    <af:outputText value="#{row.Cedula}"/>
+                  </af:column>
+                  <af:column sortable="true" headerText="Num. Formulario"
+                             sortProperty="NoFormulario">
+                    <af:outputText value="#{row.NoFormulario}"/>
+                  </af:column>
+                </af:table>
+              </af:panelBox>
+            </af:panelHorizontal>
+          </af:page>
+        </af:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:Consul_empleado_cv-->
+</jsp:root>

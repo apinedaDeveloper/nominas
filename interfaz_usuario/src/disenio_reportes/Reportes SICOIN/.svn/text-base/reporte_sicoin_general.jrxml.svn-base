@@ -1,0 +1,729 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="reporte_sicoin_general"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="595"
+		 pageHeight="875"
+		 columnWidth="535"
+		 columnSpacing="0"
+		 leftMargin="15"
+		 rightMargin="15"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pIdProceso" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pUsuario" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="SUBREPORT_DIR" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA["C:\\iReport-3.0.0_rolando\\Jasper\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="pTipoReporte" isForPrompting="true" class="java.lang.String"/>
+	<queryString><![CDATA[select id_unidad, unidad_ejecutora, isregesp, anio||'.'||partida_sicoin partida_sicoin
+,(select sistp.nombre  from sis_tipo_proceso sistp, sis_proceso sisproc 
+where sistp.id_tipoproceso=sisproc.tipoproceso and sisproc.id_proceso=$P{pIdProceso}) as tipoProc
+, (select sisPer.nombre from sis_proceso sisproc, sis_periodo sisPer     
+where sisproc.id_proceso=$P{pIdProceso} and sisPer.id_periodo=sisproc.periodo) as periodoProceso
+, anio
+,case when tipo='S' THEN 'SUELDO BASE' WHEN TIPO = 'E' THEN 'ESCALAFON' WHEN TIPO = 'B' THEN 'BONO MENSUAL' WHEN TIPO = 'C' THEN 'COMPLEMENTO'
+     END TIPO
+, valor
+, case when tipo='S' THEN valor end sueldo
+, case when tipo='E' THEN valor end escalafon
+, case when tipo='C' THEN valor end complemento
+, case when tipo='B' THEN valor end bono
+from (
+SELECT u.UNIDAD_EJECUTORA id_unidad, u.NOMBRE_UNIDAD_EJECUTORA unidad_ejecutora, Nm.ISREGESP, Nm.ANIO, S.PARTIDA PARTIDA_SICOIN
+, pps.tipo , sum(pps.valor) valor
+FROM (
+        select nn.id_nomina, nn.id_tipo_nomina, NN.PERIODO, nn.anio, nn.id_proceso, nn.id_puesto, nn.id_partida, nn.id_partida_egreso, numero_plaza, correlativo
+        , DECODE((select 1 from SIS_PARTIDAS_EXCLUD_NOMINA where id_partida = nn.id_partida), NULL, 0, 1) isRegEsp
+        from sis_nomina nn
+        INNER JOIN SIS_PROCESO proc ON proc.ID_PROCESO = NN.ID_PROCESO 
+        inner join partida pp on pp.id_partida = nn.id_partida
+        INNER JOIN SIS_DEPENDENCIA D ON D.ID_DEPENDENCIA = PP.D3D4
+        inner join partida ppe on ppe.id_partida = nn.id_partida_egreso 
+        LEFT join sis_pago pg on pg.id_nomina = nn.id_nomina
+        LEFT join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+        where
+        not ( (ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) or (ppe.d8 = 9 and ppe.d9d10 = 81) )
+        and ( 
+              ( nn.id_tipo_nomina not in ( 21,7,11,8 )  -- vacaciones por retiro y REPOSICION, tiempo extraordinario y complemento igss
+                AND proc.tipoproceso <> 8 and $P{pTipoReporte} = 'GENERAL'
+                AND PPE.D9D10 <> 0
+              )
+            )  
+        and ( (doc.id_tipo_documento = 2 
+              and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)          
+              and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) < 2021
+              ) or
+              ( (doc.id_documento_banco is null or doc.id_documento_banco is not null)
+                and TO_NUMBER(to_char(proc.fecha_inicio,'YYYY')) >= 2021
+              ) 
+            )     
+        and exists( -- PERMISOS DE USUARIO
+                     select 1 from usuario_unidad b, partida c where b.id_partida=c.id_partida
+                     and usuario=$P{pUsuario} and b.tipo_usuario='TRABAJADOR'
+                     and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+                     and pP.aniomanual=c.aniomanual and Pp.d1=c.d1 and pP.d2=c.d2 and PP.d3d4=c.d3d4
+                     and ( (pP.d7=c.d7 and pP.d6=c.d6 and pP.d5=c.d5 ) or ( c.d5 is null and c.d6 is null and c.d7 is null ) )
+                  )-- FIN PERMISOS DE USUARIO
+        and proc.id_proceso = $P{pIdProceso}     
+) NM
+inner join (select rs.*, st.unidad_ejecutora unidadBase
+            from (select ss.*, (select id_partida_Sicoin from sis_partida_pago_sicoin where id_nomina = ss.id_nomina and tipo = 'S') partBase
+            from sis_partida_pago_sicoin ss ) rs
+            left join SICOIN_PARTIDA_EGRESOS_VIEW st on st.ID_PARTIDA_EGRESOS = rs.partBase 
+            ) pps on pps.id_nomina = nm.id_nomina
+inner join SICOIN_PARTIDA_EGRESOS_VIEW s on s.id_partida_egresos = pps.id_partida_sicoin
+inner join SICOIN_UNIDAD_EJECUTORA u on (( pps.unidadBase is not null and u.unidad_ejecutora = pps.unidadBase) 
+                                      or ( pps.unidadBase is null and u.unidad_ejecutora = s.unidad_ejecutora) )
+where pps.valor <> 0
+group by u.UNIDAD_EJECUTORA , u.NOMBRE_UNIDAD_EJECUTORA , Nm.ISREGESP, Nm.ANIO, S.PARTIDA , pps.tipo
+)]]></queryString>
+
+	<field name="ID_UNIDAD" class="java.math.BigDecimal"/>
+	<field name="UNIDAD_EJECUTORA" class="java.lang.String"/>
+	<field name="ISREGESP" class="java.math.BigDecimal"/>
+	<field name="PARTIDA_SICOIN" class="java.lang.String"/>
+	<field name="TIPOPROC" class="java.lang.String"/>
+	<field name="PERIODOPROCESO" class="java.lang.String"/>
+	<field name="ANIO" class="java.math.BigDecimal"/>
+	<field name="TIPO" class="java.lang.String"/>
+	<field name="VALOR" class="java.math.BigDecimal"/>
+	<field name="SUELDO" class="java.math.BigDecimal"/>
+	<field name="ESCALAFON" class="java.math.BigDecimal"/>
+	<field name="COMPLEMENTO" class="java.math.BigDecimal"/>
+	<field name="BONO" class="java.math.BigDecimal"/>
+
+	<sortField name="ID_UNIDAD" />
+	<sortField name="ISREGESP" />
+	<sortField name="PARTIDA_SICOIN" />
+
+	<variable name="vUTsueldo" class="java.math.BigDecimal" resetType="Group" resetGroup="unidad" calculation="Sum">
+		<variableExpression><![CDATA[$F{SUELDO}]]></variableExpression>
+	</variable>
+	<variable name="vUTbono" class="java.math.BigDecimal" resetType="Group" resetGroup="unidad" calculation="Sum">
+		<variableExpression><![CDATA[$F{BONO}]]></variableExpression>
+	</variable>
+	<variable name="vUTescalafon" class="java.math.BigDecimal" resetType="Group" resetGroup="unidad" calculation="Sum">
+		<variableExpression><![CDATA[$F{ESCALAFON}]]></variableExpression>
+	</variable>
+	<variable name="vUTcomplemento" class="java.math.BigDecimal" resetType="Group" resetGroup="unidad" calculation="Sum">
+		<variableExpression><![CDATA[$F{COMPLEMENTO}]]></variableExpression>
+	</variable>
+	<variable name="vTsueldo" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{SUELDO}]]></variableExpression>
+	</variable>
+	<variable name="vTbono" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{BONO}]]></variableExpression>
+	</variable>
+	<variable name="vTcomplemento" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{COMPLEMENTO}]]></variableExpression>
+	</variable>
+	<variable name="vTescalafon" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{ESCALAFON}]]></variableExpression>
+	</variable>
+
+		<group  name="unidad" isStartNewColumn="true" >
+			<groupExpression><![CDATA[$F{ID_UNIDAD}]]></groupExpression>
+			<groupHeader>
+			<band height="16"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="0"
+						width="565"
+						height="16"
+						key="textField-5"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font pdfFontName="Helvetica-Bold" size="12" isBold="true" isUnderline="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{ID_UNIDAD}+"   "+$F{UNIDAD_EJECUTORA}]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="67"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="0"
+						width="565"
+						height="15"
+						key="textField-25"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font fontName="Cordia New" pdfFontName="Helvetica-Bold" size="10" isBold="true" isItalic="false" isUnderline="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["TOTAL DE LA UNIDAD EJECUTORA "+$F{ID_UNIDAD}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="368"
+						y="15"
+						width="118"
+						height="13"
+						key="staticText-1"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[TOTAL SUELDO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="368"
+						y="28"
+						width="118"
+						height="13"
+						key="staticText-2"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[TOTAL BONO MENSUAL]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="368"
+						y="41"
+						width="118"
+						height="13"
+						key="staticText-3"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[TOTAL ESCALAFON]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="368"
+						y="54"
+						width="118"
+						height="13"
+						key="staticText-4"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[TOTAL COMPLEMENTO]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="486"
+						y="15"
+						width="79"
+						height="13"
+						key="textField-26"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{vUTsueldo}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="486"
+						y="28"
+						width="79"
+						height="13"
+						key="textField-27"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{vUTbono}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="486"
+						y="41"
+						width="79"
+						height="13"
+						key="textField-28"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{vUTescalafon}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="486"
+						y="54"
+						width="79"
+						height="13"
+						key="textField-29"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{vUTcomplemento}]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupFooter>
+		</group>
+		<group  name="porRegimen" >
+			<groupExpression><![CDATA[$F{ISREGESP}]]></groupExpression>
+			<groupHeader>
+			<band height="55"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="1"
+						width="565"
+						height="23"
+						key="textField-21"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Courier New" pdfFontName="Helvetica-BoldOblique" size="12" isBold="true" isItalic="true" isUnderline="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{ISREGESP}.compareTo( new BigDecimal (0) ) == 0 ? "REGIMEN NORMAL" : "REGIMEN ESPECIAL"]]></textFieldExpression>
+				</textField>
+				<subreport  isUsingCache="true">
+					<reportElement
+						x="0"
+						y="24"
+						width="565"
+						height="31"
+						key="subreport-1"/>
+					<subreportParameter  name="pIdProceso">
+						<subreportParameterExpression><![CDATA[$P{pIdProceso}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pUsuario">
+						<subreportParameterExpression><![CDATA[$P{pUsuario}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pIdUnidad">
+						<subreportParameterExpression><![CDATA[$F{ID_UNIDAD}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pIsRegEsp">
+						<subreportParameterExpression><![CDATA[$F{ISREGESP}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pTipoReporte">
+						<subreportParameterExpression><![CDATA[$P{pTipoReporte}]]></subreportParameterExpression>
+					</subreportParameter>
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<subreportExpression  class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "xrenglon_sicoin.jasper"]]></subreportExpression>
+				</subreport>
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+			</groupFooter>
+		</group>
+		<group  name="RESUMEN" >
+			<groupExpression><![CDATA[]]></groupExpression>
+			<groupHeader>
+			<band height="28"  isSplitAllowed="true" >
+				<subreport  isUsingCache="true">
+					<reportElement
+						x="0"
+						y="0"
+						width="565"
+						height="28"
+						key="subreport-2"/>
+					<subreportParameter  name="pIdProceso">
+						<subreportParameterExpression><![CDATA[$P{pIdProceso}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pIdUnidad">
+						<subreportParameterExpression><![CDATA[$F{ID_UNIDAD}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pUsuario">
+						<subreportParameterExpression><![CDATA[$P{pUsuario}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pIsRegEsp">
+						<subreportParameterExpression><![CDATA[$F{ISREGESP}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pTipoReporte">
+						<subreportParameterExpression><![CDATA[$P{pTipoReporte}]]></subreportParameterExpression>
+					</subreportParameter>
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<subreportExpression  class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "rep_descu_sicoin.jasper"]]></subreportExpression>
+				</subreport>
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+			</groupFooter>
+		</group>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="31"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="0"
+						width="565"
+						height="18"
+						key="textField-23"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="12" isBold="true" isItalic="false" isUnderline="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["PAGOS GENERADOS DEL PROCESO "+$P{pIdProceso}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="18"
+						width="565"
+						height="13"
+						key="textField-24"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="10" isBold="true" isItalic="false" isUnderline="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Tipo de Proceso "+$F{TIPOPROC}+ " / " + $F{PERIODOPROCESO}]]></textFieldExpression>
+				</textField>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="24"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="404"
+						y="0"
+						width="139"
+						height="12"
+						key="textField-30"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["HOJA NO. "+$V{PAGE_NUMBER}.toString()+"/ "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="543"
+						y="0"
+						width="21"
+						height="12"
+						key="textField-31"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Courier New" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="476"
+						y="12"
+						width="89"
+						height="12"
+						key="textField-32"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy HH24:mm" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="403"
+						y="12"
+						width="73"
+						height="12"
+						key="textField-33"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Fecha: "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="0"
+						width="404"
+						height="12"
+						key="textField-34"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Bottom">
+						<font fontName="Cordia New" pdfFontName="Helvetica-BoldOblique" size="10" isBold="true" isItalic="true" isUnderline="false"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Proceso No. "+$P{pIdProceso}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="12"
+						width="404"
+						height="12"
+						key="textField-35"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="Cordia New" pdfFontName="Helvetica-BoldOblique" size="10" isBold="true" isItalic="true" isUnderline="false"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Tipo Proceso "+$F{TIPOPROC}+ " Periodo : "+$F{PERIODOPROCESO}]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="13"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="0"
+						width="377"
+						height="13"
+						key="textField-8"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PARTIDA_SICOIN}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="486"
+						y="0"
+						width="77"
+						height="13"
+						key="textField-14"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{VALOR}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="377"
+						y="0"
+						width="109"
+						height="13"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{TIPO}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="139"  isSplitAllowed="false" >
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="11"
+						width="564"
+						height="22"
+						key="textField-36"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="14" isBold="true" isUnderline="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["RESUMEN TOTAL DEL PROCESO "+ $P{pIdProceso}]]></textFieldExpression>
+				</textField>
+				<line direction="TopDown">
+					<reportElement
+						x="14"
+						y="34"
+						width="543"
+						height="1"
+						key="line-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="15"
+						y="36"
+						width="542"
+						height="19"
+						key="staticText-5"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="12" isBold="true" isUnderline="true"/>
+					</textElement>
+				<text><![CDATA[RESUMEN DE ACREDITAMIENTOS]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="558"
+						y="35"
+						width="0"
+						height="101"
+						key="line-2"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="13"
+						y="35"
+						width="0"
+						height="101"
+						key="line-3"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="14"
+						y="137"
+						width="543"
+						height="1"
+						key="line-4"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="136"
+						y="55"
+						width="128"
+						height="18"
+						key="staticText-6"/>
+					<box>					<pen lineWidth="0.0" lineStyle="Solid"/>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+</box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="10" isBold="true" isUnderline="false"/>
+					</textElement>
+				<text><![CDATA[TOTAL SUELDO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="136"
+						y="109"
+						width="128"
+						height="18"
+						key="staticText-7"/>
+					<box>					<pen lineWidth="0.0" lineStyle="Solid"/>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+</box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[TOTAL COMPLEMENTO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="136"
+						y="91"
+						width="128"
+						height="18"
+						key="staticText-8"/>
+					<box>					<pen lineWidth="0.0" lineStyle="Solid"/>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+</box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[TOTAL ESCALAFON]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="136"
+						y="73"
+						width="128"
+						height="18"
+						key="staticText-9"/>
+					<box>					<pen lineWidth="0.0" lineStyle="Solid"/>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+</box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[TOTAL BONO MENSUAL]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="264"
+						y="55"
+						width="156"
+						height="18"
+						key="textField-37"/>
+					<box>					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{vTsueldo}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="264"
+						y="73"
+						width="156"
+						height="18"
+						key="textField-38"/>
+					<box>					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{vTbono}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="264"
+						y="91"
+						width="156"
+						height="18"
+						key="textField-39"/>
+					<box>					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{vTescalafon}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="264"
+						y="109"
+						width="156"
+						height="18"
+						key="textField-40"/>
+					<box>					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{vTcomplemento}]]></textFieldExpression>
+				</textField>
+			</band>
+		</summary>
+</jasperReport>

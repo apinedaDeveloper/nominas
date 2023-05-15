@@ -1,0 +1,804 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="resumen_renglon_sicoin"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="595"
+		 pageHeight="842"
+		 columnWidth="535"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="30"
+		 topMargin="0"
+		 bottomMargin="15"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pMes" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pUsuario" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="pIdUnidad" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pIsRegEsp" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pAnio" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pTipoReporte" isForPrompting="true" class="java.lang.String"/>
+	<queryString><![CDATA[SELECT TIPO_RENGLON, TIPONOM, ID_TIPO_NOMINA, FORMATO_RENGLON, SUELDO
+, DECODE(ESCALAFON, 0, '0', '017')RESCALA, ESCALAFON
+, DECODE(FORMATO_RENGLON, '011', '012', '024')RCOMP, COMPLEMENTO
+, RENGLON_BONO, BONO
+FROM (
+select 'SUELDO BASE' tipo_renglon, t.id_tipo_nomina tiponom
+, (select nombre from sis_tipo_nomina where id_tipo_nomina = t.id_tipo_nomina) id_tipo_nomina
+, formato_renglon,  nvl(renglon_bono,'-') renglon_bono, sum(sueldo_base) sueldo, sum(escalafon) escalafon
+, sum(compl_salarial) complemento, sum(total_bono) bono
+from (
+select CASE WHEN u.unidad_ejecutora IS NOT NULL THEN u.unidad_ejecutora ELSE 0 END id_unidad
+, nm.* 
+, case when id_partida_sicoin = -1 or  (nm.programa = 41 and rrenglon <> -1) or (nm.programa <> 41 and id_tipo_nomina <> 1)
+          then TO_CHAR(nm.rrenglon ,'FM000') 
+       when nm.renglon_egreso = -1 or (nm.programa <> 41 and id_tipo_nomina = 1)
+          then TO_CHAR(formato_renglon,'FM000')
+       when nm.programa = 41 and rrenglon =  -1 
+          then TO_CHAR(formato_renglon,'FM000') -- es nomina normal o solo pago bono
+  END formato_renglon
+, SUBSTR(sis_pkg_pagos.getPartidaSICOIN(id_partida_siif,ID_PARTIDA_SICOIN,27),36,3)  renglon_bono
+FROM ( 
+select   
+case WHEN NOMINA.FORMATO_SIIF IS NOT NULL THEN -1
+     when pl.id_partida_sicoin is null and nomina.id_PARTIDA_EGRESO in (18127,18124,18126) then nomina.sicoin_e  
+     when pl.id_partida_sicoin is null and nomina.id_PARTIDA_EGRESO NOT in (18127,18124,18126) then 0  
+     else pl.id_partida_sicoin end id_partida_sicoin 
+, nomina.* 
+from (
+select n.id_tipo_nomina, n.anio, n.id_proceso
+, n.id_partida, n.id_partida_egreso , pe.id_partida_egresos  sicoin_e, N.FORMATO_SIIF, N.CODIGO_SICOIN
+, p.d1||p.d2 programa 
+, case when (p.d1||p.d2  = 41 and n.id_tipo_nomina <> 1) then n.id_partida_egreso
+       when n.id_tipo_nomina = 1 
+         or (p.d1||p.d2 <> 41 and n.id_tipo_nomina <> 8) then n.id_partida 
+       end id_partida_siif
+, case when n.id_partida = n.id_partida_egreso then -1 else pe.d9d10 end renglon_egreso   -- cuando tanto partida egreso como partida contratacion son iguales no hay verificaciones extras de renglon
+, CASE WHEN pe.d9d10 = 75                                         THEN 79
+      WHEN SUELDO_BASE = 0 AND  ESCALAFON =0 
+       AND COMPL_SALARIAL = 0 AND NOMINAL= 0 AND TOTAL_BONO <> 0 THEN -1 --SE CARGA A LA PARTIDA CONTRATACION 
+       ELSE pe.d9d10
+  END rrenglon    
+, n.id_puesto, n.numero_plaza, n.correlativo, n.sueldo_base, n.escalafon, n.compl_salarial, n.total_Bono, n.total_descuento, n.liquido, n.isregesp
+from 
+(select id_nomina, nn.id_proceso, id_tipo_nomina, nn.anio, nn.id_partida, nn.id_partida_egreso , ppe.d1||ppe.d2 programa, ppe.d3d4, ppe.d8||ppe.d9d10 r
+, id_puesto, numero_plaza, correlativo, sueldo_base, escalafon, compl_salarial, total_bono, total_descuento, liquido, nominal
+, DECODE((select 1 from SIS_PARTIDAS_EXCLUD_NOMINA where id_partida = nn.id_partida), NULL, 0, 1) isRegEsp
+, case when nn.ID_PARTIDA_EGRESO = 29975 then ppe.d1||ppe.d2||'.'||ppe.d3d4||'.'||ppe.d5||'.'||ppe.d6||'.'||ppe.d7||'.'||ppe.d8||'.'||ppe.d9d10 end formato_siif
+, CASE WHEN nn.ID_PARTIDA_EGRESO = 29975 then D.CODIGO_SICOIN END CODIGO_SICOIN
+from sis_nomina nn
+INNER JOIN SIS_PROCESO proc ON proc.ID_PROCESO = NN.ID_PROCESO 
+inner join partida pp on pp.id_partida = nn.id_partida
+INNER JOIN SIS_DEPENDENCIA D ON D.ID_DEPENDENCIA = PP.D3D4
+inner join partida ppe on ppe.id_partida = nn.id_partida_egreso 
+and (not (ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) and  not (ppe.d8 = 9 and ppe.d9d10 = 81) )
+and ( ( ( (nn.id_tipo_nomina in ( 21,7,11,8 ) AND NN.ID_PARTIDA_EGRESO = 29975)
+           OR (nn.id_tipo_nomina NOT in ( 21,7,11,8 ) ) )
+        and proc.tipoproceso = 8 and $P{pTipoReporte} = 'REPOSICION'
+      )
+      OR 
+      ( nn.id_tipo_nomina not in ( 21,7,11,8 )  -- vacaciones por retiro y REPOSICION, tiempo extraordinario y complemento igss
+        AND proc.tipoproceso <> 8 and $P{pTipoReporte} = 'GENERAL'
+      )
+    )
+) n 
+inner join sis_pago pg on pg.id_nomina = n.id_nomina
+inner join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+inner join partida p on p.id_partida = n.id_partida
+inner join partida pe on pe.id_partida = n.id_partida_egreso
+where TO_NUMBER(to_char(doc.fecha_emision,'MM')) = $P{pMes} and TO_NUMBER(to_char(doc.fecha_emision,'YYYY')) = $P{pAnio}
+and doc.id_tipo_documento = 2  and n.isRegEsp = $P{pIsRegEsp}
+and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)
+and exists( -- PERMISOS DE USUARIO
+            select 1 from usuario_unidad b, partida c where b.id_partida=c.id_partida
+            and usuario=$P{pUsuario} and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+            and p.aniomanual=c.aniomanual and p.d1=c.d1 and p.d2=c.d2 and p.d3d4=c.d3d4
+            and ( (p.d7=c.d7 and p.d6=c.d6 and p.d5=c.d5 ) or ( c.d5 is null and c.d6 is null and c.d7 is null ) )
+          )-- FIN PERMISOS DE USUARIO
+) nomina
+left join sis_plaza pl on pl.id_puesto = nomina.id_puesto
+                       and pl.correlativo = nomina.correlativo
+                       and pl.numero_plaza = nomina.numero_plaza
+                       and pl.id_partida = nomina.id_partida_siif
+) NM
+--------------------------------- LEFT JOIN CON SICOIN --------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------
+left join (select sicoin.ID_PARTIDA_EGRESOS, sicoin.fuente, sicoin.renglon, sicoin.unidad_ejecutora, sicoin.nombre
+          ,(SELECT entidad FROM sicoin_entidad )||'.'
+          ||sicoin.unidad_ejecutora
+          ||DECODE(unidad_desconcentrada,NULL,'','.')||TO_CHAR(sicoin.unidad_desconcentrada,'FM00')
+          ||DECODE(sicoin.programa,NULL,'','.')||TO_CHAR(sicoin.programa,'FM00')
+          ||DECODE(subprograma,NULL,'','.')||TO_CHAR(sicoin.subprograma,'FM00')
+          ||DECODE(proyecto,NULL,'','.')||TO_CHAR(sicoin.proyecto,'FM000')
+          ||DECODE(actividad,NULL,'','.')||TO_CHAR(sicoin.actividad,'FM000')
+          ||DECODE(obra,NULL,'','.')||TO_CHAR(obra,'FM000')||'.' form1
+          ,TO_CHAR(sicoin.renglon,'FM000') formato_renglon
+          ,DECODE(geografico,NULL,'','.')||TO_CHAR(geografico,'FM0000')
+          ||DECODE(fuente,NULL,'','.')||TO_CHAR(fuente,'FM00')
+          ||DECODE(organismo,NULL,'','.')||TO_CHAR(organismo,'FM0000')
+          ||DECODE(correlativo,NULL,'','.')||TO_CHAR(correlativo,'FM0000') form2
+          from SICOIN_PARTIDA_EGRESOS_VIEW sicoin 
+          ) s 
+          on  s.id_partida_egresos = nm.id_partida_sicoin 
+LEFT join SICOIN_UNIDAD_EJECUTORA u on (u.unidad_ejecutora = s.unidad_ejecutora AND nm.id_partida_sicoin <> -1)
+                                    or (u.unidad_ejecutora = nm.codigo_sicoin AND nm.id_partida_sicoin = -1)
+---------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------
+where  ( nm.rrenglon <> 0 AND $P{pTipoReporte} = 'GENERAL') OR $P{pTipoReporte} = 'REPOSICION'
+)t  where id_unidad = $P{pIdUnidad}
+group by 'SUELDO BASE', id_tipo_nomina,  formato_renglon,  renglon_bono
+) WHERE $P{pTipoReporte} = 'GENERAL' or $P{pTipoReporte} = 'REPOSICION'
+UNION ALL
+select TIPO_RENGLON, TIPONOM, ID_TIPO_NOMINA, FORMATO_RENGLON, SUELDO
+, FORMATO_RENGLON RESCALA, ESCALAFON
+, FORMATO_RENGLON RCOMP, COMPLEMENTO
+, FORMATO_RENGLON renglon_bono, BONO
+from (
+select 'NOMINAL' tipo_renglon, t.id_tipo_nomina tiponom, (select nombre from sis_tipo_nomina where id_tipo_nomina = t.id_tipo_nomina) id_tipo_nomina
+, formato_renglon, sum(sueldo_base) sueldo, sum(escalafon) escalafon, sum(compl_salarial) complemento, sum(total_bono) bono
+from (
+select CASE WHEN u.unidad_ejecutora IS NOT NULL THEN u.unidad_ejecutora ELSE 0 END id_unidad
+, nm.* 
+, TO_CHAR(formato_renglon,'FM000')  formato_renglon 
+FROM ( 
+select  
+case when nomina.sicoin_e = 34904 THEN  NOMINA.SICOIN_E else -1 end id_partida_sicoin
+, nomina.* 
+from (
+select n.id_tipo_nomina, n.anio, n.id_partida, pe.id_partida_egresos sicoin_e
+, p.d1||p.d2 programa ,  n.id_partida_egreso id_partida_siif,  n.id_partida_egreso
+, pe.d9d10  rrenglon    
+, n.id_puesto, n.numero_plaza, n.correlativo, n.sueldo_base, n.escalafon, n.compl_salarial, n.total_Bono, n.total_descuento, n.liquido, n.isregesp
+, n.tipoProc, n.periodoProceso, n.id_proceso
+from 
+(select id_nomina, nn.id_proceso, id_tipo_nomina, anio, nn.id_partida, nn.id_partida_egreso , ppe.d1||ppe.d2 programa, ppe.d3d4, ppe.d8||ppe.d9d10 r
+, id_puesto, numero_plaza, correlativo, sueldo_base, escalafon, compl_salarial, total_bono, total_descuento, liquido, nominal
+, (select sistp.nombre  from sis_tipo_proceso sistp, sis_proceso sisproc 
+where sistp.id_tipoproceso=sisproc.tipoproceso and sisproc.id_proceso=nn.id_proceso) as tipoProc
+, (select sisPer.nombre from sis_proceso sisproc, sis_periodo sisPer     
+where sisproc.id_proceso=nn.id_proceso and sisPer.id_periodo=sisproc.periodo)        as periodoProceso 
+, DECODE((select 1 from SIS_PARTIDAS_EXCLUD_NOMINA where id_partida = nn.id_partida), NULL, 0, 1) isRegEsp
+from sis_nomina nn
+inner join partida pp on pp.id_partida = nn.id_partida
+inner join partida ppe on ppe.id_partida = nn.id_partida_egreso 
+and (not (ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) and  not (ppe.d8 = 9 and ppe.d9d10 = 81) )
+and nn.id_tipo_nomina = 8  -- COMPLEMENTO IGSS
+) n 
+inner join sis_pago pg on pg.id_nomina = n.id_nomina
+inner join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+inner join partida p on p.id_partida = n.id_partida
+inner join partida pe on pe.id_partida = n.id_partida_egreso
+where TO_NUMBER(to_char(doc.fecha_emision,'MM')) = $P{pMes} and TO_NUMBER(to_char(doc.fecha_emision,'YYYY')) =$P{pAnio} and 
+doc.id_tipo_documento = 2 and n.isRegEsp = $P{pIsRegEsp}
+and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)
+and exists( -- PERMISOS DE USUARIO
+            select 1 from usuario_unidad b, partida c where b.id_partida=c.id_partida
+            and usuario=$P{pUsuario} and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+            and p.aniomanual=c.aniomanual and p.d1=c.d1 and p.d2=c.d2 and p.d3d4=c.d3d4
+            and ( (p.d7=c.d7 and p.d6=c.d6 and p.d5=c.d5 ) or ( c.d5 is null and c.d6 is null and c.d7 is null ) )
+          )-- FIN PERMISOS DE USUARIO
+) nomina 
+) NM
+--------------------------------- LEFT JOIN CON SICOIN --------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------
+left join (select sicoin.ID_PARTIDA_EGRESOS, sicoin.fuente, sicoin.renglon, sicoin.unidad_ejecutora, sicoin.nombre
+          ,(SELECT entidad FROM sicoin_entidad )||'.'
+          ||sicoin.unidad_ejecutora
+          ||DECODE(unidad_desconcentrada,NULL,'','.')||TO_CHAR(sicoin.unidad_desconcentrada,'FM00')
+          ||DECODE(sicoin.programa,NULL,'','.')||TO_CHAR(sicoin.programa,'FM00')
+          ||DECODE(subprograma,NULL,'','.')||TO_CHAR(sicoin.subprograma,'FM00')
+          ||DECODE(proyecto,NULL,'','.')||TO_CHAR(sicoin.proyecto,'FM000')
+          ||DECODE(actividad,NULL,'','.')||TO_CHAR(sicoin.actividad,'FM000')
+          ||DECODE(obra,NULL,'','.')||TO_CHAR(obra,'FM000')||'.' form1
+          ,TO_CHAR(sicoin.renglon,'FM000') formato_renglon
+          ,DECODE(geografico,NULL,'','.')||TO_CHAR(geografico,'FM0000')
+          ||DECODE(fuente,NULL,'','.')||TO_CHAR(fuente,'FM00')
+          ||DECODE(organismo,NULL,'','.')||TO_CHAR(organismo,'FM0000')
+          ||DECODE(correlativo,NULL,'','.')||TO_CHAR(correlativo,'FM0000') form2
+          from SICOIN_PARTIDA_EGRESOS_VIEW sicoin 
+          ) s 
+          on  s.id_partida_egresos = nm.id_partida_sicoin
+LEFT join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora               
+---------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------
+where --s.formato_renglon is not null and 
+nm.rrenglon <> 0 
+)t  where id_unidad = $P{pIdUnidad}
+group by 'NOMINAL', id_tipo_nomina,  formato_renglon
+) where $P{pTipoReporte} = 'IGSS'
+UNION ALL
+select TIPO_RENGLON, TIPONOM, ID_TIPO_NOMINA, FORMATO_RENGLON, SUELDO
+, FORMATO_RENGLON RESCALA, ESCALAFON
+, FORMATO_RENGLON RCOMP, COMPLEMENTO
+, FORMATO_RENGLON renglon_bono, BONO
+FROM (
+select 'NOMINAL' tipo_renglon, t.id_tipo_nomina tiponom, (select nombre from sis_tipo_nomina where id_tipo_nomina = t.id_tipo_nomina) id_tipo_nomina
+, formato_renglon,  sum(sueldo_base) sueldo, sum(escalafon) escalafon, SUM(COMPL_SALARIAL) COMPLEMENTO, sum(total_bono) bono
+from (
+select CASE WHEN u.unidad_ejecutora IS NOT NULL THEN u.unidad_ejecutora ELSE 0 END id_unidad
+, TO_CHAR(s.formato_renglon,'FM000')  formato_renglon
+, nm.*  
+FROM (
+select n.id_tipo_nomina, n.anio, n.id_proceso
+, n.id_partida, n.id_partida_egreso , p.d1||p.d2 programa , n.rrenglon, n.id_partida_sicoin
+, n.id_puesto, n.numero_plaza, n.correlativo, n.sueldo_base, n.escalafon, n.compl_salarial, n.total_Bono, n.total_descuento, n.liquido, n.isregesp
+from 
+(select nn.id_nomina, nn.id_proceso, nn.id_tipo_nomina, nn.anio, nn.id_partida, nn.id_partida_egreso , ppe.d9d10 rrenglon
+, nn.id_puesto, nn.numero_plaza, nn.correlativo, nn.sueldo_base, nn.escalafon, nn.compl_salarial, nn.total_bono, nn.total_descuento, nn.liquido, nn.nominal
+, DECODE((select 1 from SIS_PARTIDAS_EXCLUD_NOMINA where id_partida = nn.id_partida), NULL, 0, 1) isRegEsp
+, te.PARTIDA_SICOIN id_partida_sicoin
+from sis_nomina nn
+inner join SIS_HORA_EXTRA he on he.ID_HORA_EXTRA = nn.id_gestion
+inner join SIS_TIEMPO_EXTRAORDINARIO te on te.ID_HORA_EXTRA = he.ID_HORA_EXTRA
+inner join partida pp on pp.id_partida = nn.id_partida
+inner join partida ppe on ppe.id_partida = nn.id_partida_egreso 
+and (not (ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) and  not (ppe.d8 = 9 and ppe.d9d10 = 81) )
+and nn.id_tipo_nomina = 11  -- TIEMPO EXTRAORDINARIO
+) n 
+inner join sis_pago pg on pg.id_nomina = n.id_nomina
+inner join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+inner join partida p on p.id_partida = n.id_partida
+inner join partida pe on pe.id_partida = n.id_partida_egreso
+where TO_NUMBER(to_char(doc.fecha_emision,'MM')) = $P{pMes} and TO_NUMBER(to_char(doc.fecha_emision,'YYYY')) =$P{pAnio} and
+ doc.id_tipo_documento = 2 and n.isRegEsp = $P{pIsRegEsp}
+and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)
+and exists( -- PERMISOS DE USUARIO
+            select 1 from usuario_unidad b, partida c where b.id_partida=c.id_partida
+            and usuario=$P{pUsuario} and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+            and p.aniomanual=c.aniomanual and p.d1=c.d1 and p.d2=c.d2 and p.d3d4=c.d3d4
+            and ( (p.d7=c.d7 and p.d6=c.d6 and p.d5=c.d5 ) or ( c.d5 is null and c.d6 is null and c.d7 is null ) )
+          )-- FIN PERMISOS DE USUARIO
+) NM
+--------------------------------- LEFT JOIN CON SICOIN --------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------
+left join (select sicoin.ID_PARTIDA_EGRESOS, sicoin.fuente, sicoin.renglon, sicoin.unidad_ejecutora, sicoin.nombre
+          ,(SELECT entidad FROM sicoin_entidad )||'.'
+          ||sicoin.unidad_ejecutora
+          ||DECODE(unidad_desconcentrada,NULL,'','.')||TO_CHAR(sicoin.unidad_desconcentrada,'FM00')
+          ||DECODE(sicoin.programa,NULL,'','.')||TO_CHAR(sicoin.programa,'FM00')
+          ||DECODE(subprograma,NULL,'','.')||TO_CHAR(sicoin.subprograma,'FM00')
+          ||DECODE(proyecto,NULL,'','.')||TO_CHAR(sicoin.proyecto,'FM000')
+          ||DECODE(actividad,NULL,'','.')||TO_CHAR(sicoin.actividad,'FM000')
+          ||DECODE(obra,NULL,'','.')||TO_CHAR(obra,'FM000')||'.' form1
+          ,TO_CHAR(sicoin.renglon,'FM000') formato_renglon
+          ,DECODE(geografico,NULL,'','.')||TO_CHAR(geografico,'FM0000')
+          ||DECODE(fuente,NULL,'','.')||TO_CHAR(fuente,'FM00')
+          ||DECODE(organismo,NULL,'','.')||TO_CHAR(organismo,'FM0000')
+          ||DECODE(correlativo,NULL,'','.')||TO_CHAR(correlativo,'FM0000') form2
+          from SICOIN_PARTIDA_EGRESOS_VIEW sicoin 
+          ) s 
+          on  s.id_partida_egresos = nm.id_partida_sicoin
+LEFT join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora               
+---------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------
+where --s.formato_renglon is not null and 
+nm.rrenglon <> 0  -- renglon = 0 son los que empiezan con 21.16.x.x.0.xx
+
+)t  where id_unidad = $P{pIdUnidad}
+group by 'NOMINAL', id_tipo_nomina,  formato_renglon  
+) WHERE $P{pTipoReporte} = 'EXTRAORDINARIO'
+UNION ALL
+SELECT TIPO_RENGLON, TIPNOM, ID_TIPO_NOMINA, FORMATO_RENGLON, SUELDO
+, FORMATO_RENGLON RESCALA, ESCALAFON
+, FORMATO_RENGLON RCOMP, COMPLEMENTO
+, FORMATO_RENGLON RENGLON_BONO, BONO
+FROM (
+SELECT TIPO_RENGLON, TIPNOM, ID_UNIDAD, ID_TIPO_NOMINA, FORMATO_RENGLON, RENGLON_BONO
+, sum(sueldo_base) sueldo, sum(escalafon) escalafon, sum(complemento) complemento, sum(BONO) bono
+FROM (
+SELECT 'SUELDO BASE' tipo_renglon , id_tipo_nomina tipnom, ID_NOMINA, ID_UNIDAD
+, tipo_nomina id_tipo_nomina
+, TO_CHAR(renglon,'FM00') formato_renglon, '' renglon_bono
+, sueldo_base, escalafon, compl_salarial complemento, total_bono bono
+FROM (
+select d.CODIGO_SICOIN id_unidad, u.NOMBRE_UNIDAD_EJECUTORA unidad_ejecutora, tn.nombre tipo_nomina
+, nm.*
+from (
+select N.ID_NOMINA, n.id_tipo_nomina, n.anio, n.id_partida, n.id_partida_egreso, n.id_proceso
+,  pe.d1||pe.d2||'.'||pe.d3d4||'.'||pe.d5||'.'||pe.d6||'.'||pe.d7||'.'||pe.d8||'.'||pe.d9d10 formato_siif, n.renglon
+, n.id_puesto, n.numero_plaza, n.correlativo, n.sueldo_base, n.escalafon, n.compl_salarial, n.total_Bono, n.total_descuento, n.liquido, n.isregesp
+from 
+(select id_nomina, nn.id_proceso, id_tipo_nomina, anio, nn.id_partida, nn.id_partida_egreso , ppe.d9d10 renglon
+, id_puesto, numero_plaza, correlativo, sueldo_base, escalafon, compl_salarial, total_bono, total_descuento, liquido, nominal
+, DECODE((select 1 from SIS_PARTIDAS_EXCLUD_NOMINA where id_partida = nn.id_partida), NULL, 0, 1) isRegEsp
+from sis_nomina nn
+inner join partida pp on pp.id_partida = nn.id_partida
+inner join partida ppe on ppe.id_partida = nn.id_partida_egreso  
+and ( ($P{pTipoReporte}='EGRESO981' and NOT(ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) and (ppe.d8 = 9 and ppe.d9d10 = 81) )
+   OR ($P{pTipoReporte}='EGRESO216' and (ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) and  NOT(ppe.d8 = 9 and ppe.d9d10 = 81) )
+    )
+) n 
+inner join sis_pago pg on pg.id_nomina = n.id_nomina
+inner join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+inner join partida p on p.id_partida = n.id_partida
+inner join partida pe on pe.id_partida = n.id_partida_egreso
+where   TO_NUMBER(to_char(doc.fecha_emision,'MM')) = $P{pMes} and TO_NUMBER(to_char(doc.fecha_emision,'YYYY')) =$P{pAnio} and 
+ doc.id_tipo_documento = 2 and n.isRegEsp = $P{pIsRegEsp}
+and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)
+and exists( -- PERMISOS DE USUARIO
+            select 1 from usuario_unidad b, partida c where b.id_partida=c.id_partida
+            and usuario=$P{pUsuario} and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+            and p.aniomanual=c.aniomanual and p.d1=c.d1 and p.d2=c.d2 and p.d3d4=c.d3d4
+            and ( (p.d7=c.d7 and p.d6=c.d6 and p.d5=c.d5 ) or ( c.d5 is null and c.d6 is null and c.d7 is null ) )
+          )-- FIN PERMISOS DE USUARIO
+)NM   
+inner join sis_tipo_nomina tn on tn.id_tipo_nomina = nm.id_tipo_nomina
+inner join sis_partida po on po.id_partida = nm.id_partida
+inner join sis_dependencia d on d.id_dependencia = po.id_dependencia
+LEFT join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = d.codigo_sicoin 
+)t  where id_unidad = $P{pIdUnidad}
+) group by TIPO_RENGLON, ID_UNIDAD, tipnom,  id_tipo_nomina,  formato_renglon,  renglon_bono
+) WHERE $P{pTipoReporte} = 'EGRESO981' OR $P{pTipoReporte} = 'EGRESO216'
+UNION ALL
+SELECT TIPO_RENGLON, TIPONOM, ID_TIPO_NOMINA, FORMATO_RENGLON, SUELDO
+, FORMATO_RENGLON RESCALA, ESCALAFON
+, FORMATO_RENGLON RCOMP, COMPLEMENTO
+, RENGLON_BONO, BONO
+FROM (
+select 'SUELDO BASE' tipo_renglon, t.id_tipo_nomina tiponom
+, (select nombre from sis_tipo_nomina where id_tipo_nomina = t.id_tipo_nomina) id_tipo_nomina
+, formato_renglon,  nvl(renglon_bono,'-') renglon_bono, sum(sueldo_base) sueldo, sum(escalafon) escalafon
+, sum(compl_salarial) complemento, sum(total_bono) bono
+from (
+select CASE WHEN u.unidad_ejecutora IS NOT NULL THEN u.unidad_ejecutora ELSE 0 END id_unidad
+, nm.* 
+, case when nm.renglon_egreso = -1 OR (nm.programa = 41 and rrenglon =  -1)  
+         then TO_CHAR(formato_renglon,'FM000')
+       when (nm.programa = 41 and rrenglon <> -1) or (nm.programa <> 41 and id_tipo_nomina <> 1)
+          then TO_CHAR(nm.rrenglon ,'FM000')
+  END FORMATO_RENGLON
+,CASE WHEN FORM1 IS NOT NULL THEN nm.anio||'.'||form1 ELSE '' END form1 ,  s.form2 , s.renglon
+,'' RENGLON_BONO
+FROM ( 
+select  
+case when pl.id_partida_sicoin is null then 0  
+     else pl.id_partida_sicoin end id_partida_sicoin
+, nomina.* 
+from (
+select n.id_tipo_nomina, n.anio, n.id_proceso
+, n.id_partida, n.id_partida_egreso , pe.id_partida_egresos sicoin_e
+, p.d1||p.d2 programa 
+, case when (p.d1||p.d2  = 41 ) then n.id_partida_egreso
+       when (p.d1||p.d2 <> 41 ) then n.id_partida                    end id_partida_siif
+, case when n.id_partida = n.id_partida_egreso then -1 else pe.d9d10 end renglon_egreso   -- cuando tanto partida egreso como partida contratacion son iguales no hay verificaciones extras de renglon
+, CASE WHEN pe.d9d10 = 75                                         THEN 79
+      WHEN SUELDO_BASE = 0 AND  ESCALAFON =0 
+       AND COMPL_SALARIAL = 0 AND NOMINAL= 0 AND TOTAL_BONO <> 0 THEN -1 --SE CARGA A LA PARTIDA CONTRATACION 
+       ELSE pe.d9d10
+  END rrenglon    
+, n.id_puesto, n.numero_plaza, n.correlativo, n.sueldo_base, n.escalafon, n.compl_salarial, n.total_Bono, n.total_descuento, n.liquido, n.isregesp
+from 
+(select id_nomina, nn.id_proceso, id_tipo_nomina, nn.anio, nn.id_partida, nn.id_partida_egreso , ppe.d1||ppe.d2 programa, ppe.d3d4, ppe.d8||ppe.d9d10 r
+, id_puesto, numero_plaza, correlativo, sueldo_base, escalafon, compl_salarial, total_bono, total_descuento, liquido, nominal
+, DECODE((select 1 from SIS_PARTIDAS_EXCLUD_NOMINA where id_partida = nn.id_partida), NULL, 0, 1) isRegEsp
+from sis_nomina nn
+inner join partida pp on pp.id_partida = nn.id_partida
+inner join partida ppe on ppe.id_partida = nn.id_partida_egreso 
+and (not (ppe.d1||ppe.d2 = 21 and ppe.d3d4 = 16) and  not (ppe.d8 = 9 and ppe.d9d10 = 81) )
+and nn.id_tipo_nomina = 21  -- VACACIONES POR RETIRO
+) n 
+inner join sis_pago pg on pg.id_nomina = n.id_nomina
+inner join sis_documento_banco doc on doc.id_documento_banco = pg.ID_DOCUMENTO_BANCO
+inner join partida p on p.id_partida = n.id_partida
+inner join partida pe on pe.id_partida = n.id_partida_egreso
+where TO_NUMBER(to_char(doc.fecha_emision,'MM')) = $P{pMes} and TO_NUMBER(to_char(doc.fecha_emision,'YYYY')) = $P{pAnio} and
+    doc.id_tipo_documento = 2 and n.isRegEsp = $P{pIsRegEsp}
+and not exists (select 1 from SIS_DOC_PAGO_ANULADO an where an.id_doc_pago = doc.id_documento_banco)
+and exists( -- PERMISOS DE USUARIO
+            select 1 from usuario_unidad b, partida c where b.id_partida=c.id_partida
+            and usuario=$P{pUsuario} and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+            and p.aniomanual=c.aniomanual and p.d1=c.d1 and p.d2=c.d2 and p.d3d4=c.d3d4
+            and ( (p.d7=c.d7 and p.d6=c.d6 and p.d5=c.d5 ) or ( c.d5 is null and c.d6 is null and c.d7 is null ) )
+          )-- FIN PERMISOS DE USUARIO
+) nomina
+left join sis_plaza pl on pl.id_puesto = nomina.id_puesto
+                       and pl.correlativo = nomina.correlativo
+                       and pl.numero_plaza = nomina.numero_plaza
+                       and pl.id_partida = nomina.id_partida_siif
+) NM
+--------------------------------- LEFT JOIN CON SICOIN --------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------
+left join (select sicoin.ID_PARTIDA_EGRESOS, sicoin.fuente, sicoin.renglon, sicoin.unidad_ejecutora, sicoin.nombre
+          ,(SELECT entidad FROM sicoin_entidad )||'.'
+          ||sicoin.unidad_ejecutora
+          ||DECODE(unidad_desconcentrada,NULL,'','.')||TO_CHAR(sicoin.unidad_desconcentrada,'FM00')
+          ||DECODE(sicoin.programa,NULL,'','.')||TO_CHAR(sicoin.programa,'FM00')
+          ||DECODE(subprograma,NULL,'','.')||TO_CHAR(sicoin.subprograma,'FM00')
+          ||DECODE(proyecto,NULL,'','.')||TO_CHAR(sicoin.proyecto,'FM000')
+          ||DECODE(actividad,NULL,'','.')||TO_CHAR(sicoin.actividad,'FM000')
+          ||DECODE(obra,NULL,'','.')||TO_CHAR(obra,'FM000')||'.' form1
+          ,TO_CHAR(sicoin.renglon,'FM000') formato_renglon
+          ,DECODE(geografico,NULL,'','.')||TO_CHAR(geografico,'FM0000')
+          ||DECODE(fuente,NULL,'','.')||TO_CHAR(fuente,'FM00')
+          ||DECODE(organismo,NULL,'','.')||TO_CHAR(organismo,'FM0000')
+          ||DECODE(correlativo,NULL,'','.')||TO_CHAR(correlativo,'FM0000') form2
+          from SICOIN_PARTIDA_EGRESOS_VIEW sicoin 
+          ) s 
+          on  s.id_partida_egresos = nm.id_partida_sicoin
+LEFT join SICOIN_UNIDAD_EJECUTORA u on u.unidad_ejecutora = s.unidad_ejecutora               
+---------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------
+where nm.rrenglon <> 0  
+)t  where id_unidad = $P{pIdUnidad}
+group by 'SUELDO BASE', id_tipo_nomina,  formato_renglon,  renglon_bono
+) WHERE $P{pTipoReporte} = 'VACACIONES']]></queryString>
+
+	<field name="TIPO_RENGLON" class="java.lang.String"/>
+	<field name="TIPONOM" class="java.math.BigDecimal"/>
+	<field name="ID_TIPO_NOMINA" class="java.lang.String"/>
+	<field name="FORMATO_RENGLON" class="java.lang.String"/>
+	<field name="SUELDO" class="java.math.BigDecimal"/>
+	<field name="RESCALA" class="java.lang.String"/>
+	<field name="ESCALAFON" class="java.math.BigDecimal"/>
+	<field name="RCOMP" class="java.lang.String"/>
+	<field name="COMPLEMENTO" class="java.math.BigDecimal"/>
+	<field name="RENGLON_BONO" class="java.lang.String"/>
+	<field name="BONO" class="java.math.BigDecimal"/>
+
+	<sortField name="TIPONOM" />
+	<sortField name="FORMATO_RENGLON" />
+
+	<variable name="sBono" class="java.math.BigDecimal" resetType="Group" resetGroup="porRenglon" calculation="Sum">
+		<variableExpression><![CDATA[$F{BONO}]]></variableExpression>
+	</variable>
+	<variable name="sCompl" class="java.math.BigDecimal" resetType="Group" resetGroup="porComp" calculation="Sum">
+		<variableExpression><![CDATA[$F{COMPLEMENTO}]]></variableExpression>
+	</variable>
+	<variable name="sEscala" class="java.math.BigDecimal" resetType="Group" resetGroup="porEscala" calculation="Sum">
+		<variableExpression><![CDATA[$F{ESCALAFON}]]></variableExpression>
+	</variable>
+
+		<group  name="porNomina" >
+			<groupExpression><![CDATA[$F{ID_TIPO_NOMINA}]]></groupExpression>
+			<groupHeader>
+			<band height="34"  isSplitAllowed="true" >
+				<rectangle>
+					<reportElement
+						x="1"
+						y="7"
+						width="564"
+						height="25"
+						backcolor="#ECECEC"
+						key="rectangle-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="296"
+						y="20"
+						width="131"
+						height="12"
+						key="staticText-2"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font pdfFontName="Helvetica" size="8" isBold="false" isUnderline="false"/>
+					</textElement>
+				<text><![CDATA[TIPO PAGO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="440"
+						y="20"
+						width="43"
+						height="12"
+						key="staticText-3"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font pdfFontName="Helvetica" size="8" isBold="false" isUnderline="false"/>
+					</textElement>
+				<text><![CDATA[RENGLON]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="479"
+						y="20"
+						width="82"
+						height="11"
+						key="staticText-4"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font pdfFontName="Helvetica" size="8" isBold="false" isUnderline="false"/>
+					</textElement>
+				<text><![CDATA[TOTAL]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="7"
+						width="565"
+						height="13"
+						backcolor="#CCCCCC"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{ID_TIPO_NOMINA}]]></textFieldExpression>
+				</textField>
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="6"
+						width="565"
+						height="0"
+						key="line-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="0"  isSplitAllowed="false" >
+			</band>
+			</groupFooter>
+		</group>
+		<group  name="porRenglon" >
+			<groupExpression><![CDATA[$F{RENGLON_BONO}]]></groupExpression>
+			<groupHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="16"  isSplitAllowed="true" >
+				<printWhenExpression><![CDATA[$F{BONO}.compareTo( new BigDecimal(0) ) == 0 ? new Boolean(false) : new Boolean(true)]]></printWhenExpression>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="439"
+						y="0"
+						width="44"
+						height="16"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{RENGLON_BONO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="479"
+						y="0"
+						width="83"
+						height="16"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{sBono}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="296"
+						y="0"
+						width="131"
+						height="16"
+						key="staticText-5"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<text><![CDATA[BONO MENSUAL]]></text>
+				</staticText>
+			</band>
+			</groupFooter>
+		</group>
+		<group  name="porEscala" >
+			<groupExpression><![CDATA[$F{RESCALA}]]></groupExpression>
+			<groupHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="16"  isSplitAllowed="true" >
+				<printWhenExpression><![CDATA[$F{ESCALAFON}.compareTo( new BigDecimal(0) ) == 0 ? new Boolean(false) : new Boolean(true)]]></printWhenExpression>
+				<staticText>
+					<reportElement
+						x="296"
+						y="0"
+						width="131"
+						height="16"
+						key="staticText-6">
+							<printWhenExpression><![CDATA[$F{ESCALAFON}.compareTo( new BigDecimal(0) ) == 0 ? new Boolean(false) : new Boolean(true)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<text><![CDATA[ESCALAFON]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="439"
+						y="0"
+						width="44"
+						height="16"
+						key="textField">
+							<printWhenExpression><![CDATA[$F{ESCALAFON}.compareTo( new BigDecimal(0) ) == 0 ? new Boolean(false) : new Boolean(true)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{RESCALA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="479"
+						y="0"
+						width="83"
+						height="16"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{sEscala}]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupFooter>
+		</group>
+		<group  name="porComp" >
+			<groupExpression><![CDATA[$F{RCOMP}]]></groupExpression>
+			<groupHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="16"  isSplitAllowed="true" >
+				<printWhenExpression><![CDATA[$F{COMPLEMENTO}.compareTo( new BigDecimal(0) ) == 0 ? new Boolean(false) : new Boolean(true)]]></printWhenExpression>
+				<staticText>
+					<reportElement
+						x="296"
+						y="0"
+						width="131"
+						height="16"
+						key="staticText-7">
+							<printWhenExpression><![CDATA[$F{COMPLEMENTO}.compareTo( new BigDecimal(0) ) == 0 ? new Boolean(false) : new Boolean(true)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<text><![CDATA[COMPLEMENTO ]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="439"
+						y="0"
+						width="44"
+						height="16"
+						key="textField">
+							<printWhenExpression><![CDATA[$F{COMPLEMENTO}.compareTo( new BigDecimal(0) ) == 0 ? new Boolean(false) : new Boolean(true)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{RCOMP}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="479"
+						y="0"
+						width="83"
+						height="16"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{sCompl}]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupFooter>
+		</group>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="20"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="0"
+						y="1"
+						width="565"
+						height="17"
+						key="staticText-1"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="11" isBold="true" isUnderline="false"/>
+					</textElement>
+				<text><![CDATA[RESUMEN POR RENGLONES]]></text>
+				</staticText>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="16"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="479"
+						y="0"
+						width="83"
+						height="16"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{SUELDO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="296"
+						y="0"
+						width="131"
+						height="16"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{TIPONOM}.compareTo( new BigDecimal(1))==0?$F{TIPO_RENGLON}:"NOMINAL"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="439"
+						y="0"
+						width="44"
+						height="16"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{FORMATO_RENGLON}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="3"  isSplitAllowed="true" >
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="2"
+						width="565"
+						height="0"
+						key="line-2"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

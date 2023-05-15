@@ -1,0 +1,782 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:afc="http://xmlns.oracle.com/adf/faces/webcache"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html"
+          xmlns:af="http://xmlns.oracle.com/adf/faces">
+  <jsp:output omit-xml-declaration="true" doctype-root-element="HTML"
+              doctype-system="http://www.w3.org/TR/html4/loose.dtd"
+              doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN"/>
+  <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+  <f:view>
+    <afh:html>
+      <afh:head title="complemento_x_promocion_reclasif">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+      </afh:head>
+      <jsp:include page="/js/libJQ.js"/>       
+       <jsp:include page="/js/librariesDialog.js"/>           
+      <script type="text/javascript" src="/${flujo_usuario.dominioApp}/js/gestiones/scrptAutorizacion.js">
+      var xy=new Date().getMilliseconds();      
+      </script>
+      <script language="javascript" type="text/javascript"> 
+       gbl_form="form1";
+       gbl_actionId="form1:page1:cmdRefresh";
+    
+         function newSol() {
+    
+         submitForm('form1',1,{source:'form1:page1:btn_nuevo'});
+         return false;
+         }
+      
+         function verRepo(IdC){
+         
+           window.open("../verreportepdf?id="+IdC+String.fromCharCode(38)+"rep=CMPLSALPROM","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+           return false;    
+   
+         }
+      
+      </script>      
+      <afh:body>
+        <af:messages id="messages1"/>
+        <h:form id="form1">
+          <af:page title="Solicitud de Complemento por promoción/reclasificación"
+                   chromeType="compact" id="page1"
+                   value="#{modeloMenu.modeloBD}" var="node">
+          <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+             <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelBox>
+             <f:verbatim>
+                <input type="hidden" name="hdn_tipo" id="hdn_tipo" value="12"/>
+                <input type="hidden" name="hdn_Id" id="hdn_Id"
+                       value="${bindings.pIdVar1.inputValue}"/>
+              </f:verbatim>
+              <af:showOneTab>
+                <af:showDetailItem text="Histórico"
+                                   binding="#{complemento_x_promocion_reclasif.tab_histo}"
+                                   disclosed="false">
+                  <af:commandLink
+                                  action="#{complemento_x_promocion_reclasif.btnNuevaSolicitud}" id="btn_nuevo"/>
+                  <af:panelHeader text="Empleado: [#{flujo_usuario.selRegEmpleado} - #{flujo_usuario.nombreEmpleadoSel}]"
+                                  size="0"/>
+                  <af:table value="#{bindings.SisSolicitudVw.collectionModel}"
+                            var="row"
+                            rows="#{bindings.SisSolicitudVw.rangeSize}"
+                            first="#{bindings.SisSolicitudVw.rangeStart}"
+                            emptyText="#{bindings.SisSolicitudVw.viewable ? 'No rows yet.' : 'Access Denied.'}"
+                            selectionState="#{bindings.SisSolicitudVw.collectionModel.selectedRow}"
+                            selectionListener="#{bindings.SisSolicitudVw.collectionModel.makeCurrent}"
+                            partialTriggers="cmd_idSolicitud">
+                    <af:column sortProperty="IdSolicitud" sortable="true"
+                               headerText="#{bindings.SisSolicitudVw.labels.IdSolicitud}">
+                      <af:outputText value="#{row.IdSolicitud}"
+                                     rendered="false">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.SisSolicitudVw.formats.IdSolicitud}"/>
+                      </af:outputText>
+                      <af:commandLink text="#{row.IdSolicitud}"
+                                      action="#{complemento_x_promocion_reclasif.cmd_solicitud}"
+                                      disabled="#{!bindings.setCurrentRowWithKey.enabled}"
+                                      id="cmd_idSolicitud"/>
+                    </af:column>
+                    <af:column sortProperty="IdTipoSolicitud" sortable="true"
+                               headerText="#{bindings.SisSolicitudVw.labels.IdTipoSolicitud}"
+                               rendered="false">
+                      <af:outputText value="#{row.IdTipoSolicitud}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.SisSolicitudVw.formats.IdTipoSolicitud}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="NombreSolicitud" sortable="true"
+                               headerText="#{bindings.SisSolicitudVw.labels.NombreSolicitud}">
+                      <af:outputText value="#{row.NombreSolicitud}"/>
+                    </af:column>
+                    <af:column sortProperty="IdContrato" sortable="true"
+                               headerText="#{bindings.SisSolicitudVw.labels.IdContrato}">
+                      <af:outputText value="#{row.IdContrato}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.SisSolicitudVw.formats.IdContrato}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="RegistroEmpleado" sortable="true"
+                               headerText="#{bindings.SisSolicitudVw.labels.RegistroEmpleado}"
+                               rendered="false">
+                      <af:outputText value="#{row.RegistroEmpleado}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.SisSolicitudVw.formats.RegistroEmpleado}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Documento" sortable="true"
+                               headerText="#{bindings.SisSolicitudVw.labels.Documento}"
+                               rendered="false">
+                      <af:outputText value="#{row.Documento}"/>
+                    </af:column>
+                    <af:column sortProperty="Observacion" sortable="true"
+                               headerText="#{bindings.SisSolicitudVw.labels.Observacion}"
+                               rendered="false">
+                      <af:outputText value="#{row.Observacion}"/>
+                    </af:column>
+                    <af:column sortProperty="FechaCreacion" sortable="true"
+                               headerText="#{bindings.SisSolicitudVw.labels.FechaCreacion}">
+                      <af:outputText value="#{row.FechaCreacion}">
+                        <f:convertDateTime pattern="#{bindings.SisSolicitudVw.formats.FechaCreacion}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="IdEstado" sortable="true"
+                               headerText="#{bindings.SisSolicitudVw.labels.IdEstado}"
+                               rendered="false">
+                      <af:outputText value="#{row.IdEstado}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.SisSolicitudVw.formats.IdEstado}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="FechaSolicitud" sortable="true"
+                               headerText="#{bindings.SisSolicitudVw.labels.FechaSolicitud}">
+                      <af:outputText value="#{row.FechaSolicitud}">
+                        <f:convertDateTime pattern="#{bindings.SisSolicitudVw.formats.FechaSolicitud}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="CreadoPor" sortable="true"
+                               headerText="#{bindings.SisSolicitudVw.labels.CreadoPor}">
+                      <af:outputText value="#{row.CreadoPor}"/>
+                    </af:column>
+                    <af:column sortProperty="Nomestado" sortable="true"
+                               headerText="#{bindings.SisSolicitudVw.labels.Nomestado}">
+                      <af:outputText value="#{row.Nomestado}"/>
+                    </af:column>
+                    <af:column sortProperty="Anio" sortable="true"
+                               headerText="#{bindings.SisSolicitudVw.labels.Anio}"
+                               rendered="false">
+                      <af:outputText value="#{row.Anio}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.SisSolicitudVw.formats.Anio}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="IdPartida" sortable="true"
+                               headerText="#{bindings.SisSolicitudVw.labels.IdPartida}"
+                               rendered="false">
+                      <af:outputText value="#{row.IdPartida}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.SisSolicitudVw.formats.IdPartida}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="IdPuesto" sortable="true"
+                               headerText="#{bindings.SisSolicitudVw.labels.IdPuesto}"
+                               rendered="false">
+                      <af:outputText value="#{row.IdPuesto}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.SisSolicitudVw.formats.IdPuesto}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="NumeroPlaza" sortable="true"
+                               headerText="#{bindings.SisSolicitudVw.labels.NumeroPlaza}"
+                               rendered="false">
+                      <af:outputText value="#{row.NumeroPlaza}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.SisSolicitudVw.formats.NumeroPlaza}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Origen" sortable="true"
+                               headerText="#{bindings.SisSolicitudVw.labels.Origen}"
+                               rendered="false">
+                      <af:outputText value="#{row.Origen}"/>
+                    </af:column>
+                    <af:column sortProperty="NomPuesto" sortable="true"
+                               headerText="#{bindings.SisSolicitudVw.labels.NomPuesto}"
+                               rendered="false">
+                      <af:outputText value="#{row.NomPuesto}"/>
+                    </af:column>
+                    <af:column sortProperty="Partida" sortable="true"
+                               headerText="#{bindings.SisSolicitudVw.labels.Partida}"
+                               rendered="false">
+                      <af:outputText value="#{row.Partida}"/>
+                    </af:column>
+                    <af:column sortProperty="tipoSolicitud" sortable="true"
+                               headerText="#{bindings.SisSolicitudVw.labels.tipoSolicitud}"
+                               rendered="false">
+                      <af:outputText value="#{row.tipoSolicitud}"/>
+                    </af:column>
+                    <af:column sortProperty="estContrl" sortable="true"
+                               headerText="#{bindings.SisSolicitudVw.labels.estContrl}"
+                               rendered="false">
+                      <af:outputText value="#{row.estContrl}"/>
+                    </af:column>
+                    <af:column sortProperty="logAutorizado" sortable="true"
+                               headerText="#{bindings.SisSolicitudVw.labels.logAutorizado}"
+                               rendered="false">
+                      <af:outputText value="#{row.logAutorizado}"/>
+                    </af:column>
+                    <af:column sortProperty="logFinalizado" sortable="true"
+                               headerText="#{bindings.SisSolicitudVw.labels.logFinalizado}"
+                               rendered="false">
+                      <af:outputText value="#{row.logFinalizado}"/>
+                    </af:column>
+                    <f:facet name="selection">
+                      <af:tableSelectOne text="Select and" rendered="false">
+                        <af:commandButton text="Submit" rendered="false"/>
+                      </af:tableSelectOne>
+                    </f:facet>
+                  </af:table>
+                  <af:objectSpacer width="10" height="10"/>
+                  <af:panelHeader messageType="info" text="Importante">
+                    <af:outputText value="Los cálculos para generar la información de este tipo de complementos están basados en los datos almacenados en el histórico del libro de salarios. Es posible que algunos cálculos no sean exactos por lo que quedarán sujetos de revisión por parte del responsable de la unidad ejecutora que los genera, previo a su traslado y autorización.   Éste proceso no realiza proyecciones de complemento a salarios aún no pagados, para el cálculo respectivo se tomarán en cuenta únicamente los procesos de nómina debidamente finalizados."
+                                   inlineStyle="color:rgb(132,66,0); font-size:smaller; text-align:justify;"/>
+                  </af:panelHeader>
+                </af:showDetailItem>
+                <af:showDetailItem text="Nueva solicitud"
+                                   binding="#{complemento_x_promocion_reclasif.tab_detalle}"
+                                   disclosed="false" onclick="return newSol();">
+                  <af:panelHorizontal>
+                    <af:panelHeader text="Id solicitud de promoción/reclasificación: [ #{bindings.IdSolicitud.inputValue} ]"
+                                    size="0"/>
+                    <af:objectSpacer width="10" height="10"/>
+                    <af:outputLabel value="Estado: #{bindings.Nomestado.inputValue} - ** No editable **"
+                                    messageType="warning"
+                                    inlineStyle="color:rgb(132,66,0); font-size:medium; font-weight:normal;"
+                                    rendered="#{bindings.IdEstado.inputValue == &quot;91&quot; || bindings.IdEstado.inputValue == &quot;38&quot; }"/>
+                  </af:panelHorizontal>
+                  <af:panelHorizontal>
+                    <af:panelHeader text="Tipo de complemento">
+                      <af:selectOneRadio value="#{bindings.TipoPuesto.inputValue}"
+                                         layout="vertical" autoSubmit="true"
+                                         id="selectOneRadio1"
+                                         disabled="#{bindings.SisPromReclafView1Iterator.estimatedRowCount>0}"
+                                         validator="#{complemento_x_promocion_reclasif.selectOneRadio1_validator}">
+                        <af:selectItem label="Promoción Docente"
+                                       value="DOCENTE"/>
+                        <af:selectItem label="Reclasificación (Administrativo)"
+                                       value="ADMINISTRATIVO"/>
+                      </af:selectOneRadio>
+                    </af:panelHeader>
+                    <af:objectSpacer width="40" height="10"/>
+                    <af:selectBooleanCheckbox value="#{bindings.SisSolicitudVwProvisionado.inputValue}"
+                                              label="#{bindings.SisSolicitudVwProvisionado.label}"
+                                              disabled="#{bindings.SisPromReclafView1Iterator.estimatedRowCount>0}"/>
+                  </af:panelHorizontal>
+                  <af:panelForm>
+                    <f:facet name="footer"/>
+                  <af:panelHeader text="Empleado: [#{flujo_usuario.selRegEmpleado} - #{flujo_usuario.nombreEmpleadoSel}]"
+                                  size="0"/>                    
+                    <af:table value="#{bindings.SisSolicitudVwSisPromReclafView1.collectionModel}"
+                              var="row"
+                              rows="#{bindings.SisSolicitudVwSisPromReclafView1.rangeSize}"
+                              first="#{bindings.SisSolicitudVwSisPromReclafView1.rangeStart}"
+                              emptyText="#{bindings.SisSolicitudVwSisPromReclafView1.viewable ? 'No rows yet.' : 'Access Denied.'}"
+                              selectionState="#{bindings.SisSolicitudVwSisPromReclafView1.collectionModel.selectedRow}"
+                              selectionListener="#{bindings.SisSolicitudVwSisPromReclafView1.collectionModel.makeCurrent}"
+                              banding="none" partialTriggers="cmdEliminar">
+                      <af:column sortProperty="NumDocPromo" sortable="true"
+                                 headerText="#{bindings.SisSolicitudVwSisPromReclafView1.labels.NumDocPromo}"
+                                 rendered="false">
+                        <af:inputText value="#{row.NumDocPromo}" simple="true"
+                                      required="#{bindings.SisSolicitudVwSisPromReclafView1.attrDefs.NumDocPromo.mandatory}"
+                                      columns="20" rendered="false"/>
+                      </af:column>
+                      <af:column sortProperty="IdPuestoDe" sortable="true"
+                                 headerText="Del Puesto">
+                        <af:inputText value="#{row.PuestoDe}" columns="20"
+                                      disabled="false"
+                                      readOnly="#{bindings.SisComplementoDetVw1Iterator.estimatedRowCount >0}"
+                                      rendered="#{row.IdPromoReclaf != null}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisSolicitudVwSisPromReclafView1.formats.IdPuestoDe}"/>
+                        </af:inputText>
+                        <af:selectOneChoice value="#{bindings.SisPromReclafView1IdPuestoDe.inputValue}"
+                                            label="#{bindings.SisPromReclafView1IdPuestoDe.label}"
+                                            rendered="#{row.IdPromoReclaf == null}"
+                                            partialTriggers="selectOneRadio1">
+                          <f:selectItems value="#{bindings.SisPromReclafView1IdPuestoDe.items}"/>
+                        </af:selectOneChoice>
+                      </af:column>
+                      <af:column sortProperty="IdPuestoA" sortable="true"
+                                 headerText="Al Puesto">
+                        <af:inputText value="#{row.PuestoA}" columns="20"
+                                      readOnly="#{bindings.SisComplementoDetVw1Iterator.estimatedRowCount >0}"
+                                      rendered="#{row.IdPromoReclaf != null}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisSolicitudVwSisPromReclafView1.formats.IdPuestoA}"/>
+                        </af:inputText>
+                        <af:selectOneChoice value="#{bindings.SisPromReclafView1IdPuestoA.inputValue}"
+                                            label="#{bindings.SisPromReclafView1IdPuestoA.label}"
+                                            rendered="#{row.IdPromoReclaf == null}"
+                                            partialTriggers="selectOneRadio1">
+                          <f:selectItems value="#{bindings.SisPromReclafView1IdPuestoA.items}"/>
+                        </af:selectOneChoice>
+                      </af:column>
+                      <af:column sortProperty="APartirDe" sortable="true"
+                                 headerText="#{bindings.SisSolicitudVwSisPromReclafView1.labels.APartirDe}">
+                        <af:selectInputDate value="#{row.APartirDe}"
+                                            columns="20" label="Label 1"
+                                            converter="oracle.adf.DateTime"
+                                            readOnly="#{bindings.SisComplementoDetVw1Iterator.estimatedRowCount >0}">
+                          <f:convertDateTime pattern="#{bindings.SisSolicitudVwSisPromReclafView1.formats.APartirDe}"/>
+                        </af:selectInputDate>
+                      </af:column>
+                      <af:column sortProperty="Hasta" sortable="true"
+                                 headerText="#{bindings.SisSolicitudVwSisPromReclafView1.labels.Hasta}">
+                        <af:selectInputDate value="#{row.Hasta}"
+                                            columns="20" label="Label 2"
+                                            converter="oracle.adf.DateTime"
+                                            readOnly="#{bindings.SisComplementoDetVw1Iterator.estimatedRowCount >0}">
+                          <f:convertDateTime pattern="#{bindings.SisSolicitudVwSisPromReclafView1.formats.Hasta}"/>
+                        </af:selectInputDate>
+                      </af:column>
+                      <af:column sortProperty="Observaciones" sortable="true"
+                                 headerText="#{bindings.SisSolicitudVwSisPromReclafView1.labels.Observaciones}">
+                        <af:inputText value="#{row.Observaciones}" simple="true"
+                                      required="#{bindings.SisSolicitudVwSisPromReclafView1.attrDefs.Observaciones.mandatory}"
+                                      columns="30" rows="3"
+                                      readOnly="#{bindings.SisComplementoDetVw1Iterator.estimatedRowCount >0}"/>
+                      </af:column>
+                      <af:column sortProperty="IdPromoReclaf" sortable="true"
+                                 headerText="#{bindings.SisSolicitudVwSisPromReclafView1.labels.IdPromoReclaf}"
+                                 formatType="text"
+                                 rendered="#{bindings.SisComplementoDetVw1Iterator.estimatedRowCount ==0}">
+                        <af:inputText value="#{row.IdPromoReclaf}"
+                                      required="#{bindings.SisSolicitudVwSisPromReclafView1.attrDefs.IdPromoReclaf.mandatory}"
+                                      columns="15"
+                                      inlineStyle="vertical-align:super;"
+                                      rendered="false">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisSolicitudVwSisPromReclafView1.formats.IdPromoReclaf}"/>
+                        </af:inputText>
+                        <af:commandLink text="Eliminar"
+                                        action="#{complemento_x_promocion_reclasif.btnBorrar}"
+                                        id="cmdEliminar"
+                                        disabled="#{bindings.SisComplementoDetVw1Iterator.estimatedRowCount !=0}"/>
+                      </af:column>
+                      <f:facet name="selection">
+                        <af:tableSelectOne text="Select and" rendered="false">
+                          <af:commandButton text="Submit" rendered="false"/>
+                        </af:tableSelectOne>
+                      </f:facet>
+                      <f:facet name="actions">
+                        <h:panelGroup>
+                          <af:commandButton text="Agregar promoción/reclasificación"
+                                            id="btnAgregarReclasif"
+                                            action="#{complemento_x_promocion_reclasif.btnAgregarReclasif_action}"
+                                            disabled="#{bindings.IdComplemento.inputValue==null ? false : (bindings.IsFormaActiva.inputValue &amp;&amp; bindings.SisComplementoDetVw1Iterator.estimatedRowCount==0) ? false : true}"/>
+                        </h:panelGroup>
+                      </f:facet>
+                    </af:table>
+                    <af:objectSpacer width="10" height="30"/>
+                    <af:panelHorizontal halign="left" rendered="true">
+                      <af:selectOneChoice id="navList1" autoSubmit="false"
+                                          value="#{bindings.SisPeridoxTipoNomVw.inputValue}"
+                                          label="Mes"
+                                          disabled="#{bindings.IdComplemento.inputValue != null}"
+                                          rendered="false">
+                        <f:selectItems value="#{bindings.SisPeridoxTipoNomVw.items}"
+                                       id="selectItems1"/>
+                      </af:selectOneChoice>
+                      <af:panelLabelAndMessage label="Mes:"
+                                               rendered="#{bindings.Nomperiodo.inputValue !=null}">
+                        <af:outputText value="#{bindings.Nomperiodo.inputValue}"/>
+                      </af:panelLabelAndMessage>
+                      <af:commandLink disabled="true" id="cmdRefresh"
+                                      action="#{complemento_x_promocion_reclasif.cmdRefresh_action}"
+                                      actionListener="#{bindings.actualizarVW.execute}"/>
+                    </af:panelHorizontal>
+                    <af:objectSpacer width="10" height="20"/>
+                    <af:panelButtonBar>
+                      <af:commandButton text="Generar la información del complemento"
+                                        action="#{complemento_x_promocion_reclasif.btnGenerarComplemento}"
+                                        disabled="#{bindings.IdComplemento.inputValue==null ? false : (bindings.IsFormaActiva.inputValue &amp;&amp; bindings.SisComplementoDetVw1Iterator.estimatedRowCount==0) ? false : true}"
+                                        id="btnGenerarComplemento"/>
+                      <af:commandButton text="Cancelar"
+                                        action="#{complemento_x_promocion_reclasif.btnCancel}"/>
+                      <af:commandLink onclick="verRepo('#{bindings.IdComplemento.inputValue}');">
+                        <af:objectImage source="/imagenes/printer_1.png"/>
+                      </af:commandLink>
+                      <af:commandLink onclick="return validaComplemento();">
+                  <af:objectImage source="/imagenes/btn_trasladar.png"/>
+                </af:commandLink>
+                <af:commandLink
+                                onclick="return OpenDialogo(2);">
+                  <af:objectImage source="/imagenes/btn_anular.png"/>
+                </af:commandLink>
+                    </af:panelButtonBar>
+                    <af:objectSpacer width="10" height="10"/>
+                    <af:panelHeader text="Id complemento: [#{bindings.IdComplemento.inputValue} ]" size="0"/>
+                    <af:table value="#{bindings.SisComplementoVwSisComplementoDetVw.collectionModel}"
+                              var="row"
+                              rows="#{bindings.SisComplementoVwSisComplementoDetVw.rangeSize}"
+                              first="#{bindings.SisComplementoVwSisComplementoDetVw.rangeStart}"
+                              emptyText="Ninguna fila"
+                              selectionState="#{bindings.SisComplementoVwSisComplementoDetVw.collectionModel.selectedRow}"
+                              selectionListener="#{bindings.SisComplementoVwSisComplementoDetVw.collectionModel.makeCurrent}"
+                              banding="row" bandingInterval="1"
+                              partialTriggers="cmdEditarComplementoDet">
+                      <f:facet name="selection">
+                        <af:tableSelectOne text="Select and" autoSubmit="true"
+                                           disabled="#{!bindings.IsFormaActiva.inputValue}"/>
+                      </f:facet>
+                      <f:facet name="actions">
+                        <af:panelButtonBar>
+                          <af:commandButton text="Guardar"
+                                            action="#{complemento_x_promocion_reclasif.btnCommit}"
+                                            disabled="#{bindings.IdComplemento.inputValue==null ? false : (bindings.IsFormaActiva.inputValue) ? false : true}"/>
+                          <af:commandButton text="Cancelar edición"
+                                            id="btn_cancel_edit"
+                                            action="#{complemento_x_promocion_reclasif.btn_cancel_edit_action}"
+                                            disabled="#{bindings.IdEstado.inputValue == &quot;91&quot; || bindings.IdEstado.inputValue == &quot;38&quot; }"/>
+                        </af:panelButtonBar>
+                      </f:facet>
+                      <af:column sortable="false" headerText="Eliminar">
+                        <af:commandLink action="#{complemento_x_promocion_reclasif.cmdEliminarDet}"
+                                        disabled='#{bindings.IdEstado.inputValue == "91" || bindings.IdEstado.inputValue == "38" }'>
+                          <af:objectImage source="/imagenes/borrar.png"/>
+                        </af:commandLink>
+                      </af:column>
+                      <af:column sortable="false" headerText="Editar">
+                        <af:commandLink action="#{complemento_x_promocion_reclasif.cmdEditarComplementoDet_action}"
+                                        disabled='#{bindings.IdEstado.inputValue == "91" || bindings.IdEstado.inputValue == "38" }'>
+                          <af:objectImage source="/imagenes/form_edit.png"/>
+                        </af:commandLink>
+                      </af:column>
+                      <af:column sortProperty="IdComplementoDet"
+                                 sortable="false" headerText="IdDet">
+                        <af:outputText value="#{row.IdComplementoDet}"
+                                       rendered="false">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.IdComplementoDet}"/>
+                        </af:outputText>
+                        <af:commandLink text="#{row.IdComplementoDet}"
+                                        id="cmdEditarComplementoDet"
+                                        action="#{complemento_x_promocion_reclasif.cmdEditarComplementoDet_action}"
+                                        disabled='#{bindings.IdEstado.inputValue == "91" || bindings.IdEstado.inputValue == "38" }'/>
+                      </af:column>
+                      <af:column sortProperty="RegistroEmpleado"
+                                 sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.RegistroEmpleado}">
+                        <af:outputText value="#{row.RegistroEmpleado}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.RegistroEmpleado}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Tiponomina" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.Tiponomina}">
+                        <af:outputText value="#{row.Tiponomina}"/>
+                      </af:column>
+                      <af:column sortable="false" headerText="Partida">
+                        <af:outputText value="#{row.Formato1}"/>
+                      </af:column>
+                      <af:column sortProperty="NumeroPlaza" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.NumeroPlaza}">
+                        <af:outputText value="#{row.NumeroPlaza}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.NumeroPlaza}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="IdPuesto" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.IdPuesto}">
+                        <af:outputText value="#{row.IdPuesto}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.IdPuesto}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.IdPuestoA}">
+                        <af:outputText value="#{row.IdPuestoA}"
+                                       converter="oracle.adf.Number">
+                          <f:convertNumber pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.IdPuestoA}"
+                                           groupingUsed="false"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="IdContrato" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.IdContrato}">
+                        <af:outputText value="#{row.IdContrato}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.IdContrato}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Anio" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.Correlativo}"
+                                 rendered="true">
+                        <af:outputText value="#{row.Correlativo}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.Anio}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Periodo" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.Periodo}"
+                                 rendered="true">
+                        <af:outputText value="#{row.Periodo}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.Periodo}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortable="false" headerText="Nominal Pagado">
+                        <af:panelHorizontal>
+                          <af:outputLabel value="Q."/>
+                          <af:outputText value="#{row.SueldoNominalReal}"/>
+                        </af:panelHorizontal>
+                      </af:column>
+                      <af:column sortable="false"
+                                 headerText="Nominal Proyectado">
+                        <af:panelHorizontal>
+                          <af:outputLabel value="Q."/>
+                          <af:outputText value="#{row.SueldoNominalProyectado}"/>
+                        </af:panelHorizontal>
+                      </af:column>
+                      <af:column sortProperty="SueldoBase" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.SueldoBase}">
+                        <af:panelHorizontal>
+                          <af:outputLabel value="Q."/>
+                          <af:outputText value="#{row.SueldoBase}"
+                                         rendered="#{!row.isSel}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.SueldoBase}"/>
+                          </af:outputText>
+                          <af:inputText value="#{row.SueldoBase}" columns="10"
+                                        rendered="#{row.isSel}"/>
+                        </af:panelHorizontal>
+                      </af:column>
+                      <af:column sortProperty="Escalafon" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.Escalafon}">
+                        <af:panelHorizontal>
+                          <af:outputLabel value="Q."/>
+                          <af:outputText value="#{row.Escalafon}"
+                                         rendered="#{!row.isSel}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.Escalafon}"/>
+                          </af:outputText>
+                          <af:inputText value="#{row.Escalafon}" rows="1"
+                                        columns="10" rendered="#{row.isSel}"/>
+                        </af:panelHorizontal>
+                      </af:column>
+                      <af:column sortProperty="ComplSalarial" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.ComplSalarial}"
+                                 rendered="false">
+                        <af:panelHorizontal>
+                          <af:outputLabel value="Q."/>
+                          <af:outputText value="#{row.ComplSalarial}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.ComplSalarial}"/>
+                          </af:outputText>
+                        </af:panelHorizontal>
+                      </af:column>
+                      <af:column sortProperty="Nominal" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.Nominal}">
+                        <af:panelHorizontal>
+                          <af:outputLabel value="Q."/>
+                          <af:outputText value="#{row.Nominal}" rendered="true">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.Nominal}"/>
+                          </af:outputText>
+                        </af:panelHorizontal>
+                      </af:column>
+                      <af:column sortProperty="TotalBono" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.TotalBono}"
+                                 rendered="false">
+                        <af:panelHorizontal>
+                          <af:outputLabel value="Q."/>
+                          <af:outputText value="#{row.TotalBono}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.TotalBono}"/>
+                          </af:outputText>
+                        </af:panelHorizontal>
+                      </af:column>
+                      <af:column sortProperty="TotalDescuento" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.TotalDescuento}"
+                                 formatType="number">
+                        <af:panelHorizontal>
+                          <af:outputLabel value="Q."/>
+                          <af:outputText value="#{row.TotalDescuento}"
+                                         partialTriggers="tbl_ajustes">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.TotalDescuento}"/>
+                          </af:outputText>
+                        </af:panelHorizontal>
+                        <af:table value="#{bindings.SisComplementoDetVw1SisComplementoDetajustesVw1.collectionModel}"
+                                  var="row"
+                                  rows="#{bindings.SisComplementoDetVw1SisComplementoDetajustesVw1.rangeSize}"
+                                  first="#{bindings.SisComplementoDetVw1SisComplementoDetajustesVw1.rangeStart}"
+                                  emptyText="#{bindings.SisComplementoDetVw1SisComplementoDetajustesVw1.viewable ? 'No rows yet.' : 'Access Denied.'}"
+                                  selectionState="#{bindings.SisComplementoDetVw1SisComplementoDetajustesVw1.collectionModel.selectedRow}"
+                                  selectionListener="#{bindings.SisComplementoDetVw1SisComplementoDetajustesVw1.collectionModel.makeCurrent}"
+                                  rendered="#{row.isSel}"
+                                  partialTriggers="tbl_ajustes:cmd_eliminar_Desc tbl_ajustes:btn_agregar_desc"
+                                  id="tbl_ajustes">
+                          <af:column sortProperty="Nomajusteabre"
+                                     sortable="false"
+                                     headerText="#{bindings.SisComplementoDetVw1SisComplementoDetajustesVw1.labels.Nomajusteabre}">
+                            <af:outputText value="#{row.Nomajusteabre}"/>
+                          </af:column>
+                          <af:column sortProperty="MontoAjuste" sortable="false"
+                                     headerText="#{bindings.SisComplementoDetVw1SisComplementoDetajustesVw1.labels.MontoAjuste}">
+                            <af:outputText value="#{row.MontoAjuste}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings.SisComplementoDetVw1SisComplementoDetajustesVw1.formats.MontoAjuste}"/>
+                            </af:outputText>
+                          </af:column>
+                          <af:column sortProperty="CreadoPor" sortable="false"
+                                     headerText=" -">
+                            <af:commandLink action="#{complemento_x_promocion_reclasif.cmd_eliminar_ajuste_ant}"
+                                            id="cmd_eliminar_Desc"
+                                            partialSubmit="true">
+                              <af:objectImage source="/imagenes/borrar.png"/>
+                            </af:commandLink>
+                          </af:column>
+                          <f:facet name="actions">
+                            <af:panelForm>
+                              <af:selectOneChoice value="#{bindings.pIdAjuste.inputValue}"
+                                                  label="Descuento/Bono"
+                                                  required="#{bindings.pIdAjuste.mandatory}">
+                                <af:validator binding="#{bindings.pIdAjuste.validator}"/>
+                                <f:convertNumber groupingUsed="false"
+                                                 pattern="#{bindings.pIdAjuste.format}"/>
+                                <af:selectItem label="- BONO MENSUAL"
+                                               value="27"/>
+                                <af:selectItem label="01 ISR" value="1"/>
+                                <af:selectItem label="02 TIMBRE COL ECONOMISTAS"
+                                               value="2"/>
+                                <af:selectItem label="03 PRESTAMO BANTRAB"
+                                               value="3"/>
+                                <af:selectItem label="04 POR DEUDA" value="30"/>
+                                <af:selectItem label="04 POR ALIMENTOS"
+                                               value="4"/>
+                                <af:selectItem label="05 PRESTACIONES PAGADAS DE MAS"
+                                               value="5"/>
+                                <af:selectItem label="06 SUSPE TRAB SIN GOCE DE SUELDO"
+                                               value="6"/>
+                                <af:selectItem label="07 PAGO DEUDORES"
+                                               value="7"/>
+                                <af:selectItem label="08 FIDEICOMISO"
+                                               value="8"/>
+                                <af:selectItem label="09 PRESTAMO PLAN PRESTACIONES"
+                                               value="9"/>
+                                <af:selectItem label="10 CUOTA SEGURO DE CREDITO"
+                                               value="10"/>
+                                <af:selectItem label="105 BONO MENSUAL PAGADO DE MAS"
+                                               value="40" rendered="false"/>
+                                <af:selectItem label="11 CUOTA COOPERATIVA DE VIVIENDA"
+                                               value="11"/>
+                                <af:selectItem label="12 PRESTAMO BANRURAL"
+                                               value="12"/>
+                                <af:selectItem label="13 SINDICATO DOCENTE"
+                                               value="13"/>
+                                <af:selectItem label="14 CUOTA PENDIENTE PLAN PREST"
+                                               value="14"/>
+                                <af:selectItem label="15 SUELDOS PAGADOS DE MAS"
+                                               value="15"/>
+                                <af:selectItem label="16 FALTAS AL TRABAJO"
+                                               value="16"/>
+                                <af:selectItem label="17 DESCUENTOS A TERCEROS"
+                                               value="17"/>
+                                <af:selectItem label="18 VARIOS" value="18"/>
+                                <af:selectItem label="19 PRESTAMO MORA BANCO BANTRAB"
+                                               value="19"/>
+                                <af:selectItem label="20 TIMBRE ARQUITECTOS"
+                                               value="32"/>
+                                <af:selectItem label="21 IGSS 3%" value="25"/>
+                                <af:selectItem label="21 IGSS 2.83" value="26"/>
+                                <af:selectItem label="21 IGSS 4.83" value="21"/>
+                                <af:selectItem label="23 SINDICATO ADMINISTRATIVO"
+                                               value="23"/>
+                                <af:selectItem label="24 CUOTA PLAN DE PRESTACIONES"
+                                               value="24"/>
+                                <af:selectItem label="25 SIPT" value="41"/>
+                              </af:selectOneChoice>
+                              <af:inputText value="#{bindings.pValor.inputValue}"
+                                            label="Monto"
+                                            required="#{bindings.pValor.mandatory}"
+                                            columns="6"
+                                            tip="Dejar en blanco para calculo automatico">
+                                <af:validator binding="#{bindings.pValor.validator}"/>
+                                <f:convertNumber groupingUsed="false"
+                                                 pattern="#{bindings.pValor.format}"/>
+                              </af:inputText>
+                              <af:commandButton text="Agregar"
+                                                action="#{complemento_x_promocion_reclasif.btn_agregar_desc_ant}"
+                                                id="btn_agregar_desc"
+                                                partialSubmit="true"/>
+                            </af:panelForm>
+                          </f:facet>
+                        </af:table>
+                      </af:column>
+                      <af:column sortProperty="Liquido" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.Liquido}">
+                        <af:panelHorizontal>
+                          <af:outputLabel value="Q."/>
+                          <af:outputText value="#{row.Liquido}" rendered="true"
+                                         partialTriggers="tbl_ajustes">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.Liquido}"/>
+                          </af:outputText>
+                        </af:panelHorizontal>
+                      </af:column>
+                      <af:column sortProperty="CantidadHoras" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.CantidadHoras}">
+                        <af:outputText value="#{row.CantidadHoras}"
+                                       rendered="#{!row.isSel}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.CantidadHoras}"/>
+                        </af:outputText>
+                        <af:inputText value="#{row.CantidadHoras}" columns="5"
+                                      rendered="#{row.isSel}"/>
+                      </af:column>
+                      <af:column sortProperty="Diaslaborados" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.Diaslaborados}"
+                                 rendered="false">
+                        <af:outputText value="#{row.Diaslaborados}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.Diaslaborados}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Fechacreacion" sortable="false"
+                                 headerText="#{bindings.SisComplementoVwSisComplementoDetVw.labels.Fechacreacion}">
+                        <af:outputText value="#{row.Fechacreacion}">
+                          <f:convertDateTime pattern="#{bindings.SisComplementoVwSisComplementoDetVw.formats.Fechacreacion}"/>
+                        </af:outputText>
+                      </af:column>
+                    </af:table>
+                  </af:panelForm>
+                </af:showDetailItem>
+              </af:showOneTab>
+            </af:panelBox>
+          </af:page>
+          <f:verbatim>
+          <jsp:include page="../util/dialog_autoriza.txt"/>     
+          </f:verbatim>            
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:complemento_x_promocion_reclasif-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:complemento_x_promocion_reclasif-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:complemento_x_promocion_reclasif-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:complemento_x_promocion_reclasif-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:complemento_x_promocion_reclasif-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:complemento_x_promocion_reclasif-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:complemento_x_promocion_reclasif-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:complemento_x_promocion_reclasif-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:complemento_x_promocion_reclasif-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:complemento_x_promocion_reclasif-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:complemento_x_promocion_reclasif-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:complemento_x_promocion_reclasif-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:complemento_x_promocion_reclasif-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:complemento_x_promocion_reclasif-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:complemento_x_promocion_reclasif-->
+</jsp:root>

@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="empleado_x_unidad_vw"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   ComponentClass="enlace_datos.consultas.gestiones.horas_extras.empleado_x_unidad_vwImpl"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="varDependencia"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="varUnidad"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="varPrograma"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select distinct(empleado.REGISTRO_EMPLEADO), empleado.NOMBRE1, empleado.APELLIDO1
+from sis_empleado empleado, sis_contrato contrato, sis_partida partida1, sis_unidad_ejecutora unidad,
+sis_estado estado
+where unidad.ID_DEPENDENCIA = :varDependencia and
+unidad.ID_UNIDAD = :varUnidad and
+unidad.ID_PROGRAMA = :varPrograma and
+partida1.ID_DEPENDENCIA = unidad.ID_DEPENDENCIA and
+partida1.ID_UNIDAD = unidad.ID_UNIDAD and
+contrato.ID_PARTIDA = partida1.ID_PARTIDA and
+contrato.REGISTRO_EMPLEADO = empleado.REGISTRO_EMPLEADO and
+contrato.ESTATUS = estado.ID_ESTADO and
+estado.NOMBRE like 'ACTIVO' AND
+estado.TABLA like 'SIS_CONTRATO'
+order by empleado.REGISTRO_EMPLEADO
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="RegistroEmpleado"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="REGISTRO_EMPLEADO"
+      Expression="REGISTRO_EMPLEADO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nombre1"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="50"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBRE1"
+      Expression="NOMBRE1"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="50" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Apellido1"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="50"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="APELLIDO1"
+      Expression="APELLIDO1"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="50" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewLinkAccessor
+      Name="SisContratosActivos_by_reg"
+      ViewLink="enlace_datos.consultas.gestiones.horas_extras.contratoActivoXReg_empleadoXUnidad_lnk"
+      Type="oracle.jbo.RowIterator"
+      IsUpdateable="false" >
+   </ViewLinkAccessor>
+</ViewObject>

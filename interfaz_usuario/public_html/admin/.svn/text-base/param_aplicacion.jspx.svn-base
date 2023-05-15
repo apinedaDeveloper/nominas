@@ -1,0 +1,160 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns="http://www.w3.org/1999/xhtml"
+          xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <f:view>
+    <afh:html>
+      <f:loadBundle basename="propiedades" var="tx"/>
+      <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+      <afh:head title="#{tx['prm_apl.title']}">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+      </afh:head>
+      <afh:body>
+        <af:messages/>
+        <h:form>
+                <af:page value="#{modeloMenu.modeloBD}" var="node">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+           <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelBox>
+              <af:panelForm partialTriggers="tbl_parametros btn_editar">
+                <af:inputText value="#{bindings.NomParametro.inputValue}"
+                              label="#{bindings.NomParametro.label}"
+                              required="#{bindings.NomParametro.mandatory}"
+                              columns="40"
+                              disabled="#{bindings.vEditar1.inputValue eq '0'}">
+                  <af:validator binding="#{bindings.NomParametro.validator}"/>
+                </af:inputText>
+                <af:inputText value="#{bindings.Descripcion.inputValue}"
+                              label="#{bindings.Descripcion.label}"
+                              required="#{bindings.Descripcion.mandatory}"
+                              columns="40" rows="3"
+                              disabled="#{bindings.vEditar1.inputValue eq '0'}">
+                  <af:validator binding="#{bindings.Descripcion.validator}"/>
+                </af:inputText>
+                <af:inputText value="#{bindings.ValorNumerico.inputValue}"
+                              label="#{bindings.ValorNumerico.label}"
+                              required="#{bindings.ValorNumerico.mandatory}"
+                              columns="10"
+                              disabled="#{bindings.vEditar1.inputValue eq '0'}">
+                  <af:validator binding="#{bindings.ValorNumerico.validator}"/>
+                  <f:convertNumber groupingUsed="false"
+                                   pattern="#{bindings.ValorNumerico.format}"/>
+                </af:inputText>
+                <af:inputText value="#{bindings.ValorCadena.inputValue}"
+                              label="#{bindings.ValorCadena.label}"
+                              required="#{bindings.ValorCadena.mandatory}"
+                              columns="10"
+                              disabled="#{bindings.vEditar1.inputValue eq '0'}">
+                  <af:validator binding="#{bindings.ValorCadena.validator}"/>
+                </af:inputText>
+                <f:facet name="footer">
+                  <h:panelGroup>
+                    <af:objectSpacer width="10" height="40"/>
+                    <af:commandButton actionListener="#{bindings.Create1.execute}"
+                                      text="#{tx['prm_apl.btn_create.texto']}"
+                                      disabled="#{!bindings.Create1.enabled}">
+                      <af:setActionListener from="#{'1'}"
+                                            to="#{bindings.vEditar1.inputValue}"/>
+                    </af:commandButton>
+                    <af:objectSpacer width="20" height="10"/>
+                    <af:commandButton text="#{tx['prm_apl.btn_commit.texto']}"
+                                      action="#{backing_bean_admin.btn_commit_param_aplicacion_action}">        
+                    </af:commandButton>
+                    <af:objectSpacer width="20" height="10"/>
+                    <af:commandButton actionListener="#{bindings.Rollback.execute}"
+                                      text="#{tx['prm_apl.btn_rollback.texto']}"
+                                      immediate="true">
+                      <af:resetActionListener/>
+                      <af:setActionListener from="#{'0'}"
+                                            to="#{bindings.vEditar1.inputValue}"/>
+                    </af:commandButton>
+                  </h:panelGroup>
+                </f:facet>
+              </af:panelForm>
+              <af:objectSeparator/>
+              <af:table value="#{bindings.SisParametrosAplicacionVw.collectionModel}"
+                        var="row"
+                        rows="#{bindings.SisParametrosAplicacionVw.rangeSize}"
+                        first="#{bindings.SisParametrosAplicacionVw.rangeStart}"
+                        emptyText="#{bindings.SisParametrosAplicacionVw.viewable ? 'No rows yet.' : 'Access Denied.'}"
+                        selectionState="#{bindings.SisParametrosAplicacionVw.collectionModel.selectedRow}"
+                        selectionListener="#{bindings.SisParametrosAplicacionVw.collectionModel.makeCurrent}"
+                        id="tbl_parametros">
+                <af:column sortProperty="NomParametro" sortable="false"
+                           headerText="#{bindings.SisParametrosAplicacionVw.labels.NomParametro}">
+                  <af:outputText value="#{row.NomParametro}"/>
+                </af:column>
+                <af:column sortProperty="Descripcion" sortable="false"
+                           headerText="#{bindings.SisParametrosAplicacionVw.labels.Descripcion}">
+                  <af:outputText value="#{row.Descripcion}"/>
+                </af:column>
+                <af:column sortProperty="ValorNumerico" sortable="false"
+                           headerText="#{bindings.SisParametrosAplicacionVw.labels.ValorNumerico}">
+                  <af:outputText value="#{row.ValorNumerico}">
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.SisParametrosAplicacionVw.formats.ValorNumerico}"/>
+                  </af:outputText>
+                </af:column>
+                <af:column sortProperty="ValorCadena" sortable="false"
+                           headerText="#{bindings.SisParametrosAplicacionVw.labels.ValorCadena}">
+                  <af:outputText value="#{row.ValorCadena}"/>
+                </af:column>
+                <af:column sortProperty="CreadoPor" sortable="false"
+                           headerText="#{bindings.SisParametrosAplicacionVw.labels.CreadoPor}">
+                  <af:outputText value="#{row.CreadoPor}"/>
+                </af:column>
+                <af:column sortProperty="FechaCreacion" sortable="false"
+                           headerText="#{bindings.SisParametrosAplicacionVw.labels.FechaCreacion}">
+                  <af:outputText value="#{row.FechaCreacion}">
+                    <f:convertDateTime pattern="#{bindings.SisParametrosAplicacionVw.formats.FechaCreacion}"/>
+                  </af:outputText>
+                </af:column>
+                <af:column sortProperty="ModificadoPor" sortable="false"
+                           headerText="#{bindings.SisParametrosAplicacionVw.labels.ModificadoPor}">
+                  <af:outputText value="#{row.ModificadoPor}"/>
+                </af:column>
+                <af:column sortProperty="FechaModificacion" sortable="false"
+                           headerText="#{bindings.SisParametrosAplicacionVw.labels.FechaModificacion}">
+                  <af:outputText value="#{row.FechaModificacion}">
+                    <f:convertDateTime pattern="#{bindings.SisParametrosAplicacionVw.formats.FechaModificacion}"/>
+                  </af:outputText>
+                </af:column>
+                <f:facet name="selection">
+                  <af:tableSelectOne autoSubmit="true"
+                                     disabled="#{bindings.vEditar1.inputValue eq '1'}">
+                    <af:commandButton text="#{tx['prm_apl.btn_editar.texto']}" id="btn_editar">
+                      <af:setActionListener from="#{'1'}"
+                                            to="#{bindings.vEditar1.inputValue}"/>
+                    </af:commandButton>
+                  </af:tableSelectOne>
+                </f:facet>
+              </af:table>
+              <af:objectSpacer width="20" height="25"/>
+            </af:panelBox>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+</jsp:root>

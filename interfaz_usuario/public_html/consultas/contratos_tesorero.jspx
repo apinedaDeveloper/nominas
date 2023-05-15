@@ -1,0 +1,152 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <jsp:output omit-xml-declaration="true" doctype-root-element="HTML"
+              doctype-system="http://www.w3.org/TR/html4/loose.dtd"
+              doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN"/>
+  <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+  <f:view>
+    <f:loadBundle basename="propiedades" var="tx"/>
+    <afh:html>
+      <afh:head title="#{tx['cnt_teso.title']}">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+      </afh:head>
+      <afh:body>
+        <af:messages/>
+        <h:form>
+          <af:page 
+           value="#{modeloMenu.modeloBD}" var="node"  >
+           <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+            <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelBox>
+              <af:panelHeader text="#{tx['cnt_teso.pnl_tabla.texto']}">
+                <af:panelHorizontal>
+                  <af:selectOneChoice label="Estado"
+                                      value="#{bindings.pIdEstado1.inputValue}"
+                                      binding="#{contratosTesorero.cmb_estado}">
+                    <af:selectItem label="TODOS" value="0"/>
+                    <af:selectItem label="ACTIVO" value="4"/>
+                    <af:selectItem label="BAJA LICENCIA" value="36"/>
+                    <af:selectItem label="INGRESADO" value="3"/>
+                    <af:selectItem label="OBJETADO" value="32"/>
+                    <af:selectItem label="REVISANDO" value="29"/>
+                    <af:selectItem label="SUSPENDIDO IGSS" value="14"/>
+                  </af:selectOneChoice>
+                  <af:commandButton text="Filtrar"
+                                    disabled="#{!bindings.filtrarXEstado.enabled}"
+                                    action="#{contratosTesorero.btn_filtrar}"/>
+                  <f:facet name="separator">
+                    <af:objectSpacer width="25" height="10"/>
+                  </f:facet>
+                </af:panelHorizontal>
+                <af:objectSpacer width="10" height="20"/>
+                <af:table value="#{bindings['contratos_del_tesorero_vw'].collectionModel}"
+                          var="row"
+                          rows="#{bindings['contratos_del_tesorero_vw'].rangeSize}"
+                          first="#{bindings['contratos_del_tesorero_vw'].rangeStart}"
+                          emptyText="#{tx['tbl_empty.texto']}"
+                          banding="row" bandingInterval="1"
+                          id="tbl_contratos_activos"
+                          partialTriggers="tbl_contratos_activos:chk_all_table">
+                  <f:facet name="actions">
+                    <af:panelButtonBar>
+                      <af:commandButton text="Marcar Todo"
+                                        actionListener="#{bindings.SeleccionarTodos.execute}"
+                                        disabled="#{!bindings.SeleccionarTodos.enabled}"/>
+                      <af:commandButton text="Desmarcar Todo"
+                                        actionListener="#{bindings.DesSeleccionarTodos.execute}"
+                                        disabled="#{!bindings.DesSeleccionarTodos.enabled}"/>
+                      <af:commandButton text="Trasladar a RRHH"
+                                        disabled="true"
+                                        action="#{backing_bean_comun_consultas.btn_trasladar_rrhh}"
+                                        binding="#{contratosTesorero.btn_trasladar}"/>
+                    </af:panelButtonBar>
+                  </f:facet>
+                  <af:column sortable="false" headerText="-">
+                    <af:selectBooleanCheckbox value="#{row.Seleccionado}"
+                                              id="check_sel"/>
+                  </af:column>
+                  <af:column sortProperty="RegistroEmpleado" sortable="false"
+                             headerText="#{bindings['contratos_del_tesorero_vw'].labels.RegistroEmpleado}"
+                             formatType="number">
+                    <af:commandLink text="#{row.RegistroEmpleado}"
+                                    action="#{backing_bean_comun_consultas.cmd_lnk_regEmpleado_contratos_teso}"/>
+                  </af:column>
+                  <af:column sortable="false" headerText="CUI">
+                    <af:outputText value="#{row.Cui}"/>
+                  </af:column>
+                  <af:column sortProperty="Nombrecompleto" sortable="false"
+                             headerText="#{bindings['contratos_del_tesorero_vw'].labels.Nombrecompleto}"
+                             noWrap="true">
+                    <af:outputText value="#{row.Nombrecompleto}"/>
+                  </af:column>
+                  <af:column sortProperty="IdContrato" sortable="false"
+                             headerText="#{bindings['contratos_del_tesorero_vw'].labels.IdContrato}">
+                    <af:commandLink text="#{row.IdContrato}"
+                                    action="#{backing_bean_comun_consultas.cmd_lnk_contrato_contratos_teso}"/>
+                  </af:column>
+                  <af:column sortProperty="Estadocontrato" sortable="false"
+                             headerText="#{bindings['contratos_del_tesorero_vw'].labels.Estadocontrato}"
+                             noWrap="true">
+                    <af:outputText value="#{row.Estadocontrato}"/>
+                  </af:column>
+                  <af:column sortProperty="Nopartida" sortable="false"
+                             headerText="#{bindings['contratos_del_tesorero_vw'].labels.Nopartida}">
+                    <af:outputText value="#{row.Nopartida}"/>
+                  </af:column>
+                  <af:column sortProperty="NumeroPlaza" sortable="false"
+                             headerText="No. Plaza">
+                    <af:outputText value="#{row.NumeroPlaza}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings['contratos_del_tesorero_vw'].formats.NumeroPlaza}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="Puesto" sortable="false"
+                             headerText="#{bindings['contratos_del_tesorero_vw'].labels.Puesto}"
+                             noWrap="true">
+                    <af:outputText value="#{row.Puesto}"/>
+                  </af:column>
+                  <af:column sortable="false"
+                             headerText="#{bindings['contratos_del_tesorero_vw'].labels.FechaInicio}">
+                    <af:outputText value="#{row.FechaInicio}"/>
+                  </af:column>
+                  <af:column sortable="false"
+                             headerText="#{bindings['contratos_del_tesorero_vw'].labels.FechaFin}">
+                    <af:outputText value="#{row.FechaFin}"/>
+                  </af:column>
+                </af:table>
+                <af:objectSpacer width="10" height="30"/>
+              </af:panelHeader>
+            </af:panelBox>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:backing_bean_comun_consultas-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:backing_bean_comun_consultas-->
+</jsp:root>

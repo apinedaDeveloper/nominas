@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel"
+                version="10.1.3.42.70" id="gestiones_capturador_isrPageDef"
+                Package="interfaz_usuario.pageDefs">
+  <parameters/>
+  <executables>
+    <iterator id="SisEmpleadoVwIterator" RangeSize="10" Binds="SisEmpleadoVw"
+              DataControl="QUERRYSDataControl"/>
+    <variableIterator id="variables">
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="SisEmpleadoVw.variablesMap.reg_empleado"
+                     Name="SisEmpleadoVw_reg_empleado" IsQueriable="false"/>
+      <variable Name="varTipoDeducion" Type="java.lang.String"
+                DefaultValue="8"/>
+    </variableIterator>
+    <iterator id="SisDeduccionIsr2VwIterator" RangeSize="10"
+              Binds="SisDeduccionIsr2Vw" DataControl="QUERRYSDataControl"/>
+    <iterator id="SisDeduccionIsrOtrPat_vwIterator" RangeSize="10"
+              Binds="SisDeduccionIsrOtrPat_vw"
+              DataControl="QUERRYSDataControl"/>
+    <invokeAction id="ExeConsulta" Binds="ExecuteWithParams"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <invokeAction Binds="lstDeducciones2" id="ExeLstDed2" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <invokeAction Binds="lstOtrosPat2" id="ExeLstOtr" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <iterator id="SisDireccionFiscalVwIterator" RangeSize="10"
+              Binds="SisDireccionFiscalVw" DataControl="QUERRYSDataControl"/>
+    <iterator id="municipios_dep_by_mun2Iterator" RangeSize="-1"
+              Binds="municipios_dep_by_mun2" DataControl="QUERRYSDataControl"/>
+    <iterator id="todos_los_Departamentos2Iterator" RangeSize="-1"
+              Binds="todos_los_Departamentos2"
+              DataControl="QUERRYSDataControl"/>
+    <invokeAction Binds="DatosFiscales" id="ExeDatosF" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <invokeAction Binds="MuniNoPost" id="ExeMuniNoPost" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <invokeAction Binds="MuniPost" id="ExeMuniPost" Refresh="renderModel"/>
+    <iterator id="sis_timbres_empl_vwIterator" RangeSize="10"
+              Binds="sis_timbres_empl_vw" DataControl="QUERRYSDataControl"/>
+    <invokeAction Binds="ExeTimbres" id="EjecutaTimbres" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+  </executables>
+  <bindings>
+    <action id="ExecuteWithParams" IterBinding="SisEmpleadoVwIterator"
+            InstanceName="QUERRYSDataControl.SisEmpleadoVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="reg_empleado"
+                 NDValue="${bindings.SisEmpleadoVw_reg_empleado==null? flujo_usuario.selRegEmpleado:bindings.SisEmpleadoVw_reg_empleado}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <attributeValues id="reg_empleado" IterBinding="variables">
+      <AttrNames>
+        <Item Value="SisEmpleadoVw_reg_empleado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisEmpleadoVwIterator" id="Nit">
+      <AttrNames>
+        <Item Value="Nit"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisEmpleadoVwIterator" id="RegistroEmpleado">
+      <AttrNames>
+        <Item Value="RegistroEmpleado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisEmpleadoVwIterator" id="NombreCompleto">
+      <AttrNames>
+        <Item Value="NombreCompleto"/>
+      </AttrNames>
+    </attributeValues>
+    <table id="SisDeduccionIsr2Vw" IterBinding="SisDeduccionIsr2VwIterator">
+      <AttrNames>
+        <Item Value="IdDeduccionIsr"/>
+        <Item Value="RegistroEmpleado"/>
+        <Item Value="IdTipoDeduccionIsr"/>
+        <Item Value="Cantidad"/>
+        <Item Value="Anio"/>
+        <Item Value="FechaCreacion"/>
+        <Item Value="Nombre"/>
+        <Item Value="CreadoPor"/>
+        <Item Value="ModPor"/>
+        <Item Value="FechaModificacion"/>
+        <Item Value="Descripcion"/>
+        <Item Value="TipoCalculo"/>
+        <Item Value="Orden"/>
+        <Item Value="Nombret"/>
+      </AttrNames>
+    </table>
+    <action IterBinding="SisDeduccionIsr2VwIterator" id="lstDeducciones"
+            InstanceName="QUERRYSDataControl.SisDeduccionIsr2Vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pRegPer"
+                 NDValue="${bindings.SisEmpleadoVw_reg_empleado}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pAnio" NDValue="${flujo_usuario.anioActual}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <action id="Commit" InstanceName="QUERRYSDataControl"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="100"/>
+    <methodAction IterBinding="SisDeduccionIsr2VwIterator" id="verificarEmpl"
+                  MethodName="verificarEmpl" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisDeduccionIsr2Vw">
+      <NamedData NDName="pReg" NDValue="${bindings.reg_empleado.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pAnio" NDValue="${flujo_usuario.anioActual}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+    </methodAction>
+    <table id="SisDeduccionIsrOtrPat_vw"
+           IterBinding="SisDeduccionIsrOtrPat_vwIterator">
+      <AttrNames>
+        <Item Value="IdDeduccionIsr"/>
+        <Item Value="RegistroEmpleado"/>
+        <Item Value="IdTipoDeduccionIsr"/>
+        <Item Value="Cantidad"/>
+        <Item Value="Anio"/>
+        <Item Value="FechaCreacion"/>
+        <Item Value="Nombre"/>
+        <Item Value="CreadoPor"/>
+        <Item Value="ModPor"/>
+        <Item Value="FechaModificacion"/>
+        <Item Value="Descripcion"/>
+        <Item Value="TipoCalculo"/>
+        <Item Value="Orden"/>
+        <Item Value="Nombret"/>
+        <Item Value="Nit"/>
+      </AttrNames>
+    </table>
+    <methodAction IterBinding="SisDeduccionIsrOtrPat_vwIterator"
+                  id="agregar_Detalle" MethodName="agregar_Detalle"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisDeduccionIsrOtrPat_vw">
+      <NamedData NDName="pRegistroEmpleado"
+                 NDValue="${flujo_usuario.selRegEmpleado}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pTipoDeduccion" NDValue="8"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pAnio" NDValue="${flujo_usuario.anioActual}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+    </methodAction>
+    <action IterBinding="SisDeduccionIsrOtrPat_vwIterator"
+            id="lstOtrosPat"
+            InstanceName="QUERRYSDataControl.SisDeduccionIsrOtrPat_vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pRegPer"
+                 NDValue="${bindings.SisEmpleadoVw_reg_empleado}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pAnio" NDValue="${flujo_usuario.anioActual}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pTipo" NDValue="8" NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <methodAction id="reprocesar_deducciones"
+                  MethodName="reprocesar_deducciones" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.sis_deduccion_isr"
+                  ReturnName="QUERRYSDataControl.methodResults.QUERRYSDataControl_sis_deduccion_isr_reprocesar_deducciones_result">
+      <NamedData NDName="pRegistro_empleado"
+                 NDValue="${flujo_usuario.selRegEmpleado}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pAnio" NDValue="${flujo_usuario.anioActual}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </methodAction>
+    <action id="Rollback" InstanceName="QUERRYSDataControl"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="101"/>
+    <action IterBinding="SisDeduccionIsrOtrPat_vwIterator" id="EjeOtrosPatr"
+            InstanceName="QUERRYSDataControl.SisDeduccionIsrOtrPat_vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="2"/>
+    <action IterBinding="SisDeduccionIsr2VwIterator" id="EjeDeduccion"
+            InstanceName="QUERRYSDataControl.SisDeduccionIsr2Vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="2"/>
+    <action IterBinding="SisDeduccionIsrOtrPat_vwIterator"
+            id="setOtrosPat"
+            InstanceName="QUERRYSDataControl.SisDeduccionIsrOtrPat_vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="96">
+      <NamedData NDName="rowKey" NDValue="${row.rowKeyStr}" NDType="java.lang.String"/>
+    </action>
+    <action IterBinding="SisDeduccionIsrOtrPat_vwIterator" id="DelOtrosPat"
+            InstanceName="QUERRYSDataControl.SisDeduccionIsrOtrPat_vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="30"/>
+    <action IterBinding="SisDeduccionIsr2VwIterator" id="lstDeducciones2"
+            InstanceName="QUERRYSDataControl.SisDeduccionIsr2Vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pRegPer"
+                 NDValue="${flujo_usuario.selRegEmpleado}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pAnio" NDValue="${flujo_usuario.anioActual}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <action IterBinding="SisDeduccionIsrOtrPat_vwIterator" id="lstOtrosPat2"
+            InstanceName="QUERRYSDataControl.SisDeduccionIsrOtrPat_vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pRegPer" NDValue="${flujo_usuario.selRegEmpleado}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pAnio" NDValue="${flujo_usuario.anioActual}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pTipo" NDValue="8" NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <attributeValues IterBinding="SisDireccionFiscalVwIterator" id="CalleAve">
+      <AttrNames>
+        <Item Value="CalleAve"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisDireccionFiscalVwIterator" id="TelCasa">
+      <AttrNames>
+        <Item Value="TelCasa"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisDireccionFiscalVwIterator" id="Celular">
+      <AttrNames>
+        <Item Value="Celular"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisDireccionFiscalVwIterator" id="Email">
+      <AttrNames>
+        <Item Value="Email"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisDireccionFiscalVwIterator" id="NoCasa">
+      <AttrNames>
+        <Item Value="NoCasa"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisDireccionFiscalVwIterator" id="Zona">
+      <AttrNames>
+        <Item Value="Zona"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisDireccionFiscalVwIterator" id="AptoSim">
+      <AttrNames>
+        <Item Value="AptoSim"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisDireccionFiscalVwIterator"
+                     id="ColoniaBarrio">
+      <AttrNames>
+        <Item Value="ColoniaBarrio"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisDireccionFiscalVwIterator"
+                     id="ApartadoPostal">
+      <AttrNames>
+        <Item Value="ApartadoPostal"/>
+      </AttrNames>
+    </attributeValues>
+    <list StaticList="false" ListOperMode="0"
+          IterBinding="SisDireccionFiscalVwIterator"
+          ListIter="municipios_dep_by_mun2Iterator" id="municipios_dep_by_mun2Nombre">
+      <AttrNames>
+        <Item Value="MunicipioFiscal"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdMunicipio"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Nombre"/>
+      </ListDisplayAttrNames>
+    </list>
+    <action IterBinding="municipios_dep_by_mun2Iterator" id="MuniNoPost"
+            InstanceName="QUERRYSDataControl.municipios_dep_by_mun2"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="id_mun"
+                 NDValue="${bindings.MunicipioFiscal.inputValue==null?1:bindings.MunicipioFiscal.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="id_dept" NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <action IterBinding="municipios_dep_by_mun2Iterator" id="MuniPost"
+            InstanceName="QUERRYSDataControl.municipios_dep_by_mun2"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="id_mun" NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="id_dept"
+                 NDValue="${bindings.DepartamentoF.currentRow['idDepartamento']==null?1:bindings.DepartamentoF.currentRow['idDepartamento']}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <list StaticList="false" ListOperMode="0"
+          IterBinding="municipios_dep_by_mun2Iterator"
+          ListIter="todos_los_Departamentos2Iterator" id="DepartamentoF">
+      <AttrNames>
+        <Item Value="IdDepartamento"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdDepartamento"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Nombre"/>
+      </ListDisplayAttrNames>
+    </list>
+    <action IterBinding="SisDireccionFiscalVwIterator" id="DatosFiscales"
+            InstanceName="QUERRYSDataControl.SisDireccionFiscalVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pRegistroEmpleado"
+                 NDValue="${flujo_usuario.selRegEmpleado}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <attributeValues IterBinding="SisDireccionFiscalVwIterator" id="Fax">
+      <AttrNames>
+        <Item Value="Fax"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisDireccionFiscalVwIterator"
+                     id="MunicipioFiscal">
+      <AttrNames>
+        <Item Value="MunicipioFiscal"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="sis_timbres_empl_vwIterator" id="MontoTimbres">
+      <AttrNames>
+        <Item Value="Monto"/>
+      </AttrNames>
+    </attributeValues>
+    <action IterBinding="sis_timbres_empl_vwIterator" id="ExeTimbres"
+            InstanceName="QUERRYSDataControl.sis_timbres_empl_vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pRegistroEmpleado"
+                 NDValue="${bindings.SisEmpleadoVw_reg_empleado==null? flujo_usuario.selRegEmpleado:bindings.SisEmpleadoVw_reg_empleado}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pAnio" NDValue="${flujo_usuario.anioActual}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <action IterBinding="SisDeduccionIsrOtrPat_vwIterator"
+            id="exeFormSAT2"
+            InstanceName="QUERRYSDataControl.SisDeduccionIsrOtrPat_vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pRegPer" NDValue="${flujo_usuario.selRegEmpleado}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pAnio" NDValue="${flujo_usuario.anioActual-1}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pTipo" NDValue="17" NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <methodAction IterBinding="SisDeduccionIsrOtrPat_vwIterator"
+                  id="agregar_DetalleSAT" MethodName="agregar_Detalle"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisDeduccionIsrOtrPat_vw">
+      <NamedData NDName="pRegistroEmpleado"
+                 NDValue="${flujo_usuario.selRegEmpleado}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pTipoDeduccion" NDValue="17"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pAnio" NDValue="${flujo_usuario.anioActual-1}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+    </methodAction>
+    <action IterBinding="SisDeduccionIsrOtrPat_vwIterator"
+            id="ExecuteWithParams1"
+            InstanceName="QUERRYSDataControl.SisDeduccionIsrOtrPat_vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pRegPer"
+                 NDValue="${bindings.SisEmpleadoVw_reg_empleado}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pAnio" NDValue="${flujo_usuario.anioActual-1}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pTipo" NDValue="17" NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <attributeValues IterBinding="SisDeduccionIsrOtrPat_vwIterator"
+                     id="IdTipoDeduccionIsr">
+      <AttrNames>
+        <Item Value="IdTipoDeduccionIsr"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisDeduccionIsrOtrPat_vwIterator" id="Anio">
+      <AttrNames>
+        <Item Value="Anio"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisDeduccionIsrOtrPat_vwIterator"
+                     id="TipoCalculo">
+      <AttrNames>
+        <Item Value="TipoCalculo"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="SisDeduccionIsrOtrPat_vwIterator"
+                  id="CongelarFormularioSAT" MethodName="CongelarFormularioSAT"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisDeduccionIsrOtrPat_vw">
+      <NamedData NDName="pRegistroEmpleado"
+                 NDValue=" ${flujo_usuario.selRegEmpleado}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pAnio" NDValue="${flujo_usuario.anioActual}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="tipoCalculo"
+                 NDValue="${bindings.TipoCalculo.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+    </methodAction>
+    <attributeValues IterBinding="variables" id="attrTipoDeducion">
+      <AttrNames>
+        <Item Value="varTipoDeducion"/>
+      </AttrNames>
+    </attributeValues>
+  </bindings>
+</pageDefinition>

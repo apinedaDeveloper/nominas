@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="consul_puestoXempleado"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   ComponentClass="enlace_datos.consultas.gestiones.anexo.consul_puestoXempleadoImpl"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="varEmpleado"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="varDep"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="varUsuario"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <Variable
+      Name="nomNivel"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select distinct(puesto.ID_PUESTO), puesto.NOMBRE, empleado.REGISTRO_EMPLEADO 
+from sis_contrato c, sis_partida par, sis_puesto puesto, sis_empleado empleado, sis_archivo_apertura archivo,
+sis_nivel_puesto nivel, sis_categoria_puesto cat, sis_plaza plaza, sis_carga_archivo_datos carga
+where c.ID_PARTIDA = par.ID_PARTIDA
+and c.ID_PARTIDA = plaza.ID_PARTIDA
+and c.ID_PUESTO = plaza.ID_PUESTO
+and c.NUMERO_PLAZA = plaza.NUMERO_PLAZA
+and c.CORRELATIVO = plaza.CORRELATIVO
+and c.REGISTRO_EMPLEADO = empleado.REGISTRO_EMPLEADO
+and c.REGISTRO_EMPLEADO = :varEmpleado
+and (exists(select 1 from sis_acceso_unidad uni
+where par.ID_DEPENDENCIA = uni.ID_DEPENDENCIA
+and par.ID_UNIDAD = uni.ID_UNIDAD
+and par.ID_PROGRAMA = uni.ID_PROGRAMA
+and uni.USUARIO = :varUsuario
+and par.ID_DEPENDENCIA = :varDep)
+or exists(select 1 from sis_acceso_dependencia ac1
+where ac1.USUARIO = :varUsuario
+and par.ID_DEPENDENCIA = ac1.ID_DEPENDENCIA
+and par.ID_DEPENDENCIA = :varDep))
+and par.ID_DEPENDENCIA = :varDep
+and par.id_renglon = 11
+and c.ID_PUESTO = puesto.ID_PUESTO
+and to_number(substr(archivo.PARTIDA,1,2)) = par.ID_PROGRAMA
+and to_number(substr(archivo.PARTIDA,3,2)) = par.ID_DEPENDENCIA
+and to_number(substr(archivo.partida,5,3)) = par.ID_UNIDAD
+and to_number(substr(archivo.PARTIDA,9,2)) = par.ID_RENGLON
+and archivo.REGISTRO_EMPLEADO != 0
+and archivo.ERROR is null
+and carga.ID_CARGA_ARCHIVO_DATOS = archivo.ID_CARGA_ARCHIVO_DATOS
+and carga.ANIO = c.CORRELATIVO
+and c.REGISTRO_EMPLEADO = archivo.REGISTRO_EMPLEADO
+and cat.ID_NIVEL_PUESTO = nivel.ID_NIVEL_PUESTO
+and nivel.TIPO  like :nomNivel
+and puesto.ID_CATEGORIA = cat.ID_CATEGORIA
+and c.ESTATUS  in (select es.ID_ESTADO from sis_estado es
+where tabla like 'SIS_CONTRATO'
+AND(es.NOMBRE like 'ACTIVO'
+OR Es.NOMBRE LIKE 'SUSPENDIDO IGSS'
+or es.NOMBRE like 'BAJA LICENCIA' 
+OR es.NOMBRE = 'BAJA ANEXO'
+OR es.NOMBRE = 'FINALIZADO'))
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="IdPuesto"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_PUESTO"
+      Expression="ID_PUESTO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nombre"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="200"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBRE"
+      Expression="NOMBRE"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="200" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="RegistroEmpleado"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="REGISTRO_EMPLEADO"
+      Expression="REGISTRO_EMPLEADO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

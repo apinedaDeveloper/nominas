@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel"
+                version="10.1.3.42.70" id="gestiones_anexos_autorizadosPageDef"
+                Package="interfaz_usuario.pageDefs">
+                
+<parameters/>
+  <executables>
+    <iterator id="sis_anexo1Iterator" RangeSize="50" Binds="sis_anexo1"
+              DataControl="QUERRYSDataControl">
+      <sortCriteria>
+        <sort attribute="IdAnexo" ascending="false"/>
+      </sortCriteria>
+    </iterator>
+    <variableIterator id="variables">
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="sis_anexo1.variablesMap.fechFinal"
+                     Name="sis_anexo1_fechFinal" IsQueriable="false"/>
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="sis_anexo1.variablesMap.fechInicio"
+                     Name="sis_anexo1_fechInicio" IsQueriable="false"/>
+      <variable Type="java.lang.String" Name="setCurrentRowWithKey_rowKey"
+                IsQueriable="false"/>
+      <variable Type="oracle.jbo.domain.Date" Name="paramFecha_fechaInicio"
+                IsQueriable="false"/>
+      <variable Type="oracle.jbo.domain.Date" Name="paramFecha_fechaFin"
+                IsQueriable="false"/>
+    </variableIterator>
+    <invokeAction Binds="anexo_autorizado" id="EjePrimConsulta"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+  </executables>
+  <bindings>
+    <table id="sis_anexo1" IterBinding="sis_anexo1Iterator">
+      <AttrNames>
+        <Item Value="IdAnexo"/>
+        <Item Value="Estatus"/>
+        <Item Value="CreadoPor"/>
+        <Item Value="IdTipoMovPlaza"/>
+        <Item Value="FechaCreacion"/>
+        <Item Value="IdDependencia"/>
+        <Item Value="NomTipoMovAlta"/>
+        <Item Value="Nomdependencia"/>
+        <Item Value="Nomestado"/>
+        <Item Value="Comentario"/>
+      </AttrNames>
+    </table>
+    <action id="setCurrentRowWithKey" IterBinding="sis_anexo1Iterator"
+            InstanceName="QUERRYSDataControl.sis_anexo1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="96">
+      <NamedData NDName="rowKey" NDValue="#{row.rowKeyStr}"
+                 NDType="java.lang.String"/>
+    </action>
+    <methodAction id="paramFecha" MethodName="paramFecha"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.sis_anexo1"
+                  IterBinding="sis_anexo1Iterator">
+      <NamedData NDName="fechaInicio"
+                 NDValue="${bindings.paramFecha_fechaInicio}"
+                 NDType="oracle.jbo.domain.Date"/>
+      <NamedData NDName="fechaFin" NDValue="${bindings.paramFecha_fechaFin}"
+                 NDType="oracle.jbo.domain.Date"/>
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="idAnexo" NDType="java.lang.String"/>
+    </methodAction>
+    <attributeValues id="fechaInicio" IterBinding="variables">
+      <AttrNames>
+        <Item Value="paramFecha_fechaInicio"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="fechaFin" IterBinding="variables">
+      <AttrNames>
+        <Item Value="paramFecha_fechaFin"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="sis_anexo1Iterator" id="anexo_autorizado"
+                  MethodName="anexo_autorizado" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.sis_anexo1">
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+    </methodAction>
+  </bindings>
+</pageDefinition>
+

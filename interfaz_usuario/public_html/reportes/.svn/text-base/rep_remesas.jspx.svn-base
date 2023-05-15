@@ -1,0 +1,957 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns="http://www.w3.org/1999/xhtml"
+          xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <f:view>
+    <afh:html>
+      <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+      <afh:head title="Reporte de Remesa">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+        <style type="text/css">
+      body {
+background-color: #ffffff; 
+}
+
+     
+    </style>
+      </afh:head>
+       <jsp:include page="/js/libJQ.js"/>       
+       <jsp:include page="/js/librariesDialog.js"/>           
+      <script type="text/javascript" src="/${flujo_usuario.dominioApp}/js/gestiones/scrptAutorizacion.js">
+      var xy=new Date().getMilliseconds();      
+      </script>
+      <afh:body>
+        <af:messages/>
+        <script language="javascript" type="text/javascript"> 
+        var globContador = 0;
+        var vCadena=[];
+        var opcionReporteIgss=0;
+        var vIdRemesa = 0;
+        var vclickDescarga = 0;
+        //comentario para pruebas
+        
+        function openNewWindow(idReporte,reporte,inicio,final){ 
+                window.open("../verreportepdf?id="+idReporte+String.fromCharCode(38)+"rep="+reporte+String.fromCharCode(38)+"fechainicio="+inicio+String.fromCharCode(38)+"fechafinal="+final,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+       } 
+
+        function mostrarreporte(ajuste){
+             var lista=document.getElementById('form1:pag:cmbReporte');
+             var indice=lista.selectedIndex;
+             var reporte = lista.options[indice].value;
+             
+             var lista=document.getElementById('form1:pag:txtFechainicio');
+             var inicio=lista.value;
+             
+             var lista=document.getElementById('form1:pag:txtFechafinal');
+             var final=lista.value;
+             
+             var vIdRem=document.getElementById('form1:pag:hdn_inptRemesa');
+
+            window.open("../verreportepdf?id="+ajuste+String.fromCharCode(38)+"rep="+reporte+String.fromCharCode(38)+"inicio="+inicio+String.fromCharCode(38)+"final="+final+String.fromCharCode(38)+"id2="+vIdRem.value,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+        }
+        
+        function mostrarreporteExcel(ajuste, tiporep){
+            var lista=document.getElementById('form1:pag:cmbReporte');
+            var indice=lista.selectedIndex;
+            var reporte = lista.options[indice].value;
+             
+            var lista=document.getElementById('form1:pag:txtFechainicio');
+            var inicio=lista.value;
+             
+            var lista=document.getElementById('form1:pag:txtFechafinal');
+            var final=lista.value;
+             
+            var vIdRem=document.getElementById('form1:pag:hdn_inptRemesa');
+
+            if(tiporep == 1){
+                window.open("../verreporteexcel?id="+ajuste+String.fromCharCode(38)+"rep="+reporte+String.fromCharCode(38)+"var1="+inicio+String.fromCharCode(38)+"var2="+final+String.fromCharCode(38)+"id2="+vIdRem.value,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+            }else{ //tiporep =2
+                window.open("../verreporteexcel?id=1"+String.fromCharCode(38)+"rep=REMESA_GENERAL_TEXTO_EXCEL_031"+String.fromCharCode(38)+"var1="+inicio+String.fromCharCode(38)+"var2="+final+String.fromCharCode(38)+"id2="+vIdRem.value,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+            }
+        }
+        
+        function reportePapComple(ajuste){
+             var lista=document.getElementById('form1:pag:cmbReporte');
+             var indice=lista.selectedIndex;
+             var reporte = lista.options[indice].value + "_C";
+             
+             var lista=document.getElementById('form1:pag:txtFechainicio');
+             var inicio=lista.value;
+             
+             var lista=document.getElementById('form1:pag:txtFechafinal');
+             var final=lista.value;
+             
+             var vIdRem=document.getElementById('form1:pag:hdn_inptRemesa');
+
+            window.open("../verreportepdf?id="+ajuste+String.fromCharCode(38)+"rep="+reporte+String.fromCharCode(38)+"inicio="+inicio+String.fromCharCode(38)+"final="+final+String.fromCharCode(38)+"id2="+vIdRem.value,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+        }
+        
+        function mostrarreporteTexto(ajuste, tiporep){
+        
+             var lista=document.getElementById('form1:pag:cmbReporteTex');
+             var indice=lista.selectedIndex;
+             var reporte = lista.options[indice].value;
+                
+             var lista=document.getElementById('form1:pag:txtFechainicio');
+             var inicio=lista.value;
+             
+             var lista=document.getElementById('form1:pag:txtFechafinal');
+             var final=lista.value;
+             
+             var vIdRem=document.getElementById('form1:pag:hdn_inptRemesa');
+
+             if(tiporep == 1){
+                 if(ajuste==null){
+                    window.open("../verreportex?id=-1"+String.fromCharCode(38)+"rep=REMESA_GENERAL_TEXTO"+String.fromCharCode(38)+"var1="+inicio+String.fromCharCode(38)+"var2="+final+String.fromCharCode(38)+"id2="+vIdRem.value,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+                 }
+                 else{
+                    window.open("../verreportex?id="+ajuste+String.fromCharCode(38)+"rep=REMESA_GENERAL_TEXTO"+String.fromCharCode(38)+"var1="+inicio+String.fromCharCode(38)+"var2="+final+String.fromCharCode(38)+"id2="+vIdRem.value,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+                 }
+            }else if(tiporep == 2){
+                //alert('Opcion  numero 2:= '+reporte);
+                window.open("../verreportex?id="+ajuste+String.fromCharCode(38)+"rep="+reporte+String.fromCharCode(38)+"var1="+inicio+String.fromCharCode(38)+"var2="+final+String.fromCharCode(38)+"id2="+vIdRem.value,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+            }
+            else { //tiporep = 3, ISR 031
+                window.open("../verreportex?id="+ajuste+String.fromCharCode(38)+"rep=REMESA_GENERAL_TEXTO_031"+String.fromCharCode(38)+"var1="+inicio+String.fromCharCode(38)+"var2="+final+String.fromCharCode(38)+"id2="+vIdRem.value,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+            }
+        }
+        
+        function reporteTextoComple(ajuste, tiporep){
+        
+             var lista=document.getElementById('form1:pag:cmbReporteTex');
+             var indice=lista.selectedIndex;
+             var reporte = lista.options[indice].value + "_C";
+                
+             var lista=document.getElementById('form1:pag:txtFechainicio');
+             var inicio=lista.value;
+             
+             var lista=document.getElementById('form1:pag:txtFechafinal');
+             var final=lista.value;
+             
+             var vIdRem=document.getElementById('form1:pag:hdn_inptRemesa');
+
+             if(tiporep == 1){
+                 if(ajuste==null){
+                    window.open("../verreportex?id=-1"+String.fromCharCode(38)+"rep=REMESA_GENERAL_TEXTO_C"+String.fromCharCode(38)+"var1="+inicio+String.fromCharCode(38)+"var2="+final+String.fromCharCode(38)+"id2="+vIdRem.value,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+                 }
+                 else{
+                    window.open("../verreportex?id="+ajuste+String.fromCharCode(38)+"rep=REMESA_GENERAL_TEXTO_C"+String.fromCharCode(38)+"var1="+inicio+String.fromCharCode(38)+"var2="+final+String.fromCharCode(38)+"id2="+vIdRem.value,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+                 }
+            }
+            else{
+                window.open("../verreportex?id="+ajuste+String.fromCharCode(38)+"rep="+reporte+String.fromCharCode(38)+"var1="+inicio+String.fromCharCode(38)+"var2="+final+String.fromCharCode(38)+"id2="+vIdRem.value,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+            }
+        }
+        
+        
+       function genReporteExcelPlan(){ 
+       
+             var lista=document.getElementById('form1:pag:txtFechainicio');
+             var inicio=lista.value;
+             
+             var lista=document.getElementById('form1:pag:txtFechafinal');
+             var final=lista.value;
+             
+             var vIdRem=document.getElementById('form1:pag:hdn_inptRemesa');
+       
+             window.open("../verreporteexcel?id="+vIdRem.value+String.fromCharCode(38)+"rep=REP_INTEGRACION_PLAN_REM"+String.fromCharCode(38)+"var1="+inicio+String.fromCharCode(38)+"var2="+final,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO"); 
+       } 
+        
+        
+        
+        // ARCHIVO CARGA PLANILLA IGSS
+        function genReporteIGSS(){ 
+            var vIdRem=document.getElementById('form1:pag:hdn_inptRemesa').value;
+            
+            var lista=document.getElementById('form1:pag:txtFechafinal');
+            var final=lista.value;
+            var vector = final.split("/");
+            var anio = vector[2];
+                        
+            var vPeriodo=document.getElementById('form1:pag:hdn_inptPeriodo').value;
+            if(vPeriodo > 9){
+                //vPeriodo = 0+''+vPeriodo;
+            }
+            else{
+                vPeriodo = 0+''+vPeriodo;
+            }
+            
+            vFechaInicio = '01/'+vPeriodo+'/'+anio;
+            vFechaFin = dias(vPeriodo,anio)+'/'+vPeriodo+'/'+anio;            
+            window.open("../verreportex?id="+vIdRem+String.fromCharCode(38)+"rep="+"PLANILLA_IGSS"+String.fromCharCode(38)+"var1="+vFechaInicio+String.fromCharCode(38)+"var2="+vFechaFin+String.fromCharCode(38)+"id2="+vPeriodo,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1");             
+        }
+        
+        //PLANILLA IGSS TEXTO
+        function genRepIGSStext(){ 
+            var vIdRem=document.getElementById('form1:pag:hdn_inptRemesa').value;
+            
+            var lista=document.getElementById('form1:pag:txtFechafinal');
+            var final=lista.value;
+            var vector = final.split("/");
+            var anio = vector[2];
+                        
+            var vPeriodo=document.getElementById('form1:pag:hdn_inptPeriodo').value;
+            if(vPeriodo > 9){
+                //vPeriodo = 0+''+vPeriodo;
+            }
+            else{
+                vPeriodo = 0+''+vPeriodo;
+            }
+            
+            vFechaInicio = '01/'+vPeriodo+'/'+anio;
+            vFechaFin = dias(vPeriodo,anio)+'/'+vPeriodo+'/'+anio;
+            //alert(vFechaInicio+' '+vFechaFin);
+            window.open("../verreportex?id="+vIdRem+String.fromCharCode(38)+"rep="+"REMESA_PLANILLA_IGSS"+String.fromCharCode(38)+"var1="+vFechaInicio+String.fromCharCode(38)+"var2="+vFechaFin+String.fromCharCode(38)+"id2="+vPeriodo,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1");             
+        }
+       
+       
+        // Planilla IGSS PDF
+        function genReportePlanillaIGSSPdf(){
+            var vIdRem=document.getElementById('form1:pag:hdn_inptRemesa').value
+            window.open("../verreportepdf?id="+vIdRem+String.fromCharCode(38)+"rep=REMESA_PLANILLA_IGSS","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+        }
+        
+        
+        // REPORTES DE COMPLEMENTARIAS
+        
+        
+        
+        //REMESA COMPLEMENTARIAS IGSS texto
+        function reportePlanillaIgssComple(){                
+            //window.open("../verreportex?id="+vIdRem+String.fromCharCode(38)+"rep="+"REMESA_PLANILLA_IGSS_COMP","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1");
+            opcionReporteIgss = 1;
+            return genReporteComplementariaIGSS();
+        }
+                
+        //REMESA COMPLEMENTARIAS IGSS pdf
+        function genReportePlanillaIGSSCompPdf(){           
+            opcionReporteIgss = 2; 
+            return genReporteComplementariaIGSS();
+        }
+        
+        //ARCHIVOS CARGA COMPLEMENTARIAS IGSS
+        function genReporteComplementariaIGSS(){
+            var vIdRem=document.getElementById('form1:pag:hdn_inptRemesa').value                       
+            $.getJSON('/Nomina/faces/consuljson?codop=13'+String.fromCharCode(38)+'var1='+vIdRem+String.fromCharCode(38)+"var2="+opcionReporteIgss, function(json){
+                if (json!=null){  
+                    if (json.length>0){                
+                        var respuesta = json[0].respuesta;
+                        vCadena=respuesta.split(",");
+                        
+                        globContador=vCadena.length;                        
+                        if(globContador>0){
+                            globContador--;
+                            var valor = vCadena[globContador].split(";");                            
+                            if(opcionReporteIgss == 0){
+                                window.open("../verreportex?id="+vIdRem+String.fromCharCode(38)+"var1="+valor[0]+String.fromCharCode(38)+String.fromCharCode(38)+"var2="+valor[1]+String.fromCharCode(38)+"rep=PLANILLA_COMP_IGSS","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1");
+                                setTimeout('reportes()', 20000);
+                            }
+                            else{
+                                if (opcionReporteIgss == 1){
+                                    window.open("../verreportex?id="+vIdRem+String.fromCharCode(38)+"var1="+valor[0]+String.fromCharCode(38)+String.fromCharCode(38)+"var2="+valor[1]+String.fromCharCode(38)+"rep="+"REMESA_PLANILLA_IGSS_COMP","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1");
+                                    setTimeout('reportes()', 15000);
+                                }
+                                else{
+                                    if (opcionReporteIgss == 2){
+                                        alert("../verreportepdf?id="+vIdRem+String.fromCharCode(38)+"var1="+valor[0]+String.fromCharCode(38)+String.fromCharCode(38)+"var2="+valor[1]+String.fromCharCode(38)+"rep=REMESA_PLANILLA_IGSS_COMP","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1");
+                                        window.open("../verreportepdf?id="+vIdRem+String.fromCharCode(38)+"var1="+valor[0]+String.fromCharCode(38)+String.fromCharCode(38)+"var2="+valor[1]+String.fromCharCode(38)+"rep=REMESA_PLANILLA_IGSS_COMP","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+                                        setTimeout('reportes()', 15000);
+                                    }
+                                }
+                            }
+                        }
+                        
+                        
+                    }
+                    else{
+                        alert('Hubo un error, contacte al administrador del sistema');
+                    }
+                }
+                
+            });
+           return false; 
+        }
+        
+        function genCargaIGSSCompl(pTipoCarga){
+            var vIdRem=document.getElementById('form1:pag:hdn_inptRemesa').value                       
+            var vIdRempmt =document.getElementById('form1:pag:linkOutput') ;
+            var cmdIdRempmt =document.getElementById('form1:pag:cmdCargaIGSSCompl') ;             
+            var cmdIdRempmtf =document.getElementById('form1:pag:cmdCargaIGSSComplFisica') ;         
+        
+            document.getElementById('form1:pag:pnlCarga').style.visibility="visible";  
+            $.getJSON('/Nomina/faces/consuljson?codop=11'+String.fromCharCode(38)+'var1='+vIdRem+String.fromCharCode(38)+'var2='+pTipoCarga+String.fromCharCode(38), function(json){
+                if (json!=null){  
+                    if (json.length>0){                     
+                        var respuesta = json[0].respuesta;
+                        if (respuesta != "error"){
+                            vIdRempmt.href = "reportes_texto/" + respuesta;
+                            if (pTipoCarga == 0)
+                                cmdIdRempmt.style.display = 'none';
+                            else
+                                cmdIdRempmtf.style.display = 'none';
+                                
+                            vIdRempmt.style.display = 'block';
+                            
+                            document.getElementById('form1:pag:pnlCarga').style.visibility="hidden";
+                    
+                            alert('Descargar el archivo');
+                            vIdRemesa = vIdRem;
+                        }else{
+                            alert('Error: Revisar número de Remesa.');
+                            document.getElementById('form1:pag:pnlCarga').style.visibility="hidden";
+                        }
+                    }
+                    else{
+                        alert('Hubo un error, contacte al administrador del sistema');
+                        document.getElementById('form1:pag:pnlCarga').style.visibility="hidden";
+                    }
+                }
+                    
+            }); 
+            
+           return false; 
+        }
+        
+        function genCargaIGSSComplTXT(pTipoCarga){
+            var vIdRem=document.getElementById('form1:pag:hdn_inptRemesa').value                       
+            var vIdRempmt =document.getElementById('form1:pag:linkOutput2') ;
+            var cmdIdRempmt =document.getElementById('form1:pag:cmdCargaIGSSCompl2') ;                 
+        
+            document.getElementById('form1:pag:pnlCarga').style.visibility="visible";  
+            $.getJSON('/Nomina/faces/consuljson?codop=7'+String.fromCharCode(38)+'var1='+vIdRem+String.fromCharCode(38)+'var2='+pTipoCarga+String.fromCharCode(38), function(json){
+                if (json!=null){  
+                    if (json.length>0){                     
+                        var respuesta = json[0].respuesta;
+                        if (respuesta != "error"){
+                            vIdRempmt.href = "reportes_texto/" + respuesta;
+                            if (pTipoCarga == 0)
+                                cmdIdRempmt.style.display = 'none'; 
+                                
+                            vIdRempmt.style.display = 'block';
+                            
+                            document.getElementById('form1:pag:pnlCarga').style.visibility="hidden";
+                    
+                            alert('Descargar el archivo');
+                            vIdRemesa = vIdRem;
+                        }else{
+                            alert('Error: Revisar número de Remesa.');
+                            document.getElementById('form1:pag:pnlCarga').style.visibility="hidden";
+                        }
+                    }
+                    else{
+                        alert('Hubo un error, contacte al administrador del sistema');
+                        document.getElementById('form1:pag:pnlCarga').style.visibility="hidden";
+                    }
+                }
+                    
+            }); 
+            
+           return false; 
+        }
+        
+        function genCargaIGSSComplPDF(pTipoCarga){
+            var vIdRem=document.getElementById('form1:pag:hdn_inptRemesa').value                       
+            var vIdRempmt =document.getElementById('form1:pag:outputLink3') ;
+            var cmdIdRempmt =document.getElementById('form1:pag:cmdCargaIGSSCompl3') ;                 
+        
+            document.getElementById('form1:pag:pnlCarga').style.visibility="visible";  
+            $.getJSON('/Nomina/faces/consuljson?codop=7'+String.fromCharCode(38)+'var1='+vIdRem+String.fromCharCode(38)+'var2='+pTipoCarga+String.fromCharCode(38), function(json){
+                if (json!=null){  
+                    if (json.length>0){                     
+                        var respuesta = json[0].respuesta;
+                        if (respuesta != "error"){
+                            vIdRempmt.href = "reportes_texto/" + respuesta;
+                            if (pTipoCarga == 0)
+                                cmdIdRempmt.style.display = 'none'; 
+                                
+                            vIdRempmt.style.display = 'block';
+                            
+                            document.getElementById('form1:pag:pnlCarga').style.visibility="hidden";
+                    
+                            alert('Descargar el archivo');
+                            vIdRemesa = vIdRem;
+                        }else{
+                            alert('Error: Revisar número de Remesa.');
+                            document.getElementById('form1:pag:pnlCarga').style.visibility="hidden";
+                        }
+                    }
+                    else{
+                        alert('Hubo un error, contacte al administrador del sistema');
+                        document.getElementById('form1:pag:pnlCarga').style.visibility="hidden";
+                    }
+                }
+                    
+            }); 
+            
+           return false; 
+        }
+        
+        function dioClick(){
+            vclickDescarga = 1;
+        }
+        
+         function descargar_igssCompl(){
+            if ( vclickDescarga == 1){
+                var vIdRempmt =document.getElementById('form1:pag:linkOutput') ;
+                var cmdIdRempmt =document.getElementById('form1:pag:cmdCargaIGSSCompl') ;
+                var cmdIdRempmtf =document.getElementById('form1:pag:cmdCargaIGSSComplFisica') ;
+                
+             
+                $.getJSON('/Nomina/faces/consuljson?codop=12'+String.fromCharCode(38)+'var1='+vIdRemesa+String.fromCharCode(38), function(json){
+                    if (json!=null){  
+                        if (json.length>0){                
+                            var respuesta = json[0].respuesta; 
+                            cmdIdRempmt.style.display = 'block'; 
+                            vIdRempmt.style.display = 'none';
+                            
+                            /* if (respuesta = "1"){
+                                alert('El archivo fue descargado');
+                            }else{
+                                alert('Hubo un error, contacte al administrador del sistema');
+                            }*/
+                        }
+                        else{
+                            alert('Hubo un error, contacte al administrador del sistema');
+                        }
+                    }
+                    
+                });
+                vclickDescarga = 0;
+            }
+           return false; 
+         }
+         
+          function descargar_igssComplTXT(){
+            if ( vclickDescarga == 1){
+                var vIdRempmt =document.getElementById('form1:pag:linkOutput2') ;
+                var cmdIdRempmt =document.getElementById('form1:pag:cmdCargaIGSSCompl2') ;   
+             
+                $.getJSON('/Nomina/faces/consuljson?codop=12'+String.fromCharCode(38)+'var1='+vIdRemesa+String.fromCharCode(38), function(json){
+                    if (json!=null){  
+                        if (json.length>0){                
+                            var respuesta = json[0].respuesta; 
+                            cmdIdRempmt.style.display = 'block'; 
+                            vIdRempmt.style.display = 'none'; 
+                        }
+                        else{
+                            alert('Hubo un error, contacte al administrador del sistema');
+                        }
+                    }
+                    
+                });
+                vclickDescarga = 0;
+            }
+           return false; 
+         }
+         
+         function descargar_igssComplPDF(){
+            if ( vclickDescarga == 1){
+                var vIdRempmt =document.getElementById('form1:pag:outputLink3') ;
+                var cmdIdRempmt =document.getElementById('form1:pag:cmdCargaIGSSCompl3') ;   
+             
+                $.getJSON('/Nomina/faces/consuljson?codop=12'+String.fromCharCode(38)+'var1='+vIdRemesa+String.fromCharCode(38), function(json){
+                    if (json!=null){  
+                        if (json.length>0){                
+                            var respuesta = json[0].respuesta; 
+                            cmdIdRempmt.style.display = 'block'; 
+                            vIdRempmt.style.display = 'none'; 
+                        }
+                        else{
+                            alert('Hubo un error, contacte al administrador del sistema');
+                        }
+                    }
+                    
+                });
+                vclickDescarga = 0;
+            }
+           return false; 
+         }
+                
+        function reportes(){    
+            
+             alert("Reporte Listo");
+            
+            if(globContador > 0){
+                globContador--;
+                var vIdRem=document.getElementById('form1:pag:hdn_inptRemesa').value
+                var valor = vCadena[globContador].split(";");                            
+                //window.open("../verreportex?id="+vIdRem+String.fromCharCode(38)+"var1="+valor[0]+String.fromCharCode(38)+String.fromCharCode(38)+"var2="+valor[1]+String.fromCharCode(38)+"rep=PLANILLA_COMP_IGSS","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1");
+                if(opcionReporteIgss == 0){
+                    window.open("../verreportex?id="+vIdRem+String.fromCharCode(38)+"var1="+valor[0]+String.fromCharCode(38)+String.fromCharCode(38)+"var2="+valor[1]+String.fromCharCode(38)+"rep=PLANILLA_COMP_IGSS","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1");
+                    setTimeout('reportes()', 20000);
+                }
+                else{
+                    if (opcionReporteIgss == 1){
+                        window.open("../verreportex?id="+vIdRem+String.fromCharCode(38)+"var1="+valor[0]+String.fromCharCode(38)+String.fromCharCode(38)+"var2="+valor[1]+String.fromCharCode(38)+"rep="+"REMESA_PLANILLA_IGSS_COMP","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1");
+                        setTimeout('reportes()', 15000);
+                    }
+                    else{
+                        if (opcionReporteIgss == 2){
+                            window.open("../verreportepdf?id="+vIdRem+String.fromCharCode(38)+"var1="+valor[0]+String.fromCharCode(38)+String.fromCharCode(38)+"var2="+valor[1]+String.fromCharCode(38)+"rep=REMESA_PLANILLA_IGSS_COMP","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+                            setTimeout('reportes()', 15000);
+                        }
+                    }
+                }
+                
+            }
+            else{
+                alert("Proceso Finalizado");
+            }
+                                    
+        }
+        
+        
+       //  funcion que calcula el ultimo dia del mes
+        function dias(mes, anno) {
+            if (mes.charAt(0) == '0'){
+                mes = mes.charAt(1);
+            }
+                mes = parseInt(mes);
+                anno = parseInt(anno);
+            switch (mes) {
+                case 1 : case 3 : case 5 : case 7 : case 8 : case 10 : case 12 : return 31;
+                case 2 : return (anno % 4 == 0) ? 29 : 28;
+            }
+            return 30;
+        }
+        //fin cambio planilla igss
+      </script> 
+        
+      
+        <h:form id="form1">
+        
+          <af:page value="#{modeloMenu.modeloBD}" var="node" id="pag">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+          <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelHorizontal halign="center">
+              <af:panelBox width="500" id="pnlBasico">
+                <af:showOneTab>
+                  <af:showDetailItem text="Reportes">
+                    <af:panelForm maxColumns="2" rows="6"
+                                  partialTriggers="tbl_listado">
+                      <f:facet name="footer"/>
+                      <af:selectOneChoice label="Tipo de Reporte"
+                                          id="cmbReporte" valuePassThru="true"
+                                          value="REMESA_GENERAL">
+                        <!--               
+                    <af:selectItem label="Detalle Documentos Anulados para Conta"
+                                   value="DOCUMENTOS_ANULADOS"/>
+                    <af:selectItem label="Detalle Documentos Anulados por Partida"
+                                   value="DOCUMENTOS_ANULADOS_PARTIDA"/>
+                    -->
+                        <af:selectItem label="Detalle Remesa"
+                                       value="REMESA_GENERAL"/>
+                        <af:selectItem label="Detalle Remesa Regimen Especial"
+                                       value="REMESA_GENERAL_AUTO"/>
+                        <af:selectItem label="Detalle Remesa IGSS Mes Actual"
+                                       value="REMESA_GENERAL_IGSS_MES_ACTUAL"/>
+                        <af:selectItem label="Resumen Remesa"
+                                       value="CUADRE_REMESA"/>
+                        <af:selectItem label="Anulados Mes Actual"
+                                       value="ANULADOS_MES_ACTUAL"/>
+                        <af:selectItem label="Anulados Mes Actual Regimen Especial"
+                                       value="ANULADOS_MES_ACTUAL_AUTO"/>  
+                        <af:selectItem label="Anulados Meses Anteriores"
+                                       value="ANULADOS_MESES_ANTERIORES"/>
+                        <af:selectItem label="Anulados Meses Anteriores Regimen Especial"
+                                       value="ANULADOS_MESES_ANTERIORES_AUTO"/>
+                        <af:selectItem label="Anulados Años Anteriores"
+                                       value="ANULADOS_ANIOS_ANTERIORES"/>
+                        <af:selectItem label="Anulados Años Anteriores Regimen Especial"
+                                       value="ANULADOS_ANIOS_ANTERIORES_AUTO"/>
+                        <af:selectItem label="Resumen Anulados Mes Actual"
+                                       value="RESUMEN_ANULADOS_MES_ACTUAL"/>
+                        <af:selectItem label="Resumen Anulados Meses Anteriores"
+                                       value="RESUMEN_ANULADOS_MESES_ANTERIORES"/>
+                        <af:selectItem label="Resumen Anulados Años Anteriores"
+                                       value="RESUMEN_ANULADOS_ANIOS_ANTERIORES"/>
+                        <af:selectItem label="Resumen Anulados IGSS Mes Actual"
+                                       value="RESUMEN_ANULADOS_IGSS_MES_ACTUAL"/>
+                        <af:selectItem label="Resumen Anulados IGSS Meses Anteriores"
+                                       value="RESUMEN_ANULADOS_IGSS_MESES_ANTERIORES"/>
+                        <af:selectItem label="Resumen Anulados IGSS Años Anteriores"
+                                       value="RESUMEN_ANULADOS_IGSS_ANIOS_ANTERIORES"/>
+                        <af:selectItem label="Resumen Descuentos IGSS"
+                                       value="RESUMEN_DESCUENTOS_IGSS"/>
+                        <af:selectItem label="Detalle Resumen Descuentos IGSS porcentaje OTROS"
+                                       value="DET_RESUMEN_DESCUENTOS_IGSS_OTROS"/>
+                        <af:selectItem label="Reporte de descuentos IGSS de cheques nulos con porcentaje OTROS Mes Actual"
+                                       value="DET_ANULADOS_IGSS_PORCE_OTROS_MES_ACTUAL"/>
+                        <af:selectItem label="Reporte de descuentos IGSS de cheques nulos con porcentaje OTROS Meses Anteriores"
+                                       value="DET_ANULADOS_IGSS_PORCE_OTROS_MESES_ANTERIORES"/>
+                        <af:selectItem label="Reporte de descuentos IGSS de cheques nulos con porcentaje OTROS Años Anteriores"
+                                       value="DET_ANULADOS_IGSS_PORCE_OTROS_ANIOS_ANTERIORES"/>
+                        <af:selectItem label="Resumen Anulados PLAN DE PRESTACIONES Mes Actual"
+                                       value="RESUMEN_ANULADOS_PLAN_MES_ACTUAL"/>
+                        <af:selectItem label="Resumen Anulados PLAN DE PRESTACIONES Meses Anteriores"
+                                       value="RESUMEN_ANULADOS_PLAN_MESES_ANTERIORES"/>
+                        <af:selectItem label="Resumen Anulados PLAN DE PRESTACIONES Años Anteriores"
+                                       value="RESUMEN_ANULADOS_PLAN_ANIOS_ANTERIORES"/>
+                        <af:selectItem label="Resumen Descuentos PLAN DE PRESTACIONES"
+                                       value="RESUMEN_DESCUENTOS_PLAN"/>
+                        <af:selectItem label="Detalle Resumen Descuentos PLAN DE PRESTACIONES porcentaje OTROS"
+                                       value="DET_RESUMEN_DESCUENTOS_PLAN_OTROS"/>
+                        <af:selectItem label="Reporte de descuentos PLAN DE PRESTACIONES de cheques nulos con porcentaje OTROS Mes Actual"
+                                       value="DET_ANULADOS_PLAN_PORCE_OTROS_MES_ACTUAL"/>
+                        <af:selectItem label="Reporte de descuentos PLAN DE PRESTACIONES de cheques nulos con porcentaje OTROS Meses Anteriores"
+                                       value="DET_ANULADOS_PLAN_PORCE_OTROS_MESES_ANTERIORES"/>
+                        <af:selectItem label="Reporte de descuentos PLAN DE PRESTACIONES de cheques nulos con porcentaje OTROS Años Anteriores"
+                                       value="DET_ANULADOS_PLAN_PORCE_OTROS_ANIOS_ANTERIORES"/>
+                        <af:selectItem label="Poliza remesa"
+                                       value="POLIZA_REMESA"/>
+                        <af:selectItem label="Gráfica de Flujo de Efectivo"
+                                       value="FLUJO_EFECTIVO"/>
+                        <af:selectItem label="Gráfica de Flujo de Documentos"
+                                       value="FLUJO_DOCUMENTOS"/>
+                        <af:selectItem label="Detalle Remesa por Otras Rentas de Trabajo ( GASTOS DE REPRESENTACION )"
+                                       value="GASTOS_DE_REPRESENTACION"/>
+                        <af:selectItem label="Detalle Remesa por Otras Rentas de Trabajo ( VIATICOS )"
+                                       value="VIATICOS"/>
+                        <af:selectItem label="Detalle Remesa por Otras Rentas de Trabajo ( HONORARIOS )"
+                                       value="HONORARIOS"/>
+                        <af:selectItem label="Detalle Remesa por Otras Rentas de Trabajo ( BONO INCENTIVO )"
+                                       value="BONO_INCENTIVO"/>
+                      </af:selectOneChoice>
+                      <af:selectOneChoice label="Tipo de Ajuste"
+                                          value="#{bindings.Nombre.inputValue}"
+                                          id="cmbAjuste" autoSubmit="true">
+                        <f:selectItems value="#{bindings.Nombre.items}"/>
+                      </af:selectOneChoice>
+                      <af:selectInputDate label="Fecha Inicial"
+                                          id="txtFechainicio"
+                                          value="#{bindings.FechaInicio.inputValue}"
+                                          readOnly="false">
+                        <af:convertDateTime dateStyle="dd/MM/yyyy"
+                                            pattern="dd/MM/yyyy"/>
+                      </af:selectInputDate>
+                      <af:selectInputDate label="Fecha Final" id="txtFechafinal"
+                                          value="#{bindings.FechaFin.inputValue}">
+                        <af:convertDateTime pattern="dd/MM/yyyy"
+                                            dateStyle="dd/MM/yyyy"/>
+                      </af:selectInputDate>
+                      <af:inputHidden id="hdn_inptRemesa"
+                                      value="#{bindings.IdRemesa.inputValue}"/>
+                      <af:inputHidden id="hdn_inptPeriodo"
+                                      value="#{bindings.Periodo.inputValue}"/>                                      
+                      <af:panelLabelAndMessage label="Id Remesa">
+                        <af:outputText value="#{bindings.IdRemesa.inputValue}"/>
+                      </af:panelLabelAndMessage>
+                    </af:panelForm>
+                    <af:table value="#{bindings['Sis_remesa_vw'].collectionModel}"
+                              var="row"
+                              rows="#{bindings['Sis_remesa_vw'].rangeSize}"
+                              first="#{bindings['Sis_remesa_vw'].rangeStart}"
+                              emptyText="#{bindings['Sis_remesa_vw'].viewable ? 'No rows yet.' : 'Access Denied.'}"
+                              selectionState="#{bindings['Sis_remesa_vw'].collectionModel.selectedRow}"
+                              selectionListener="#{bindings['Sis_remesa_vw'].collectionModel.makeCurrent}"
+                              banding="row" bandingInterval="1"
+                              id="tbl_listado">
+                      <f:facet name="selection">
+                        <af:tableSelectOne disabled="false" autoSubmit="true"/>
+                      </f:facet>
+                      <af:column sortProperty="IdRemesa" sortable="false"
+                                 headerText="#{bindings['Sis_remesa_vw'].labels.IdRemesa}">
+                        <af:outputText value="#{row.IdRemesa}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['Sis_remesa_vw'].formats.IdRemesa}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortable="false" headerText="Periodo">
+                        <af:outputText value="#{row.Periodo} - #{row.Nomperiodo}"/>
+                      </af:column>
+                      <af:column sortProperty="FechaInicio" sortable="false"
+                                 headerText="#{bindings['Sis_remesa_vw'].labels.FechaInicio}">
+                        <af:outputText value="#{row.FechaInicio}">
+                          <f:convertDateTime pattern="#{bindings['Sis_remesa_vw'].formats.FechaInicio}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="FechaFin" sortable="false"
+                                 headerText="#{bindings['Sis_remesa_vw'].labels.FechaFin}">
+                        <af:outputText value="#{row.FechaFin}">
+                          <f:convertDateTime pattern="#{bindings['Sis_remesa_vw'].formats.FechaFin}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Observaciones" sortable="false"
+                                 headerText="#{bindings['Sis_remesa_vw'].labels.Observaciones}">
+                        <af:outputText value="#{row.Observaciones}"/>
+                      </af:column>
+                      <af:column sortProperty="CreadoPor" sortable="false"
+                                 headerText="#{bindings['Sis_remesa_vw'].labels.CreadoPor}">
+                        <af:outputText value="#{row.CreadoPor}"/>
+                      </af:column>
+                      <af:column sortProperty="FechaCreacion" sortable="false"
+                                 headerText="#{bindings['Sis_remesa_vw'].labels.FechaCreacion}">
+                        <af:outputText value="#{row.FechaCreacion}">
+                          <f:convertDateTime pattern="#{bindings['Sis_remesa_vw'].formats.FechaCreacion}"/>
+                        </af:outputText>
+                      </af:column>
+                      <f:facet name="actions"/>
+                    </af:table>
+                    <af:objectSpacer width="10" height="10"/>
+                    <af:panelButtonBar>
+                      <af:commandButton text="Generar Reporte"
+                                        onclick="javascript:mostrarreporte(#{bindings.IdAjuste.inputValue})"
+                                        partialSubmit="false"
+                                        partialTriggers="cmbAjuste"/>
+                      <af:commandButton text="Generar Reporte (Excel)"
+                                        onclick="javascript:mostrarreporteExcel(#{bindings.IdAjuste.inputValue},1)"
+                                        partialSubmit="false"
+                                        partialTriggers="cmbAjuste"/>
+                      <af:commandButton text="Detalle Remesa (Texto)"
+                                        onclick="javascript:mostrarreporteTexto(#{bindings.IdAjuste.inputValue},1)"
+                                        partialSubmit="false"
+                                        partialTriggers="cmbAjuste"
+                                        rendered="#{roles_usuario.operadorCaja || roles_usuario.profesionalCaja || roles_usuario.administrador}"/>
+                      <af:commandButton text="Detalle Remesa General (Texto)"
+                                        onclick="javascript:mostrarreporteTexto(null,1)"
+                                        partialSubmit="false"
+                                        rendered="#{roles_usuario.operadorCaja || roles_usuario.profesionalCaja || roles_usuario.administrador}"
+                                        partialTriggers="cmbAjuste"/>
+                      <af:commandButton text="Excel Integración Plan"
+                                        rendered="#{roles_usuario.operadorCaja || roles_usuario.profesionalCaja || roles_usuario.administrador}"
+                                        onclick="genReporteExcelPlan();"/>
+                      <af:commandButton text="Carga Planilla IGSS"
+                                        onclick="genReporteIGSS();"/>
+                      <af:commandButton text="Carga Planilla IGSS Complementaria"
+                                        onclick="return genCargaIGSSCompl(0);"
+                                        id="cmdCargaIGSSCompl"/>
+                      <h:outputLink id="linkOutput" rendered="true"
+                                    onmouseout="descargar_igssCompl();"
+                                    style="display:none;" onclick="dioClick();">
+                        <h:outputText value="Descargar Planilla IGSS Complementaria"/>
+                      </h:outputLink>
+                      <af:commandButton text="Carga Planilla IGSS Complementaria Fisica"
+                                        onclick="return genCargaIGSSCompl(1);"
+                                        id="cmdCargaIGSSComplFisica"/>
+                      <af:commandButton text="Reporte Planilla IGSS"
+                                        onclick="genReportePlanillaIGSSPdf();"/>
+                      <af:commandButton text="ReportePlanilla IGSS Complementaria"
+                                        onclick="return genCargaIGSSComplPDF(2);"
+                                        id="cmdCargaIGSSCompl3"/>
+                      <h:outputLink id="outputLink3" rendered="true"
+                                    onmouseout="descargar_igssComplPDF();"
+                                    style="display:none;" onclick="dioClick();">
+                        <h:outputText value="Descargar Planilla IGSS Complementaria"/>
+                      </h:outputLink>
+                      <af:commandButton text="Reporte Planilla IGSS Complementaria Papel"
+                                        onclick="javascript:reportePapComple(#{bindings.IdAjuste.inputValue})"
+                                        partialTriggers="cmbAjuste"/>
+                      <af:commandButton text="Remesa ISR 031 (Excel)"
+                                        onclick="javascript:mostrarreporteExcel(#{bindings.IdAjuste.inputValue},2)"
+                                        partialTriggers="cmbAjuste"
+                                        id="btnReporteTexto031Excel"/>
+                    </af:panelButtonBar>
+                    <af:panelHeader text="Reportes de texto"
+                                    rendered="#{roles_usuario.operadorCaja || roles_usuario.profesionalCaja || roles_usuario.administrador}">
+                      <af:panelForm>
+                        <f:facet name="footer"/>
+                        <af:panelHorizontal>
+                          <af:selectOneChoice label="Tipo Reporte"
+                                              id="cmbReporteTex"
+                                              valuePassThru="true"
+                                              value="REMESA_GENERAL_TEXTO">
+                            <af:selectItem label="Detalle remesa"
+                                           value="REMESA_GENERAL_TEXTO"/>
+                            <af:selectItem label="Detalle remesa 4.1"
+                                           value="REMESA_DETALLE_TEXTO_41"/>
+                            <af:selectItem label="Detalle remesa 4.5"
+                                           value="REMESA_DETALLE_TEXTO_45"/>
+                            <af:selectItem label="Anulados mes actual"
+                                           value="ANUL_MES_ACTUAL"/>
+                            <af:selectItem label="Anulados meses anteriores"
+                                           value="ANUL_MES_ANT"/>
+                            <af:selectItem label="Anulados años anteriores"
+                                           value="ANUL_ANIO_ANT"/>
+                            <af:selectItem label="Poliza remesa"
+                                           value="POLIZA_REMESA"/>
+                            <af:selectItem label="Poliza cheques anulados mes actual"
+                                           value="POLIZA_CH_NULOS_MAC"/>
+                            <af:selectItem label="Poliza bono cheques anulados mes actual"
+                                           value="POLIZA_BONO_CH_NULOS_MAC"/>
+                            <af:selectItem label="Poliza cheques anulados meses anteriores"
+                                           value="POLIZA_CH_NULOS_MAN"/>
+                            <af:selectItem label="Poliza bono cheques anulados meses anteriores"
+                                           value="POLIZA_BONO_CH_NULOS_MAN"/>
+                            <af:selectItem label="Poliza cheques anulados años anteriores"
+                                           value="POLIZA_CH_NULOS_AA"/>
+                            <af:selectItem label="Poliza bono cheques anulados años anteriores"
+                                           value="POLIZA_BONO_CH_NULOS_AA"/>
+                            <af:selectItem label="Poliza boletas anuladas mes actual"
+                                           value="POLIZA_BOL_NULOS_MAC"/>
+                            <af:selectItem label="Poliza bono boletas anuladas mes actual"
+                                           value="POLIZA_BONO_BOL_NULOS_MAC"/>
+                            <af:selectItem label="Poliza boletas anuladas meses anteriores"
+                                           value="POLIZA_BOL_NULOS_MAN"/>
+                            <af:selectItem label="Poliza bono boletas anuladas meses anteriores"
+                                           value="POLIZA_BONO_BOL_NULOS_MAN"/>
+                            <af:selectItem label="Poliza boletas anuladas años anteriores"
+                                           value="POLIZA_BOL_NULOS_AA"/>
+                            <af:selectItem label="Poliza bono boletas anuladas años anteriores"
+                                           value="POLIZA_BONO_BOL_NULOS_AA"/>
+                            <af:selectItem label="Detalle Documentos Anulados para Conta (Mes actual)"
+                                           value="DOCUMENTOS_ANULADOS_MAC"/>
+                            <af:selectItem label="Detalle Documentos Anulados para Conta (Meses anteriores)"
+                                           value="DOCUMENTOS_ANULADOS_MAN"/>
+                            <af:selectItem label="Detalle Documentos Anulados para Conta (Años anteriores)"
+                                           value="DOCUMENTOS_ANULADOS_AA"/>
+                            <af:selectItem label="Detalle Documentos Anulados por Partida (Mes actual)"
+                                           value="DOCUMENTOS_ANULADOS_PARTIDA_MAC"/>
+                            <af:selectItem label="Detalle Documentos Anulados por Partida (Meses anteriores)"
+                                           value="DOCUMENTOS_ANULADOS_PARTIDA_MAN"/>
+                            <af:selectItem label="Detalle Documentos Anulados por Partida (Años anteriores)"
+                                           value="DOCUMENTOS_ANULADOS_PARTIDA_AA"/>
+                            <af:selectItem label="Detalle Remesa por Otras Rentas de Trabajo ( GASTOS DE REPRESENTACION  )"
+                                           value="GASTOS_DE_REPRESENTACION"/>
+                            <af:selectItem label="Detalle Remesa por Otras Rentas de Trabajo ( VIATICOS  )"
+                                           value="VIATICOS"/>
+                            <af:selectItem label="Detalle Remesa por Otras Rentas de Trabajo ( HONORARIOS  )"
+                                           value="HONORARIOS"/>
+                            <af:selectItem label="Detalle Remesa por Otras Rentas de Trabajo ( BONO INCENTIVO  )"
+                                           value="BONO_INCENTIVO"/>
+                          </af:selectOneChoice>
+                          <af:panelButtonBar>
+                            <af:commandButton text="Generar Reporte texto"
+                                              onclick="javascript:mostrarreporteTexto(#{bindings.IdAjuste.inputValue},2)"
+                                              partialTriggers="cmbAjuste"/>
+                            <af:commandButton text="Planilla IGSS texto"
+                                              onclick="genRepIGSStext();"/>
+                            <af:commandButton text="Planilla IGSS Complementaria texto"
+                                              onclick="return genCargaIGSSComplTXT(0);"
+                                              partialTriggers="cmbAjuste"
+                                              id="cmdCargaIGSSCompl2"/>
+                            <h:outputLink id="linkOutput2"
+                                          onclick="dioClick();"
+                                          style="display:none"
+                                          onmouseout="descargar_igssComplTXT()">
+                              <h:outputText value="Descargar Planilla IGSS Complementaria Texto"/>
+                            </h:outputLink>
+                            <af:commandButton text="Planilla IGSS Complementaria Papel texto"
+                                              onclick="javascript:reporteTextoComple(#{bindings.IdAjuste.inputValue},2)"
+                                              partialTriggers="cmbAjuste"/>
+                          </af:panelButtonBar>
+                          <f:facet name="separator">
+                            <af:objectSpacer width="20" height="10"/>
+                          </f:facet>
+                          <af:panelButtonBar>
+                            <af:commandButton text="Remesa ISR 031 (Texto)"
+                                              onclick="javascript:mostrarreporteTexto(#{bindings.IdAjuste.inputValue},3)"
+                                              partialTriggers="cmbAjuste"
+                                              id="btnReporteTexto031"/>
+                          </af:panelButtonBar>
+                        </af:panelHorizontal>
+                      </af:panelForm>
+                    </af:panelHeader>
+                  </af:showDetailItem>
+                  <af:showDetailItem text="Procesar Remesa" disclosed="false"
+                                     rendered="#{roles_usuario.administrador || roles_usuario.profesionalCaja}">
+                    <af:objectSpacer width="10" height="10"/>
+                    <af:panelForm>
+                      <af:outputFormatted value="Id Remesa: &lt;b>#{bindings.IdRemesa.inputValue}&lt;/b>"/>
+                      <af:selectInputDate value="#{bindings.FechaInicio1.inputValue}"
+                                          label="Fecha Inicio"
+                                          required="#{bindings.FechaInicio1.mandatory}">
+                        <af:validator binding="#{bindings.FechaInicio1.validator}"/>
+                        <f:convertDateTime pattern="#{bindings.FechaInicio1.format}"/>
+                      </af:selectInputDate>
+                      <af:selectInputDate value="#{bindings.FechaFin1.inputValue}"
+                                          label="Fecha Fin"
+                                          required="#{bindings.FechaFin1.mandatory}">
+                        <af:validator binding="#{bindings.FechaFin1.validator}"/>
+                        <f:convertDateTime pattern="#{bindings.FechaFin1.format}"/>
+                      </af:selectInputDate>
+                      <af:selectOneChoice label="Mes"
+                                          value="#{bindings.Periodo.inputValue}">
+                        <af:selectItem label="Enero" value="1"/>
+                        <af:selectItem label="Febrero" value="2"/>
+                        <af:selectItem label="Marzo" value="3"/>
+                        <af:selectItem label="Abril" value="4"/>
+                        <af:selectItem label="Mayo" value="5"/>
+                        <af:selectItem label="Junio" value="6"/>
+                        <af:selectItem label="Julio" value="7"/>
+                        <af:selectItem label="Agosto" value="8"/>
+                        <af:selectItem label="Septiembre" value="9"/>
+                        <af:selectItem label="Octubre" value="10"/>
+                        <af:selectItem label="Noviembre" value="11"/>
+                        <af:selectItem label="Diciembre" value="12"/>
+                      </af:selectOneChoice>
+                      <af:inputText value="#{bindings.Observaciones.inputValue}"
+                                    label="#{bindings.Observaciones.label}"
+                                    required="#{bindings.Observaciones.mandatory}"
+                                    columns="60"
+                                    rows="3">
+                        <af:validator binding="#{bindings.Observaciones.validator}"/>
+                      </af:inputText>
+                    </af:panelForm>
+                    <af:objectSpacer width="10" height="15"/>
+                    <af:panelButtonBar>
+                      <af:commandButton text="Agregar"
+                                        actionListener="#{bindings.Create1.execute}"
+                                        disabled="#{!bindings.Create1.enabled}"/>
+                      <af:commandButton text="Guardar"
+                                        action="#{backing_bean_reportes.btn_guardar_remesa}"/>
+                      <af:commandButton text="Cancelar"
+                                        actionListener="#{bindings.Rollback.execute}"
+                                        immediate="true">
+                        <af:resetActionListener/>
+                      </af:commandButton>
+                      <af:commandButton text="Procesar Remesa"
+                                        action="#{backing_bean_reportes.btn_procesarRemesa}"/>
+                    </af:panelButtonBar>
+                  </af:showDetailItem>
+                </af:showOneTab>
+              </af:panelBox>
+            </af:panelHorizontal>
+            <af:panelHorizontal halign="center" valign="middle">
+              <af:panelBox id="pnlCarga"
+                           inlineStyle="visibility:hidden;   width: 100%;
+    height: 100%;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    position: fixed;
+    background-color: #000;
+    opacity: 0.8;
+    filter: alpha(opacity=80); /* Internet Explorer 8*/
+    z-index: 9999;
+    transition: width 2s;
+    -moz-transition: width 2s; /* Firefox 4 */
+    -webkit-transition: width 2s; /* Safari and Chrome */
+    -o-transition: width 2s; /* Opera */
+    cursor: progress;"
+                           background="transparent">
+                <af:panelGroup inlineStyle="cursor:progress; position:absolute; top:32.0%; right:45.0%; left:35.0%; margin:auto; width:350.0px; text-align:center; height:150.0px; padding:10.0px; background-color:rgb(0,0,0); color:rgb(255,255,255); font-size:2.0em; border-style:none;">
+                  <af:outputText value="Generando Archivo ..."/>
+                </af:panelGroup>
+              </af:panelBox>
+            </af:panelHorizontal>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:backing_bean_reportes-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:backing_bean_reportes-->
+</jsp:root>

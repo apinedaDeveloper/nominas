@@ -1,0 +1,116 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns="http://www.w3.org/1999/xhtml"
+          xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <f:view>
+    <afh:html>
+      <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+      <afh:head title="liquidacion_nomina">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+      </afh:head>
+      <f:loadBundle basename="propiedades" var="tx"/>
+      <afh:body>
+         <af:messages/>
+        <h:form>
+          <af:page value="#{modeloMenu.modeloBD}" var="node"
+                   chromeType="compact">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+            <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelBox width="700">
+              <af:panelHeader text="#{tx['liquidacion.hdr_dep.texto']}">
+                <af:selectOneChoice value="#{bindings.Dependencias.inputValue}"
+                                    autoSubmit="true" id="dependencia">
+                  <f:selectItems value="#{bindings.Dependencias.items}"/>
+                </af:selectOneChoice>
+              </af:panelHeader>
+              <af:panelHeader text="#{tx['liquidacion.hdr_unidad.texto']}">
+                <af:selectOneChoice value="#{bindings.Unidades.inputValue}"
+                                    disabled="#{bindings.validacion.inputValue}"
+                                    autoSubmit="true"
+                                    partialTriggers="dependencia" id="unidades">
+                  <f:selectItems value="#{bindings.Unidades.items}"/>
+                </af:selectOneChoice>
+              </af:panelHeader>
+              <af:inputText value="#{bindings.liquidacionFolioInicial.inputValue}"
+                            label="#{tx['liquidacion.inp_folioI.texto']}"
+                            required="#{bindings.liquidacionFolioInicial.mandatory}"
+                            columns="#{bindings.liquidacionFolioInicial.displayWidth}">
+                <af:validator binding="#{bindings.liquidacionFolioInicial.validator}"/>
+                <f:convertNumber groupingUsed="false"
+                                 pattern="#{bindings.liquidacionFolioInicial.format}"/>
+              </af:inputText>
+              <af:inputText value="#{bindings.liquidacionFolioFinal.inputValue}"
+                            label="#{tx['liquidacion.inp_folioF.texto']}"
+                            required="#{bindings.liquidacionFolioFinal.mandatory}"
+                            columns="#{bindings.liquidacionFolioFinal.displayWidth}">
+                <af:validator binding="#{bindings.liquidacionFolioFinal.validator}"/>
+                <f:convertNumber groupingUsed="false"
+                                 pattern="#{bindings.liquidacionFolioFinal.format}"/>
+              </af:inputText>
+              <af:table value="#{bindings['nominas_a_liquidar'].collectionModel}"
+                        var="row"
+                        rows="#{bindings['nominas_a_liquidar'].rangeSize}"
+                        first="#{bindings['nominas_a_liquidar'].rangeStart}"
+                        emptyText="#{bindings['nominas_a_liquidar'].viewable ? 'Ninguna Fila' : 'Ninguna Fila'}"
+                        selectionState="#{bindings['nominas_a_liquidar'].collectionModel.selectedRow}"
+                        selectionListener="#{bindings['nominas_a_liquidar'].collectionModel.makeCurrent}"
+                        partialTriggers="unidades" banding="none">
+                <f:facet name="selection">
+                  <af:tableSelectOne/>
+                </f:facet>
+                <af:column sortProperty="IdProceso" sortable="false"
+                           headerText="#{tx['liquidacion.tbl_proceso.texto']}">
+                  <af:outputText value="#{row.IdProceso}">
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings['nominas_a_liquidar'].formats.IdProceso}"/>
+                  </af:outputText>
+                </af:column>
+                <af:column sortProperty="Nomina" sortable="false"
+                           headerText="#{tx['liquidacion.tbl_nomina.texto']}">
+                  <af:outputText value="#{row.Nomina}"/>
+                </af:column>
+              </af:table>
+              <af:panelHorizontal>
+                <af:commandButton text="#{tx['liquidacion.btn_liquidar.texto']}"
+                                  action="#{backing_bean_comun.btn_commit_liquidacion_nomina}"/>
+                <af:commandButton actionListener="#{bindings.Rollback.execute}"
+                                  text="#{tx['liquidacion.btn_cancelar.texto']}"
+                                  immediate="true" action="procesos">
+                  <af:resetActionListener/>
+                </af:commandButton>
+                <f:facet name="separator">
+                  <h:panelGroup>
+                    <af:objectSpacer width="30" height="10"/>
+                  </h:panelGroup>
+                </f:facet>
+              </af:panelHorizontal>
+              <af:inputHidden value="#{bindings.CreadoPor.inputValue}"
+                              binding="#{backing_bean_comun.inpt_hidden_creado_por}"/>
+            </af:panelBox>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+</jsp:root>

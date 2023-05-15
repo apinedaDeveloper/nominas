@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="consul_partidaGasto_vw"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   ComponentClass="enlace_datos.consultas.gestiones.horas_extras.consul_partidaGasto_vwImpl"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|Prog|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="varDep"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="varUnidad"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="varUsuario"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select p.ID_PARTIDA,p.D1||'.'||p.D2||'.'||p.D3D4||'.'||p.D5||'.'||p.D6||p.D7||'.'||p.D8||p.D9D10 as formato from partida p
+where p.D8 = 0
+and p.D3D4 = :varDep
+and p.D5 || p.D6 ||p.D7 = :varUnidad
+and  exists(select 1 from usuario_unidad uni, partida pa
+        where uni.USUARIO = :varUsuario
+        and uni.ID_PARTIDA = pa.ID_PARTIDA
+        and pa.D3D4 = p.D3D4
+        and (uni.VIGENCIA_A is null or uni.VIGENCIA_A > sysdate )
+        and (pa.D5 is null or(pa.D5 = p.D5 and pa.D6 = p.D6 and pa.D7 = p.D7 )       
+       ))
+and (p.D9D10 = 41 OR P.D9D10 = 42)
+union
+select id_partida,formato
+from sep_partida_vw
+where 
+/*d1=2
+and d2=1
+and d3d4=16
+and d5=0
+and to_char(d6||d7)=trim(to_char(:varDep,'00'))
+and d8 = 0*/
+(  (d1=2 and d2=1 and d3d4=16 and d5=0 and to_char(d6||d7)=trim(to_char(:varDep,'00')))
+or (d1=2 and d2=1 and d3d4=16 and d5=1 and to_char(d6||d7)=trim(to_char(:varDep,'00'))) --and d8=0 and d9d10 = 0
+)
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="IdPartida"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_PARTIDA"
+      Expression="ID_PARTIDA"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Formato"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="325"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="FORMATO"
+      Expression="FORMATO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="325" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

@@ -1,0 +1,129 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html"
+          xmlns:af="http://xmlns.oracle.com/adf/faces">
+  <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+  <f:loadBundle basename="propiedades" var="tex"/>
+  <f:view>
+    <afh:html>
+      <afh:head title="Apertura Presupuestal">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+      </afh:head>
+      <script language="javascript" type="text/javascript"> 
+        
+         function genRep(idDocumento){ 
+                window.open("../verreportepdf?id="+idDocumento+String.fromCharCode(38)+"rep=APERTURAGEN","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO"); 
+       }
+
+      </script>
+   
+      <afh:body>
+        <af:messages/>
+        <af:form usesUpload="true">
+          <af:page title="Apertura Presupuestal" value="#{modeloMenu.modeloBD}" var="node">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+           <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:objectSpacer width="10" height="35"/>
+            <af:panelHorizontal halign="center">
+              <af:panelBox text="#{tex['apertura.pnl_cargar.texto']}"
+                           width="700">
+                <af:showOneTab position="above">
+                  <af:showDetailItem text="#{tex['apertura.tb_nuevo.texto']}">
+                    <af:inputFile label="Archivo Apertura"
+                                  binding="#{apertura.inp_file}"
+                                  valueChangeListener="#{apertura.inp_file_cambio_valor}"
+                                  id="inpF_archivo"
+                                  partialTriggers="btn_cargar"/>
+                    <f:verbatim>
+                      <hr/>
+                    </f:verbatim>
+                    <af:commandButton text="#{tex['apertura.boton_cargar.texto']}"
+                                      action="#{apertura.btn_Cargar_archivo}"
+                                      partialSubmit="true" id="btn_cargar"/>
+                    <af:objectSpacer width="10" height="30"/>
+                  </af:showDetailItem>
+                  <af:showDetailItem text="#{tex['apertura.tb_buscar.texto']}"
+                                     disclosed="false">
+                    <af:panelForm>
+                      <af:selectInputDate value="#{bindings.fechaI.inputValue}"
+                                          label="#{tex['apertura.fechaI.texto']}"
+                                          required="#{bindings.fechaI.mandatory}">
+                        <af:validator binding="#{bindings.fechaI.validator}"/>
+                        <f:convertDateTime pattern="#{bindings.fechaI.format}"
+                                           timeStyle="default"
+                                           dateStyle="default" type="date"/>
+                      </af:selectInputDate>
+                      <af:selectInputDate value="#{bindings.fechaF.inputValue}"
+                                          label="#{tex['apertura.fechaF.texto']}"
+                                          required="#{bindings.fechaF.mandatory}">
+                        <af:validator binding="#{bindings.fechaF.validator}"/>
+                        <f:convertDateTime pattern="#{bindings.fechaF.format}"/>
+                      </af:selectInputDate>
+                      <af:commandButton actionListener="#{bindings.ExecuteWithParams.execute}"
+                                        text="#{tex['apertura.btn_buscar.texto']}"
+                                        disabled="#{!bindings.ExecuteWithParams.enabled}"/>
+                    </af:panelForm>
+                    <af:table value="#{bindings['SisArchivosExternos_vw'].collectionModel}"
+                              var="row"
+                              rows="30"
+                              first="#{bindings['SisArchivosExternos_vw'].rangeStart}"
+                              emptyText="#{bindings['SisArchivosExternos_vw'].viewable ? 'Ninguna Fila' : 'Ninguna Fila'}">
+                      <af:column sortProperty="IdCargaArchivoDatos"
+                                 sortable="false"
+                                 headerText="#{tex['apertura.tbl_id.texto']}">
+                        <h:outputLink value="javascript:genRep(#{row.IdCargaArchivoDatos})">
+                          <h:outputText value="#{row.IdCargaArchivoDatos}"/>
+                        </h:outputLink>
+                      </af:column>
+                      <af:column sortProperty="NomArchivo" sortable="false"
+                                 headerText="#{tex['apertura.tbl_Archivo.texto']}">
+                        <af:outputText value="#{row.NomArchivo}"/>
+                      </af:column>
+                      <af:column sortProperty="FechaInicio" sortable="false"
+                                 headerText="#{tex['apertura.tbl_fechaI.texto']}">
+                        <af:outputText value="#{row.FechaInicio}">
+                          <f:convertDateTime pattern="#{bindings['SisArchivosExternos_vw'].formats.FechaInicio}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="FechaFin" sortable="false"
+                                 headerText="#{tex['apertura.tbl_fechaF.texto']}">
+                        <af:outputText value="#{row.FechaFin}">
+                          <f:convertDateTime pattern="#{bindings['SisArchivosExternos_vw'].formats.FechaFin}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Error" sortable="false"
+                                 headerText="#{tex['apertura.tbl_Error.texto']}">
+                        <af:outputText value="#{row.Error}"/>
+                      </af:column>
+                    </af:table>
+                  </af:showDetailItem>
+                </af:showOneTab>
+              </af:panelBox>
+            </af:panelHorizontal>
+            <af:objectSpacer width="10" height="35"/>
+          </af:page>
+        </af:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+</jsp:root>

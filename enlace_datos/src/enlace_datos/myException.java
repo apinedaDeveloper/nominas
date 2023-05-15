@@ -1,0 +1,12 @@
+package enlace_datos;
+
+public class myException extends RuntimeException
+ {
+    public myException() {
+        super();   
+    }
+    
+    public myException(String strMensaje) {
+        super(strMensaje);   
+    }
+}

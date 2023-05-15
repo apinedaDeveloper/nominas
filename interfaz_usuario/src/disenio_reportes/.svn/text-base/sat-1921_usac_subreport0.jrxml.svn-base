@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="sat-1921_usac_subreport0"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="535"
+		 pageHeight="802"
+		 columnWidth="535"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pRegistroEmpleado" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pAnio" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pPeriodo" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[select 1 as tipo,tipo_detalle||' ['||subprog||' - '||substr(initcap(part2.nombre),1,60)||']' as detalle,monto
+from (
+select solcd.TIPO_DETALLE,substr(part.FORMATO2,1,7) as subprog, solcd.monto
+    from sic_solicitud_viatico_combust solvc,
+    sic_solicitud_viatico_detalle solcd,
+    sep_partida_vw part
+    where solvc.NO_SOLICITUD=solcd.NO_SOLICITUD
+    and solvc.ANIO_SOLICITUD=solcd.ANIO_SOLICITUD
+    and part.ID_PARTIDA=solcd.ID_PARTIDA
+    and solvc.estado=405
+    and part.d8=1
+    and part.D9D10=33
+    and solvc.registro_trabajador=$P{pRegistroEmpleado}        
+    and solvc.ANIO_EMISION=$P{pAnio}
+    and solvc.PERIODO_INICIO_DESC_ISR<=$P{pPeriodo}
+)datos left outer join sep_partida_vw part2 on datos.subprog=part2.formato2    
+   union
+select 2,'Gastos representacion'||' ['||subprog||' - '||substr(initcap(part2.nombre),1,60)||']' as detalle,monto
+from
+ (
+ select  substr(part.FORMATO2,1,7) as subprog,resd.monto
+        from
+        sic_recibo_de_sueldo recs,
+        sic_recibo_de_sueldo_detalle resd,
+        sep_partida_vw part
+        where 
+        recs.NO_RECIBO=resd.NO_RECIBO
+        and recs.ANIO_RECIBO=resd.ANIO_RECIBO
+        and part.ID_PARTIDA=resd.ID_PARTIDA_LIQUIDACION
+        and
+        (
+           (part.d8=4 and part.d9d10=19)
+        or (part.d8=0 and part.d9d10=63)
+        )
+        and recs.ESTADO=455
+        and recs.REGPER_TRABAJADOR=$P{pRegistroEmpleado}
+        and recs.ANIO_EMISION=$P{pAnio}
+        and recs.PERIODO_INICIO_DESC_ISR<=$P{pPeriodo}
+  )datos left outer join sep_partida_vw part2 on datos.subprog=part2.formato2           
+ union
+ select 3 as tipo,'  ',bolhd.MONTO_HONORARIOS
+        from
+        sic_boleta_honorarios bolh,
+        sic_boleta_honorarios_detalle bolhd
+        where
+        bolh.NO_BOLETA=bolhd.NO_BOLETA
+        and bolh.ANIO_BOLETA=bolhd.ANIO_BOLETA
+        and bolh.estado=505
+        and bolhd.REGPER_EXAMINADOR=$P{pRegistroEmpleado}
+        and bolh.ANIO_EMISION=$P{pAnio}
+        AND bolh.PERIODO_INICIO_DESC_ISR<=$P{pPeriodo}
+union
+select 4,datos.tipo_documento||' ['||datos.subprog || ' - '|| substr(initcap(part1.nombre),1,60) || ']' as detalle,datos.valor_cheque
+from (
+select 
+initcap(sulpg.tipo_documento) as tipo_documento,
+substr(part.formato2,1,7) as subprog,
+sulpg.valor_cheque,
+sulpg.REGISTRO_TRABAJADOR,
+sulpg.ANIO_EMISION,
+sulpg.PERIODO_INICIO_DESC_ISR
+from SIC_VIA_HONO_SUEL_PAGADO sulpg, sep_partida_vw part
+where part.id_partida=sulpg.id_partida_ejecucion
+and estado=553
+)datos
+left outer join sep_partida_vw part1 on part1.formato2=datos.subprog
+where  datos.registro_trabajador=$P{pRegistroEmpleado}
+and datos.anio_emision=$P{pAnio}
+and datos.periodo_inicio_desc_isr<=$P{pPeriodo}
+]]></queryString>
+
+	<field name="TIPO" class="java.math.BigDecimal"/>
+	<field name="DETALLE" class="java.lang.String"/>
+	<field name="MONTO" class="java.math.BigDecimal"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="11"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="11"  isSplitAllowed="false" >
+				<textField isStretchWithOverflow="true" pattern="¤  #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="290"
+						y="0"
+						width="89"
+						height="11"
+						key="textField"/>
+					<box leftPadding="2" rightPadding="2">					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right">
+						<font fontName="Times-Roman" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{MONTO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="8"
+						y="0"
+						width="291"
+						height="11"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{DETALLE}]]></textFieldExpression>
+				</textField>
+				<ellipse>
+					<reportElement
+						x="3"
+						y="4"
+						width="2"
+						height="2"
+						backcolor="#000000"
+						key="ellipse-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</ellipse>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="10"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="158"
+						y="-2"
+						width="143"
+						height="11"
+						key="staticText-1"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[  ------------  TOTAL  ------------- ]]></text>
+				</staticText>
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

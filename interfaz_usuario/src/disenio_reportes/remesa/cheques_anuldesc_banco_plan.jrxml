@@ -1,0 +1,451 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="cheques_anuldesc_banco_plan"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="1433"
+		 pageHeight="612"
+		 columnWidth="1433"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pUsuario" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="p_fecha_ini" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="p_fecha_fin" isForPrompting="true" class="java.lang.String"/>
+	<queryString><![CDATA[select * from 
+(
+select 
+    nvl(ae.periodo,to_number(to_char(fecha_emision,'mm'))) periodo, 
+    nvl(ae.anio,to_number(to_char(fecha_emision,'rrrr'))) anio,
+    ae.id_proceso, 
+    ch.registro_empleado, 
+    e.nombrecompleto,
+    ch.id_ajuste,
+    a.nombre nombre_descuento, 
+    ae.valor total_a_descontar, 
+    ch.total_descuento*-1 total_descuento_aplicado,
+    decode(ae.valor,null,null,ae.valor + ch.total_descuento) saldo_x_descontar,
+    ae.no_prestamo,
+    ch.nombre tipo_documento, 
+    ch.num_doc_fisico, 
+    ch.fecha_emision, 
+    ch.fecha_anulacion
+from
+    sis_ajuste a,
+    sis_empleado_vw e,
+    (
+      select 
+          c.periodo, 
+          c.anio, 
+          c.id_proceso, 
+          a.registro_empleado, 
+          a.id_ajuste, 
+          a.id_correlativo,
+          a.valor, 
+          p.no_prestamo
+      from
+          sis_archivo_prestamo p,
+          sis_ajuste_empleado a,
+          sis_carga_archivo_datos c,
+          sis_usuarios_externos_conf ue
+      where 
+          p.id_archivo_prestamo = a.id_archivo_prestamo and
+          p.cod_prestamo = a.id_ajuste and
+          p.registro_empleado = a.registro_empleado and
+          p.id_carga_archivo_datos = c.id_carga_archivo_datos and
+          a.id_proceso = c.id_proceso and
+          c.estado = 0 and
+          c.error is null and
+          c.id_origen_carga_archivo = ue.id_origen_carga_archivo and
+          ue.usuario = $P{pUsuario}
+    ) ae,
+    (
+      select  t.nombre, db.num_doc_fisico, n.registro_empleado, db.fecha_emision, db.fecha_anulacion, d.id_ajuste, d.correlativo, sum(d.valor_aplicado) total_descuento
+      from 
+          sis_tipo_documento t,
+          sis_documento_banco db,
+          sis_pago p,
+          sis_nomina n,
+          sis_det_calculo_ajuste d
+      where 
+          db.id_tipo_documento = t.id_tipo_documento and
+          trunc(db.fecha_anulacion) between to_date(nvl($P{p_fecha_ini},to_char(db.fecha_anulacion,'dd/mm/rrrr')),'dd/mm/rrrr') and to_date($P{p_fecha_fin},'dd/mm/rrrr') and
+          NOT(db.fecha_anulacion is null) and
+          p.id_documento_banco = db.id_documento_banco and
+          n.id_nomina = p.id_nomina and
+          d.id_nomina = n.id_nomina and
+          EXISTS ( select 1
+                          from
+                            sis_ajuste_empleado aj,
+                            sis_archivo_prestamo a,
+                            sis_carga_archivo_datos c,
+                            sis_usuarios_externos_conf ue
+                           where 
+                            aj.id_ajuste = d.id_ajuste and
+                            a.id_archivo_prestamo = aj.id_archivo_prestamo and
+                            a.id_carga_archivo_datos = c.id_carga_archivo_datos and
+                            c.estado = 0 and
+                            c.error is null and
+                            c.id_origen_carga_archivo = ue.id_origen_carga_archivo and
+                            ue.usuario = $P{pUsuario}
+                          )
+      group by t.nombre, db.num_doc_fisico, n.registro_empleado, db.fecha_emision, db.fecha_anulacion, d.id_ajuste, d.correlativo
+    ) ch
+where 
+    ch.id_ajuste = a.id_ajuste and
+    ch.registro_empleado = e.registro_empleado and
+    ch.registro_empleado = ae.registro_empleado(+) and
+    ch.id_ajuste = ae.id_ajuste(+) and
+    ch.correlativo = ae.id_correlativo(+)
+)
+order by anio asc, periodo asc, registro_empleado asc, fecha_anulacion asc, fecha_emision asc]]></queryString>
+
+	<field name="PERIODO" class="java.math.BigDecimal"/>
+	<field name="ANIO" class="java.math.BigDecimal"/>
+	<field name="ID_PROCESO" class="java.math.BigDecimal"/>
+	<field name="REGISTRO_EMPLEADO" class="java.math.BigDecimal"/>
+	<field name="NOMBRECOMPLETO" class="java.lang.String"/>
+	<field name="ID_AJUSTE" class="java.math.BigDecimal"/>
+	<field name="NOMBRE_DESCUENTO" class="java.lang.String"/>
+	<field name="TOTAL_A_DESCONTAR" class="java.math.BigDecimal"/>
+	<field name="TOTAL_DESCUENTO_APLICADO" class="java.math.BigDecimal"/>
+	<field name="SALDO_X_DESCONTAR" class="java.lang.String"/>
+	<field name="NO_PRESTAMO" class="java.lang.String"/>
+	<field name="TIPO_DOCUMENTO" class="java.lang.String"/>
+	<field name="NUM_DOC_FISICO" class="java.math.BigDecimal"/>
+	<field name="FECHA_EMISION" class="java.sql.Timestamp"/>
+	<field name="FECHA_ANULACION" class="java.sql.Timestamp"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="16"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="870"
+						y="0"
+						width="89"
+						height="16"
+						key="staticText-4"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Fecha de emisión]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="961"
+						y="0"
+						width="101"
+						height="16"
+						key="staticText-5"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Fecha de anulación]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="0"
+						width="32"
+						height="16"
+						key="staticText-7"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Mes]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="33"
+						y="0"
+						width="50"
+						height="16"
+						key="staticText-8"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Año]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="84"
+						y="0"
+						width="81"
+						height="16"
+						key="staticText-9"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[No. Registro]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="166"
+						y="0"
+						width="329"
+						height="16"
+						key="staticText-10"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Nombre]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="497"
+						y="0"
+						width="81"
+						height="16"
+						key="staticText-11"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[No. Prestamo]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="579"
+						y="0"
+						width="90"
+						height="16"
+						key="staticText-12"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Total a descontar]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="671"
+						y="0"
+						width="105"
+						height="16"
+						key="staticText-13"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Descuento aplicado]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="778"
+						y="0"
+						width="90"
+						height="16"
+						key="staticText-14"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Saldo]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1063"
+						y="0"
+						width="100"
+						height="16"
+						key="staticText-16"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Num doc]]></text>
+				</staticText>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="16"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="870"
+						y="0"
+						width="89"
+						height="16"
+						key="textField-4"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[$F{FECHA_EMISION}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="961"
+						y="0"
+						width="101"
+						height="16"
+						key="textField-5"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[$F{FECHA_ANULACION}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="0"
+						width="32"
+						height="16"
+						key="textField-7"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{PERIODO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="33"
+						y="0"
+						width="50"
+						height="16"
+						key="textField-8"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ANIO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="84"
+						y="0"
+						width="81"
+						height="16"
+						key="textField-9"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{REGISTRO_EMPLEADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="166"
+						y="0"
+						width="329"
+						height="16"
+						key="textField-10"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRECOMPLETO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="497"
+						y="0"
+						width="81"
+						height="16"
+						key="textField-11"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NO_PRESTAMO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="579"
+						y="0"
+						width="90"
+						height="16"
+						key="textField-12"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_A_DESCONTAR}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="671"
+						y="0"
+						width="105"
+						height="16"
+						key="textField-13"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_DESCUENTO_APLICADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="778"
+						y="0"
+						width="90"
+						height="16"
+						key="textField-14"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{SALDO_X_DESCONTAR}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1063"
+						y="0"
+						width="100"
+						height="16"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{NUM_DOC_FISICO}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

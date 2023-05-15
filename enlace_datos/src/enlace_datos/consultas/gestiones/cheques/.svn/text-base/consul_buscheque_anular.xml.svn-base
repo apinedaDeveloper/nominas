@@ -1,0 +1,436 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="consul_buscheque_anular"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   RowClass="enlace_datos.consultas.gestiones.cheques.consul_buscheque_anularRowImpl"
+   ComponentClass="enlace_datos.consultas.gestiones.cheques.consul_buscheque_anularImpl"
+   MsgBundleClass="enlace_datos.consultas.gestiones.cheques.common.consul_buscheque_anularRowImplMsgBundle"
+   ComponentInterface="enlace_datos.consultas.gestiones.cheques.common.consul_buscheque_anular"
+   ClientProxyName="enlace_datos.consultas.gestiones.cheques.client.consul_buscheque_anularClient"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isCodegen" Value="true" />
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|Msg|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="var_NumCheque"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <Variable
+      Name="var_tipoDoc"
+      Kind="where"
+      Type="java.lang.Integer"
+      DefaultValue="1" >
+   </Variable>
+   <Variable
+      Name="pUsuario"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select distinct 
+banco1.num_doc_fisico,
+banco1.ID_DOCUMENTO_BANCO,
+tipNomina.nombre as tiponom,
+periodo1.nombre mes,
+nomina.anio,
+trabajador.registro_empleado,
+trabajador.nombrecompleto,
+trabajador.cui, 
+banco1.valor,
+estado.nombre as nomEstado,
+part1.formato,
+nomina.numero_plaza,
+banco1.fecha_emision,
+banco1.id_tipo_documento, 
+doca.ID_DOC_PAGO_ANULADO as sis21,
+doca.FECHA_CREACION as fechasis21,
+nvl(nomina.anio_periodo,nomina.correlativo) as correlativo,
+ nomina.liquido,
+(select formato from sep_partida_vw aa where aa.id_partida= (case when nomina.id_partida_egreso is not null and (parte.d9d10 in (41,42) or
+( parte.d1=4 and parte.d2<>2 and parte.d9d10 = 81) or ( parte.d1=2 and parte.d2=1 and parte.d3d4=16 and parte.d9d10 = 0)  )
+then nomina.id_partida_egreso else nomina.id_partida end)) partida_gasto
+from sis_documento_banco banco1
+left outer join sis_doc_pago_anulado doca on doca.id_doc_pago=banco1.id_documento_banco and doca.anulado<>1
+, 
+sis_pago pago,
+sis_nomina nomina left outer join partida parte on nomina.id_partida_egreso=parte.id_partida,
+sis_empleado_vw trabajador, 
+sis_periodo periodo1,
+sis_partida2_vw part1,
+sis_tipo_nomina tipNomina, 
+sis_estado estado
+,partida d
+where :var_NumCheque = banco1.NUM_DOC_FISICO and
+:var_tipoDoc = banco1.ID_TIPO_DOCUMENTO and 
+banco1.ID_DOCUMENTO_BANCO = pago.ID_DOCUMENTO_BANCO and
+banco1.ID_ESTADO = estado.ID_ESTADO and
+pago.id_nomina = nomina.id_nomina and
+nomina.PERIODO = periodo1.ID_PERIODO and
+nomina.ID_TIPO_NOMINA = tipNomina.ID_TIPO_NOMINA and
+part1.id_partida=nomina.id_partida and
+nomina.REGISTRO_EMPLEADO = trabajador.REGISTRO_EMPLEADO
+and (case when nomina.id_partida_egreso is not null and (parte.d9d10 in (41,42) or
+( parte.d1=4 and parte.d2<>2 and parte.d9d10 = 81) or ( parte.d1=2 and parte.d2=1 and parte.d3d4=16 and parte.d9d10 = 0)  )
+then nomina.id_partida_egreso else nomina.id_partida end) = d.id_partida
+and exists(
+    select 1 from usuario_unidad b, partida x
+    where b.id_partida=x.id_partida
+    and usuario=:pUsuario
+    and b.tipo_usuario='TRABAJADOR'
+    and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+    and 
+    ( 
+      ( 1=(case when parte.d9d10 is null or parte.d9d10 not in(41,42) then 1 else 0 end)
+        and part1.aniomanual=x.aniomanual
+        and part1.d1=x.d1
+        and part1.d2=x.d2
+        and part1.d3d4=x.d3d4
+        and 
+        (
+        (part1.d7=x.d7
+        and part1.d6=x.d6
+        and part1.d5=x.d5
+        )
+        or
+        (
+        x.d5 is null
+        and x.d6 is null
+        and x.d7 is null 
+        )
+        )
+      )
+       or
+         (  parte.d9d10 in (41,42)                
+            and parte.aniomanual=x.aniomanual
+            and parte.d1=x.d1
+            and parte.d2=x.d2
+            and parte.d3d4=x.d3d4
+            and 
+            (
+            (parte.d7=x.d7
+            and parte.d6=x.d6
+            and parte.d5=x.d5
+            )
+            or
+            (
+            x.d5 is null
+            and x.d6 is null
+            and x.d7 is null 
+            )
+            )               
+         )
+         or
+         (  parte.d9d10 in (0)  
+            and parte.d1=2 
+            and parte.d3d4=16              
+            and parte.aniomanual=x.aniomanual
+            and to_number(parte.d6||parte.d7)=x.d3d4              
+         )       
+      )
+    )
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="NumDocFisico"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="25"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NUM_DOC_FISICO"
+      Expression="NUM_DOC_FISICO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="25" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdDocumentoBanco"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="12"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_DOCUMENTO_BANCO"
+      Expression="ID_DOCUMENTO_BANCO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Tiponom"
+      IsPersistent="false"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="TIPONOM"
+      Expression="TIPONOM"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Mes"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="MES"
+      Expression="MES"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Anio"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="4"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ANIO"
+      Expression="ANIO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="RegistroEmpleado"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="REGISTRO_EMPLEADO"
+      Expression="REGISTRO_EMPLEADO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nombrecompleto"
+      IsPersistent="false"
+      Precision="305"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBRECOMPLETO"
+      Expression="NOMBRECOMPLETO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="305" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Cui"
+      IsPersistent="false"
+      Precision="13"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="CUI"
+      Expression="CUI"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="13" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Valor"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="12"
+      Scale="2"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="VALOR"
+      Expression="VALOR"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomestado"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMESTADO"
+      Expression="NOMESTADO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Formato"
+      IsPersistent="false"
+      Precision="252"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="FORMATO"
+      Expression="FORMATO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="252" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="NumeroPlaza"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="5"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="NUMERO_PLAZA"
+      Expression="NUMERO_PLAZA"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaEmision"
+      IsPersistent="false"
+      IsNotNull="true"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_EMISION"
+      Expression="FECHA_EMISION"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdTipoDocumento"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="3"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_TIPO_DOCUMENTO"
+      Expression="ID_TIPO_DOCUMENTO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Sis21"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="SIS21"
+      Expression="SIS21"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Fechasis21"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHASIS21"
+      Expression="FECHASIS21"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Correlativo"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="6"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="CORRELATIVO"
+      Expression="CORRELATIVO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Liquido"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="2"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="LIQUIDO"
+      Expression="LIQUIDO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="PartidaGasto"
+      IsPersistent="false"
+      Precision="252"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="PARTIDA_GASTO"
+      Expression="PARTIDA_GASTO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="252" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Formato1"
+      IsSelected="false"
+      IsPersistent="false"
+      Precision="255"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="FORMATO1"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="87" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IsPermitidoAnul"
+      IsUpdateable="false"
+      IsSelected="false"
+      IsQueriable="false"
+      IsPersistent="false"
+      Type="java.lang.Boolean"
+      ColumnType="NUMBER"
+      AliasName="VIEW_ATTR"
+      SQLType="BIT" >
+   </ViewAttribute>
+   <ViewLinkAccessor
+      Name="view_SisDocPagoAnulado"
+      ViewLink="enlace_datos.consultas.gestiones.cheques.link_BusCheqAnular_SisDocPagoAnulado"
+      Type="oracle.jbo.RowIterator"
+      IsUpdateable="false" >
+   </ViewLinkAccessor>
+</ViewObject>

@@ -1,0 +1,626 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel"
+                version="10.1.3.42.70" id="gestiones_anexo_plan48PageDef"
+                Package="interfaz_usuario.pageDefs">
+                
+  <parameters/>
+  <executables>
+    <invokeAction Binds="Rollback" id="ExeRollback" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback &amp;&amp; flujo_usuario.operacion==0}"/>
+    <iterator id="sis_anexo1Iterator" RangeSize="10" Binds="sis_anexo1"
+              DataControl="QUERRYSDataControl"/>
+    <invokeAction id="ejeMovimientoPlaza" Binds="reset" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback and flujo_usuario.operacion==0}"/>
+    <invokeAction Binds="Create" id="invokeCreate" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback and flujo_usuario.operacion==0}"/>
+    <iterator id="consul_sisTipoMovPlaza1Iterator" RangeSize="-1"
+              Binds="consul_sisTipoMovPlaza1" DataControl="QUERRYSDataControl"/>
+    <iterator id="dependenciasIterator" RangeSize="-1" Binds="dependencias"
+              DataControl="QUERRYSDataControl">
+      <sortCriteria>
+        <sort attribute="Nombre" ascending="true"/>
+      </sortCriteria>
+    </iterator>
+    <invokeAction id="ejecFiltraDependencia" Binds="FiltraDependencia"
+                  Refresh="renderModel"/>
+    <iterator id="sis_movimiento_plaza1Iterator" RangeSize="10"
+              Binds="sis_movimiento_plaza1" DataControl="QUERRYSDataControl"/>
+    <iterator id="unidades_ejecIterator" RangeSize="-1"  
+              Binds="unidades_ejec" DataControl="QUERRYSDataControl">
+      <sortCriteria>
+        <sort attribute="Formato" ascending="true"/>
+      </sortCriteria>
+    </iterator>
+    <iterator id="consul_sisPartida_vw1Iterator" RangeSize="-1"
+              Binds="consul_sisPartida_vw1" DataControl="QUERRYSDataControl"/>
+    <invokeAction id="ejecFiltraUnidad" Binds="filtraUnidad"
+                  Refresh="renderModel"
+                  RefreshCondition="${(adfFacesContext.postback &amp;&amp; Procesos_Anexo.selecUnidad != false) || (!adfFacesContext.postback &amp;&amp; flujo_usuario.operacion == 1)}"/>
+    <invokeAction id="ejecFiltraPartida" Binds="filtraPartida"
+                  Refresh="renderModel"
+                  RefreshCondition="${adfFacesContext.postback &amp;&amp; bindings.IdUnidad.inputValue != null}"/>
+    <iterator id="puesto1Iterator" RangeSize="-1" Binds="SisPuesto_vw"
+              DataControl="QUERRYSDataControl"/>
+    <iterator id="consul_sisPlaza_vw1Iterator" RangeSize="-1"
+              Binds="consul_sisPlaza_vw1" DataControl="QUERRYSDataControl"/>
+    <invokeAction id="ejecFiltraPlaza" Binds="FiltraPlaza" Refresh="renderModel"
+                  RefreshCondition="${adfFacesContext.postback}"/>
+    <variableIterator id="variables">
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="consul_sisPlaza_vw1.variablesMap.partida"
+                     Name="consul_sisPlaza_vw1_partida" IsQueriable="false"/>
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="consul_sisPlaza_vw1.variablesMap.puesto"
+                     Name="consul_sisPlaza_vw1_puesto" IsQueriable="false"/>
+      <variable Name="comboPartida" Type="java.lang.Integer"/>
+    </variableIterator>
+    <invokeAction id="ejecObtenerUnidad" Binds="obtenerUnidad"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback &amp;&amp; flujo_usuario.operacion == 1}"/>
+    <invokeAction Binds="TipoDocumento" id="ejecTipoDoc" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <iterator id="Sis_firmas_docs_vwIterator" RangeSize="-1"
+              Binds="Sis_firmas_docs_vw" DataControl="QUERRYSDataControl"/>
+    <invokeAction id="EjecFirmaDocumentos" Binds="FirmaDocumentos"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <iterator id="consul_nomDictamen_vw1Iterator" RangeSize="-1"
+              Binds="consul_nomDictamen_vw1" DataControl="QUERRYSDataControl"/>
+    <invokeAction id="ejecEmitidoPor" Binds="NomEmitidoPor"
+                  Refresh="renderModel"
+                  RefreshCondition="${adfFacesContext.postback &amp;&amp; bindings.EmitidoPor.inputValue ==null}"/>
+    <iterator id="partidasSICOINIterator" RangeSize="-1" Binds="partidasSICOIN"
+              DataControl="QUERRYSDataControl"/>
+    <invokeAction Binds="PartidasSicoin" id="ejecPartidaSicoin"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback || Procesos_Anexo.VCambioPartida}"/>
+  </executables>
+  <bindings>
+    <action id="Rollback" InstanceName="QUERRYSDataControl"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="101"/>
+    <action id="Commit" InstanceName="QUERRYSDataControl"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="100"/>
+    <action id="Create" RequiresUpdateModel="true" Action="41"
+            IterBinding="sis_anexo1Iterator"/>
+    <list id="sis_anexo1IdTipoMovPlaza" IterBinding="sis_anexo1Iterator"
+          StaticList="false" ListOperMode="0"
+          ListIter="consul_sisTipoMovPlaza1Iterator">
+      <AttrNames>
+        <Item Value="IdTipoMovPlaza"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdTipoMovAlta"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="NomTipoMovAlta"/>
+      </ListDisplayAttrNames>
+    </list>
+    <list id="sis_anexo1IdDependencia" IterBinding="sis_anexo1Iterator"
+          StaticList="false" ListOperMode="0" ListIter="dependenciasIterator">
+      <AttrNames>
+        <Item Value="IdDependencia"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdDependencia"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Nombre"/>
+      </ListDisplayAttrNames>
+    </list>
+    <action IterBinding="dependenciasIterator" id="FiltraDependencia"
+            InstanceName="QUERRYSDataControl.dependencias"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="usuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+    </action>
+    <attributeValues id="Operacion" IterBinding="sis_movimiento_plaza1Iterator">
+      <AttrNames>
+        <Item Value="Operacion"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="NumeroPlaza"
+                     IterBinding="sis_movimiento_plaza1Iterator">
+      <AttrNames>
+        <Item Value="NumeroPlaza"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Correlativo"
+                     IterBinding="sis_movimiento_plaza1Iterator">
+      <AttrNames>
+        <Item Value="Correlativo"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="CantidadHoras"
+                     IterBinding="sis_movimiento_plaza1Iterator">
+      <AttrNames>
+        <Item Value="CantidadHoras"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="FechaInicio"
+                     IterBinding="sis_movimiento_plaza1Iterator">
+      <AttrNames>
+        <Item Value="FechaInicio"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="FechaFin" IterBinding="sis_movimiento_plaza1Iterator">
+      <AttrNames>
+        <Item Value="FechaFin"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="SueldoBase"
+                     IterBinding="sis_movimiento_plaza1Iterator">
+      <AttrNames>
+        <Item Value="SueldoBase"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Escalafon" IterBinding="sis_movimiento_plaza1Iterator">
+      <AttrNames>
+        <Item Value="Escalafon"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="ComplSalarial"
+                     IterBinding="sis_movimiento_plaza1Iterator">
+      <AttrNames>
+        <Item Value="ComplSalarial"/>
+      </AttrNames>
+    </attributeValues>
+    <list StaticList="false" ListOperMode="1" id="unidades_ejec"
+          IterBinding="unidades_ejecIterator">
+      <AttrNames>
+        <Item Value="Formato"/>
+        <Item Value="Nombre"/>
+      </AttrNames>
+    </list>
+    <action IterBinding="unidades_ejecIterator" id="filtraUnidad"
+            InstanceName="QUERRYSDataControl.unidades_ejec"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="id_depe"
+                 NDValue=" ${bindings.sis_anexo1IdDependencia.selectedValue['idDependencia']}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+    </action>
+    <list id="sis_movimiento_plaza1IdPartida"
+          IterBinding="sis_movimiento_plaza1Iterator" StaticList="false"
+          ListOperMode="0" ListIter="consul_sisPartida_vw1Iterator">
+      <AttrNames>
+        <Item Value="IdPartida"/>
+        <Item Value="IdRenglon"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdPartida"/>
+        <Item Value="IdRenglon"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Formato"/>
+      </ListDisplayAttrNames>
+    </list>
+    <action IterBinding="consul_sisPartida_vw1Iterator" id="filtraPartida"
+            InstanceName="QUERRYSDataControl.consul_sisPartida_vw1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="varUnidad" NDValue="${bindings.IdUnidad.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="varDependencia"
+                 NDValue="${bindings.sis_anexo1IdDependencia.selectedValue['idDependencia']}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="varPrograma"
+                 NDValue="${bindings.IdPrograma.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <attributeValues IterBinding="unidades_ejecIterator" id="IdUnidad">
+      <AttrNames>
+        <Item Value="IdUnidad"/>
+      </AttrNames>
+    </attributeValues>
+    <list id="sis_movimiento_plaza1IdPuesto"
+          IterBinding="sis_movimiento_plaza1Iterator" StaticList="false"
+          ListOperMode="0" ListIter="puesto1Iterator">
+      <AttrNames>
+        <Item Value="IdPuesto"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdPuesto"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Nombre"/>
+        <Item Value="IdPuesto"/>
+      </ListDisplayAttrNames>
+    </list>
+    <table id="sis_anexo1sis_movimiento_plaza1"
+           IterBinding="sis_movimiento_plaza1Iterator">
+      <AttrNames>
+        <Item Value="IdMovimientoPlaza"/>
+        <Item Value="Operacion"/>
+        <Item Value="IdPartida"/>
+        <Item Value="IdPuesto"/>
+        <Item Value="NumeroPlaza"/>
+        <Item Value="Correlativo"/>
+        <Item Value="CantidadHoras"/>
+        <Item Value="FechaInicio"/>
+        <Item Value="FechaFin"/>
+        <Item Value="SueldoBase"/>
+        <Item Value="Escalafon"/>
+        <Item Value="ComplSalarial"/>
+        <Item Value="IdAnexo"/>
+        <Item Value="TotalSueldo"/>
+        <Item Value="Vacaciones"/>
+        <Item Value="Aguinaldo"/>
+        <Item Value="Bono14"/>
+        <Item Value="Diferido50"/>
+        <Item Value="Diferido"/>
+        <Item Value="PeriodoPlaza"/>
+        <Item Value="Nompuesto"/>
+        <Item Value="IdRenglon"/>
+        <Item Value="Unidad"/>
+        <Item Value="escalaMinima"/>
+        <Item Value="TotalEscalafon"/>
+        <Item Value="TotalComsalarial"/>
+        <Item Value="Dictamen"/>
+        <Item Value="Nomplaza"/>
+        <Item Value="RegistroEmpleado"/>
+      </AttrNames>
+    </table>
+    <attributeValues id="sis_movimiento_plaza1PeriodoPlaza"
+                     IterBinding="sis_movimiento_plaza1Iterator">
+      <AttrNames>
+        <Item Value="PeriodoPlaza"/>
+      </AttrNames>
+    </attributeValues>
+    <list id="sis_movimiento_plaza1NumeroPlaza"
+          IterBinding="sis_movimiento_plaza1Iterator" StaticList="false"
+          ListOperMode="0" ListIter="consul_sisPlaza_vw1Iterator">
+      <AttrNames>
+        <Item Value="NumeroPlaza"/>
+        <Item Value="Correlativo"/>
+        <Item Value="CantidadHoras"/>
+        <Item Value="SueldoBase"/>
+        <Item Value="Escalafon"/>
+        <Item Value="ComplSalarial"/>
+        <Item Value="IdPuesto"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="NumeroPlaza"/>
+        <Item Value="Correlativo"/>
+        <Item Value="CantidadHoras"/>
+        <Item Value="SalarioBase"/>
+        <Item Value="Escalafon"/>
+        <Item Value="ComplementoSal"/>
+        <Item Value="IdPuesto"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="NumeroPlaza"/>
+        <Item Value="Nombre"/>
+      </ListDisplayAttrNames>
+    </list>
+    <action IterBinding="consul_sisPlaza_vw1Iterator" id="FiltraPlaza"
+            InstanceName="QUERRYSDataControl.consul_sisPlaza_vw1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="partida"
+                 NDValue="${bindings.sis_movimiento_plaza1IdPartida.selectedValue['idPartida']}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pAnio" NDValue="${flujo_usuario.anioActual}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <attributeValues IterBinding="consul_sisPlaza_vw1Iterator"
+                     id="Correlativo1">
+      <AttrNames>
+        <Item Value="Correlativo"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="consul_sisPlaza_vw1Iterator" id="Escalafon1">
+      <AttrNames>
+        <Item Value="Escalafon"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="consul_sisPlaza_vw1Iterator"
+                     id="ComplementoSal">
+      <AttrNames>
+        <Item Value="ComplementoSal"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="consul_sisPlaza_vw1Iterator" id="SalarioBase">
+      <AttrNames>
+        <Item Value="SalarioBase"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="consul_sisPlaza_vw1Iterator"
+                     id="CantidadHoras1">
+      <AttrNames>
+        <Item Value="CantidadHoras"/>
+      </AttrNames>
+    </attributeValues>
+    <action id="Execute" IterBinding="sis_movimiento_plaza1Iterator"
+            InstanceName="QUERRYSDataControl.sis_movimiento_plaza1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="2"/>
+    <attributeValues IterBinding="sis_anexo1Iterator" id="IdAnexo">
+      <AttrNames>
+        <Item Value="IdAnexo"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="sis_movimiento_plaza1IdPuesto1"
+                     IterBinding="sis_movimiento_plaza1Iterator">
+      <AttrNames>
+        <Item Value="IdPuesto"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="sis_movimiento_plaza1escalaMinima"
+                     IterBinding="sis_movimiento_plaza1Iterator">
+      <AttrNames>
+        <Item Value="escalaMinima"/>
+      </AttrNames>
+    </attributeValues>
+    <action IterBinding="sis_movimiento_plaza1Iterator" id="Create1"
+            InstanceName="QUERRYSDataControl.sis_movimiento_plaza1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="40"/>
+    <attributeValues id="sis_movimiento_plaza1IdPartida1"
+                     IterBinding="sis_movimiento_plaza1Iterator">
+      <AttrNames>
+        <Item Value="IdPartida"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="sis_anexo1Iterator" id="Estatus">
+      <AttrNames>
+        <Item Value="Estatus"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="comboPartida1">
+      <AttrNames>
+        <Item Value="comboPartida"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="sis_movimiento_plaza1Nomplaza"
+                     IterBinding="sis_movimiento_plaza1Iterator">
+      <AttrNames>
+        <Item Value="Nomplaza"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="sis_movimiento_plaza1Dictamen"
+                     IterBinding="sis_movimiento_plaza1Iterator">
+      <AttrNames>
+        <Item Value="Dictamen"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="sis_anexo1Iterator" id="logEstado">
+      <AttrNames>
+        <Item Value="logEstado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="sis_anexo1Iterator" id="Nomestado">
+      <AttrNames>
+        <Item Value="Nomestado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="sis_anexo1Iterator" id="estadoEncabezado">
+      <AttrNames>
+        <Item Value="estadoEncabezado"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="unidades_ejecIterator" id="obtenerUnidad"
+                  MethodName="obtenerUnidad" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.unidades_ejec">
+      <NamedData NDName="varPartida"
+                 NDValue="${bindings.sis_movimiento_plaza1IdPartida1.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </methodAction>
+    <action id="Delete" IterBinding="sis_movimiento_plaza1Iterator"
+            InstanceName="QUERRYSDataControl.sis_movimiento_plaza1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="30"/>
+    <attributeValues IterBinding="unidades_ejecIterator" id="IdPrograma">
+      <AttrNames>
+        <Item Value="IdPrograma"/>
+      </AttrNames>
+    </attributeValues>
+    <action IterBinding="consul_sisTipoMovPlaza1Iterator" id="TipoDocumento"
+            InstanceName="QUERRYSDataControl.consul_sisTipoMovPlaza1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="varUno" NDValue="1" NDType="java.lang.Integer"/>
+      <NamedData NDName="varDos" NDValue="4" NDType="java.lang.Integer"/>
+    </action>
+    <methodAction IterBinding="sis_anexo1Iterator" id="reset" MethodName="reset"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.sis_anexo1"/>
+    <attributeValues id="sis_anexo1Comentario" IterBinding="sis_anexo1Iterator">
+      <AttrNames>
+        <Item Value="Comentario"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="sis_movimiento_plaza1FacTiempo"
+                     IterBinding="sis_movimiento_plaza1Iterator">
+      <AttrNames>
+        <Item Value="FacTiempo"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="sis_movimiento_plaza1RegistroEmpleado"
+                     IterBinding="sis_movimiento_plaza1Iterator">
+      <AttrNames>
+        <Item Value="RegistroEmpleado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="sis_anexo1HechoPor" IterBinding="sis_anexo1Iterator">
+      <AttrNames>
+        <Item Value="HechoPor"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="sis_anexo1AprobadoPor"
+                     IterBinding="sis_anexo1Iterator">
+      <AttrNames>
+        <Item Value="AprobadoPor"/>
+      </AttrNames>
+    </attributeValues>
+    <action IterBinding="Sis_firmas_docs_vwIterator" id="FirmaDocumentos"
+            InstanceName="QUERRYSDataControl.Sis_firmas_docs_vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+    </action>
+    <list id="sis_anexo1AprobadoPor1" IterBinding="sis_anexo1Iterator"
+          StaticList="false" ListOperMode="0"
+          ListIter="Sis_firmas_docs_vwIterator">
+      <AttrNames>
+        <Item Value="AprobadoPor"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="Firma"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Nombre"/>
+      </ListDisplayAttrNames>
+    </list>
+    <list id="sis_anexo1HechoPor1" IterBinding="sis_anexo1Iterator"
+          StaticList="false" ListOperMode="0"
+          ListIter="Sis_firmas_docs_vwIterator">
+      <AttrNames>
+        <Item Value="HechoPor"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="Firma"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Nombre"/>
+      </ListDisplayAttrNames>
+    </list>
+    <list id="sis_movimiento_plaza1Dictamen1"
+          IterBinding="sis_movimiento_plaza1Iterator" StaticList="false"
+          ListOperMode="0" ListIter="consul_nomDictamen_vw1Iterator"
+          NullValueFlag="1" NullValueId="sis_movimiento_plaza1Dictamen1_null">
+      <AttrNames>
+        <Item Value="Dictamen"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="EmitidoPor"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="EmitidoPor"/>
+      </ListDisplayAttrNames>
+    </list>
+    <action IterBinding="consul_nomDictamen_vw1Iterator" id="NomEmitidoPor"
+            InstanceName="QUERRYSDataControl.consul_nomDictamen_vw1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="varpartida"
+                 NDValue="${bindings.sis_movimiento_plaza1IdPartida.selectedValue['idPartida']}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <attributeValues IterBinding="consul_nomDictamen_vw1Iterator"
+                     id="EmitidoPor">
+      <AttrNames>
+        <Item Value="EmitidoPor"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="sis_movimiento_plaza1Numero"
+                     IterBinding="sis_movimiento_plaza1Iterator">
+      <AttrNames>
+        <Item Value="Numero"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="sis_movimiento_plaza1Anio"
+                     IterBinding="sis_movimiento_plaza1Iterator">
+      <AttrNames>
+        <Item Value="Anio"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="sis_movimiento_plaza1Iterator"
+                     id="IdPuestoEscala1">
+      <AttrNames>
+        <Item Value="IdPuestoEscala"/>
+      </AttrNames>
+    </attributeValues>
+    <list StaticList="false" ListOperMode="0"
+          IterBinding="sis_movimiento_plaza1Iterator" ListIter="puesto1Iterator"
+          id="IdPuestoEscala">
+      <AttrNames>
+        <Item Value="IdPuestoEscala"/>
+        <Item Value="escalaMinima"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdPuesto"/>
+        <Item Value="Escalamin"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Nombre"/>
+        <Item Value="IdPuesto"/>
+      </ListDisplayAttrNames>
+    </list>
+    <list id="sis_movimiento_plaza1IdPuestoEscala"
+          IterBinding="sis_movimiento_plaza1Iterator" StaticList="false"
+          ListOperMode="0" ListIter="puesto1Iterator">
+      <AttrNames>
+        <Item Value="IdPuestoEscala"/>
+        <Item Value="escalaMinima"/>
+        <Item Value="Puesescalaf"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdPuesto"/>
+        <Item Value="Escalamin"/>
+        <Item Value="Escalafon"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Nombre"/>
+        <Item Value="IdPuesto"/>
+      </ListDisplayAttrNames>
+    </list>
+    <attributeValues id="sis_movimiento_plaza1Puesescalaf"
+                     IterBinding="sis_movimiento_plaza1Iterator">
+      <AttrNames>
+        <Item Value="Puesescalaf"/>
+      </AttrNames>
+    </attributeValues>
+    <list id="sis_movimiento_plaza1IdPartidaSicoin"
+          IterBinding="sis_movimiento_plaza1Iterator" StaticList="false"
+          ListOperMode="0" ListIter="partidasSICOINIterator">
+      <AttrNames>
+        <Item Value="IdPartidaSicoin"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdPartidaEgresos"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Formato"/>
+        <Item Value="Nombre"/>
+      </ListDisplayAttrNames>
+    </list>
+    <attributeValues IterBinding="sis_movimiento_plaza1Iterator"
+                     id="IdPartidaSicoin">
+      <AttrNames>
+        <Item Value="IdPartidaSicoin"/>
+      </AttrNames>
+    </attributeValues>
+    <action IterBinding="partidasSICOINIterator" id="PartidasSicoin"
+            InstanceName="QUERRYSDataControl.partidasSICOIN"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pIdDep"
+                 NDValue="${bindings.sis_anexo1IdDependencia.selectedValue['idDependencia']}"
+                 NDType="java.lang.Integer"/>
+      <NamedData NDName="pIdRenglon" NDValue="${bindings.IdRenglon.inputValue}"
+                 NDType="java.lang.Integer"/>
+    </action>
+    <attributeValues IterBinding="sis_movimiento_plaza1Iterator" id="IdPartida">
+      <AttrNames>
+        <Item Value="IdPartida"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="sis_movimiento_plaza1Iterator" id="IdRenglon">
+      <AttrNames>
+        <Item Value="IdRenglon"/>
+      </AttrNames>
+    </attributeValues>
+  </bindings>
+                </pageDefinition>

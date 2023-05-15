@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="desc_judicial_constancia"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="612"
+		 pageHeight="792"
+		 columnWidth="552"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="varsol" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="SUBREPORT_DIR" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<queryString><![CDATA[select distinct(orden.ID_JUICIO),em.REGISTRO_EMPLEADO, em.NOMBRECOMPLETO,orden.NO_JUICIO, orden.JUZGADO, orden.BENEFICIARIO, aux.valor,
+lower(sis_pkg_util.GETNUMERO_MES(to_char(sysdate,'MM'))) as mes,  
+lower(sis_pkg_util.GETNUMERO_ENTERO_TO_LETRAS(to_char(sysdate,'DD'))) as dia, lower(sis_pkg_util.GETNUMERO_ENTERO_TO_LETRAS(to_char(sysdate,'yyyy')))as año,
+initcap((select em.NOMBRECOMPLETO ||' '||'/'||em.REGISTRO_EMPLEADO from usuario_perfil us, sis_empleado_vw em where perfil = 'coordinador_descuento_judicial'
+and us.USUARIO = to_char(em.REGISTRO_EMPLEADO))) as firma, sis_pkg_util.GETNUMERO_TO_LETRAS(aux.valor, 1) as letra_valor
+from sis_solicitud sol, sis_ajuste_empleado ajusem, sis_empleado_vw em, sis_orden_judicial orden,
+(select sol.ID_SOLICITUD, abs( sum(calculoAjuste.VALOR_APLICADO) )as valor 
+from sis_nomina nomina, sis_det_calculo_ajuste calculoAjuste, sis_ajuste ajuste, sis_tipo_ajuste tipoAjuste,
+sis_orden_judicial ordenJudicial, sis_solicitud sol, sis_ajuste_empleado ajusem, sis_empleado em
+where calculoAjuste.ID_AJUSTE = ajuste.ID_AJUSTE and
+ajuste.ID_TIPOAJUSTE = tipoAjuste.ID_TIPOAJUSTE and
+tipoAjuste.NOMBRE like 'DESCUENTOS JUDICIALES' and
+calculoAjuste.ID_NOMINA = nomina.ID_NOMINA AND
+nomina.REGISTRO_EMPLEADO = sol.REGISTRO_EMPLEADO and
+sol.REGISTRO_EMPLEADO=em.REGISTRO_EMPLEADO and
+sol.ID_SOLICITUD = ordenJudicial.ID_SOLICITUD and
+ajusem.ID_AJUSTE = calculoajuste.ID_AJUSTE
+and ajusem.ID_SOLICITUD = sol.ID_SOLICITUD and
+ajusem.ID_CORRELATIVO = calculoajuste.CORRELATIVO and
+ajusem.REGISTRO_EMPLEADO = em.REGISTRO_EMPLEADO
+and ajusem.ESTADO = 'A' and
+sol.ID_SOLICITUD = $P{varsol}
+group by sol.ID_SOLICITUD) aux
+where em.REGISTRO_EMPLEADO = ajusem.REGISTRO_EMPLEADO 
+and ajusem.ID_SOLICITUD = sol.ID_SOLICITUD
+and sol.ID_SOLICITUD = orden.ID_SOLICITUD
+and sol.ID_SOLICITUD = aux.id_solicitud
+and sol.ID_SOLICITUD = $P{varsol}]]></queryString>
+
+	<field name="ID_JUICIO" class="java.math.BigDecimal"/>
+	<field name="REGISTRO_EMPLEADO" class="java.math.BigDecimal"/>
+	<field name="NOMBRECOMPLETO" class="java.lang.String"/>
+	<field name="NO_JUICIO" class="java.lang.String"/>
+	<field name="JUZGADO" class="java.lang.String"/>
+	<field name="BENEFICIARIO" class="java.lang.String"/>
+	<field name="VALOR" class="java.math.BigDecimal"/>
+	<field name="MES" class="java.lang.String"/>
+	<field name="DIA" class="java.lang.String"/>
+	<field name="AÑO" class="java.lang.String"/>
+	<field name="FIRMA" class="java.lang.String"/>
+	<field name="LETRA_VALOR" class="java.lang.String"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="147"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="254"
+						y="124"
+						width="80"
+						height="18"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true" isUnderline="true"/>
+					</textElement>
+				<text><![CDATA[CONSTANCIA]]></text>
+				</staticText>
+				<image  evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="24"
+						y="21"
+						width="40"
+						height="40"
+						key="image-1"/>
+					<box></box>
+					<graphicElement stretchType="NoStretch"/>
+					<imageExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR}+"escudo_blanco.jpg"]]></imageExpression>
+				</image>
+				<staticText>
+					<reportElement
+						x="0"
+						y="0"
+						width="90"
+						height="20"
+						key="staticText-3"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="6"/>
+					</textElement>
+				<text><![CDATA[UNIVERSIDAD DE SAN CARLOS DE GUATEMALA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="63"
+						width="90"
+						height="20"
+						key="staticText-4"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="6"/>
+					</textElement>
+				<text><![CDATA[Ciudad Universitaria, zona 12 Guatemala, Centroamérica]]></text>
+				</staticText>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="157"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="10"
+						y="0"
+						width="520"
+						height="130"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Justified">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["La División de Adminstración de Personal, de la Universidad de San Carlos de guatemala.  Hace Constar: Que según los registros respectivos, se tuvo a la vista que al señor "+  $F{NOMBRECOMPLETO} + ", con registro de personal No.   "+ $F{REGISTRO_EMPLEADO} +", se le han efectuado descuentos, según el Juicio No. " + $F{NO_JUICIO}  +", a cargo del Notificador Tercero del Juzgado  " + $F{JUZGADO} + ", promovido por  " + $F{BENEFICIARIO}+ ", hasta por la cantidad de  "  + $F{LETRA_VALOR}+" (Q." +$F{VALOR} +" ), misma que se encuentra depositada en la Caja Central de esta Universidad, a disposición del tribunal.  \n \n  A solicitud del interesado, y para los usos legales que le convenga, se extiende la presente en una hoja de papel simple con membrete de la Universidad de San Carlos de Guatemala, a los  "+$F{DIA}+" dias del mes de "+$F{MES}+"del año "+$F{AÑO}+"."]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="185"
+						y="133"
+						width="140"
+						height="20"
+						key="staticText-1"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[ID  Y ENSEÑAD A TODOS]]></text>
+				</staticText>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="30"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="117"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="174"
+						y="64"
+						width="195"
+						height="22"
+						key="textField-3"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Licda. " +$F{FIRMA}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="176"
+						y="78"
+						width="170"
+						height="20"
+						key="staticText-5"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Profesional de Recursos Humanos]]></text>
+				</staticText>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="30"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="50"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<lastPageFooter>
+			<band height="50"  isSplitAllowed="true" >
+			</band>
+		</lastPageFooter>
+		<summary>
+			<band height="50"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

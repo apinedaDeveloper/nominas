@@ -1,0 +1,249 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="SisRegPerAsignacionVw"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   ComponentClass="enlace_datos.consultas.gestiones.empleado.SisRegPerAsignacionVwImpl"
+   MsgBundleClass="enlace_datos.consultas.gestiones.empleado.common.SisRegPerAsignacionVwRowImplMsgBundle"
+   ComponentInterface="enlace_datos.consultas.gestiones.empleado.common.SisRegPerAsignacionVw"
+   ClientProxyName="enlace_datos.consultas.gestiones.empleado.client.SisRegPerAsignacionVwClient"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|Msg|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="pUsuario"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <Variable
+      Name="pAnio"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select 
+rgper.id_asignacion,
+rgper.registro_temporal,
+rgper.registro_empleado,
+empl.cui,
+rgper.nombrecompleto,
+rgper.operacion,
+rgper.id_partida_acceso,
+rgper.fecha,
+rgper.creado_por,
+rgper.fecha_asignacion,
+rgper.asignado_por,
+empl.clv,
+empl.email_institucional 
+from sis_asignacion_regper rgper
+left outer join sis_empleado empl on empl.registro_empleado=rgper.registro_empleado, partida b1
+where rgper.id_partida_acceso=b1.id_partida
+and exists(
+           select 1 from usuario_unidad b, partida c
+                where b.id_partida=c.id_partida
+           and usuario=:pUsuario
+           and b.tipo_usuario='TRABAJADOR'
+           and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+           and b1.d1=c.d1
+           and b1.d2=c.d2
+           and b1.d3d4=c.d3d4
+           and 
+           (
+            (b1.d7=c.d7
+             and b1.d6=c.d6
+             and b1.d5=c.d5
+            )
+            or
+          (
+           c.d5 is null
+           and c.d6 is null
+           and c.d7 is null 
+          )
+           )
+           and b1.aniomanual=c.aniomanual
+          )
+and to_char(nvl(rgper.fecha_asignacion,sysdate),'yyyy' )= :pAnio
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="IdAsignacion"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_ASIGNACION"
+      Expression="ID_ASIGNACION"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="RegistroTemporal"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="REGISTRO_TEMPORAL"
+      Expression="REGISTRO_TEMPORAL"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="RegistroEmpleado"
+      IsPersistent="false"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="REGISTRO_EMPLEADO"
+      Expression="REGISTRO_EMPLEADO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Cui"
+      IsPersistent="false"
+      Precision="13"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="CUI"
+      Expression="CUI"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="13" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nombrecompleto"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="250"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBRECOMPLETO"
+      Expression="NOMBRECOMPLETO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="250" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Operacion"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="1"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="OPERACION"
+      Expression="OPERACION"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="1" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdPartidaAcceso"
+      IsPersistent="false"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_PARTIDA_ACCESO"
+      Expression="ID_PARTIDA_ACCESO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Fecha"
+      IsPersistent="false"
+      IsNotNull="true"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA"
+      Expression="FECHA"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="CreadoPor"
+      IsPersistent="false"
+      Precision="20"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="CREADO_POR"
+      Expression="CREADO_POR"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="20" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaAsignacion"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_ASIGNACION"
+      Expression="FECHA_ASIGNACION"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="AsignadoPor"
+      IsPersistent="false"
+      Precision="20"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="ASIGNADO_POR"
+      Expression="ASIGNADO_POR"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="20" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Clv"
+      IsPersistent="false"
+      Precision="20"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="CLV"
+      Expression="CLV"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="20" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="EmailInstitucional"
+      IsPersistent="false"
+      Precision="150"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="EMAIL_INSTITUCIONAL"
+      Expression="EMAIL_INSTITUCIONAL"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="150" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

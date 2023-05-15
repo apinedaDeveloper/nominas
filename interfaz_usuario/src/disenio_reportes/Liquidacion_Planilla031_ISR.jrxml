@@ -1,0 +1,1711 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="Liquidacion_Planilla031_ISR"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="1008"
+		 pageHeight="612"
+		 columnWidth="946"
+		 columnSpacing="0"
+		 leftMargin="31"
+		 rightMargin="31"
+		 topMargin="28"
+		 bottomMargin="28"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pIdPlanilla" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[select pr.id_isr, det.id_isrproy_det, pr.anio, pr.correlativo, pr.fecha, InitCap(d.Nombre) Dependencia, p.formato, 
+(pr.doc_pendiente_numero||'-'||pr.doc_pendiente_anio) Docto_Pendiente, mes.nombre Mes, pr.numero_cheque, 
+(pr.planilla_numero||'-'||pr.planilla_anio) Planilla_NO,
+InitCaP(emp.Apellido1||NVL2(emp.apellido2, ' ' || emp.apellido2, '')|| ', ' || emp.nombre1||NVL2(emp.nombre2, ' ' || emp.nombre2, '')) NombreTrabajador, 
+emp.registro_empleado, emp.cui, emp.nit, c.Nombre_puesto, det.dias_laborados, det.salario_diario, det.total_devengado, 
+det.total_descuento total_descuentos_ordinarios, det.descuento_isr, (det.total_descuento+det.descuento_isr) total_descuentos, 
+det.bonificacion, det.total liquido_recibir, det.numero_cheque cheque_trabajador, sysdate fecha_impresion,
+(SELECT NVL(sum(nvl(valor_aplicado,0)),0) FROM sis_isrProy_det_desc des WHERE des.id_isrproy_det = det.id_isrproy_det AND des.id_ajuste = 4) as desc_jud_aliment,
+(SELECT NVL(sum(nvl(valor_aplicado,0)),0) FROM sis_isrProy_det_desc des WHERE des.id_isrproy_det = det.id_isrproy_det AND des.id_ajuste = 9) as prest_plan_prest,
+(SELECT NVL(sum(nvl(valor_aplicado,0)),0) FROM sis_isrProy_det_desc des WHERE des.id_isrproy_det = det.id_isrproy_det AND des.id_ajuste = 10) as cuota_segu_credi,
+(SELECT NVL(sum(nvl(valor_aplicado,0)),0) FROM sis_isrProy_det_desc des WHERE des.id_isrproy_det = det.id_isrproy_det AND des.id_ajuste = 15) as sueldos_pag_de_mas,
+(SELECT NVL(sum(nvl(valor_aplicado,0)),0) FROM sis_isrProy_det_desc des WHERE des.id_isrproy_det = det.id_isrproy_det AND des.id_ajuste = 21) as igss_4_83,
+(SELECT NVL(sum(nvl(valor_aplicado,0)),0) FROM sis_isrProy_det_desc des WHERE des.id_isrproy_det = det.id_isrproy_det AND des.id_ajuste = 23) as cuota_sind_stusc,
+(SELECT NVL(sum(nvl(valor_aplicado,0)),0) FROM sis_isrProy_det_desc des WHERE des.id_isrproy_det = det.id_isrproy_det AND des.id_ajuste = 24) as cuota_plan_prest,
+(SELECT NVL(sum(nvl(valor_aplicado,0)),0) FROM sis_isrProy_det_desc des WHERE des.id_isrproy_det = det.id_isrproy_det AND des.id_ajuste = 25) as igss_3,
+(SELECT NVL(sum(nvl(valor_aplicado,0)),0) FROM sis_isrProy_det_desc des WHERE des.id_isrproy_det = det.id_isrproy_det AND des.id_ajuste = 30) as desc_jud_deuda,
+(SELECT NVL(sum(nvl(valor_aplicado,0)),0) FROM sis_isrProy_det_desc des WHERE des.id_isrproy_det = det.id_isrproy_det AND des.id_ajuste = 51) as cuota_sind_sintrausac,
+(SELECT NVL(sum(nvl(valor_aplicado,0)),0) FROM sis_isrProy_det_desc des WHERE des.id_isrproy_det = det.id_isrproy_det AND des.id_ajuste in(21,25)) as total_igss,
+(SELECT NVL(sum(nvl(valor_aplicado,0)),0) FROM sis_isrProy_det_desc des WHERE des.id_isrproy_det = det.id_isrproy_det AND des.id_ajuste in(4,30)) as total_desc_jud
+from sis_isrproy_031 pr
+ inner join sep_partida_vw p on pr.id_partida = p.id_partida
+ inner join mes on pr.periodo = mes.id_mes
+ inner join sis_dependencia d on pr.id_dependencia = d.id_dependencia
+ inner join Sis_ISRProy_Det Det on pr.id_isr = Det.id_isr
+ inner join sis_contrato031 c on Det.id_contrato = c.id_contrato 
+ inner join sis_empleado_vw emp on c.registro_empleado = emp.registro_empleado
+where pr.id_isr = $P{pIdPlanilla}
+order by emp.apellido1, emp.apellido2, emp.nombre1, emp.nombre2]]></queryString>
+
+	<field name="ID_ISR" class="java.math.BigDecimal"/>
+	<field name="ID_ISRPROY_DET" class="java.math.BigDecimal"/>
+	<field name="ANIO" class="java.math.BigDecimal"/>
+	<field name="CORRELATIVO" class="java.math.BigDecimal"/>
+	<field name="FECHA" class="java.sql.Timestamp"/>
+	<field name="DEPENDENCIA" class="java.lang.String"/>
+	<field name="FORMATO" class="java.lang.String"/>
+	<field name="DOCTO_PENDIENTE" class="java.lang.String"/>
+	<field name="MES" class="java.lang.String"/>
+	<field name="NUMERO_CHEQUE" class="java.lang.String"/>
+	<field name="PLANILLA_NO" class="java.lang.String"/>
+	<field name="NOMBRETRABAJADOR" class="java.lang.String"/>
+	<field name="REGISTRO_EMPLEADO" class="java.math.BigDecimal"/>
+	<field name="CUI" class="java.lang.String"/>
+	<field name="NIT" class="java.lang.String"/>
+	<field name="NOMBRE_PUESTO" class="java.lang.String"/>
+	<field name="DIAS_LABORADOS" class="java.math.BigDecimal"/>
+	<field name="SALARIO_DIARIO" class="java.math.BigDecimal"/>
+	<field name="TOTAL_DEVENGADO" class="java.math.BigDecimal"/>
+	<field name="TOTAL_DESCUENTOS_ORDINARIOS" class="java.math.BigDecimal"/>
+	<field name="DESCUENTO_ISR" class="java.math.BigDecimal"/>
+	<field name="TOTAL_DESCUENTOS" class="java.math.BigDecimal"/>
+	<field name="BONIFICACION" class="java.math.BigDecimal"/>
+	<field name="LIQUIDO_RECIBIR" class="java.math.BigDecimal"/>
+	<field name="CHEQUE_TRABAJADOR" class="java.lang.String"/>
+	<field name="FECHA_IMPRESION" class="java.sql.Timestamp"/>
+	<field name="DESC_JUD_ALIMENT" class="java.math.BigDecimal"/>
+	<field name="PREST_PLAN_PREST" class="java.math.BigDecimal"/>
+	<field name="CUOTA_SEGU_CREDI" class="java.math.BigDecimal"/>
+	<field name="SUELDOS_PAG_DE_MAS" class="java.math.BigDecimal"/>
+	<field name="IGSS_4_83" class="java.math.BigDecimal"/>
+	<field name="CUOTA_SIND_STUSC" class="java.math.BigDecimal"/>
+	<field name="CUOTA_PLAN_PREST" class="java.math.BigDecimal"/>
+	<field name="IGSS_3" class="java.math.BigDecimal"/>
+	<field name="DESC_JUD_DEUDA" class="java.math.BigDecimal"/>
+	<field name="CUOTA_SIND_SINTRAUSAC" class="java.math.BigDecimal"/>
+	<field name="TOTAL_IGSS" class="java.math.BigDecimal"/>
+	<field name="TOTAL_DESC_JUD" class="java.math.BigDecimal"/>
+
+	<variable name="varSumaTotalDevengado" class="java.math.BigDecimal" resetType="Group" resetGroup="PLANILLA_NO" calculation="Sum">
+		<variableExpression><![CDATA[$F{TOTAL_DEVENGADO}]]></variableExpression>
+	</variable>
+	<variable name="varSumaBonificacion" class="java.math.BigDecimal" resetType="Group" resetGroup="PLANILLA_NO" calculation="Sum">
+		<variableExpression><![CDATA[$F{BONIFICACION}]]></variableExpression>
+	</variable>
+	<variable name="varSumaDescuentoIsr" class="java.math.BigDecimal" resetType="Group" resetGroup="PLANILLA_NO" calculation="Sum">
+		<variableExpression><![CDATA[$F{DESCUENTO_ISR}]]></variableExpression>
+	</variable>
+	<variable name="varSumaLiquidoRecibir" class="java.math.BigDecimal" resetType="Group" resetGroup="PLANILLA_NO" calculation="Sum">
+		<variableExpression><![CDATA[$F{LIQUIDO_RECIBIR}]]></variableExpression>
+	</variable>
+	<variable name="varSumaTotalDesc" class="java.math.BigDecimal" resetType="Group" resetGroup="PLANILLA_NO" calculation="Sum">
+		<variableExpression><![CDATA[$F{TOTAL_DESCUENTOS}]]></variableExpression>
+	</variable>
+	<variable name="varSumaCuotaIGSS" class="java.math.BigDecimal" resetType="Group" resetGroup="PLANILLA_NO" calculation="Sum">
+		<variableExpression><![CDATA[$F{TOTAL_IGSS}]]></variableExpression>
+	</variable>
+	<variable name="varSumaPlanPrestac" class="java.math.BigDecimal" resetType="Group" resetGroup="PLANILLA_NO" calculation="Sum">
+		<variableExpression><![CDATA[$F{CUOTA_PLAN_PREST}]]></variableExpression>
+	</variable>
+	<variable name="varSumaPrestamoPlanPrest" class="java.math.BigDecimal" resetType="Group" resetGroup="PLANILLA_NO" calculation="Sum">
+		<variableExpression><![CDATA[$F{PREST_PLAN_PREST}]]></variableExpression>
+	</variable>
+	<variable name="varSumaCuotaSeguro" class="java.math.BigDecimal" resetType="Group" resetGroup="PLANILLA_NO" calculation="Sum">
+		<variableExpression><![CDATA[$F{CUOTA_SEGU_CREDI}]]></variableExpression>
+	</variable>
+	<variable name="varSumaCuotaSindSTUSC" class="java.math.BigDecimal" resetType="Group" resetGroup="PLANILLA_NO" calculation="Sum">
+		<variableExpression><![CDATA[$F{CUOTA_SIND_STUSC}]]></variableExpression>
+	</variable>
+	<variable name="varSumaCuotaSindSINTRA" class="java.math.BigDecimal" resetType="Group" resetGroup="PLANILLA_NO" calculation="Sum">
+		<variableExpression><![CDATA[$F{CUOTA_SIND_SINTRAUSAC}]]></variableExpression>
+	</variable>
+	<variable name="varSumaDescsJudiciales" class="java.math.BigDecimal" resetType="Group" resetGroup="PLANILLA_NO" calculation="Sum">
+		<variableExpression><![CDATA[new BigDecimal($F{DESC_JUD_ALIMENT}.doubleValue()+$F{DESC_JUD_DEUDA}.doubleValue())]]></variableExpression>
+	</variable>
+
+		<group  name="PLANILLA_NO" >
+			<groupExpression><![CDATA[$F{PLANILLA_NO}]]></groupExpression>
+			<groupHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="152"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="0"
+						y="23"
+						width="142"
+						height="16"
+						key="staDescuentoISR"/>
+					<box leftPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[DESCUENTO ISR]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="219"
+						y="135"
+						width="142"
+						height="16"
+						key="staValorLiquido"/>
+					<box leftPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[SALARIO LÍQUIDO A RECIBIR]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="142"
+						y="23"
+						width="66"
+						height="16"
+						key="txtTotalDescuento"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{varSumaDescuentoIsr}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="361"
+						y="135"
+						width="66"
+						height="16"
+						key="txtTotalLiquido"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{varSumaLiquidoRecibir}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="7"
+						width="142"
+						height="16"
+						key="staValorLiquido-1"/>
+					<box leftPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[TOTAL DEVENGADO]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="142"
+						y="7"
+						width="66"
+						height="16"
+						key="txtTotalLiquido-1"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{varSumaTotalDevengado}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="39"
+						width="142"
+						height="16"
+						key="staDescuentoISR-1"/>
+					<box leftPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[CUOTA LABORAL IGSS]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="142"
+						y="39"
+						width="66"
+						height="16"
+						key="txtTotalDescuento-1"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{varSumaCuotaIGSS}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="55"
+						width="142"
+						height="16"
+						key="staDescuentoISR-2"/>
+					<box leftPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[PLAN DE PRESTACIONES 10.58%]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="142"
+						y="55"
+						width="66"
+						height="16"
+						key="txtTotalDescuento-2"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{varSumaPlanPrestac}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="219"
+						y="119"
+						width="142"
+						height="16"
+						key="staDescuentoISR-3"/>
+					<box leftPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[BONIFICACIÓN MENSUAL 076]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="361"
+						y="119"
+						width="66"
+						height="16"
+						key="txtTotalDescuento-3"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{varSumaBonificacion}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="219"
+						y="29"
+						width="177"
+						height="85"
+						key="staticText-2"/>
+					<box leftPadding="2" rightPadding="2"></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[(f) _____________________________ (sello)
+    Cargo:
+
+    Nombre:
+
+    DPI:
+
+    Registro Personal: ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="401"
+						y="29"
+						width="177"
+						height="85"
+						key="staticText-3"/>
+					<box leftPadding="2" rightPadding="2"></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[(f) _____________________________ (sello)
+    Cargo:
+
+    Nombre:
+
+    DPI:
+
+    Registro Personal: ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="583"
+						y="29"
+						width="177"
+						height="85"
+						key="staticText-4"/>
+					<box leftPadding="2" rightPadding="2"></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[(f) _____________________________ (sello)
+    Cargo:
+
+    Nombre:
+
+    DPI:
+
+    Registro Personal: ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="764"
+						y="29"
+						width="177"
+						height="85"
+						key="staticText-5"/>
+					<box leftPadding="2" rightPadding="2"></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[(f) _____________________________ (sello)
+    Cargo:
+
+    Nombre:
+
+    DPI:
+
+    Registro Personal: ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="71"
+						width="142"
+						height="16"
+						key="staDescuentoISR-4"/>
+					<box leftPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[PRESTAMO PLAN DE PRESTAC.]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="142"
+						y="71"
+						width="66"
+						height="16"
+						key="txtTotalDescuento-4"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{varSumaPrestamoPlanPrest}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="87"
+						width="142"
+						height="16"
+						key="staDescuentoISR-5"/>
+					<box leftPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[CUOTA SEGURO CRÉDITO]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="142"
+						y="87"
+						width="66"
+						height="16"
+						key="txtTotalDescuento-5"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{varSumaCuotaSeguro}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="103"
+						width="142"
+						height="16"
+						key="staDescuentoISR-6"/>
+					<box leftPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[CUOTA SINDICAL STUSC]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="142"
+						y="103"
+						width="66"
+						height="16"
+						key="txtTotalDescuento-6"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{varSumaCuotaSindSTUSC}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="119"
+						width="142"
+						height="16"
+						key="staDescuentoISR-7"/>
+					<box leftPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[CUOTA SINDICAL SINTRAUSAC]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="142"
+						y="119"
+						width="66"
+						height="16"
+						key="txtTotalDescuento-7"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{varSumaCuotaSindSINTRA}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="135"
+						width="142"
+						height="16"
+						key="staDescuentoISR-8"/>
+					<box leftPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[DESCUENTOS JUDICIALES]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="142"
+						y="135"
+						width="66"
+						height="16"
+						key="txtTotalDescuento-8"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{varSumaDescsJudiciales}]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupFooter>
+		</group>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="64"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="208"
+						y="0"
+						width="531"
+						height="28"
+						key="staticText"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="14" isBold="true"/>
+					</textElement>
+				<text><![CDATA[LIQUIDACIÓN DE PLANILLA DEL DESCUENTO DEL ISR]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="823"
+						y="0"
+						width="123"
+						height="20"
+						key="staForm"/>
+					<box rightPadding="2"></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Form. ISR-P-03]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="826"
+						y="45"
+						width="24"
+						height="16"
+						key="textField"/>
+					<box leftPadding="2"></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ANIO}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="800"
+						y="45"
+						width="26"
+						height="16"
+						key="eleAnio"/>
+					<box leftPadding="2" rightPadding="2"></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Año:]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="882"
+						y="28"
+						width="33"
+						height="16"
+						key="textField"/>
+					<box leftPadding="2"></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{CORRELATIVO}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="799"
+						y="28"
+						width="83"
+						height="16"
+						key="eleCorrelativo"/>
+					<box leftPadding="2" rightPadding="2"></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[No. de Correlativo:]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="882"
+						y="45"
+						width="47"
+						height="16"
+						key="textField"/>
+					<box leftPadding="2"></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.sql.Timestamp"><![CDATA[$F{FECHA}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="850"
+						y="45"
+						width="32"
+						height="16"
+						key="eleFecha"/>
+					<box leftPadding="2" rightPadding="2"></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Fecha:]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						mode="Opaque"
+						x="0"
+						y="46"
+						width="257"
+						height="18"
+						backcolor="#CCCCCC"
+						key="staNo-1"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{DEPENDENCIA}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="28"
+						width="257"
+						height="18"
+						key="staNo-2"/>
+					<box leftPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Unidad Ejecutora]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="257"
+						y="28"
+						width="159"
+						height="18"
+						key="staNo-3"/>
+					<box leftPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Partida Presupuestal]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						mode="Opaque"
+						x="257"
+						y="46"
+						width="159"
+						height="18"
+						backcolor="#CCCCCC"
+						key="staNo-4"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{FORMATO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						mode="Opaque"
+						x="416"
+						y="46"
+						width="120"
+						height="18"
+						backcolor="#CCCCCC"
+						key="staNo-5"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{DOCTO_PENDIENTE}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="416"
+						y="28"
+						width="120"
+						height="18"
+						key="staNo-6"/>
+					<box leftPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Documento Pendiente]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						mode="Opaque"
+						x="536"
+						y="46"
+						width="100"
+						height="18"
+						backcolor="#CCCCCC"
+						key="staNo-7"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{MES}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="536"
+						y="28"
+						width="100"
+						height="18"
+						key="staNo-8"/>
+					<box leftPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Período]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="636"
+						y="28"
+						width="154"
+						height="18"
+						key="staNo-9"/>
+					<box leftPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[No. Cheque o Nota de Débito]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						mode="Opaque"
+						x="636"
+						y="46"
+						width="154"
+						height="18"
+						backcolor="#CCCCCC"
+						key="staNo-10"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NUMERO_CHEQUE}]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="39"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="0"
+						y="0"
+						width="24"
+						height="39"
+						key="staNo"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[No.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="24"
+						y="0"
+						width="92"
+						height="39"
+						key="staNombreTrab"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Apellidos, Nombres]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="116"
+						y="0"
+						width="69"
+						height="39"
+						key="staCui"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Registro Personal y DPI]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="185"
+						y="0"
+						width="72"
+						height="39"
+						key="staPuesto"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Cargo]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="257"
+						y="0"
+						width="28"
+						height="39"
+						key="staDiasLaborados"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Días]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="285"
+						y="0"
+						width="39"
+						height="39"
+						key="staSalarioDiario"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Salario
+Diario]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="324"
+						y="0"
+						width="51"
+						height="39"
+						key="staTotalDevengado"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Total
+Devengado]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="743"
+						y="0"
+						width="47"
+						height="39"
+						key="staBonificacion"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Bonific. Mensual 076]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="375"
+						y="0"
+						width="41"
+						height="39"
+						key="staDesc_ISR"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Desc.
+ISR]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="790"
+						y="0"
+						width="47"
+						height="39"
+						key="staDesc_ISR-1"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Salario Líquido Recibir]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="696"
+						y="0"
+						width="47"
+						height="39"
+						key="staBonificacion-1"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Total Descnts.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="416"
+						y="0"
+						width="40"
+						height="39"
+						key="staDesc_ISR-2"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Cuota Laboral IGSS]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="456"
+						y="0"
+						width="40"
+						height="39"
+						key="staDesc_ISR-3"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Plan de Prestac. 10.58%]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="887"
+						y="0"
+						width="59"
+						height="39"
+						key="staDesc_ISR-4"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Firma]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="496"
+						y="0"
+						width="40"
+						height="39"
+						key="staBonificacion-2"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Prést. Plan Prest.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="536"
+						y="0"
+						width="40"
+						height="39"
+						key="staBonificacion-3"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Cuota Seguro Crédito]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="576"
+						y="0"
+						width="40"
+						height="39"
+						key="staBonificacion-4"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Cuota Sindical 	STUSC]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="616"
+						y="0"
+						width="40"
+						height="39"
+						key="staBonificacion-5"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Cuota Sindical 	SINTRA.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="656"
+						y="0"
+						width="40"
+						height="39"
+						key="staBonificacion-6"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Descs. Judicial.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="837"
+						y="0"
+						width="50"
+						height="39"
+						key="staPuesto-1"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Número de Cheque]]></text>
+				</staticText>
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="28"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="116"
+						y="0"
+						width="69"
+						height="28"
+						key="txtCUI"/>
+					<box rightPadding="2">					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{REGISTRO_EMPLEADO} + " " + $F{CUI}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="185"
+						y="0"
+						width="72"
+						height="28"
+						key="txtPuesto"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRE_PUESTO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="257"
+						y="0"
+						width="28"
+						height="28"
+						key="txtDiasLab"/>
+					<box rightPadding="2">					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DIAS_LABORADOS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="285"
+						y="0"
+						width="39"
+						height="28"
+						key="txtSalarioDiario"/>
+					<box rightPadding="2">					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{SALARIO_DIARIO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="324"
+						y="0"
+						width="51"
+						height="28"
+						key="txtTotalDevengado"/>
+					<box rightPadding="2">					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_DEVENGADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="743"
+						y="0"
+						width="47"
+						height="28"
+						key="txtBonificacion"/>
+					<box rightPadding="2">					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{BONIFICACION}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="375"
+						y="0"
+						width="41"
+						height="28"
+						key="txtDescuentoISR"/>
+					<box rightPadding="2">					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DESCUENTO_ISR}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="790"
+						y="0"
+						width="47"
+						height="28"
+						key="txtTotal"/>
+					<box rightPadding="2">					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{LIQUIDO_RECIBIR}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="24"
+						y="0"
+						width="92"
+						height="28"
+						key="textField"/>
+					<box leftPadding="2" rightPadding="2">					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+</box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true" pdfEncoding ="Cp1252"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRETRABAJADOR}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="696"
+						y="0"
+						width="47"
+						height="28"
+						key="textField"/>
+					<box rightPadding="2">					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_DESCUENTOS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="416"
+						y="0"
+						width="40"
+						height="28"
+						key="textField"/>
+					<box rightPadding="2">					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_IGSS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="456"
+						y="0"
+						width="40"
+						height="28"
+						key="textField"/>
+					<box rightPadding="2">					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{CUOTA_PLAN_PREST}]]></textFieldExpression>
+				</textField>
+				<rectangle>
+					<reportElement
+						x="887"
+						y="0"
+						width="59"
+						height="28"
+						key="rectangle-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Band" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="0"
+						width="24"
+						height="28"
+						key="textField-1"/>
+					<box rightPadding="2">					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.Integer"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="496"
+						y="0"
+						width="40"
+						height="28"
+						key="textField-4"/>
+					<box rightPadding="2">					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{PREST_PLAN_PREST}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="536"
+						y="0"
+						width="40"
+						height="28"
+						key="textField-5"/>
+					<box rightPadding="2">					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{CUOTA_SEGU_CREDI}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="576"
+						y="0"
+						width="40"
+						height="28"
+						key="textField-6"/>
+					<box rightPadding="2">					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{CUOTA_SIND_STUSC}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="616"
+						y="0"
+						width="40"
+						height="28"
+						key="textField-7"/>
+					<box rightPadding="2">					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{CUOTA_SIND_SINTRAUSAC}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="656"
+						y="0"
+						width="40"
+						height="28"
+						key="textField-8"/>
+					<box rightPadding="2">					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[new BigDecimal($F{DESC_JUD_ALIMENT}.doubleValue()+$F{DESC_JUD_DEUDA}.doubleValue())]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="837"
+						y="0"
+						width="50"
+						height="28"
+						key="txtPuesto-1"/>
+					<box rightPadding="2">					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{CHEQUE_TRABAJADOR}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="16"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="680"
+						y="0"
+						width="240"
+						height="16"
+						key="textField-2"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Página No. " + $V{PAGE_NUMBER} + " de "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="920"
+						y="0"
+						width="26"
+						height="16"
+						key="textField-3"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="0"
+						width="103"
+						height="16"
+						key="staticText-6"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Fecha de impresión:]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="103"
+						y="0"
+						width="145"
+						height="16"
+						key="textField-9"/>
+					<box leftPadding="2"></box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.sql.Timestamp"><![CDATA[$F{FECHA_IMPRESION}]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

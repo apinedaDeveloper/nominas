@@ -1,0 +1,257 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="ProcesoVw"
+   OrderBy="fecha_inicio desc"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   RowClass="enlace_datos.consultas.gestiones.procesos.ProcesoVwRowImpl"
+   ComponentClass="enlace_datos.consultas.gestiones.procesos.ProcesoVwImpl"
+   MsgBundleClass="enlace_datos.consultas.gestiones.procesos.common.ProcesoVwRowImplMsgBundle"
+   ComponentInterface="enlace_datos.consultas.gestiones.procesos.common.ProcesoVw"
+   ClientProxyName="enlace_datos.consultas.gestiones.procesos.client.ProcesoVwClient"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isCodegen" Value="true" />
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|Msg|Prog|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="tipo_proceso"
+      Kind="where"
+      Type="oracle.jbo.domain.Number"
+      DefaultValue="1" >
+   </Variable>
+   <Variable
+      Name="fechaI"
+      Kind="where"
+      Type="oracle.jbo.domain.Date" >
+   </Variable>
+   <Variable
+      Name="fechaF"
+      Kind="where"
+      Type="oracle.jbo.domain.Date" >
+   </Variable>
+   <SQLQuery><![CDATA[
+SELECT 
+    a.ID_PROCESO, 
+    a.PROCESO_PADRE, 
+    a.TIPOPROCESO, 
+    a.FECHA_INICIO, 
+    a.FECHA_FIN, 
+    a.ANIO, 
+    a.PERIODO, 
+    a.ID_ESTADO, 
+    a.OBSERVACIONES, 
+    b.NOMBRE NOMTIPOPROCESO, 
+    c.NOMBRE NOMPERIODO, 
+    d.NOMBRE NOMESTADO,
+    a.FECHA_REF,
+     a.CREADOPOR,
+    (
+    select sum(nominal)
+    from sis_nomina
+    where id_proceso=a.id_proceso
+    and id_proceso not in (101,99)
+    ) as totalNominal,
+    (
+    select fecha
+    from sis_autorizacion aut,
+    sis_autorizacion_det autd
+    where aut.id_autorizacion=autd.id_autorizacion
+    and aut.id_proceso=a.id_proceso
+    and id_estado in (44,53)
+    and rownum<=1
+    ) as fecha_auto
+FROM 
+    SIS_PROCESO a, 
+    SIS_TIPO_PROCESO b, 
+    SIS_PERIODO c, 
+    SIS_ESTADO d 
+WHERE 
+a.TIPOPROCESO = b.ID_TIPOPROCESO AND a.ID_ESTADO = d.ID_ESTADO AND c.ID_PERIODO(+) = a.PERIODO AND
+a.TIPOPROCESO = :tipo_proceso
+and trunc(a.fecha_inicio) between nvl(:fechaI,sysdate-30) and nvl(:fechaF,sysdate+1)
+   ]]></SQLQuery>
+   <EntityUsage
+      Name="SisProceso"
+      Entity="enlace_datos.entidades.gestiones.procesos.SisProceso" >
+      <DesignTime>
+         <Attr Name="_queryClause" Value="false" />
+      </DesignTime>
+   </EntityUsage>
+   <ViewAttribute
+      Name="IdProceso"
+      IsNotNull="true"
+      EntityAttrName="IdProceso"
+      EntityUsage="SisProceso"
+      AliasName="ID_PROCESO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="ProcesoPadre"
+      EntityAttrName="ProcesoPadre"
+      EntityUsage="SisProceso"
+      AliasName="PROCESO_PADRE" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Tipoproceso"
+      EntityAttrName="Tipoproceso"
+      EntityUsage="SisProceso"
+      AliasName="TIPOPROCESO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaInicio"
+      EntityAttrName="FechaInicio"
+      EntityUsage="SisProceso"
+      AliasName="FECHA_INICIO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaFin"
+      EntityAttrName="FechaFin"
+      EntityUsage="SisProceso"
+      AliasName="FECHA_FIN" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Anio"
+      EntityAttrName="Anio"
+      EntityUsage="SisProceso"
+      AliasName="ANIO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Periodo"
+      EntityAttrName="Periodo"
+      EntityUsage="SisProceso"
+      AliasName="PERIODO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdEstado"
+      IsNotNull="true"
+      EntityAttrName="IdEstado"
+      EntityUsage="SisProceso"
+      AliasName="ID_ESTADO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Observaciones"
+      EntityAttrName="Observaciones"
+      EntityUsage="SisProceso"
+      AliasName="OBSERVACIONES" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomtipoproceso"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMTIPOPROCESO"
+      Expression="NOMTIPOPROCESO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomperiodo"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="50"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMPERIODO"
+      Expression="NOMPERIODO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="50" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomestado"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMESTADO"
+      Expression="NOMESTADO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaRef"
+      EntityAttrName="FechaRef"
+      EntityUsage="SisProceso"
+      AliasName="FECHA_REF" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Creadopor"
+      EntityAttrName="Creadopor"
+      EntityUsage="SisProceso"
+      AliasName="CREADOPOR" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Totalnominal"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="TOTALNOMINAL"
+      Expression="TOTALNOMINAL"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaAuto"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_AUTO"
+      Expression="FECHA_AUTO"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="operacion"
+      IsQueriable="false"
+      IsPersistent="false"
+      EntityAttrName="operacion"
+      EntityUsage="SisProceso" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Datos_proceso_pago"
+      IsUpdateable="false"
+      IsSelected="false"
+      IsPersistent="false"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="VIEW_ATTR"
+      SQLType="VARCHAR" >
+   </ViewAttribute>
+   <ViewLinkAccessor
+      Name="SisProcesoPagoDetView"
+      ViewLink="enlace_datos.consultas.procesos.Proceso_proceso_pago_lnk"
+      Type="oracle.jbo.RowIterator"
+      IsUpdateable="false" >
+   </ViewLinkAccessor>
+   <ViewLinkAccessor
+      Name="asignacion_num_cheque"
+      ViewLink="enlace_datos.consultas.procesos.SisProcesoAsigCheque_lnk"
+      Type="oracle.jbo.RowIterator"
+      IsUpdateable="false" >
+   </ViewLinkAccessor>
+   <ViewLinkAccessor
+      Name="SisFolioEmisionView"
+      ViewLink="enlace_datos.consultas.procesos.SisFolioEmisionView_SisProcesoViewLink"
+      Type="oracle.jbo.RowIterator"
+      IsUpdateable="false" >
+   </ViewLinkAccessor>
+</ViewObject>

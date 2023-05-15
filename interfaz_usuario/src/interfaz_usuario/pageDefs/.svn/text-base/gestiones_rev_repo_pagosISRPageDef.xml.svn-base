@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel"
+                version="10.1.3.42.70" id="gestiones_rev_repo_pagosISRPageDef"
+                Package="interfaz_usuario.pageDefs">
+  <parameters/>
+  <executables>
+    <iterator id="SisCompleRevPendVwIterator" RangeSize="50"
+              Binds="SisCompleRevPendISRVw" DataControl="QUERRYSDataControl"/>
+    <variableIterator id="variables">
+      <variable Name="pIdVar" Type="oracle.jbo.domain.Number"/>
+      <variable Name="vDescrip" Type="java.lang.String"/>
+      <variable Name="vFechaI" Type="oracle.jbo.domain.Date"/>
+      <variable Name="vFechaF" Type="oracle.jbo.domain.Date"/>
+    </variableIterator>
+    <iterator id="SisAutorizacion_vwIterator" RangeSize="-1"
+              Binds="SisAutorizacion_vw" DataControl="QUERRYSDataControl"/>
+    <iterator id="SisAutorizacionDetVwIterator" RangeSize="-1"
+              Binds="SisAutorizacionDetVw" DataControl="QUERRYSDataControl"/>
+    <invokeAction Binds="ListaPend" id="exePend" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <iterator id="SisComplementoVwIterator" RangeSize="-1"
+              Binds="SisComplementoVw" DataControl="QUERRYSDataControl"/>
+    <iterator id="SisComplementoDetVwIterator" RangeSize="-1"
+              Binds="SisComplementoDetVw" DataControl="QUERRYSDataControl"/>
+    <invokeAction Binds="EjecutaComple" id="ExeComple" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <iterator id="Sis_CompleRevisados_vwIterator" RangeSize="50"
+              Binds="Sis_CompleRevisadosISR_vw" DataControl="QUERRYSDataControl"/>
+    <invokeAction Binds="EjecutarRev" id="Exe_xTipoRevisados"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <iterator id="ProcesoVwIterator" RangeSize="50" Binds="ProcesoVw"
+              DataControl="QUERRYSDataControl"/>
+    <invokeAction Binds="ExeListProcesos" id="EjecutaListProc"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+  </executables>
+  <bindings>
+    <table id="SisCompleRevPendVw" IterBinding="SisCompleRevPendVwIterator">
+      <AttrNames>
+        <Item Value="IdComplemento"/>
+        <Item Value="TipoComplemento"/>
+        <Item Value="Anio"/>
+        <Item Value="Periodo"/>
+        <Item Value="Nomperiodo"/>
+        <Item Value="Formato2"/>
+        <Item Value="Nomsubprog"/>
+        <Item Value="Codunidad"/>
+        <Item Value="Nomunidad"/>
+        <Item Value="IdEstado"/>
+        <Item Value="Nomestado"/>
+        <Item Value="CreadoPor"/>
+        <Item Value="FechaPresentacion"/>
+        <Item Value="Nomusuario"/>
+        <Item Value="isSel"/>
+      </AttrNames>
+    </table>
+    <action IterBinding="SisCompleRevPendVwIterator" id="SetComple"
+            InstanceName="QUERRYSDataControl.SisCompleRevPendVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="96">
+      <NamedData NDName="rowKey" NDValue="${row.rowKeyStr}"
+                 NDType="java.lang.String"/>
+    </action>
+    <attributeValues IterBinding="SisCompleRevPendVwIterator"
+                     id="IdComplemento">
+      <AttrNames>
+        <Item Value="IdComplemento"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="pIdVar1">
+      <AttrNames>
+        <Item Value="pIdVar"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="SisAutorizacionDetVwIterator"
+                  id="CambiarActivo" MethodName="CambiarEstadoGestion"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisAutorizacionDetVw">
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="pIdAutorizacion" NDType="oracle.jbo.domain.Number"
+                 NDValue="${bindings.IdAutorizacion.inputValue}"
+                />
+      <NamedData NDName="pNuevoEstado" NDType="oracle.jbo.domain.Number" 
+                 NDValue="172"/>
+      <NamedData NDName="pComentario" NDType="java.lang.String"/>
+      <NamedData NDName="pGestion" NDValue="COMPLEMENTOS"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="pIdGestion"
+                 NDValue="${bindings.IdComplemento.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </methodAction>
+    <attributeValues IterBinding="SisAutorizacion_vwIterator"
+                     id="IdAutorizacion">
+      <AttrNames>
+        <Item Value="IdAutorizacion"/>
+      </AttrNames>
+    </attributeValues>
+    <action IterBinding="SisCompleRevPendVwIterator" id="EjecutarPend"
+            InstanceName="QUERRYSDataControl.SisCompleRevPendVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="2"/>
+    <action IterBinding="SisCompleRevPendVwIterator" id="ListaPend"
+            InstanceName="QUERRYSDataControl.SisCompleRevPendVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pAnio" NDValue="${flujo_usuario.anioActual}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pIdEstado" NDValue="171"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <action IterBinding="SisAutorizacion_vwIterator" id="AutoComplemen"
+            InstanceName="QUERRYSDataControl.SisAutorizacion_vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pIdContrato" NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pIdProceso" NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pIdSolicitud" NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pIdAnexo" NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pIdHoraE" NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pIdVariacion" NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pIdComplemento"
+                 NDValue="${bindings.IdComplemento.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <attributeValues IterBinding="SisCompleRevPendVwIterator" id="IdEstado">
+      <AttrNames>
+        <Item Value="IdEstado"/>
+      </AttrNames>
+    </attributeValues>
+    <table IterBinding="SisComplementoDetVwIterator" id="SisComplementoDetVw">
+      <AttrNames>
+        <Item Value="IdComplementoDet"/>
+        <Item Value="IdTipoNomina"/>
+        <Item Value="IdEstado"/>
+        <Item Value="IdPartida"/>
+        <Item Value="IdPuesto"/>
+        <Item Value="NumeroPlaza"/>
+        <Item Value="Correlativo"/>
+        <Item Value="IdContrato"/>
+        <Item Value="RegistroEmpleado"/>
+        <Item Value="Anio"/>
+        <Item Value="Periodo"/>
+        <Item Value="SueldoBase"/>
+        <Item Value="Escalafon"/>
+        <Item Value="ComplSalarial"/>
+        <Item Value="Nominal"/>
+        <Item Value="TotalBono"/>
+        <Item Value="TotalDescuento"/>
+        <Item Value="Liquido"/>
+        <Item Value="CantidadHoras"/>
+        <Item Value="Diaslaborados"/>
+        <Item Value="Creadopor"/>
+        <Item Value="Fechacreacion"/>
+        <Item Value="ModPor"/>
+        <Item Value="FechaMod"/>
+        <Item Value="IdPartidaEgreso"/>
+        <Item Value="IdComplemento"/>
+        <Item Value="Tiponomina"/>
+        <Item Value="Nombreestado"/>
+        <Item Value="Nombrepuesto"/>
+        <Item Value="Nombrecompleto"/>
+        <Item Value="Formato1"/>
+        <Item Value="SueldoNominalReal"/>
+        <Item Value="SueldoNominalProyectado"/>
+        <Item Value="IdSis21"/>
+        <Item Value="isSel"/>
+        <Item Value="IdPuestoA"/>
+      </AttrNames>
+    </table>
+    <action IterBinding="SisComplementoVwIterator" id="EjecutaComple"
+            InstanceName="QUERRYSDataControl.SisComplementoVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="pTipoCompl" NDValue="6"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="fechaI" NDType="oracle.jbo.domain.Date"/>
+      <NamedData NDName="fechaF" NDType="oracle.jbo.domain.Date"/>
+      <NamedData NDName="pOpcion" NDType="oracle.jbo.domain.Number"
+                 NDValue="0"/>
+    </action>
+    <methodAction IterBinding="SisComplementoVwIterator" id="BuscarXIdComple"
+                  MethodName="actualizarVW" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisComplementoVw">
+      <NamedData NDName="pIdComplemento"
+                 NDValue="${bindings.IdComplemento.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </methodAction>
+    <methodAction IterBinding="SisCompleRevPendVwIterator"
+                  id="CambiarEstadoActual" MethodName="CambiarEstadoActual"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisCompleRevPendISRVw">
+      <NamedData NDName="pValor" NDValue="true" NDType="java.lang.Boolean"/>
+    </methodAction>
+    <methodAction IterBinding="SisCompleRevPendVwIterator"
+                  id="CambiarEstadoTodos" MethodName="CambiarEstadoTodos"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisCompleRevPendISRVw">
+      <NamedData NDName="pValor" NDValue="false" NDType="java.lang.Boolean"/>
+    </methodAction>
+    <table id="Sis_CompleRevisados_vw"
+           IterBinding="Sis_CompleRevisados_vwIterator">
+      <AttrNames>
+        <Item Value="IdComplemento"/>
+        <Item Value="TipoComplemento"/>
+        <Item Value="Anio"/>
+        <Item Value="Periodo"/>
+        <Item Value="Nomperiodo"/>
+        <Item Value="Formato2"/>
+        <Item Value="Nomsubprog"/>
+        <Item Value="Codunidad"/>
+        <Item Value="Nomunidad"/>
+        <Item Value="IdEstado"/>
+        <Item Value="Nomestado"/>
+        <Item Value="CreadoPor"/>
+        <Item Value="FechaPresentacion"/>
+        <Item Value="Nomusuario"/>
+        <Item Value="IdTipoComplemento"/>
+        <Item Value="Ultimoestado"/>
+        <Item Value="Usuarioauto"/>
+        <Item Value="Nombreauto"/>
+        <Item Value="Fechaauto"/>
+        <Item Value="Proceso"/>
+      </AttrNames>
+    </table>
+    <action IterBinding="Sis_CompleRevisados_vwIterator" id="EjeCompRevisados"
+            InstanceName="QUERRYSDataControl.Sis_CompleRevisados_vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="2"/>
+    <action IterBinding="Sis_CompleRevisados_vwIterator"
+            id="setCurrentRowWithKey"
+            InstanceName="QUERRYSDataControl.Sis_CompleRevisados_vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="96">
+      <NamedData NDName="rowKey" NDValue="${row.rowKeyStr}"
+                 NDType="java.lang.String"/>
+    </action>
+    <methodAction IterBinding="SisCompleRevPendVwIterator"
+                  id="filtrar_x_tipo_ISR" MethodName="filtrar_x_tipo_ISR"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisCompleRevPendVw">
+      <NamedData NDName="pTipoComplemento" NDValue="6"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="pAnio" NDValue="${flujo_usuario.anioActual}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pEstado" NDValue="171"
+                 NDType="oracle.jbo.domain.Number"/>
+    </methodAction>
+    <methodAction IterBinding="Sis_CompleRevisados_vwIterator"
+                  id="EjecutarRev1" MethodName="filtrar_x_tipoISR"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.Sis_CompleRevisados_vw">
+      <NamedData NDName="pTipoComplemento" NDValue="6"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="pAnio" NDValue="${flujo_usuario.anioActual}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </methodAction>
+    <action IterBinding="Sis_CompleRevisados_vwIterator" id="EjecutarRev"
+            InstanceName="QUERRYSDataControl.Sis_CompleRevisadosISR_vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pAnio" NDValue="${flujo_usuario.anioActual}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <table id="ProcesoVw" IterBinding="ProcesoVwIterator">
+      <AttrNames>
+        <Item Value="IdProceso"/>
+        <Item Value="ProcesoPadre"/>
+        <Item Value="Tipoproceso"/>
+        <Item Value="FechaInicio"/>
+        <Item Value="FechaFin"/>
+        <Item Value="Anio"/>
+        <Item Value="Periodo"/>
+        <Item Value="IdEstado"/>
+        <Item Value="Observaciones"/>
+        <Item Value="Nomtipoproceso"/>
+        <Item Value="Nomperiodo"/>
+        <Item Value="Nomestado"/>
+        <Item Value="FechaRef"/>
+        <Item Value="Creadopor"/>
+        <Item Value="Totalnominal"/>
+        <Item Value="FechaAuto"/>
+        <Item Value="operacion"/>
+        <Item Value="Datos_proceso_pago"/>
+      </AttrNames>
+    </table>
+    <action IterBinding="ProcesoVwIterator" id="ExeListProcesos"
+            InstanceName="QUERRYSDataControl.ProcesoVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="tipo_proceso" NDValue="28"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="fechaI" NDValue="${bindings.vFechaI1.inputValue}"
+                 NDType="oracle.jbo.domain.Date"/>
+      <NamedData NDName="fechaF" NDValue="${bindings.vFechaF1.inputValue}"
+                 NDType="oracle.jbo.domain.Date"/>
+    </action>
+    <attributeValues IterBinding="variables" id="vDescrip1">
+      <AttrNames>
+        <Item Value="vDescrip"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction id="generar_proceso"
+                  InstanceName="procedimientosDataControl.dataProvider"
+                  DataControl="procedimientosDataControl"
+                  MethodName="generar_proceso" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="false"
+                  ReturnName="procedimientosDataControl.methodResults.procedimientosDataControl_dataProvider_generar_proceso_result">
+      <NamedData NDName="pIdProceso" NDValue="0"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pTipoProceso" NDValue="28"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pPeriodo" NDValue="${flujo_usuario.mesActual}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pObservaciones"
+                 NDValue="${bindings.vDescrip1.inputValue}"
+                 NDType="java.lang.String"/>
+    </methodAction>
+    <action id="Commit2" InstanceName="procedimientosDataControl"
+            DataControl="procedimientosDataControl" RequiresUpdateModel="true"
+            Action="100"/>
+    <attributeValues IterBinding="ProcesoVwIterator" id="IdProceso">
+      <AttrNames>
+        <Item Value="IdProceso"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="ProcesoVwIterator" id="IdEstadoProc">
+      <AttrNames>
+        <Item Value="IdEstado"/>
+      </AttrNames>
+    </attributeValues>
+    <action IterBinding="ProcesoVwIterator" id="setProceso"
+            InstanceName="QUERRYSDataControl.ProcesoVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="96">
+      <NamedData NDName="rowKey" NDValue="${row.rowKeyStr}"
+                 NDType="java.lang.String"/>
+    </action>
+    <attributeValues IterBinding="variables" id="vFechaI1">
+      <AttrNames>
+        <Item Value="vFechaI"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="vFechaF1">
+      <AttrNames>
+        <Item Value="vFechaF"/>
+      </AttrNames>
+    </attributeValues>
+  </bindings>                                
+</pageDefinition>

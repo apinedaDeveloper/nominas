@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="descuentos_a_aplicar"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="792"
+		 pageHeight="612"
+		 columnWidth="792"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="contrato" isForPrompting="true" class="java.lang.String"/>
+	<queryString><![CDATA[select nombre,calculado, SUM(calculado) OVER(PARTITION BY nomOperacion) AS total from (
+select a.id_ajuste,b.id_tipoajuste,a.nombre,opcional,nivel,sis_pkg_calculos.GETVALORAJUSTE(c.id_contrato,a.id_ajuste,sysdate) as calculado
+,c.fecha_inicio,nvl(c.fecha_fin,c.fecha_inicio+1) as fecha_fin,b.operacion,decode(b.operacion,'D','DESCUENTO','I','BONO') as nomOperacion
+from sis_ajuste a,sis_tipo_ajuste b,sis_ajuste_contrato c, sis_contrato c1
+where
+a.id_tipoajuste=b.id_tipoajuste
+and c.id_ajuste=a.id_ajuste
+and c.id_contrato=$P{contrato}
+and c1.id_contrato=c.id_contrato
+and a.id_ajuste not in (1,4,19,3,7,9,10,12,30,5)
+and b.operacion='D'
+and estado='A'
+and id_proceso is null
+and c1.fecha_inicio_doc between c.fecha_inicio and nvl(c.fecha_fin,c1.fecha_inicio_doc+1)
+union
+select a.id_ajuste,c.id_tipoajuste,d.nombre,d.opcional,d.nivel,sis_pkg_calculos.GETVALORAJUSTE(b.id_contrato,a.id_ajuste,sysdate) as calculado
+,a.fecha_inicio,nvl(a.fecha_fin,a.fecha_inicio+1) as fecha_fin,c.operacion,decode(c.operacion,'D','DESCUENTO','I','BONO') as nomOperacion 
+from sis_ajuste_empleado a,sis_contrato b,sis_tipo_ajuste c,sis_ajuste d
+where b.registro_empleado=a.registro_empleado
+and c.id_tipoajuste=d.id_tipoajuste
+and a.id_ajuste=d.id_ajuste
+and b.id_contrato=$P{contrato}
+and c.operacion='D'
+--and a.estado='A'
+and d.id_ajuste not in (1,4,19,3,7,9,10,12,30,43,44,5,45,46,47)
+and id_proceso is null
+--and b.fecha_inicio_doc between a.fecha_inicio and nvl(a.fecha_fin,b.fecha_inicio_doc+1)
+--Linea original
+--and b.fecha_inicio_doc between a.fecha_inicio and nvl(a.fecha_fin,b.fecha_inicio_doc+1)
+--Linea modificada 14/04/2016 por Rolando Anona
+and (b.fecha_inicio_doc between a.fecha_inicio and nvl(a.fecha_fin,b.fecha_inicio_doc+1) or (b.fecha_inicio_doc between a.fecha_inicio and a.fecha_fin) )
+)
+order by nombre]]></queryString>
+
+	<field name="NOMBRE" class="java.lang.String"/>
+	<field name="CALCULADO" class="java.math.BigDecimal"/>
+	<field name="TOTAL" class="java.math.BigDecimal"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="9"  isSplitAllowed="false" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="10"
+						y="0"
+						width="160"
+						height="9"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRE}]]></textFieldExpression>
+				</textField>
+				<ellipse>
+					<reportElement
+						x="2"
+						y="3"
+						width="3"
+						height="3"
+						backcolor="#000000"
+						key="ellipse-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</ellipse>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="false" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

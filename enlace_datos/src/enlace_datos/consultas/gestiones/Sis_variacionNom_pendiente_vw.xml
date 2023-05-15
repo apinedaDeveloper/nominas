@@ -1,0 +1,271 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="Sis_variacionNom_pendiente_vw"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   RowClass="enlace_datos.consultas.gestiones.Sis_variacionNom_pendiente_vwRowImpl"
+   ComponentClass="enlace_datos.consultas.gestiones.Sis_variacionNom_pendiente_vwImpl"
+   MsgBundleClass="enlace_datos.consultas.gestiones.common.Sis_variacionNom_pendiente_vwRowImplMsgBundle"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isCodegen" Value="true" />
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|Msg|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="pUsuario"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <SQLQuery><![CDATA[
+SELECT SisVariacionNomina.ID_VARIACION_NOMINA, 
+       SisVariacionNomina.ID_CONTRATO, 
+       SisVariacionNomina.ESTADO_CONTRATO, 
+       SisVariacionNomina.DESCRIPCION, 
+       SisVariacionNomina.FECHA_CREACION, 
+       SisVariacionNomina.CREADO_POR, 
+       SisVariacionNomina.REGISTRO_EMPLEADO,
+       empl.cui,
+       empl.nombrecompleto,
+       SisVariacionNomina.ID_ESTADO,
+       est.nombre as nombreEstado,
+       aj.nombre as nomAjuste,
+       prt.formato as partida,
+       cont.numero_plaza
+FROM SIS_VARIACION_NOMINA SisVariacionNomina, sis_estado est, sis_variacion_det_ajuste dta, sis_ajuste aj, sis_partida2_vw prt, sis_contrato cont,
+sis_empleado_vw empl
+where est.id_estado=SisVariacionNomina.id_estado
+and dta.id_variacion_nomina=SisVariacionNomina.id_variacion_nomina
+and aj.id_ajuste=dta.id_ajuste
+and cont.id_contrato=SisVariacionNomina.id_contrato
+and cont.id_partida=prt.id_partida
+and empl.registro_empleado=sisVariacionNomina.registro_empleado
+and dta.id_ajuste in
+(
+select id_ajuste from sis_perfil_ajuste prfa,usuario_perfil usrf
+where prfa.perfil=usrf.perfil
+and usrf.usuario=:pUsuario
+)
+and est.nombre='TRASLADADO'
+and
+exists(
+select 1 from usuario_unidad b, partida c
+where b.id_partida=c.id_partida
+and usuario=:pUsuario
+and b.tipo_usuario='TRABAJADOR'
+and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+and prt.aniomanual=c.aniomanual
+and prt.d1=c.d1
+and prt.d2=c.d2
+and prt.d3d4=c.d3d4
+and 
+(
+(
+prt.d7=c.d7
+and prt.d6=c.d6
+and prt.d5=c.d5
+)
+or
+(
+c.d5 is null
+and c.d6 is null
+and c.d7 is null 
+)
+)
+)
+order by id_variacion_nomina desc
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="IdVariacionNomina"
+      IsPersistent="false"
+      IsNotNull="true"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_VARIACION_NOMINA"
+      Expression="ID_VARIACION_NOMINA"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdContrato"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_CONTRATO"
+      Expression="ID_CONTRATO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="EstadoContrato"
+      IsPersistent="false"
+      Precision="3"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ESTADO_CONTRATO"
+      Expression="ESTADO_CONTRATO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Descripcion"
+      IsPersistent="false"
+      Precision="250"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="DESCRIPCION"
+      Expression="DESCRIPCION"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="250" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaCreacion"
+      IsPersistent="false"
+      IsNotNull="true"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_CREACION"
+      Expression="FECHA_CREACION"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="CreadoPor"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="20"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="CREADO_POR"
+      Expression="CREADO_POR"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="20" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="RegistroEmpleado"
+      IsPersistent="false"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="REGISTRO_EMPLEADO"
+      Expression="REGISTRO_EMPLEADO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Cui"
+      IsPersistent="false"
+      Precision="13"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="CUI"
+      Expression="CUI"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="13" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nombrecompleto"
+      IsPersistent="false"
+      Precision="305"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBRECOMPLETO"
+      Expression="NOMBRECOMPLETO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="305" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdEstado"
+      IsPersistent="false"
+      Precision="3"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_ESTADO"
+      Expression="ID_ESTADO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nombreestado"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBREESTADO"
+      Expression="NOMBREESTADO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomajuste"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMAJUSTE"
+      Expression="NOMAJUSTE"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Partida"
+      IsPersistent="false"
+      Precision="252"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="PARTIDA"
+      Expression="PARTIDA"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="252" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="NumeroPlaza"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="5"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="NUMERO_PLAZA"
+      Expression="NUMERO_PLAZA"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

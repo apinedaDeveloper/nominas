@@ -1,0 +1,704 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="PolizaAumentoPresu_plAct"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="612"
+		 pageHeight="792"
+		 columnWidth="552"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pIdAumento" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pAnio" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[select * from (
+select 
+(select porcentaje from sis_aumento_salarial where id_aumento_salarial=$P{pIdAumento}) as porcentaje,
+(select fecha_inicio from sis_aumento_salarial where id_aumento_salarial=$P{pIdAumento}) as inicioAumento,
+ abs(principal.totalplazaconaumento2-principal.totalPlazaSinAumento2) as diferencia,
+ principal.*,
+(select to_char(d3d4,'00')||' - '||nombre from partida where id_partida=sep_util_pkg.GETIDUNIDADSUBPROGRAMA(principal.ID_PARTIDA,'UNIDAD')) as UNIDAD,
+(select d1||d2||trim(to_char(d3d4,'00'))||d5||d6||d7||' - '||nombre from partida where id_partida=sep_util_pkg.GETIDUNIDADSUBPROGRAMA(principal.ID_PARTIDA,'SUBPROGRAMA')) as SUBPROGRAMA
+from (
+select 
+id_partida,
+partida,
+nombre,
+sum(totalPlazaSinAumento) as totalPlazaSinAumento2,
+sum(totalplazaconaumento) as totalplazaconaumento2
+from (
+select 
+  datos1.*,
+  salario_base*mesesvigencia as totalPlazaSinAumento,
+  case when id_puesto in (999999,999990,999994) then 
+    (ceil(salario_base*(1+(PORCENTAJE/100))))*mesesvigenciaAumento+(salario_base*(mesesvigencia-mesesvigenciaaumento)) 
+     else 
+     escalamin_nueva*cantidad_horas*mesesvigenciaAumento+(escalamin_actual*cantidad_horas*(mesesvigencia-mesesvigenciaaumento))
+  end as totalPlazaConAumento
+from(
+select 
+part.id_partida,
+part.formato2 as partida,
+part.nombre,
+pl.id_puesto,
+pl.numero_plaza,
+pl.CANTIDAD_HORAS,
+pl.salario_base,
+pl.fecha_inicio,
+pl.fecha_fin,
+aum.fecha_inicio as fecha_inicio_aumento,
+round(months_between(pl.fecha_fin+1,greatest(pl.fecha_inicio,aum.FECHA_INICIO)),2) as mesesVigenciaAumento,
+months_between(pl.fecha_fin+1,pl.fecha_inicio) as mesesVigencia,
+aum.porcentaje,
+aumdt.escalamin_nueva,
+aumdt.escalamin_actual
+from sis_plaza pl, 
+sis_aumento_salarial aum, 
+sis_aumento_sal_det aumdt, 
+sep_partida_vw part
+where aum.id_aumento_salarial=aumdt.id_aumento_salarial
+and aum.id_aumento_salarial=$P{pIdAumento}
+and aumdt.ID_PUESTO=pl.id_puesto
+and part.d2 not in(5)
+and part.id_partida=pl.id_partida
+and pl.correlativo=$P{pAnio}
+and round(months_between(pl.fecha_fin+1,greatest(pl.fecha_inicio,aum.fecha_inicio)),2)>0
+and  not exists(
+select 1 from sis_movimiento_plaza mpl, sis_anexo an
+where mpl.id_partida=pl.id_partida
+and mpl.numero_plaza=pl.numero_plaza
+and mpl.correlativo=pl.CORRELATIVO
+and mpl.OPERACION = 'B'
+and aum.fecha_inicio between mpl.FECHA_inicio and mpl.fecha_fin
+and mpl.fecha_fin>=pl.fecha_fin
+and an.id_anexo=mpl.id_anexo
+and an.estatus in (34)
+and  not exists(
+select 1 from sis_movimiento_plaza mpl2, sis_anexo an2
+where mpl2.id_partida=mpl.id_partida
+and mpl2.numero_plaza=mpl.numero_plaza
+and mpl2.correlativo=mpl.CORRELATIVO
+and mpl2.OPERACION = 'A'
+and aum.fecha_inicio between mpl2.FECHA_inicio and mpl2.fecha_fin
+and an2.id_anexo=mpl2.id_anexo
+and an2.estatus in (34)
+)
+)
+) datos1
+) datos2
+group by id_partida,nombre,partida
+) principal
+union
+select 
+(select porcentaje from sis_aumento_salarial where id_aumento_salarial=$P{pIdAumento}) as porcentaje,
+(select fecha_inicio from sis_aumento_salarial where id_aumento_salarial=$P{pIdAumento}) as inicioAumento,
+ principal.totalplazaconaumento2-principal.totalPlazaSinAumento2 as diferencia,
+ principal.*,
+(select to_char(d3d4,'00')||' - '||nombre from partida where id_partida=sep_util_pkg.GETIDUNIDADSUBPROGRAMA(principal.ID_PARTIDA,'UNIDAD')) as UNIDAD,
+(select d1||d2||trim(to_char(d3d4,'00'))||d5||d6||d7||' - '||nombre from partida where id_partida=sep_util_pkg.GETIDUNIDADSUBPROGRAMA(principal.ID_PARTIDA,'SUBPROGRAMA')) as SUBPROGRAMA
+from (
+select 
+part2.id_partida,
+partida,
+part2.nombre,
+sum(totalPlazaSinAumento) as totalPlazaSinAumento2,
+sum(totalplazaconaumento) as totalplazaconaumento2
+from (
+select 
+  datos1.*,
+  case when id_puesto in (210170,210175,210180,210185,210190) then
+    escalafon*mesesvigencia*cantidad_horas
+   else
+   0
+  end as totalPlazaSinAumento,
+  case when id_puesto in (210170,210175,210180,210185,210190) then      
+     (escalafon_nuevo*cantidad_horas*mesesvigenciaAumento)+(escalafon*cantidad_horas*(mesesvigencia-mesesvigenciaaumento))
+   else
+    0  
+  end as totalPlazaConAumento
+from(
+select 
+part.id_partida,
+substr(formato2,1,8)||'17' as partida,
+part.nombre,
+pl.id_puesto,
+pl.numero_plaza,
+pl.CANTIDAD_HORAS,
+pl.salario_base,
+pl.fecha_inicio,
+pl.fecha_fin,
+aum.fecha_inicio as fecha_inicio_aumento,
+round(months_between(pl.fecha_fin+1,greatest(pl.fecha_inicio,aum.FECHA_INICIO)),2) as mesesVigenciaAumento,
+months_between(pl.fecha_fin+1,pl.fecha_inicio) as mesesVigencia,
+aum.porcentaje,
+aumdt.escalafon_nuevo,
+aumdt.escalafon
+from sis_plaza pl, 
+sis_aumento_salarial aum, 
+sis_aumento_sal_det aumdt, 
+sep_partida_vw part
+where aum.id_aumento_salarial=aumdt.id_aumento_salarial
+and aum.id_aumento_salarial=$P{pIdAumento}
+and aumdt.ID_PUESTO=pl.id_puesto
+and part.d2 not in(5)
+and part.id_partida=pl.id_partida
+and pl.correlativo=$P{pAnio}
+and round(months_between(pl.fecha_fin+1,greatest(pl.fecha_inicio,aum.fecha_inicio)),2)>0
+and  not exists(
+select 1 from sis_movimiento_plaza mpl, sis_anexo an
+where mpl.id_partida=pl.id_partida
+and mpl.numero_plaza=pl.numero_plaza
+and mpl.correlativo=pl.CORRELATIVO
+and mpl.OPERACION = 'B'
+and mpl.cantidad_horas=pl.cantidad_horas
+and aum.fecha_inicio between mpl.FECHA_inicio and mpl.fecha_fin
+and mpl.fecha_fin>=pl.fecha_fin
+and an.id_anexo=mpl.id_anexo
+and an.estatus in (34)
+and  not exists(
+select 1 from sis_movimiento_plaza mpl2, sis_anexo an2
+where mpl2.id_partida=mpl.id_partida
+and mpl2.numero_plaza=mpl.numero_plaza
+and mpl2.correlativo=mpl.CORRELATIVO
+and mpl2.OPERACION = 'A'
+and aum.fecha_inicio between mpl2.FECHA_inicio and mpl2.fecha_fin
+and an2.id_anexo=mpl2.id_anexo
+and an2.estatus in (34)
+)
+)
+) datos1
+) datos2, sep_partida_vw part2
+where datos2.partida=part2.formato2
+group by part2.id_partida,part2.nombre,partida
+) principal
+where totalplazaconaumento2>0
+)
+order by partida]]></queryString>
+
+	<field name="PORCENTAJE" class="java.math.BigDecimal"/>
+	<field name="INICIOAUMENTO" class="java.sql.Timestamp"/>
+	<field name="DIFERENCIA" class="java.math.BigDecimal"/>
+	<field name="ID_PARTIDA" class="java.math.BigDecimal"/>
+	<field name="PARTIDA" class="java.lang.String"/>
+	<field name="NOMBRE" class="java.lang.String"/>
+	<field name="TOTALPLAZASINAUMENTO2" class="java.math.BigDecimal"/>
+	<field name="TOTALPLAZACONAUMENTO2" class="java.math.BigDecimal"/>
+	<field name="UNIDAD" class="java.lang.String"/>
+	<field name="SUBPROGRAMA" class="java.lang.String"/>
+
+	<variable name="vTotalSubprogramaSIN" class="java.math.BigDecimal" resetType="Group" resetGroup="SubPrograma" calculation="Sum">
+		<variableExpression><![CDATA[$F{TOTALPLAZASINAUMENTO2}]]></variableExpression>
+	</variable>
+	<variable name="vTotalSubprogramaCon" class="java.math.BigDecimal" resetType="Group" resetGroup="SubPrograma" calculation="Sum">
+		<variableExpression><![CDATA[$F{TOTALPLAZACONAUMENTO2}]]></variableExpression>
+	</variable>
+	<variable name="vTotalUnidadSin" class="java.math.BigDecimal" resetType="Group" resetGroup="Unidad" calculation="Sum">
+		<variableExpression><![CDATA[$F{TOTALPLAZASINAUMENTO2}]]></variableExpression>
+	</variable>
+	<variable name="vTotalUnidadCon" class="java.math.BigDecimal" resetType="Group" resetGroup="Unidad" calculation="Sum">
+		<variableExpression><![CDATA[$F{TOTALPLAZACONAUMENTO2}]]></variableExpression>
+	</variable>
+	<variable name="vTotalGeneralSin" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{TOTALPLAZASINAUMENTO2}]]></variableExpression>
+	</variable>
+	<variable name="vTotalGeneralCon" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{TOTALPLAZACONAUMENTO2}]]></variableExpression>
+	</variable>
+	<variable name="vDifSub" class="java.math.BigDecimal" resetType="Group" resetGroup="SubPrograma" calculation="Sum">
+		<variableExpression><![CDATA[$F{DIFERENCIA}]]></variableExpression>
+	</variable>
+	<variable name="vDifUni" class="java.math.BigDecimal" resetType="Group" resetGroup="Unidad" calculation="Sum">
+		<variableExpression><![CDATA[$F{DIFERENCIA}]]></variableExpression>
+	</variable>
+	<variable name="vDifTotal" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{DIFERENCIA}]]></variableExpression>
+	</variable>
+
+		<group  name="Total" >
+			<groupExpression><![CDATA[]]></groupExpression>
+			<groupHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="50"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="'Q.' #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="278"
+						y="12"
+						width="99"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{vTotalGeneralSin}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="'Q.' #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="380"
+						y="12"
+						width="94"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{vTotalGeneralCon}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="'Q.' #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="472"
+						y="12"
+						width="80"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{vDifTotal}]]></textFieldExpression>
+				</textField>
+				<line direction="TopDown">
+					<reportElement
+						x="291"
+						y="10"
+						width="260"
+						height="0"
+						key="line-3"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+</graphicElement>
+				</line>
+				<staticText>
+					<reportElement
+						x="52"
+						y="11"
+						width="152"
+						height="15"
+						key="staticText-3"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[TOTAL]]></text>
+				</staticText>
+			</band>
+			</groupFooter>
+		</group>
+		<group  name="Unidad" >
+			<groupExpression><![CDATA[$F{UNIDAD}]]></groupExpression>
+			<groupHeader>
+			<band height="25"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="0"
+						width="388"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{UNIDAD}]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="34"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="52"
+						y="7"
+						width="152"
+						height="15"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[TOTAL UNIDAD]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="'Q.' #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="296"
+						y="7"
+						width="81"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{vTotalUnidadSin}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="'Q.' #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="391"
+						y="7"
+						width="81"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{vTotalUnidadCon}]]></textFieldExpression>
+				</textField>
+				<line direction="TopDown">
+					<reportElement
+						x="291"
+						y="4"
+						width="260"
+						height="0"
+						key="line-1"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="false" pattern="'Q.' #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="477"
+						y="7"
+						width="75"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{vDifUni}]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupFooter>
+		</group>
+		<group  name="SubPrograma" >
+			<groupExpression><![CDATA[$F{SUBPROGRAMA}]]></groupExpression>
+			<groupHeader>
+			<band height="21"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="52"
+						y="-1"
+						width="336"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{SUBPROGRAMA}]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="29"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="'Q.' #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="296"
+						y="6"
+						width="81"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{vTotalSubprogramaSIN}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="'Q.' #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="391"
+						y="6"
+						width="81"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{vTotalSubprogramaCon}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="52"
+						y="6"
+						width="152"
+						height="15"
+						key="staticText-1"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[TOTAL SUBPROGRAMA]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="291"
+						y="2"
+						width="260"
+						height="0"
+						key="line-2"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="false" pattern="'Q.' #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="477"
+						y="6"
+						width="75"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{vDifSub}]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupFooter>
+		</group>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="121"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="0"
+						y="6"
+						width="276"
+						height="40"
+						key="staticText-4"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="Courier-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[UNIVERSIDAD DE SAN CARLOS DE GUATEMALA
+DEPARTAMENTO DE PROCESAMIENTO
+ELECTRONICO DE DATOS]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="409"
+						y="6"
+						width="139"
+						height="12"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["HOJA NO. "+$V{PAGE_NUMBER}.toString()]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="410"
+						y="20"
+						width="139"
+						height="12"
+						key="textField-2"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new java.util.Date()]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="114"
+						y="54"
+						width="344"
+						height="12"
+						key="textField-3"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" pdfFontName="Courier-Bold" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["PROYECTO DE TRANSFERENCIA AUMENTO SALARIAL DEL " + $F{PORCENTAJE}+"%"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="'CON VIGENCIA A PARTIR DE ' dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="114"
+						y="73"
+						width="344"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.sql.Timestamp"><![CDATA[$F{INICIOAUMENTO}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="311"
+						y="103"
+						width="73"
+						height="14"
+						key="staticText-5"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Asignación Actual]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="403"
+						y="94"
+						width="66"
+						height="23"
+						key="staticText-6"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Asignación con aumento]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="8"
+						y="119"
+						width="542"
+						height="0"
+						key="line-4"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="9"
+						y="93"
+						width="542"
+						height="0"
+						key="line-5"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<staticText>
+					<reportElement
+						x="476"
+						y="95"
+						width="66"
+						height="23"
+						key="staticText-7"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Diferencia]]></text>
+				</staticText>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="14"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="82"
+						y="0"
+						width="209"
+						height="14"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3"
+						y="0"
+						width="72"
+						height="14"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PARTIDA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="'Q.' #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="391"
+						y="0"
+						width="81"
+						height="14"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTALPLAZACONAUMENTO2}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="'Q.' #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="477"
+						y="0"
+						width="75"
+						height="14"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DIFERENCIA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="'Q.' #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="295"
+						y="0"
+						width="81"
+						height="14"
+						key="textField-4"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTALPLAZASINAUMENTO2}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

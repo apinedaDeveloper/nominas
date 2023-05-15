@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="partidas_no_existen_conta_anulados"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="612"
+		 pageHeight="792"
+		 columnWidth="552"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="p_fecha_ini" isForPrompting="true" class="java.util.Date"/>
+	<parameter name="p_fecha_fin" isForPrompting="true" class="java.util.Date"/>
+	<queryString><![CDATA[select distinct d1,d2,d3d4,d5,d6,d7,d8,d9d10,nombre,
+d1||'.'||d2||'.'||ltrim(to_char(d3d4,'09'))||'.'||d5||'.'||d6||d7||'.'||d8||ltrim(to_char(d9d10,'09')) as strpart
+  from
+  partida p,
+  (		
+	select b.id_partida
+	from
+	(
+	
+	select 
+	case 
+		when TO_NUMBER(TO_CHAR(sdb.FECHA_EMISION,'YYYY')) < TO_NUMBER(TO_CHAR($P{p_fecha_ini},'YYYY')) and spv.d1 = 4  then  29975
+		else spv.id_partida
+	end as id_partida
+	from
+		partida spv,
+		sis_det_partida_pago sdpp,
+		sis_documento_banco sdb
+	where 
+		exists (
+			select 1
+			from sis_nomina sn,
+				 sis_pago sp
+			where sn.id_tipo_nomina <>20 and
+				  sn.ID_NOMINA = sp.ID_NOMINA and
+				  sp.ID_DOCUMENTO_BANCO = sdb.ID_DOCUMENTO_BANCO
+		)
+		and spv.ID_PARTIDA=sdpp.ID_PARTIDA
+		and sdpp.id_documento_banco = sdb.id_documento_banco
+		and trunc(sdb.fecha_anulacion) between trunc($P{p_fecha_ini}) and trunc($P{p_fecha_fin})
+	) b
+	GROUP BY b.id_partida
+
+	UNION ALL
+
+	select b.id_partida
+	from
+	( 
+	select spv.id_partida as id_partida
+	from
+		partida spv, 
+		sis_ajuste_partida sap,
+		sis_det_calculo_ajuste sdca,
+		sis_nomina sn,
+		sis_pago sp,
+		sis_documento_banco sdb
+	where 	
+		spv.ID_PARTIDA=sap.ID_PARTIDA and
+		sdca.ID_AJUSTE = sap.ID_AJUSTE and
+		sdca.ID_AJUSTE <> 27 and
+		sdca.VALOR_APLICADO <> 0 and
+		sdca.ID_NOMINA=sn.ID_NOMINA and
+		sn.id_tipo_nomina <>20 and
+		sp.ID_NOMINA=sn.ID_NOMINA and
+		sdb.ID_DOCUMENTO_BANCO=sp.ID_DOCUMENTO_BANCO
+		and trunc(sdb.fecha_anulacion) between trunc($P{p_fecha_ini}) and trunc($P{p_fecha_fin})
+	) b
+	GROUP BY b.id_partida
+
+	UNION ALL
+
+	select b.id_partida
+	from
+	( 
+	select 
+		p.id_partida as id_partida
+	from
+		partida p,
+		cuenta_bancaria c,
+		sis_documento_banco sdb
+	where
+		exists (
+			select 1
+			from sis_nomina sn,
+				 sis_pago sp
+			where sn.id_tipo_nomina <>20 and
+				  sn.ID_NOMINA = sp.ID_NOMINA and
+				  sp.ID_DOCUMENTO_BANCO = sdb.ID_DOCUMENTO_BANCO
+		) and 	
+		p.id_partida = c.id_partida and
+		sdb.id_cuenta_bancaria_sueldo = c.id_cuenta_bancaria
+		and trunc(sdb.fecha_anulacion) between trunc($P{p_fecha_ini}) and trunc($P{p_fecha_fin})
+	) b
+	GROUP BY b.id_partida
+  ) c
+  WHERE 
+	NOT EXISTS(
+		select 1
+		from CONTA.catalogo_cuentas@DELFOS_LINK c
+		where
+			c.d1 = p.d1 and
+			c.d2 = p.d2 and
+			c.d3d4 = p.d3d4 and
+			c.d5 = p.d5 and
+			c.d6 = p.d6 and
+			c.d7 = p.d7 and
+			c.d8 = p.d8 and
+			c.d9d10 = p.d9d10
+		)
+	and c.id_partida = p.id_partida
+order by d1,d2,d3d4,d5,d6,d7,d8,d9d10]]></queryString>
+
+	<field name="D1" class="java.math.BigDecimal"/>
+	<field name="D2" class="java.math.BigDecimal"/>
+	<field name="D3D4" class="java.math.BigDecimal"/>
+	<field name="D5" class="java.math.BigDecimal"/>
+	<field name="D6" class="java.math.BigDecimal"/>
+	<field name="D7" class="java.math.BigDecimal"/>
+	<field name="D8" class="java.math.BigDecimal"/>
+	<field name="D9D10" class="java.math.BigDecimal"/>
+	<field name="NOMBRE" class="java.lang.String"/>
+	<field name="STRPART" class="java.lang.String"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="48"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="61"
+						y="29"
+						width="412"
+						height="14"
+						key="staticText"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[PARTIDAS DE DOCUMENTOS ANULADOS QUE NO EXISTEN EN CONTABILIDAD]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="2"
+						y="44"
+						width="534"
+						height="0"
+						forecolor="#000000"
+						key="line"
+						positionType="FixRelativeToBottom"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="2.0" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="2"
+						y="2"
+						width="534"
+						height="0"
+						forecolor="#000000"
+						key="line"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="2.0" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="343"
+						y="17"
+						width="170"
+						height="12"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right">
+						<font fontName="Helvetica" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Página " + $V{PAGE_NUMBER} + " de "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="514"
+						y="17"
+						width="21"
+						height="13"
+						forecolor="#000000"
+						backcolor="#FFFFFF"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" lineSpacing="Single">
+						<font fontName="Helvetica" pdfFontName="Helvetica" size="8" isBold="false" isItalic="false" isUnderline="false" isPdfEmbedded ="false" pdfEncoding ="CP1252" isStrikeThrough="false" />
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="434"
+						y="5"
+						width="101"
+						height="12"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right">
+						<font fontName="Times-Roman" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="3"
+						y="17"
+						width="169"
+						height="12"
+						key="staticText-1"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Sistema Integrado de Salarios]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3"
+						y="5"
+						width="170"
+						height="12"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Universidad de San Carlos de Guatemala]]></text>
+				</staticText>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="18"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						mode="Opaque"
+						x="2"
+						y="1"
+						width="98"
+						height="15"
+						forecolor="#000000"
+						backcolor="#FFFFFF"
+						key="element-90"/>
+					<box leftPadding="2" rightPadding="2">					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement>
+						<font fontName="" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Partida]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						mode="Opaque"
+						x="102"
+						y="1"
+						width="369"
+						height="16"
+						forecolor="#000000"
+						backcolor="#FFFFFF"
+						key="element-90"/>
+					<box leftPadding="2" rightPadding="2">					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement>
+						<font fontName="" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Nombre]]></text>
+				</staticText>
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="16"  isSplitAllowed="true" >
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="13"
+						width="535"
+						height="0"
+						forecolor="#808080"
+						key="line"
+						positionType="FixRelativeToBottom"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.25" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="1"
+						width="99"
+						height="12"
+						key="textField"/>
+					<box leftPadding="2" rightPadding="2">					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement>
+						<font fontName="Arial" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{STRPART}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="101"
+						y="1"
+						width="371"
+						height="12"
+						key="textField"/>
+					<box leftPadding="2" rightPadding="2">					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement>
+						<font fontName="Arial" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRE}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="18"  isSplitAllowed="true" >
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="1"
+						width="535"
+						height="0"
+						forecolor="#000000"
+						key="line"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="2.0" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+		<noData>
+			<band height="50"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="65"
+						y="14"
+						width="412"
+						height="14"
+						key="staticText-3"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[EL REPORTE NO GENERO DATOS]]></text>
+				</staticText>
+			</band>
+		</noData>
+</jasperReport>

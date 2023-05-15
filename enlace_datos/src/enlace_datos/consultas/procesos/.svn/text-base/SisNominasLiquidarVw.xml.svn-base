@@ -1,0 +1,198 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="SisNominasLiquidarVw"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   RowClass="enlace_datos.consultas.procesos.SisNominasLiquidarVwRowImpl"
+   ComponentClass="enlace_datos.consultas.procesos.SisNominasLiquidarVwImpl"
+   ComponentInterface="enlace_datos.consultas.procesos.common.SisNominasLiquidarVw"
+   ClientProxyName="enlace_datos.consultas.procesos.client.SisNominasLiquidarVwClient"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isCodegen" Value="true" />
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="pUsuario"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <Variable
+      Name="pAnio"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <Variable
+      Name="pDeps"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select 
+datos.id_proceso,
+datos.anio,
+datos.periodo,
+datos.fecha_creacion,
+sis_util_report_pkg.GETPROCSPAGO(datos.id_proceso) nomina
+from(
+select distinct
+proc.id_proceso,
+proc.anio,
+proc.periodo,
+proc.fecha_creacion
+from sis_proceso_pago_det proct,
+sis_documento_banco docbanco,
+sis_proceso proc 
+where docbanco.ID_PROCESO=proct.id_proceso 
+and docbanco.id_proceso=proct.id_proceso
+and docbanco.id_liquidacion is null
+and proc.ID_PROCESO=proct.id_proceso
+and to_char(proc.fecha_creacion,'yyyy') = nvl(:pAnio, to_char(to_date(sysdate,'dd/mm/yyyy')))
+and exists(
+select 1 from 
+sis_proceso_evento eventp
+where eventp.id_proceso=proc.id_proceso
+and eventp.ID_TIPO_EVENTO in (1,2)
+)
+and exists(
+select 1 from sis_pago pg, sis_nomina nom
+left outer join partida part2 on part2.id_partida=nvl(nom.id_partida_egreso,nom.id_partida),
+partida prt
+where pg.id_documento_banco=docbanco.id_documento_Banco
+and pg.id_proceso=proct.id_proceso
+and nom.id_nomina=pg.id_nomina
+and prt.id_partida=nom.id_partida
+and exists(
+        select 1 from usuario_unidad b, partida c
+        where b.id_partida=c.id_partida
+        and c.d3d4=:pDeps
+        and usuario=:pUsuario
+        and b.tipo_usuario='TRABAJADOR'
+        and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+        and 
+        ( 
+          ( part2.d9d10 not in (41,42)
+            and prt.aniomanual=c.aniomanual
+            and prt.d1=c.d1
+            and prt.d2=c.d2
+            and prt.d3d4=c.d3d4
+            and 
+            (
+            (prt.d7=c.d7
+            and prt.d6=c.d6
+            and prt.d5=c.d5
+            )
+            or
+            (
+            c.d5 is null
+            and c.d6 is null
+            and c.d7 is null 
+            )
+            )
+          )
+           or
+             (  part2.d9d10 in (41,42)                
+                and part2.aniomanual=c.aniomanual
+                and part2.d1=c.d1
+                and part2.d2=c.d2
+                and part2.d3d4=c.d3d4
+                and 
+                (
+                (part2.d7=c.d7
+                and part2.d6=c.d6
+                and part2.d5=c.d5
+                )
+                or
+                (
+                c.d5 is null
+                and c.d6 is null
+                and c.d7 is null 
+                )
+                )               
+             )
+	 or
+             (  part2.d9d10 in (0)  
+                and part2.d1=2 
+                and part2.d3d4=16              
+                and part2.aniomanual=c.aniomanual
+                and to_number(part2.d6||part2.d7)=c.d3d4              
+             )        
+         )
+     )       
+)
+)datos order by datos.id_proceso desc
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="IdProceso"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_PROCESO"
+      Expression="ID_PROCESO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Anio"
+      IsPersistent="false"
+      Precision="4"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ANIO"
+      Expression="ANIO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Periodo"
+      IsPersistent="false"
+      Precision="2"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="PERIODO"
+      Expression="PERIODO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaCreacion"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_CREACION"
+      Expression="FECHA_CREACION"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomina"
+      IsPersistent="false"
+      Precision="4000"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMINA"
+      Expression="NOMINA"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="4000" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

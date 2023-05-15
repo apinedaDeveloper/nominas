@@ -1,0 +1,253 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0" xmlns:f="http://java.sun.com/jsf/core" xmlns:af="http://xmlns.oracle.com/adf/faces" xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <f:view>
+    <afh:html>
+      <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+      <afh:head title="Prestaciones Post-mortem">
+        <meta http-equiv="Content-Type" content="text/html; charset=windows-1252"/>
+        <jsp:include page="/js/libJQ.js"/>
+        <jsp:include page="/js/librariesDialog.js"/>
+        <script type="text/javascript" src="/${flujo_usuario.dominioApp}/js/gestiones/scrptAutorizacion.js">var xy=new Date().getMilliseconds();</script>
+        <script language="javascript" type="text/javascript">
+        //Abre el reporte de Solicitud de Pago de Prestaciones Post-mortem (DARH PM-01)
+        function generarReporteDARH_PM_01(idPostMortem){ 
+            var link;
+            link = "/${flujo_usuario.dominioApp}/faces/verreportepdf?id="+idPostMortem+String.fromCharCode(38)+"rep=DARHPM01_POSTMORTEM";
+            window.open(link,'preview','width=1200,height=723,scrollbars=YES,location=NO,directories=NO,resizable=1');
+            return false;
+        }
+        //Pregunta si se desea guardar la información
+        function preguntarGuardar(){ return confirm("¿Desea guardar la información?"); }
+        //Pregunta si se desea cancelar la operación
+        function preguntarCancelar(){ return confirm("¿Desea cancelar la operación?"); }
+        //Pregunta si se desea retornar a la pantalla anterior
+        function preguntarRetornar(){ return confirm("¿Desea retornar a la pantalla anterior?"); }
+        </script>
+      </afh:head>
+      <afh:body>
+        <af:messages/>
+        <af:form id="form1">
+          <f:verbatim>
+            <af:inputHidden id="hdn_tipo" value="27"/>
+            <!--Tipo de Autorización (tipo 27 corresponde a Prestaciones Post-mortem)-->
+            <af:inputHidden id="hdn_Id" value="#{bindings.IdIndemnizacion.inputValue}"/>
+            <!--Id de la prestación post-mortem-->
+            <jsp:include page="../util/dialog_autoriza.txt"/>
+            <!--Ventana de diálogo para el cambio de estado-->
+          </f:verbatim>
+          <af:page title="Prestaciones Post-mortem" value="#{modeloMenu.modeloBD}" var="node">
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="infoUser">
+              <f:subview id="infoUser">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}" action="#{node.getOutcome}" actionListener="#{modeloMenu.listener_menu}" disabled="#{node.readOnly}" rendered="#{node.shown}"/>
+            </f:facet>
+            <af:panelBox width="100%">
+              <af:panelBox text="Información General del Expediente" inlineStyle="text-align:center;" width="100%" rendered="#{!bindings.EsSolicitudNueva.inputValue}">
+                <af:panelForm shortDesc="Panel de información general del expediente del trabajador fallecido">
+                  <f:facet name="footer"/>
+                  <af:panelHorizontal halign="center">
+                    <af:panelLabelAndMessage label="ID:" inlineStyle="font-weight:bold;" id="pnlLbl_idSolicitud" binding="#{Postmortem_detalle.pnlLbl_idSolicitud}">
+                      <af:outputText value="#{bindings.IdIndemnizacion.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;">
+                        <f:convertNumber groupingUsed="false" pattern="######" integerOnly="true"/>
+                      </af:outputText>
+                    </af:panelLabelAndMessage>
+                    <af:panelLabelAndMessage label="No. de expediente:" id="pnlLbl_correlativoSol" inlineStyle="font-weight:bold;" rendered="#{!bindings.EsSolicitudNueva.inputValue}"
+                                             binding="#{Postmortem_detalle.pnlLbl_correlativoSol}">
+                      <af:outputText value="#{bindings.AnioActual.inputValue} - #{bindings.CorrelativoAnio.inputValue}"
+                                     inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;"/>
+                    </af:panelLabelAndMessage>
+                    <af:panelLabelAndMessage label="Fecha de recepción:" inlineStyle="font-weight:bold;">
+                      <af:outputText value="#{bindings.FechaRecepcion.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;"
+                                     shortDesc="Fecha de recepción del expediente de fallecimiento">
+                        <f:convertDateTime pattern="dd/MM/yyyy"/>
+                      </af:outputText>
+                    </af:panelLabelAndMessage>
+                    <af:panelLabelAndMessage label="Estado actual:" id="pnlLbl_estadoActualSol" inlineStyle="font-weight:bold;" rendered="#{!bindings.EsSolicitudNueva.inputValue}"
+                                             binding="#{Postmortem_detalle.pnlLbl_estadoActualSol}">
+                      <af:outputText value="#{bindings.NombreEstadoIndemnizacion.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;"/>
+                    </af:panelLabelAndMessage>
+                    <f:facet name="separator">
+                      <af:objectSpacer height="10" width="10"/>
+                    </f:facet>
+                  </af:panelHorizontal>
+                </af:panelForm>
+              </af:panelBox>
+              <af:showOneTab>
+                <af:showDetailItem text="Paso 1: Datos generales">
+                  <af:panelHorizontal halign="center">
+                    <af:outputFormatted value="NUEVA SOLICITUD" inlineStyle="font-size:medium; font-weight:bold; color:rgb(0,0,132);" rendered="#{bindings.EsSolicitudNueva.inputValue}"
+                                        id="outFormat_rotuloNuevaSol" binding="#{Postmortem_detalle.outFormat_rotuloNuevaSol}"/>
+                  </af:panelHorizontal>
+                  <af:panelHorizontal halign="center">
+                    <af:outputFormatted value="Las casillas con * son requeridos" inlineStyle="color:rgb(128,0,0); font-weight:bold;"/>
+                  </af:panelHorizontal>
+                  <af:panelBox text="Datos del trabajador" width="100%" inlineStyle="text-align:center;">
+                    <af:panelForm shortDesc="Información general del trabajador fallecido">
+                      <f:facet name="footer"/>
+                      <af:panelHorizontal halign="center">
+                        <af:panelLabelAndMessage label="* Registro de personal:" inlineStyle="font-weight:bold;">
+                          <af:inputText value="#{bindings.RegistroEmpleado.inputValue}" columns="7" id="inptText_registroEmpleado"
+                                        inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);" partialTriggers="cdmLink_buscarTrabajador"
+                                        binding="#{Postmortem_detalle.inptText_registroEmpleado}" required="true" readOnly="true" shortDesc="Registro personal del trabajador">
+                            <f:convertNumber groupingUsed="false"/>
+                          </af:inputText>
+                        </af:panelLabelAndMessage>
+                        <af:commandLink partialSubmit="true" id="cdmLink_buscarTrabajador" binding="#{Postmortem_detalle.cdmLink_buscarTrabajador}" useWindow="true" windowHeight="500"
+                                        windowWidth="800" shortDesc="Buscador de trabajador" action="dialog:buscaEmpl" returnListener="#{Postmortem_detalle.cdmLink_buscarTrabajador_returnListener}"
+                                        immediate="true">
+                          <af:goButton text="Buscar Trabajador" inlineStyle="font-weight:bold; color:rgb(0,0,132);"/>
+                        </af:commandLink>
+                        <af:panelLabelAndMessage label="Nombre completo:" inlineStyle="font-weight:bold;">
+                          <af:inputText columns="60" inlineStyle="font-weight:bold; color:rgb(0,0,128);" id="inptText_nombreCompleto" partialTriggers="cdmLink_buscarTrabajador"
+                                        binding="#{Postmortem_detalle.inptText_nombreCompleto}" value="#{bindings.Nombrecompleto.inputValue}" readOnly="true"
+                                        shortDesc="Nombre completo del trabajador"/>
+                        </af:panelLabelAndMessage>
+                        <af:panelLabelAndMessage label="CUI:" inlineStyle="font-weight:bold;">
+                          <af:inputText columns="15" id="inptText_cuiTrabajador" value="#{bindings.CuiTrabajador.inputValue}" binding="#{Postmortem_detalle.inptText_cuiTrabajador}"
+                                        partialTriggers="cdmLink_buscarTrabajador" readOnly="true" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);"
+                                        shortDesc="CUI del trabajador"/>
+                        </af:panelLabelAndMessage>
+                        <f:facet name="separator">
+                          <af:objectSpacer height="10" width="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                      <af:panelHorizontal halign="center">
+                        <af:panelLabelAndMessage label="Estado del trabajador:" inlineStyle="font-weight:bold;">
+                          <af:inputText columns="12" value="#{bindings.NombreEstadoTrabajador.inputValue}" id="inptText_nombreEstadoTrabajador"
+                                        binding="#{Postmortem_detalle.inptText_nombreEstadoTrabajador}" partialTriggers="cdmLink_buscarTrabajador"
+                                        inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);" shortDesc="Estado Actual del Trabajador" readOnly="true"/>
+                        </af:panelLabelAndMessage>
+                        <af:panelLabelAndMessage label="No. expediente fallecimiento:" inlineStyle="font-weight:bold;">
+                          <af:inputText value="#{bindings.IdSolicitudFallecimiento.inputValue}" columns="10" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);"
+                                        id="inptText_numeroExpFallec" readOnly="true" partialTriggers="cdmLink_buscarTrabajador" shortDesc="No. Expediente Fallecimiento"
+                                        binding="#{Postmortem_detalle.inptText_numeroExpFallec}">
+                            <f:convertNumber groupingUsed="false"/>
+                          </af:inputText>
+                        </af:panelLabelAndMessage>
+                        <af:panelLabelAndMessage label="Fecha expediente fallecimiento:" inlineStyle="font-weight:bold;">
+                          <af:outputText value="#{bindings.FechaExpFallecimiento.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;"
+                                         partialTriggers="cdmLink_buscarTrabajador" id="outputText_fechaFallecTrab" binding="#{Postmortem_detalle.outputText_fechaFallecTrab}"
+                                         shortDesc="Fecha de expediente del fallecimiento">
+                            <f:convertDateTime pattern="dd/MM/yyyy"/>
+                          </af:outputText>
+                        </af:panelLabelAndMessage>
+                        <f:facet name="separator">
+                          <af:objectSpacer height="10" width="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                      <af:panelHorizontal halign="center">
+                        <af:panelLabelAndMessage label="Descripción expediente:" inlineStyle="font-weight:bold;">
+                          <af:inputText id="inptText_descripcionExpFallec" binding="#{Postmortem_detalle.inptText_descripcionExpFallec}" partialTriggers="cdmLink_buscarTrabajador" readOnly="true"
+                                        inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);" shortDesc="Descripción expediente del fallecimiento del trabajador"/>
+                        </af:panelLabelAndMessage>
+                      </af:panelHorizontal>
+                      <af:panelHorizontal halign="center">
+                        <af:selectOneChoice value="#{bindings.TipoCarreraLaboral.inputValue}" label="* Tipo de Carrera Laboral:" id="slctOneChoice_tipoCarreraLab" inlineStyle="font-weight:bold;"
+                                            shortDesc="Tipo de carrera laboral del trabajador" binding="#{Postmortem_detalle.slctOneChoice_tipoCarreraLab}">
+                          <af:selectItem label="DOCENTE" value="1"/>
+                          <af:selectItem label="ADMINISTRATIVO" value="2"/>
+                        </af:selectOneChoice>
+                      </af:panelHorizontal>
+                    </af:panelForm>
+                  </af:panelBox>
+                  <af:panelBox text="Datos del Solicitante" width="100%" inlineStyle="text-align:center;">
+                    <af:panelForm shortDesc="Información general del solicitante">
+                      <f:facet name="footer"/>
+                      <af:panelHorizontal halign="center">
+                        <af:inputText label="* Nombre:" columns="40" id="inptText_nombreSolicitante" inlineStyle="font-weight:bold;" maximumLength="50" value="#{bindings.NombreSolicitante.inputValue}"
+                                      binding="#{Postmortem_detalle.inptText_nombreSolicitante}"/>
+                        <af:inputText value="#{bindings.CuiSolicitante.inputValue}" label="* CUI:" columns="15" id="inptText_cuiSolicitante" inlineStyle="font-weight:bold; text-align:center;"
+                                      maximumLength="13" tip="Número sin espacios" onkeypress="return validaNumero(event);" binding="#{Postmortem_detalle.inptText_cuiSolicitante}">
+                          <f:convertNumber pattern="#############" groupingUsed="false"/>
+                        </af:inputText>
+                        <af:selectOneChoice value="#{bindings.List_parentescoSolicitante.inputValue}" label="* Parentesco:" inlineStyle="font-weight:bold;" id="slctOneChoice_parentescoSol"
+                                            binding="#{Postmortem_detalle.slctOneChoice_parentescoSol}">
+                          <f:selectItems value="#{bindings.List_parentescoSolicitante.items}"/>
+                        </af:selectOneChoice>
+                        <af:inputText value="#{bindings.OtroParentescoSol.inputValue}" label="Otro Parentesco:" columns="10" id="inptText_otroParentescoSol"
+                                      inlineStyle="font-weight:bold; text-align:center;" shortDesc="Otros Parentesco del Solicitante" maximumLength="15"
+                                      binding="#{Postmortem_detalle.inptText_otroParentescoSol}"/>
+                        <f:facet name="separator">
+                          <af:objectSpacer height="10" width="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                      <af:panelHorizontal halign="center">
+                        <af:inputText value="#{bindings.DireccionSolicitante.inputValue}" label="Dirección:" columns="60" id="inptText_direccionSolicitante" inlineStyle="font-weight:bold;"
+                                      maximumLength="150" shortDesc="Dirección del Solicitante"/>
+                        <af:selectOneChoice label="Departamento:" inlineStyle="font-weight:bold;" value="#{bindings.List_departamentoDirecSolicitante.inputValue}" autoSubmit="true"
+                                            id="slctOneChoice_departamentoDirecSol" shortDesc="Departamento de Residencia del Solicitante" immediate="true">
+                          <f:selectItems value="#{bindings.List_departamentoDirecSolicitante.items}"/>
+                        </af:selectOneChoice>
+                        <f:facet name="separator">
+                          <af:objectSpacer width="10" height="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                      <af:panelHorizontal halign="center">
+                        <af:selectOneChoice value="#{bindings.List_municipioDirecSolicitante.inputValue}" label="Municipio:" id="slctOneChoice_municipioDirecSol" inlineStyle="font-weight:bold;"
+                                            partialTriggers="slctOneChoice_departamentoDirecSol" shortDesc="Municipio de Residencia del Solicitante">
+                          <f:selectItems value="#{bindings.List_municipioDirecSolicitante.items}"/>
+                        </af:selectOneChoice>
+                        <af:inputText value="#{bindings.TelefonosSolicita.inputValue}" label="Teléfono(s):" columns="18" id="inptText_telefonosSolicitante"
+                                      inlineStyle="font-weight:bold; text-align:center;" maximumLength="30"/>
+                        <af:inputText value="#{bindings.CorreoSolicitante.inputValue}" label="Correo electrónico:" columns="30" id="inptText_correoSolicitante"
+                                      inlineStyle="font-weight:bold; text-align:center;" maximumLength="45"/>
+                        <f:facet name="separator">
+                          <af:objectSpacer height="10" width="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                    </af:panelForm>
+                  </af:panelBox>
+                  <af:panelHorizontal halign="center">
+                    <af:commandButton text="Guardar" inlineStyle="font-weight:bold;" id="cmdBtn_guardar" binding="#{Postmortem_detalle.cmdBtn_guardar}"
+                                      action="#{Postmortem_detalle.cmdBtn_guardar_action}" onclick="return preguntarGuardar();"/>
+                    <af:commandButton text="Reporte DARH PM-01" rendered="#{!bindings.EsSolicitudNueva.inputValue}" inlineStyle="font-weight:bold;"
+                                      onclick='return generarReporteDARH_PM_01("#{bindings.IdIndemnizacion.inputValue}");'/>
+                    <af:commandLink id="cmdLink_trasladar_profRRHH" rendered="#{!bindings.EsSolicitudNueva.inputValue}" onclick="return OpenDialogo(1);">
+                      <af:objectImage source="/imagenes/btn_trasladar.png"/>
+                    </af:commandLink>
+                    <af:commandButton text="Cancelar" immediate="true" inlineStyle="font-weight:bold;" id="cmdBtn_cancelar" binding="#{Postmortem_detalle.cmdBtn_cancelar}"
+                                      action="#{Postmortem_detalle.cmdBtn_cancelar_action}" onclick="return preguntarCancelar();" shortDesc="Cancela los cambios realizados">
+                      <af:resetActionListener/>
+                    </af:commandButton>
+                    <af:commandButton text="Retornar" shortDesc="Retorna al listado de expedientes ingresados" inlineStyle="font-weight:bold;" immediate="true" id="cmdBtn_retornar"
+                                      binding="#{Postmortem_detalle.cmdBtn_retornar}" action="#{Postmortem_detalle.cmdBtn_retornar_action}" actionListener="#{bindings.Rollback.execute}"
+                                      onclick="return preguntarRetornar();"/>
+                    <f:facet name="separator">
+                      <af:objectSpacer height="10" width="10"/>
+                    </f:facet>
+                  </af:panelHorizontal>
+                </af:showDetailItem>
+                <af:showDetailItem text="Paso 2: Cálculo de Prestaciones" rendered="#{ bindings.IdEstado.inputValue !=null &amp;&amp; bindings.IdEstado.inputValue!=&quot;260&quot; }">
+                  <af:table emptyText="#{bindings.Tbl_utlimosSueldos.viewable?'Ninguna Fila Aun' : 'Acceso Denegado'}" value="#{bindings.Tbl_ultimosSueldos.collectionModel}" var="row" banding="row" bandingInterval="1" id="tbl_UltimosSueldos"
+                            selectionListener="#{bindings.Tbl_utlimosSueldos.collectionModel.makeCurrent}" selectionState="#{bindings.Tbl_utlimosSueldos.collectionModel.selectedRow}" width="100%"
+                            shortDesc="Últimos sueldos recibidos">
+                    <f:facet name="header">
+                      <af:outputFormatted value="Últimos Sueldos Recibidos" inlineStyle="color:rgb(0,24,82); font-size:medium; text-align:center;"/>
+                    </f:facet>
+                    <af:column sortable="false" headerText="Partida" formatType="icon">
+                      <af:outputText value="#{row.Partida}"/>
+                    </af:column>
+                  </af:table>
+                </af:showDetailItem>
+              </af:showOneTab>
+            </af:panelBox>
+          </af:page>
+        </af:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-binding-backing-bean-name:Postmortem_detalle-->
+</jsp:root>

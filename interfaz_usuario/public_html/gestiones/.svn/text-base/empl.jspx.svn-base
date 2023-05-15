@@ -1,0 +1,789 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <jsp:output omit-xml-declaration="true" doctype-root-element="HTML"
+              doctype-system="http://www.w3.org/TR/html4/loose.dtd"
+              doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN"/>
+  <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+  <f:loadBundle basename="propiedades" var="tx"/>
+  <f:view>
+    <afh:html>
+      <afh:head title="#{tx['empleado.title']}">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+              
+        <jsp:include page="/js/libJQ.js"/>          
+        <jsp:include page="/js/libMask.js"/>   
+        <jsp:include page="/js/librariesDialog.js"/> 
+        <jsp:include page="/js/librariesPrettyPhoto.js"/> 
+              
+      </afh:head>
+      <afh:body>
+       <script language="javascript" type="text/javascript"> 
+        function openNewWindow(nomArchivo){ 
+            window.open("/${flujo_usuario.dominioApp}/faces/ver_documento?source="+nomArchivo,"preview","width=640,height=640,scrollbars=YES");
+        } 
+       
+        function verCambiosEmpl(empl)
+        {
+               window.open("../verreportepdf?id="+empl+String.fromCharCode(38)+"rep=EMPLCHANGES","preview","width=640,height=640,scrollbars=YES,resizable=1"); 
+        }
+       
+      </script> 
+        <style type="text/css">
+         .mostrar { display: none}
+        </style>
+        
+        <af:messages/>
+        <h:form>
+         <af:page title="Empleado" value="#{modeloMenu.modeloBD}" var="node"
+                  id="paginaEmpl">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  action="#{node.getOutcome}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"/>
+            </f:facet>
+          <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+              
+            <af:panelHorizontal halign="center">
+              <af:panelBox>
+                <af:outputText value="#{bindings.verOperaciones.inputValue==true? 'Registro Empleado:' : 'Pendiente - '} #{bindings.RegistroEmpleado.inputValue}"
+                               inlineStyle="font-size:medium; font-weight:bold; color:rgb(255,198,132); text-align:right;"
+                               id="idRegEmpleado"/>
+                <af:showOneTab position="above">
+                  <af:showDetailItem text="#{tx['empleado.tab_dtsPersonales.texto']}">
+                    <af:panelLabelAndMessage label="Afecto al Plan de Prestaciones:"
+                                             inlineStyle="font-weight:bold;"
+                                             rendered="false">
+                      <af:outputText value="#{bindings.Descplan.inputValue}"
+                                     inlineStyle="color:rgb(0,49,148); font-weight:bold;"
+                                     truncateAt="100"/>
+                    </af:panelLabelAndMessage>
+                    <af:table emptyText="...."
+                              value="#{bindings.Descplan.inputValue}" rows="2">
+                      <af:column sortable="false"
+                                 headerText="Afecto al Plan de Prestaciones:">
+                        <af:outputText value="#{bindings.Descplan.inputValue}"/>
+                      </af:column>
+                    </af:table>
+                    <af:objectSpacer width="20" height="45"/>
+                    <af:outputText value="No existe cuenta bancaria registrada o activa en el sistema."
+                                   rendered="#{!bindings.tieneCuenta.inputValue}"
+                                   inlineStyle="background-color:rgb(255,231,148); font-size:20.0px; text-align:center;"/>
+                    <af:objectSeparator rendered="#{!bindings.tieneCuenta.inputValue}"/>
+                    <af:panelHeader text="#{tx['empleado.pnlhdr_infoEmpleado.texto']}"/>
+                    <af:panelHeader text="#{tx['empleado.pnlhdr_nomyape.texto']}">
+                      <af:panelHorizontal>
+                        <af:outputFormatted value="#{bindings.CambioNombre.inputValue}"
+                                            inlineStyle="font-weight:bold; color:rgb(198,0,0); text-align:left; font-size:smaller;"
+                                            rendered="#{roles_usuario.asistenteRecursosHumRegPer || roles_usuario.administrador || roles_usuario.coordinadorSueldos}"
+                                            styleUsage="instruction"/>
+                        <h:outputLink value=""
+                                      onclick="return verDialog('#{bindings.RegistroEmpleado.inputValue}');"
+                                      rendered="#{roles_usuario.asistenteRecursosHumRegPer || roles_usuario.administrador || roles_usuario.coordinadorSueldos}">
+                          <h:outputText value="[ Ver Detalle Cambios ]"/>
+                        </h:outputLink>
+                      </af:panelHorizontal>
+                      <af:panelHorizontal>
+                        <af:inputText value="#{bindings.Nombre1.inputValue}"
+                                      label="#{tx['empleado.tab_dtsPer.inpNom1.label']}"
+                                      required="#{bindings.Nombre1.mandatory}"
+                                      disabled="#{bindings.estEmpl.inputValue}"
+                                      columns="10" showRequired="true"
+                                      onchange="verificarCambioNom();">
+                          <af:validator binding="#{bindings.Nombre1.validator}"/>
+                        </af:inputText>
+                        <af:inputText value="#{bindings.Nombre2.inputValue}"
+                                      label="#{tx['empleado.tab_dtsPer.inpNom2.label']}"
+                                      disabled="#{bindings.estEmpl.inputValue}"
+                                      required="#{bindings.Nombre2.mandatory}"
+                                      columns="10"
+                                      onchange="verificarCambioNom();">
+                          <af:validator binding="#{bindings.Nombre2.validator}"/>
+                        </af:inputText>
+                        <af:inputText value="#{bindings.Nombre3.inputValue}"
+                                      label="#{tx['empleado.tab_dtsPer.inpNom3.label']}"
+                                      disabled="#{bindings.estEmpl.inputValue}"
+                                      required="#{bindings.Nombre3.mandatory}"
+                                      columns="10"
+                                      onchange="verificarCambioNom();">
+                          <af:validator binding="#{bindings.Nombre3.validator}"/>
+                        </af:inputText>
+                        <f:facet name="separator">
+                          <af:objectSpacer width="20" height="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                      <af:panelHorizontal>
+                        <af:inputText value="#{bindings.Apellido1.inputValue}"
+                                      label="#{tx['empleado.tab_dtsPer.inpApe1.label']}"
+                                      disabled="#{bindings.estEmpl.inputValue}"
+                                      required="#{bindings.Apellido1.mandatory}"
+                                      columns="10" showRequired="true"
+                                      onchange="verificarCambioNom();">
+                          <af:validator binding="#{bindings.Apellido1.validator}"/>
+                        </af:inputText>
+                        <af:inputText value="#{bindings.Apellido2.inputValue}"
+                                      label="#{tx['empleado.tab_dtsPer.inpApe2.label']}"
+                                      disabled="#{bindings.estEmpl.inputValue}"
+                                      required="#{bindings.Apellido2.mandatory}"
+                                      columns="10"
+                                      onchange="verificarCambioNom();">
+                          <af:validator binding="#{bindings.Apellido2.validator}"/>
+                        </af:inputText>
+                        <af:inputText value="#{bindings.Apellidocasada.inputValue}"
+                                      label="#{tx['empleado.tab_dtsPer.inpApe3.label']}"
+                                      disabled="#{bindings.estContrl1.inputValue}"
+                                      required="#{bindings.Apellidocasada.mandatory}"
+                                      columns="10"
+                                      onchange="verificarCambioNom();">
+                          <af:validator binding="#{bindings.Apellidocasada.validator}"/>
+                        </af:inputText>
+                        <f:facet name="separator">
+                          <af:objectSpacer width="20" height="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                      <af:selectBooleanCheckbox
+                                                label="#{tx['empleado.chk.tipo_cambioNom.texto']}"
+                                                value="#{bindings.MotivoCmbNom.inputValue}"
+                                                selected="#{bindings.MotivoCmbNom.inputValue}"
+                                                id="chk_cambioNombre"
+                                                rendered="#{roles_usuario.asistenteRecursosHumRegPer || roles_usuario.administrador || roles_usuario.coordinadorSueldos}"/>
+                      <af:panelLabelAndMessage label="#{tx['empleado.lbl_nombre_cheque.texto']}"
+                                               rendered="#{roles_usuario.asistenteRecursosHumRegPer || roles_usuario.administrador || roles_usuario.coordinadorSueldos}">
+                        <af:outputFormatted value="#{bindings.Nomcompletocheq.inputValue}"
+                                            inlineStyle="color:rgb(0,49,148); font-size:medium;"/>
+                      </af:panelLabelAndMessage>
+                    </af:panelHeader>
+                    <af:panelHeader>
+                      <af:selectInputDate value="#{bindings.FechaIngreso.inputValue}"
+                                          disabled="#{bindings.estContrl1.inputValue}"
+                                          required="#{bindings.FechaIngreso.mandatory}"
+                                          label="#{tx['empleado.tab_dtsPer.inptFechaIng.label']}"
+                                          tip="#{tx['fich_empleado.inpt_fechaI.tip']}"
+                                          id="inpt_fechaI"
+                                          onfocus="setMaskFechaIng();">
+                        <af:validator binding="#{bindings.FechaIngreso.validator}"/>
+                        <f:convertDateTime pattern="#{bindings.FechaIngreso.format}"/>
+                      </af:selectInputDate>
+                      <af:panelHorizontal>
+                        <af:selectBooleanCheckbox label="#{tx['empleado.chk_planPrestaciones.texto']}"
+                                                  value="#{bindings.planPrestaciones.inputValue}"
+                                                  selected="#{bindings.planPrestaciones.inputValue}"
+                                                  rendered="#{ roles_usuario.asistenteRecursosHumRegPer || roles_usuario.coordinadorSueldos || roles_usuario.administrador}"/>
+                      </af:panelHorizontal>
+                    </af:panelHeader>
+                    <af:panelHeader text="#{tx['empleado.pnlhdr_status.texto']}">
+                      <af:panelHorizontal>
+                        <af:selectInputDate value="#{bindings.FechaNacimiento.inputValue}"
+                                            label="#{tx['empleado.tab_dtsPer.inpfecNac.label']}"
+                                            disabled="#{bindings.estEmpl.inputValue}"
+                                            required="#{bindings.FechaNacimiento.mandatory}"
+                                            showRequired="true"
+                                            id="inpt_fechaN"
+                                            onfocus="setMaskFechaNac();">
+                          <af:validator binding="#{bindings.FechaNacimiento.validator}"/>
+                          <f:convertDateTime pattern="#{bindings.FechaNacimiento.format}"/>
+                        </af:selectInputDate>
+                        <af:panelLabelAndMessage label="#{bindings.Edad.label}">
+                          <af:outputText value="#{bindings.Edad.inputValue}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.Edad.format}"/>
+                          </af:outputText>
+                        </af:panelLabelAndMessage>
+                        <af:selectOneChoice value="#{bindings.nacionalidadNacionalidad.inputValue}"
+                                            disabled="#{bindings.estContrl1.inputValue}"
+                                            label="#{tx['empleado.tab_dtsPer.inpNac.label']}"
+                                            showRequired="true">
+                          <f:selectItems value="#{bindings.nacionalidadNacionalidad.items}"/>
+                        </af:selectOneChoice>
+                        <af:selectOneChoice value="#{bindings.paisOrigenNombre.inputValue}"
+                                            label="#{tx['empleado.tab_dtsPer.inpPaisO.label']}"
+                                            disabled="false">
+                          <f:selectItems value="#{bindings.paisOrigenNombre.items}"/>
+                        </af:selectOneChoice>
+                        <af:selectOneChoice value="#{bindings.SisGrupoEtnicoVwNombre.inputValue}"
+                                            label="#{tx['empleado.tab_dtsPer.inpGrupoE.label']}"
+                                            disabled="false">
+                          <f:selectItems value="#{bindings.SisGrupoEtnicoVwNombre.items}"/>
+                        </af:selectOneChoice>
+                        <f:facet name="separator">
+                          <af:objectSpacer width="30" height="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                      <af:panelHorizontal>
+                        <af:selectOneRadio label="#{tx['empleado.tab_dtsPer.inpEstadoC.label']}"
+                                           disabled="#{bindings.estContrl1.inputValue}"
+                                           value="#{bindings.Estadocivil.inputValue}"
+                                           showRequired="true">
+                          <af:selectItem label="Soltero (a)" value="S"/>
+                          <af:selectItem label="Casado (a)" value="C"/>
+                        </af:selectOneRadio>
+                        <af:selectOneRadio label="#{tx['empleado.tab_dtsPer.inpGenero.label']}"
+                                           disabled="#{bindings.estContrl1.inputValue}"
+                                           value="#{bindings.Genero.inputValue}"
+                                           showRequired="true">
+                          <af:selectItem label="Masculino" value="M"/>
+                          <af:selectItem label="Femenino" value="F"/>
+                          <af:selectItem label="Pendiente" value="N"/>
+                        </af:selectOneRadio>
+                        <af:selectManyCheckbox label="#{tx['empleado.tab_dtsPer.cmbJubilado.label']}"
+                                               value="#{bindings.JubSel.inputValue}"
+                                               valign="middle"
+                                               disabled="#{bindings.estContrl1.inputValue}">
+                          <f:selectItems value="#{empl.listOfValuesCheck}"/>
+                        </af:selectManyCheckbox>
+                        <f:facet name="separator">
+                          <af:objectSpacer width="30" height="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                    </af:panelHeader>
+                    <af:panelHeader text="#{tx['empleado.pnlhdr_numIden.texto']}">
+                      <af:panelHeader text="Cédula"/>
+                      <af:panelHorizontal>
+                        <f:facet name="separator">
+                          <af:objectSpacer width="30" height="10"/>
+                        </f:facet>
+                        <af:selectOneChoice value="#{bindings['todos_los_DepartamentosRegistro'].inputValue}"
+                                            disabled="#{bindings.estEmpl.inputValue}"
+                                            label="#{tx['empleado.tab_dtsPer.cmbOrCed.label']}"
+                                            autoSubmit="true" id="cmbRegCedula"
+                                            showRequired="true">
+                          <f:selectItems value="#{bindings['todos_los_DepartamentosRegistro'].items}"/>
+                        </af:selectOneChoice>
+                        <af:inputText value="#{bindings.RegistroCedula.inputValue}"
+                                      label="#{tx['empleado.tab_dtsPer.inpOrReg.label']}"
+                                      disabled="#{bindings.estEmpl.inputValue}"
+                                      required="#{bindings.RegistroCedula.mandatory}"
+                                      columns="8" showRequired="true">
+                          <af:validator binding="#{bindings.RegistroCedula.validator}"/>
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.RegistroCedula.format}"/>
+                        </af:inputText>
+                        <af:selectOneChoice value="#{bindings['municipio_by_ordcedNombre'].inputValue}"
+                                            disabled="#{bindings.estEmpl.inputValue}"
+                                            label="#{tx['empleado.tab_dtsPer.cmbExtenCed.label']}"
+                                            partialTriggers="cmbRegCedula"
+                                            showRequired="true">
+                          <f:selectItems value="#{bindings['municipio_by_ordcedNombre'].items}"/>
+                        </af:selectOneChoice>
+                      </af:panelHorizontal>
+                      <af:panelHeader/>
+                      <af:panelHorizontal>
+                        <af:inputText label="#{tx['empleado.tab_dtsPer.inptcui.label']}"
+                                      disabled="#{bindings.estEmpl.inputValue}"
+                                      value="#{bindings.Cui.inputValue}"
+                                      columns="15"
+                                      tip="#{tx['empleado.tab_dtsPer.inptcui.tip']}"
+                                      showRequired="true">
+                          <af:validator binding="#{bindings.Cui.validator}"/>
+                        </af:inputText>
+                        <af:inputText label="#{tx['empleado.tab_dtsPer.no_pasaporte.label']}"
+                                      columns="15"
+                                      value="#{bindings.NoPasaporte.inputValue}"
+                                      disabled="#{bindings.estEmpl.inputValue}"/>
+                      </af:panelHorizontal>
+                      <af:objectSpacer width="15" height="15"/>
+                      <af:panelHeader text="#{tx['empleado.pnlhdr_igss.texto']}"
+                                      inlineStyle="color:rgb(255,0,0); outline-color:rgb(0,0,255);"/>
+                      <af:objectSpacer width="10" height="10"/>
+                      <af:panelHorizontal>
+                        <af:inputText value="#{bindings.Nit.inputValue}"
+                                      label="#{tx['empleado.tab_dtsPer.inptNit.label']}"
+                                      disabled="#{bindings.estEmpl.inputValue}"
+                                      required="#{bindings.Nit.mandatory}"
+                                      columns="10" showRequired="true">
+                          <af:validator binding="#{bindings.Nit.validator}"/>
+                        </af:inputText>
+                        <af:inputText value="#{bindings.Igss.inputValue}"
+                                      label="#{tx['empleado.tab_dtsPer.inptIGSS.label']}"
+                                      disabled="#{bindings.estEmpl.inputValue}"
+                                      required="#{bindings.Igss.mandatory}"
+                                      columns="8" showRequired="true">
+                          <af:validator binding="#{bindings.Igss.validator}"/>
+                        </af:inputText>
+                        <f:facet name="separator">
+                          <af:objectSpacer width="20" height="10"/>
+                        </f:facet>
+                        <af:inputText value="#{bindings.NoProbidad.inputValue}"
+                                      disabled="#{bindings.estContrl1.inputValue}"
+                                      required="#{bindings.NoProbidad.mandatory}"
+                                      columns="10"
+                                      label="#{tx['empleado.tab_dtsPer.inptProbidad.label']}">
+                          <af:validator binding="#{bindings.NoProbidad.validator}"/>
+                        </af:inputText>
+                      </af:panelHorizontal>
+                      <af:panelHeader/>
+                    </af:panelHeader>
+                    <af:panelHeader text="#{tx['empleado.pnlhdr_infEstudios.texto']}">
+                      <af:panelHorizontal>
+                        <af:selectOneChoice label="#{tx['empleado.tab_dtsPer.cmbNivelAcademico.label']}"
+                                            value="#{bindings.IdNivelAcademico.inputValue}"
+                                            partialTriggers="cmb_nivelAcademico"
+                                            autoSubmit="true" id="cmbNivelAca2"
+                                            binding="#{empl.cmb_nivelAcademico1}"
+                                            valueChangeListener="#{empl.cmb_nivelAcademico_action}"
+                                            showRequired="true"
+                                            disabled="#{bindings.estContrl1.inputValue}">
+                          <f:selectItems value="#{bindings.IdNivelAcademico.items}"/>
+                        </af:selectOneChoice>
+                        <af:selectOneChoice value="#{bindings['Sis_Institucion_academicaNombreInstitucion'].inputValue}"
+                                            disabled="#{bindings.estContrl1.inputValue}"
+                                            label="#{tx['empleado.tab_dtsPer.cmbInstAcademic.label']}"
+                                            partialTriggers="cmb_nivelAcademico cmbNivelAca2"
+                                            binding="#{empl.cmb_institucionAca}">
+                          <f:selectItems value="#{bindings['Sis_Institucion_academicaNombreInstitucion'].items}"/>
+                        </af:selectOneChoice>
+                        <f:facet name="separator">
+                          <af:objectSpacer width="20" height="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                      <af:inputText value="#{bindings.Titulo.inputValue}"
+                                    label="#{tx['empleado.tab_dtsPer.inptTitulo.label']}"
+                                    disabled="#{bindings.estContrl1.inputValue}"
+                                    required="#{bindings.Titulo.mandatory}"
+                                    columns="50">
+                        <af:validator binding="#{bindings.Titulo.validator}"/>
+                      </af:inputText>
+                      <af:panelHorizontal>
+                        <af:selectOneChoice value="#{bindings['Sis_Colegio_profesionalNombre'].inputValue}"
+                                            disabled="#{bindings.estContrl1.inputValue}"
+                                            label="#{tx['empleado.tab_dtsPer.cmbCole.label']}">
+                          <f:selectItems value="#{bindings['Sis_Colegio_profesionalNombre'].items}"/>
+                        </af:selectOneChoice>
+                        <af:inputText value="#{bindings.Colegiado.inputValue}"
+                                      label="#{tx['empleado.tab_dtsPer.inptCole.label']}"
+                                      disabled="#{bindings.estContrl1.inputValue}"
+                                      required="#{bindings.Colegiado.mandatory}"
+                                      columns="8">
+                          <af:validator binding="#{bindings.Colegiado.validator}"/>
+                        </af:inputText>
+                        <f:facet name="separator">
+                          <af:objectSpacer width="25" height="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                    </af:panelHeader>
+                    <af:panelHeader text="#{tx['empleado.pnlhdr_direccion.texto']}">
+                      <af:panelHorizontal partialTriggers="tbl_direccion tbl_direccion:btn_borrar_direc btn_agregar_direc">
+                        <af:selectOneChoice value="#{bindings['todos_los_DepartamentosNombre'].inputValue}"
+                                            label="#{tx['empleado.tab_dtsPer.cmbDepDirec.label']}"
+                                            disabled="#{bindings.estContrl1.inputValue}"
+                                            id="cmb_depDirec" autoSubmit="true"
+                                            binding="#{empl.cmb_departamento}"
+                                            partialTriggers="tbl_direccion"
+                                            valueChangeListener="#{empl.cmb_dep_direccion_change}"
+                                            showRequired="true">
+                          <f:selectItems value="#{bindings['todos_los_DepartamentosNombre'].items}"/>
+                        </af:selectOneChoice>
+                        <af:selectOneChoice value="#{bindings['municipios_dep_by_munNombre'].inputValue}"
+                                            label="#{tx['empleado.tab_dtsPer.cmbMunDirec.label']}"
+                                            disabled="#{bindings.estContrl1.inputValue}"
+                                            id="cmb_munDirec"
+                                            partialTriggers="cmb_depDirec tbl_direccion"
+                                            autoSubmit="true"
+                                            showRequired="true">
+                          <f:selectItems value="#{bindings['municipios_dep_by_munNombre'].items}"/>
+                        </af:selectOneChoice>
+                        <f:facet name="separator">
+                          <af:objectSpacer width="25" height="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                      <af:inputText value="#{bindings.Direccion.inputValue}"
+                                    label="#{tx['empleado.tab_dtsPer.inptDirec.label']}"
+                                    disabled="#{bindings.estContrl1.inputValue}"
+                                    required="#{bindings.Direccion.mandatory}"
+                                    columns="50" rows="1"
+                                    partialTriggers="tbl_direccion tbl_direccion:btn_borrar_direc btn_agregar_direc"
+                                    autoSubmit="false" id="inpt_direccion"
+                                    showRequired="true">
+                        <af:validator binding="#{bindings.Direccion.validator}"/>
+                      </af:inputText>
+                      <af:panelHorizontal>
+                        <af:commandButton
+                                          text="#{tx['empleado.tab_dtsPer.btn_AgrDirec.label']}"
+                                          disabled="#{!bindings.Create1.enabled}"
+                                          rendered="#{!bindings.estContrl1.inputValue}"
+                                          id="btn_agregar_direc"
+                                          partialSubmit="true"
+                                          actionListener="#{bindings.Create1.execute}"/>
+                        <af:commandButton
+                                          text="#{tx['empleado.tab_dtsPer.btn_AgrAct.label']}"
+                                          rendered="#{!bindings.estContrl1.inputValue}"
+                                          partialSubmit="true"
+                                          id="btn_act_direc"
+                                          action="#{empl.act_tabla_direccion}"/>
+                        <f:facet name="separator">
+                          <af:objectSpacer width="20" height="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                      <af:objectSpacer width="10" height="25"/>
+                      <af:table value="#{bindings['SisEmpleadoVwSisDireccion_vw'].collectionModel}"
+                                var="row"
+                                rows="#{bindings['SisEmpleadoVwSisDireccion_vw'].rangeSize}"
+                                first="#{bindings['SisEmpleadoVwSisDireccion_vw'].rangeStart}"
+                                emptyText="#{bindings['SisEmpleadoVwSisDireccion_vw'].viewable ? 'Ninguna fila' : 'Ninguna fila'}"
+                                selectionState="#{bindings['SisEmpleadoVwSisDireccion_vw'].collectionModel.selectedRow}"
+                                selectionListener="#{bindings['SisEmpleadoVwSisDireccion_vw'].collectionModel.makeCurrent}"
+                                id="tbl_direccion"
+                                partialTriggers="btn_act_direc btn_guardar btn_agregar_direc tbl_direccion:btn_borrar_direc inpt_direccion cmb_depDirec cmb_munDirec">
+                        <f:facet name="selection">
+                          <af:tableSelectOne autoSubmit="true">
+                            <af:commandButton text="#{tx['empleado.tab_direc_borrar.texto']}"
+                                              rendered="#{!bindings.estContrl1.inputValue}"
+                                              partialSubmit="true"
+                                              actionListener="#{bindings.Delete.execute}"
+                                              disabled="#{!bindings.Delete.enabled}"
+                                              id="btn_borrar_direc"/>
+                          </af:tableSelectOne>
+                        </f:facet>
+                        <af:column sortProperty="RegistroEmpleado"
+                                   sortable="false"
+                                   headerText="#{tx['empleado.tab_dtsPer.tbl_drc.NomDep.label']}">
+                          <af:outputText value="#{row.NomDep}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings['SisEmpleadoVwSisDireccion_vw'].formats.RegistroEmpleado}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="IdMunicipio" sortable="false"
+                                   headerText="#{tx['empleado.tab_dtsPer.tbl_drc.NomMun.label']}">
+                          <af:outputText value="#{row.NomMuni}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings['SisEmpleadoVwSisDireccion_vw'].formats.IdMunicipio}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="Direccion" sortable="false"
+                                   headerText="#{tx['empleado.tab_dtsPer.tbl_drc.Direccion.label']}">
+                          <af:outputText value="#{row.Direccion}"/>
+                        </af:column>
+                        <af:column sortProperty="DirecActual" sortable="false"
+                                   headerText="#{tx['empleado.tab_dtsPer.tbl_drc.DrcActual.label']}">
+                          <af:outputText value="#{row.DirecActual}"/>
+                        </af:column>
+                      </af:table>
+                    </af:panelHeader>
+                    <af:panelHeader text="#{tx['empleado.pnlhdr_infContacto.texto']}">
+                      <af:panelForm rows="4">
+                        <af:inputText value="#{bindings.TelCasa.inputValue}"
+                                      label="#{tx['empleado.tab_dtsPer.inptTelCasa.label']}"
+                                      disabled="#{bindings.estContrl1.inputValue}"
+                                      required="#{bindings.TelCasa.mandatory}"
+                                      columns="8">
+                          <af:validator binding="#{bindings.TelCasa.validator}"/>
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.TelCasa.format}"/>
+                        </af:inputText>
+                        <af:inputText value="#{bindings.Celular.inputValue}"
+                                      label="#{tx['empleado.tab_dtsPer.inptCel.label']}"
+                                      disabled="#{bindings.estContrl1.inputValue}"
+                                      required="#{bindings.Celular.mandatory}"
+                                      columns="8" rows="1">
+                          <af:validator binding="#{bindings.Celular.validator}"/>
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.Celular.format}"/>
+                        </af:inputText>
+                        <af:inputText value="#{bindings.Fax.inputValue}"
+                                      label="#{tx['empleado.tab_dtsPer.inptFax.label']}"
+                                      disabled="#{bindings.estContrl1.inputValue}"
+                                      required="#{bindings.Fax.mandatory}"
+                                      columns="8">
+                          <af:validator binding="#{bindings.Fax.validator}"/>
+                        </af:inputText>
+                        <af:inputText value="#{bindings.Email.inputValue}"
+                                      label="#{tx['empleado.tab_dtsPer.inptEmail.label']}"
+                                      disabled="#{bindings.estContrl1.inputValue}"
+                                      required="#{bindings.Email.mandatory}"
+                                      columns="25">
+                          <af:validator binding="#{bindings.Email.validator}"/>
+                          <af:validateRegExp pattern="[A-Za-z0-9][A-Za-z0-9._-]+@[A-Za-z0-9._-]+\.[A-Za-z]{2,4}" noMatchMessageDetail="No es una dirección de correo electrónico válido."/>
+                        </af:inputText>
+                      <af:inputText value="#{bindings.TelefonoTrabajo.inputValue}"
+                                    label="#{tx['empleado.tab_dtsPer.inptTelTrab.label']}"
+                                    required="#{bindings.TelefonoTrabajo.mandatory}"
+                                    columns="10"
+                                    disabled="#{bindings.estContrl1.inputValue}">
+                        <af:validator binding="#{bindings.TelefonoTrabajo.validator}"/>
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.TelefonoTrabajo.format}"/>
+                      </af:inputText>
+                      <af:inputText value="#{bindings.TelefonoExtension.inputValue}"
+                                    label="#{tx['empleado.tab_dtsPer.inptTelTrab2.label']}"
+                                    required="#{bindings.TelefonoExtension.mandatory}"
+                                    columns="15"
+                                    disabled="#{bindings.estContrl1.inputValue}">
+                        <af:validator binding="#{bindings.TelefonoExtension.validator}"/>
+                      </af:inputText>
+                      <af:inputText value="#{bindings.EmailInstitucional.inputValue}"
+                                    label="#{tx['empleado.tab_dtsPer.inptEmail2.label']}"
+                                    required="#{bindings.EmailInstitucional.mandatory}"
+                                    columns="25"
+                                    disabled="#{bindings.estContrl1.inputValue}" id="inptText_email_institucional" binding="#{empl.inptText_email_institucional}">
+                        <af:validator binding="#{bindings.EmailInstitucional.validator}"/>
+                          <af:validateRegExp pattern="[A-Za-z0-9][A-Za-z0-9._-]+@[A-Za-z0-9._-]+\.[A-Za-z]{2,4}" noMatchMessageDetail="No es una dirección de correo electrónico válido."/>
+                        </af:inputText>
+                      <af:inputText value="#{bindings.Ubicacion.inputValue}"
+                                    label="#{tx['empleado.tab_dtsPer.inptUbicacion.label']}"
+                                    required="#{bindings.Ubicacion.mandatory}"
+                                    columns="25"
+                                    tip="#{tx['fich_empleado.inpt_ubicacion.tip']}"
+                                    disabled="#{bindings.estContrl1.inputValue}">
+                        <af:validator binding="#{bindings.Ubicacion.validator}"/>
+                      </af:inputText>
+                    </af:panelForm>
+                    </af:panelHeader>
+                    <af:panelHeader>
+                      <af:selectOneChoice label="#{tx['empleado.cmb_tipo_puesto.texto']}"
+                                          value="#{bindings.TipoPuestoAplica.inputValue}"
+                                          rendered="#{!bindings.verOperaciones.inputValue &amp;&amp; roles_usuario.asistenteRecursosHumRegPer==false}"
+                                          showRequired="true">
+                        <af:selectItem label="Administrativo" value="A"/>
+                        <af:selectItem label="Docente" value="D"/>
+                      </af:selectOneChoice>
+                      <af:objectSpacer width="10" height="10"/>
+                      <af:selectOneChoice value="#{bindings['SisUnidadesEjecutoras_Id_vwlabel1'].inputValue}"
+                                          label="#{tx['empleado.cmb_subprograma.texto']}"
+                                          rendered="#{!bindings.verOperaciones.inputValue &amp;&amp; roles_usuario.asistenteRecursosHumRegPer==false}"
+                                          showRequired="true">
+                        <f:selectItems value="#{bindings['SisUnidadesEjecutoras_Id_vwlabel1'].items}"/>
+                      </af:selectOneChoice>
+                      <af:commandLink text="Para ingresar cargos extrauniversitarios haz clic aquí. Primero guarde los datos."
+                                      action="op_empl_cargoExtra"/>
+                      <af:showOneRadio label="#{tx['fich_empleado.inpt_radio_otraIns.texto']}"
+                                       rendered="false">
+                        <af:showDetailItem text="NO"
+                                           disclosed="#{bindings.OtroTrabajo.inputValue eq 'NO'}"
+                                           disclosureListener="#{empl.shwPanel_otraIns_NO}"
+                                           disabled="#{bindings.estContrl1.inputValue}"/>
+                        <af:showDetailItem text="SI"
+                                           disclosed="#{bindings.OtroTrabajo.inputValue eq 'SI'}"
+                                           disclosureListener="#{empl.shwPanel_otraIns_SI}"
+                                           disabled="#{bindings.estContrl1.inputValue}">
+                          <af:panelForm>
+                            <f:facet name="footer"/>
+                            <af:inputText label="#{tx['fich_empleado.inpt_nombreIns.texto']}"
+                                          value="#{bindings.NombreEmpresa.inputValue}"
+                                          disabled="#{bindings.estContrl1.inputValue}"/>
+                            <af:inputText label="#{tx['fich_empleado.inpt_direc.texto']}"
+                                          value="#{bindings.DireccionEmpresa.inputValue}"
+                                          disabled="#{bindings.estContrl1.inputValue}"/>
+                            <af:selectInputDate label="#{tx['fich_empleado.inpt_desde.texto']}"
+                                                value="#{bindings.FechaIngresoEmp.inputValue}"
+                                                disabled="#{bindings.estContrl1.inputValue}"/>
+                            <af:inputText label="#{tx['fich_empleado.inpt_horario.texto']}"
+                                          value="#{bindings.HorarioTrabajo.inputValue}"
+                                          disabled="#{bindings.estContrl1.inputValue}"/>
+                          </af:panelForm>
+                        </af:showDetailItem>
+                      </af:showOneRadio>
+                    </af:panelHeader>
+                    <af:inputHidden
+                                    id="valorCmbNom"
+                                    binding="#{empl.inpHiddenCambioN}"/>
+                    <af:inputHidden id="validaNombre"
+                                    value="#{(roles_usuario.asistenteRecursosHumRegPer || roles_usuario.administrador || roles_usuario.coordinadorSueldos) &amp;&amp; (bindings.FechaCreacion.inputValue!=null)}"/>
+                  </af:showDetailItem>
+                  <af:showDetailItem text="#{tx['empleado.tab_contrato.texto']}"
+                                     rendered="#{roles_usuario.vigilancia || roles_usuario.asistenteRecursosHum?false: bindings.verOperaciones.inputValue}"
+                                     disclosed="false">
+                    <af:objectSpacer width="10" height="10"/>
+                    <af:panelHorizontal>
+                      <af:table value="#{bindings['contrato_busqueda'].collectionModel}"
+                                var="row"
+                                rows="#{bindings['contrato_busqueda'].rangeSize}"
+                                first="#{bindings['contrato_busqueda'].rangeStart}"
+                                emptyText="#{bindings['contrato_busqueda'].viewable ? 'Ningun Contrato' : 'Ningun Contrato'}"
+                                selectionState="#{bindings['contrato_busqueda'].collectionModel.selectedRow}"
+                                selectionListener="#{bindings['contrato_busqueda'].collectionModel.makeCurrent}"
+                                binding="#{empl.tbl_contratos}" banding="row"
+                                bandingInterval="1">
+                        <f:facet name="selection">
+                          <af:tableSelectOne text="Select and"/>
+                        </f:facet>
+                        <f:facet name="actions">
+                          <af:commandButton text="#{tx['empleado.pnlhdr_contrato.btn_nuevo.texto']}"
+                                            action="#{empl.btn_new_contrato}"/>
+                        </f:facet>
+                        <af:column sortProperty="IdContrato" sortable="false"
+                                   headerText="#{bindings['contrato_busqueda'].labels.IdContrato}">
+                          <af:commandLink text="#{row.IdContrato}"
+                                          action="#{empl.cmd_link_action_verContrato}"
+                                          binding="#{empl.cmd_lnl_idContrato}"/>
+                        </af:column>
+                        <af:column sortProperty="Partida" sortable="false"
+                                   headerText="#{bindings['contrato_busqueda'].labels.Partida}">
+                          <af:outputText value="#{row.Partida}"/>
+                        </af:column>
+                        <af:column sortProperty="NumeroPlaza" sortable="false"
+                                   headerText="#{bindings['contrato_busqueda'].labels.NumeroPlaza}">
+                          <af:outputText value="#{row.NumeroPlaza}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings['contrato_busqueda'].formats.NumeroPlaza}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="NomPuesto" sortable="false"
+                                   headerText="#{bindings['contrato_busqueda'].labels.NomPuesto}"
+                                   noWrap="true">
+                          <af:outputText value="#{row.NomPuesto}"/>
+                        </af:column>
+                        <af:column sortProperty="NomDependencia"
+                                   sortable="false"
+                                   headerText="#{bindings['contrato_busqueda'].labels.NomDependencia}"
+                                   noWrap="true">
+                          <af:outputText value="#{row.NomDependencia}"/>
+                        </af:column>
+                        <af:column sortProperty="Horascontratadas"
+                                   sortable="false"
+                                   headerText="#{bindings['contrato_busqueda'].labels.Horascontratadas}">
+                          <af:outputText value="#{row.Horascontratadas}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings['contrato_busqueda'].formats.Horascontratadas}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="FechaInicio" sortable="false"
+                                   headerText="#{bindings['contrato_busqueda'].labels.FechaInicio}">
+                          <af:outputText value="#{row.FechaInicio}">
+                            <f:convertDateTime pattern="#{bindings['contrato_busqueda'].formats.FechaInicio}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="FechaFin" sortable="false"
+                                   headerText="#{bindings['contrato_busqueda'].labels.FechaFin}">
+                          <af:outputText value="#{row.FechaFin}">
+                            <f:convertDateTime pattern="#{bindings['contrato_busqueda'].formats.FechaFin}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="Estado" sortable="false"
+                                   headerText="#{bindings['contrato_busqueda'].labels.Estado}"
+                                   noWrap="true">
+                          <af:outputText value="#{row.Estado}"/>
+                        </af:column>
+                        <af:column sortable="false" headerText="Validez"
+                                   noWrap="true">
+                          <af:outputText value="#{row.Validez}"/>
+                        </af:column>
+                        <af:column sortable="false"
+                                   headerText="#{bindings['contrato_busqueda'].labels.ComentarioEstado}">
+                          <af:outputText value="#{row.ComentarioEstado}"/>
+                        </af:column>
+                      </af:table>
+                      <f:facet name="separator">
+                        <af:objectSpacer width="20" height="10"/>
+                      </f:facet>
+                    </af:panelHorizontal>
+                    <af:objectSpacer width="10" height="40"/>
+                    <af:commandButton text="#{tx['empleado.pnlhdr_contrato.btn_nuevo.texto']}"
+                                      action="#{empl.btn_new_contrato}"/>
+                  </af:showDetailItem>
+                  <af:showDetailItem text="#{tx['empleado.tab_doc_adjuntos.texto']}"
+                                     rendered="#{roles_usuario.vigilancia || roles_usuario.asistenteRecursosHum?false: bindings.verOperaciones.inputValue}"
+                                     disclosed="false">
+                    <af:objectSpacer width="650" height="30"/>
+                    <af:table value="#{bindings['SisEmpleadoVwSis_Arch_adjunto_vw'].collectionModel}"
+                              var="row"
+                              rows="#{bindings['SisEmpleadoVwSis_Arch_adjunto_vw'].rangeSize}"
+                              first="#{bindings['SisEmpleadoVwSis_Arch_adjunto_vw'].rangeStart}"
+                              emptyText="Ninguna Fila"
+                              selectionState="#{bindings['SisEmpleadoVwSis_Arch_adjunto_vw'].collectionModel.selectedRow}"
+                              selectionListener="#{bindings['SisEmpleadoVwSis_Arch_adjunto_vw'].collectionModel.makeCurrent}"
+                              id="tbl_documentos_adjuntos" banding="row"
+                              binding="#{empl.tbl_documentos_adjuntos}"
+                              width="100%">
+                      <f:facet name="selection">
+                        <af:tableSelectOne rendered="false"/>
+                      </f:facet>
+                      <af:column sortProperty="idArchivoAdjunto" sortable="true"
+                                 headerText="ID" rendered="false">
+                        <h:outputLink value="javascript:openNewWindow('#{row.nomArchEncript}')">
+                          <af:outputText value="#{row.idArchivoAdjunto}">
+                            <af:convertNumber groupingUsed="false"/>
+                          </af:outputText>
+                        </h:outputLink>
+                      </af:column>
+                      <af:column sortProperty="NomArchivo" sortable="true"
+                                 headerText="Nombre del Documento">
+                        <h:outputLink value="javascript:openNewWindow('#{row.nomArchEncript}')">
+                          <af:outputText value="#{row.NomArchivo}"/>
+                        </h:outputLink>
+                      </af:column>
+                      <af:column sortProperty="Descripcion" sortable="true"
+                                 headerText="Descripción">
+                        <af:outputText value="#{row.Descripcion}"/>
+                      </af:column>
+                      <af:column sortProperty="FechaCreacion" sortable="false"
+                                 headerText="Fecha Adjuntado">
+                        <af:outputText value="#{row.FechaCreacion}">
+                          <af:convertDateTime pattern="dd/MM/yyyy"/>
+                        </af:outputText>
+                      </af:column>
+                    </af:table>
+                    <af:objectSpacer width="10" height="20"/>
+                    <af:panelHorizontal halign="center">
+                      <af:commandButton text="#{tx['empleado.tab_doc_adjuntos.btn_adj.texto']}"
+                                        action="#{empl.btn_adj_Archivo_Action}"/>
+                      <af:commandButton actionListener="#{bindings.Execute1.execute}"
+                                        text="#{tx['empleado.tab_doc_adjuntos.btn_act.texto']}"
+                                        disabled="#{!bindings.Execute1.enabled}"/>
+                      <f:facet name="separator">
+                        <af:objectSpacer width="30" height="10"/>
+                      </f:facet>
+                    </af:panelHorizontal>
+                  </af:showDetailItem>
+                </af:showOneTab>
+                <af:panelHorizontal>
+                  <af:commandButton text="#{tx['empleado.boton.guardar.texto']}"
+                                    rendered="#{roles_usuario.vigilancia?false:true}"
+                                    action="#{empl.btn_grabar}"
+                                    id="btn_guardar">
+                    <af:setActionListener from="#{bindings.IdTipoInstAcademica.inputValue}"
+                                          to="#{bindings.IdTipoInstAcademica1.inputValue}"/>
+                  </af:commandButton>
+                  <af:commandButton actionListener="#{bindings.Rollback.execute}"
+                                    text="Cancelar"
+                                    immediate="true" action="lst_empleado">
+                    <af:resetActionListener/>
+                  </af:commandButton>
+                  <f:facet name="separator">
+                    <af:objectSpacer width="20" height="10"/>
+                  </f:facet>
+                  <af:commandButton text="#{tx['empleado.boton.solRegEmpl.texto']}"
+                                    rendered="#{(!bindings.verOperaciones.inputValue &amp;&amp; roles_usuario.asistenteRecursosHumRegPer==false) &amp;&amp;( bindings.tpValidacion.inputValue !=&quot;2&quot;)}"
+                                    action="#{empl.btn_asignar_registro}"/>
+                </af:panelHorizontal>
+              </af:panelBox>
+            </af:panelHorizontal>
+          </af:page>
+           <f:verbatim>
+               <div id="dialog-confirm" title="Cambio nombre empleado" class="mostrar">
+	         <p align="center">
+                 <span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;">
+                 </span> El nombre del empleado cambiará.
+                 </p>
+                  <p align="center">¿Es por fallecimiento?</p>
+                </div>
+            </f:verbatim>
+        </h:form>
+      </afh:body>
+    </afh:html>
+   <script type="text/javascript" src="/${flujo_usuario.dominioApp}/js/gestiones/scrptEmpl.js">var xy;</script>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:empl-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:empl-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:empl-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:empl-->
+</jsp:root>

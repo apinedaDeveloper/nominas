@@ -1,0 +1,271 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns="http://www.w3.org/1999/xhtml"
+          xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <f:view>
+    <afh:html>
+      <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+      <f:loadBundle basename="propiedades" var="tx"/>
+      <afh:head title="#{tx['rep_pago.title']}">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+      </afh:head>
+         <script language="javascript" type="text/javascript"> 
+        
+         function generaReporte(idDocumento){ 
+             window.open("../verreporteexcel?id="+idDocumento+String.fromCharCode(38)+"rep=ARCH_ACRE","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO"); 
+       } 
+      
+         function generaReporteAnula(idDocumento){ 
+             window.open("../verreporteexcel?id="+idDocumento+String.fromCharCode(38)+"rep=ARCH_ACREANUL","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO"); 
+       } 
+      
+         
+         function generaReportePdf(idDoc,idTipo){ 
+             window.open("../verreportex?id="+idDoc+String.fromCharCode(38)+"rep="+"EMISION_DOC_PAGO"+String.fromCharCode(38)+"id2="+idTipo,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable=1"); 
+       } 
+       
+       function genRepRev(idDoc){ 
+             window.open("../verreportex?id="+idDoc+String.fromCharCode(38)+"rep="+"REVCHEQUE","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable=1"); 
+       } 
+
+        function genresemi(idDoc,idTipo){ 
+             window.open("../verreportex?id="+idDoc+String.fromCharCode(38)+"rep="+"RES_EMISION"+String.fromCharCode(38)+"id2="+idTipo,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable=1"); 
+       } 
+         
+       function genRepDetProc(idDoc){ 
+            window.open("../verreportepdf?id="+idDoc+String.fromCharCode(38)+"rep="+"RES_PROCESO_PG","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable=1"); 
+       } 
+              
+        function genrepAudi(idDoc,idTipo){ 
+            window.open("../verreportex?id="+idDoc+String.fromCharCode(38)+"rep="+"ENTR_PAPELNOMINA_AUDI"+String.fromCharCode(38)+"id2="+idTipo,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable=1"); 
+       } 
+         
+       function genRepProcCircu(){ 
+            window.open("../verreportepdf?id="+0+String.fromCharCode(38)+"rep="+"REP_PROC_CIRC","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable=1"); 
+       } 
+        
+       function genEmiISR(idDoc,idTipo){ 
+            window.open("../verreportex?id="+idDoc+String.fromCharCode(38)+"rep="+"EMISION_DOC_PAGO_ISR"+String.fromCharCode(38)+"id2="+idTipo,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable=1"); 
+           return true;
+       } 
+    
+         
+      </script> 
+    
+      <afh:body>
+        <af:messages/>
+        <h:form>
+           <af:page  value="#{modeloMenu.modeloBD}" var="node">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+          <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelHorizontal halign="center">
+              <af:panelBox>
+                <af:panelHorizontal>
+                  <af:panelForm>
+                    <af:selectInputDate value="#{bindings.fechaI.inputValue}"
+                                        label="#{tx['rep_pago.inpt_fechaInicio.label']}"
+                                        required="#{bindings.fechaI.mandatory}">
+                      <af:validator binding="#{bindings.fechaI.validator}"/>
+                      <f:convertDateTime pattern="#{bindings.fechaI.format}"/>
+                    </af:selectInputDate>
+                    <af:selectInputDate value="#{bindings.fechaF.inputValue}"
+                                        label="#{tx['rep_pago.inpt_fechaFin.label']}"
+                                        required="#{bindings.fechaF.mandatory}">
+                      <af:validator binding="#{bindings.fechaF.validator}"/>
+                      <f:convertDateTime pattern="#{bindings.fechaF.format}"/>
+                    </af:selectInputDate>
+                  </af:panelForm>
+                  <af:commandButton actionListener="#{bindings.ExecuteWithParams.execute}"
+                                    text="#{tx['rep_pago.btn_buscar.label']}"
+                                    disabled="#{!bindings.ExecuteWithParams.enabled}"/>
+                  <f:facet name="separator">
+                    <af:objectSpacer width="30" height="10"/>
+                  </f:facet>
+                </af:panelHorizontal>
+                <af:panelHeader text="#{tx['rep_pago.hdr_busqueda.label']}">
+                  <af:objectSpacer width="10" height="15"/>
+                  <af:table id="masterDetail1"
+                            first="#{bindings['SisPagosProcesados_vw'].rangeStart}"
+                            emptyText="#{bindings['SisPagosProcesados_vw'].viewable ? 'Ninguna Fila' : 'Ninguna Fila'}"
+                            var="row"
+                            value="#{bindings['SisPagosProcesados_vw'].collectionModel}"
+                            selectionState="#{bindings['SisPagosProcesados_vw'].collectionModel.selectedRow}"
+                            selectionListener="#{bindings['SisPagosProcesados_vw'].collectionModel.makeCurrent}"
+                            banding="row" bandingInterval="1"
+                            rows="#{bindings['SisPagosProcesados_vw'].rangeSize}">
+                    <f:facet name="selection">
+                      <af:tableSelectOne autoSubmit="true" text="Select and "/>
+                    </f:facet>
+                    <f:facet name="header">
+                      <af:outputText value="#{tx['rep_pago.tbl_header.label']}"/>
+                    </f:facet>
+                    <af:column headerText="#{tx['rep_pago.tbl_idProc.label']}"
+                               sortable="false" sortProperty="IdProceso">
+                      <af:outputText value="#{row.IdProceso}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['SisPagosProcesados_vw'].formats.IdProceso}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortable="false"
+                               headerText="#{tx['rep_pago.tbl_proceso.label']}">
+                      <af:outputText value="#{row.Tipoproceso}"/>
+                    </af:column>
+                    <af:column headerText="#{tx['rep_pago.tbl_estado.label']}"
+                               sortable="false" sortProperty="Nombre">
+                      <af:outputText value="#{row.NomEstado}"/>
+                    </af:column>
+                    <af:column headerText="#{tx['rep_pago.tbl_observaciones.label']}"
+                               sortable="false" sortProperty="Observaciones">
+                      <af:outputText value="#{row.Observaciones}"/>
+                    </af:column>
+                    <af:column headerText="#{tx['rep_pago.tbl_fchI.label']}"
+                               sortable="false" sortProperty="FechaInicio"
+                               noWrap="true">
+                      <af:outputText value="#{row.FechaInicio}">
+                        <f:convertDateTime pattern="#{bindings['SisPagosProcesados_vw'].formats.FechaInicio}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column headerText="#{tx['rep_pago.tbl_fchF.label']}"
+                               sortable="false" sortProperty="FechaFin"
+                               headerNoWrap="true">
+                      <af:outputText value="#{row.FechaFin}">
+                        <f:convertDateTime pattern="#{bindings['SisPagosProcesados_vw'].formats.FechaFin}"/>
+                      </af:outputText>
+                    </af:column>
+                  </af:table>
+                  <af:objectSpacer width="10" height="30"/>
+                  <af:table partialTriggers="masterDetail1"
+                            rows="#{bindings['SisPagosProcesados_vwSisProcesoPagoDetView'].rangeSize}"
+                            first="#{bindings['SisPagosProcesados_vwSisProcesoPagoDetView'].rangeStart}"
+                            emptyText="#{bindings['SisPagosProcesados_vwSisProcesoPagoDetView'].viewable ? 'Ninguna Fila' : 'Ninguna Fila'}"
+                            var="row"
+                            value="#{bindings['SisPagosProcesados_vwSisProcesoPagoDetView'].collectionModel}"
+                            selectionState="#{bindings['SisPagosProcesados_vwSisProcesoPagoDetView'].collectionModel.selectedRow}"
+                            selectionListener="#{bindings['SisPagosProcesados_vwSisProcesoPagoDetView'].collectionModel.makeCurrent}"
+                            banding="row" bandingInterval="1">
+                    <f:facet name="selection">
+                      <af:tableSelectOne text="Select and "/>
+                    </f:facet>
+                    <f:facet name="header">
+                      <af:outputText value="#{tx['rep_pago.tbl2_header.label']} Id: #{bindings.IdProceso.inputValue} "/>
+                    </f:facet>
+                    <af:column sortable="false" headerText="ProcesoNomina">
+                      <af:outputText value="#{row.IdProcesoNomina}"/>
+                    </af:column>
+                    <af:column headerText="Tipo Proceso" sortable="false"
+                               sortProperty="Tiponomina">
+                      <af:outputText value="#{row.Nomproceso}"/>
+                    </af:column>
+                    <af:column headerText="#{tx['rep_pago.tbl2_Periodo.label']}"
+                               sortable="false" sortProperty="Nomperido">
+                      <af:outputText value="#{row.Nomperido}"/>
+                    </af:column>
+                    <af:column headerText="#{tx['rep_pago.tbl2_Anio.label']}"
+                               sortable="false" sortProperty="Anio">
+                      <af:outputText value="#{row.Anio}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['SisPagosProcesados_vwSisProcesoPagoDetView'].formats.Anio}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column headerText="#{tx['rep_pago.tbl2_Porcentaje.label']}"
+                               sortable="false" sortProperty="PorcentajePago">
+                      <af:outputText value="#{row.PorcentajePago}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['SisPagosProcesados_vwSisProcesoPagoDetView'].formats.PorcentajePago}"/>
+                      </af:outputText>
+                    </af:column>
+                  </af:table>
+                </af:panelHeader>
+                <af:objectSeparator/>
+                <af:panelHorizontal halign="center"
+                                    partialTriggers="masterDetail1">
+                  <af:commandButton text="Reporte parametros de proceso asignación"
+                                    onclick="genRepDetProc('#{bindings.IdProceso.inputValue}');"
+                                    partialTriggers="masterDetail1"/>
+                  <af:commandButton text="Generar cheques y boletas"
+                                    actionListener="#{bindings['generar_rep_pago'].execute}"
+                                    disabled="#{!bindings['generar_rep_pago'].enabled}"/>
+                  <af:commandButton text="#{tx['rep_pago.btn_VerReporte.label']}"
+                                    action="ver_listado_repPago"/>
+                  <f:facet name="separator">
+                    <af:objectSpacer width="25" height="10"/>
+                  </f:facet>
+                  <af:commandButton text="Revisión cheques"
+                                    onclick="javascript:genRepRev('#{bindings.SisPagosProcesados_vw.currentRow['idProceso']}')"/>
+                  <af:commandButton text="Rep Procesos pend Circulante"
+                                    onclick="genRepProcCircu();"/>
+                </af:panelHorizontal>
+                <af:objectSeparator/>
+                <af:panelHeader text="Nomina">
+                  <af:panelButtonBar>
+                    <af:commandButton text="Generar reporte nomina"
+                                      action="#{backing_bean_reportes.btn_gen_rep_nomina}"/>
+                  </af:panelButtonBar>
+                </af:panelHeader>
+                <af:panelHeader text="Acreditamiento">
+                  <af:panelButtonBar partialTriggers="masterDetail1">
+                    <af:commandButton text="#{tx['rep_pago.btn_acreditacion.label']}"
+                                      onclick="javascript:generaReporte('#{bindings.SisPagosProcesados_vw.currentRow['idProceso']}')"
+                                      disabled="#{bindings.SisPagosProcesados_vw.currentRow['idProceso']==null}"/>
+                    <af:commandButton text="Excel Acreditamientos Anulados"
+                                      onclick="javascript:generaReporteAnula('#{bindings.SisPagosProcesados_vw.currentRow['idProceso']}')"/>
+                    <af:commandButton text="Excel Acreditamiento Final"
+                                      action="#{backing_bean_reportes.btn_acreditamiento_final}"
+                                      shortDesc="Cierra anulación de acreditamientos"/>
+                  </af:panelButtonBar>
+                </af:panelHeader>
+                <af:panelHorizontal partialTriggers="masterDetail1">
+                  <af:selectOneChoice label="Tipo Documento" valuePassThru="true"
+                                      autoSubmit="true" id="cmb_tipoDoc"
+                                      value="#{bindings.pIdTipoDoc1.inputValue}">
+                    <af:selectItem label="Cheques" value="1"/>
+                    <af:selectItem label="Acreditamientos" value="2"/>
+                  </af:selectOneChoice>
+                  <af:commandButton text="#{tx['rep_pago.btn_emision.label']}"
+                                    onclick="javascript:generaReportePdf('#{bindings.SisPagosProcesados_vw.currentRow['idProceso']}','#{bindings.pIdTipoDoc1.inputValue}')"
+                                    partialTriggers="cmb_tipoDoc masterDetail1"/>
+                  <f:facet name="separator">
+                    <af:objectSpacer width="30" height="10"/>
+                  </f:facet>
+                  <af:commandButton text="Resumen emisión"
+                                    onclick="javascript:genresemi('#{bindings.SisPagosProcesados_vw.currentRow['idProceso']}','#{bindings.pIdTipoDoc1.inputValue}')"
+                                    partialTriggers="cmb_tipoDoc masterDetail1"/>
+                  <af:commandButton text="Reporte para auditoria"
+                                    onclick="javascript:genrepAudi('#{bindings.SisPagosProcesados_vw.currentRow['idProceso']}','#{bindings.pIdTipoDoc1.inputValue}')"
+                                    partialTriggers="cmb_tipoDoc masterDetail1"/>
+                  <af:commandButton text="Emisión ISR"
+                                    partialTriggers="cmb_tipoDoc masterDetail1"
+                                    onclick="javascript:genEmiISR('#{bindings.SisPagosProcesados_vw.currentRow['idProceso']}','#{bindings.pIdTipoDoc1.inputValue}')"/>
+                </af:panelHorizontal>
+                <af:objectSpacer width="10" height="15"/>
+              </af:panelBox>
+            </af:panelHorizontal>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:backing_bean_reportes-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:backing_bean_reportes-->
+</jsp:root>

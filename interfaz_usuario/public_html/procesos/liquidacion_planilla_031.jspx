@@ -1,0 +1,444 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0" xmlns:f="http://java.sun.com/jsf/core" xmlns:af="http://xmlns.oracle.com/adf/faces" xmlns:afh="http://xmlns.oracle.com/adf/faces/html"
+          xmlns:h="http://java.sun.com/jsf/html">
+  <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+  <f:view>
+    <afh:html id="html1" binding="#{Liquidacion_planilla_031.html1}">
+      <afh:head title="Liquidación de Planillas ISR 031" id="head1" binding="#{Liquidacion_planilla_031.head1}">
+        <meta http-equiv="Content-Type" content="text/html; charset=windows-1252"/>
+        <title>Liquidación de Planillas ISR 031</title>
+        <script language="javascript" type="text/javascript"> 
+        //Pregunta si desea añadir el Descuento
+        function confirmarAnadirDescuento(){
+            var aceptado = false; //valor inicial
+            var mensaje = "¿Desea Añadir el Descuento?";
+            if (confirm(mensaje)){
+                aceptado = true;
+            }
+            return aceptado;
+        }
+        //Pregunta si desea Grabar los Cambios de la Fila
+        function confirmarGrabarCambios(registroPersonal){
+            var aceptado = false; //valor inicial
+            var mensaje = "¿Desea Grabar los Cambios de '" + registroPersonal + "'?";
+            if (confirm(mensaje)){
+                aceptado = true;
+            }
+            return aceptado;
+        }
+        //Pregunta si desea Cancelar los Cambios de la Fila
+        function confirmarCancelarCambios(registroPersonal){
+            var aceptado = false; //valor inicial
+            var mensaje = "¿Desea Cancelar los Cambios no Grabados de '" + registroPersonal + "'?";
+            if (confirm(mensaje)){
+                aceptado = true;
+            }
+            return aceptado;
+        }
+        //Pregunta si desea Eliminar el Descuento
+        function confirmarEliminarDescuento(nombreAjuste){
+            var confirmado = false; //valor inicial
+            var mensaje = "¿Desea Eliminar el Descuento '" + nombreAjuste + "'?";
+            if (confirm(mensaje)){
+                confirmado = true;
+            }
+            return confirmado;
+        }
+        //Pregunta si desea Cancelar Todos los Cambios No Guardados
+        function confirmarCancelarGlobal(){
+            var confirmado = false; //valor inicial
+            var mensaje = "¿Desea Cancelar los cambios no guardados?";
+            if (confirm(mensaje)){
+                confirmado = true;
+            }
+            return confirmado;
+        }
+        //Abre el Reporte de Liquidación de Planilla del Descuento ISR (Form. ISR-P-03)
+        function generarReporte(idPlanilla){ 
+            var link;
+            link = '/${flujo_usuario.dominioApp}/faces/verreportepdf?id='+idPlanilla+String.fromCharCode(38)+'rep=LIQUIDACION_PLANILLA031';
+            window.open(link,'preview','width=1200,height=723,scrollbars=YES,location=NO,directories=NO,resizable=1');
+            return false;
+        }
+        //Pregunta si desea liquidar la nómina
+        function preguntarLiquidarNomina(numPlanilla){ 
+            var confirmado = false; //valor inicial
+            var mensaje = "¿Desea Liquidar la Nómina No. " + numPlanilla + "?";
+            if (confirm(mensaje)){
+                confirmado = true;
+            }
+            return confirmado;
+        }
+        //Función que comprueba si ingresaron datos para buscar planillas
+        function comprobarCamposBuscarPlanillas() {
+            var prosigue = false; //decidirá si se sigue el procedimiento o no
+            var idPlanilla, noCheque, anioPago, mesPagoIndex, mesPago;
+            document.getElementById('page1:inptText_idPlanilla_busqueda').value = document.getElementById('page1:inptText_idPlanilla_busqueda').value.trim();
+            document.getElementById('page1:inptText_numCheque_busqueda').value = document.getElementById('page1:inptText_numCheque_busqueda').value.trim();
+            document.getElementById('page1:inptText_anioPago_busqueda').value = document.getElementById('page1:inptText_anioPago_busqueda').value.trim();
+            idPlanilla = document.getElementById('page1:inptText_idPlanilla_busqueda').value;
+            noCheque = document.getElementById('page1:inptText_numCheque_busqueda').value;
+            anioPago = document.getElementById('page1:inptText_anioPago_busqueda').value;
+            mesPagoIndex = document.getElementById('page1:slctOneCh_mesPago_busqueda').selectedIndex;
+            mesPago = document.getElementById('page1:slctOneCh_mesPago_busqueda').options[mesPagoIndex].text;
+            //alert('El mes de pago es el: ' + mesPago);
+            if ( idPlanilla == "" &amp;&amp; noCheque == "" &amp;&amp; anioPago == "" &amp;&amp; mesPago == "" ) {
+                alert("Ingrese un filtro de Busqueda, por favor.");
+                document.getElementById('page1:inptText_idPlanilla_busqueda').focus();
+            } else {
+                prosigue = true;
+            }
+            return prosigue;
+        }
+        </script>
+        <jsp:include page="/js/libJQ.js"/>
+        <jsp:include page="/js/librariesDialog.js"/>
+        <script type="text/javascript" src="/${flujo_usuario.dominioApp}/js/gestiones/scrptAutorizacion.js">
+            var xy=new Date().getMilliseconds();      
+        </script>
+      </afh:head>
+      <afh:body id="body1" binding="#{Liquidacion_planilla_031.body1}" initialFocusId="page1:inptText_idPlanilla_busqueda">
+        <af:messages id="messages1" binding="#{Liquidacion_planilla_031.messages1}"/>
+        <af:form id="form1" binding="#{Liquidacion_planilla_031.form1}">
+          <f:verbatim>
+            <!--Tipo Autorización para las planillas ISR 031 (23 corresponde a Planillas ISR 031)-->
+            <input type="hidden" name="hdn_tipo" id="hdn_tipo" value="23"/>
+            <!--Id de la nómina actual en pantalla-->
+            <input type="hidden" name="hdn_Id" id="hdn_Id" value="${bindings.IdIsr.inputValue}"/>
+            <jsp:include page="../util/dialog_autoriza.txt"/>
+          </f:verbatim>
+          <af:page title="Liquidación de Planillas ISR 031" var="node" value="#{modeloMenu.modeloBD}" id="page1" binding="#{Liquidacion_planilla_031.page1}">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}" action="#{node.getOutcome}" actionListener="#{modeloMenu.listener_menu}" disabled="#{node.readOnly}" rendered="#{node.shown}"
+                                  id="commandMenuItem1" binding="#{Liquidacion_planilla_031.commandMenuItem1}"/>
+            </f:facet>
+            <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelBox width="100%">
+              <af:showOneTab>
+                <af:showDetailItem text="Histórico" id="showDetIt_Historico" binding="#{Liquidacion_planilla_031.showDetIt_Historico}">
+                  <af:panelHeader text="Filtro de Búsqueda:" messageType="info">
+                    <af:panelHorizontal halign="center">
+                      <af:inputText label="Id Planilla:" rows="1" columns="6" inlineStyle="text-align:center; font-weight:bold;" maximumLength="6" shortDesc="Id Planilla" id="inptText_idPlanilla_busqueda"
+                                    value="#{bindings.pIdPlanillaBusqueda.inputValue}" binding="#{Liquidacion_planilla_031.inptText_idPlanilla_busqueda}">
+                        <f:convertNumber integerOnly="true" groupingUsed="false"/>
+                      </af:inputText>
+                      <af:objectSpacer width="10" height="10"/>
+                      <af:inputText label="No. Cheque o Nota de Débito:" inlineStyle="text-align:center; font-weight:bold;" columns="10" maximumLength="10"
+                                    shortDesc="Número de Cheque o Nota de Débito" id="inptText_numCheque_busqueda" value="#{bindings.pNumChequeBusqueda.inputValue}"
+                                    binding="#{Liquidacion_planilla_031.inptText_numCheque_busqueda}"/>
+                      <af:objectSpacer width="10" height="10"/>
+                      <af:inputText label="Año de Pago:" inlineStyle="text-align:center; font-weight:bold;" columns="4" maximumLength="4" shortDesc="Año de Pago" id="inptText_anioPago_busqueda"
+                                    value="#{bindings.pAnioPagoBusqueda.inputValue}" binding="#{Liquidacion_planilla_031.inptText_anioPago_busqueda}">
+                        <f:convertNumber integerOnly="true" groupingUsed="false"/>
+                      </af:inputText>
+                      <af:objectSpacer width="10" height="10"/>
+                      <af:selectOneChoice label="Mes de Pago:" shortDesc="Mes de Pago" inlineStyle="font-weight:bold;" id="slctOneCh_mesPago_busqueda" value="#{bindings.pMesPagoBusqueda.inputValue}"
+                                          binding="#{Liquidacion_planilla_031.slctOneCh_mesPago_busqueda}">
+                        <af:selectItem label="Enero" value="1"/>
+                        <af:selectItem label="Febrero" value="2"/>
+                        <af:selectItem label="Marzo" value="3"/>
+                        <af:selectItem label="Abril" value="4"/>
+                        <af:selectItem label="Mayo" value="5"/>
+                        <af:selectItem label="Junio" value="6"/>
+                        <af:selectItem label="Julio" value="7"/>
+                        <af:selectItem label="Agosto" value="8"/>
+                        <af:selectItem label="Septiembre" value="9"/>
+                        <af:selectItem label="Octubre" value="10"/>
+                        <af:selectItem label="Noviembre" value="11"/>
+                        <af:selectItem label="Diciembre" value="12"/>
+                      </af:selectOneChoice>
+                      <af:objectSpacer width="10" height="10"/>
+                      <af:commandButton text="Buscar" inlineStyle="font-weight:bold;" id="cmdBtn_buscar_planillas" binding="#{Liquidacion_planilla_031.cmdBtn_buscar_planillas}"
+                                        onclick="return comprobarCamposBuscarPlanillas();" action="#{Liquidacion_planilla_031.cmdBtn_buscar_planillas_action}"/>
+                      <af:objectSpacer width="10" height="10"/>
+                      <af:commandButton text="Cancelar Búsqueda" inlineStyle="font-weight:bold;" id="cmdBtn_cancelar_busqueda" binding="#{Liquidacion_planilla_031.cmdBtn_cancelar_busqueda}"
+                                        immediate="true" action="#{Liquidacion_planilla_031.cmdBtn_cancelar_busqueda_action}">
+                        <af:resetActionListener/>
+                      </af:commandButton>
+                    </af:panelHorizontal>
+                  </af:panelHeader>
+                  <af:table emptyText="Ninguna Fila" value="#{bindings.SisIsrproy031vw.collectionModel}" var="row" rows="#{bindings.SisIsrproy031vw.rangeSize}" banding="row" bandingInterval="1"
+                            selectionListener="#{bindings.SisIsrproy031vw.collectionModel.makeCurrent}" selectionState="#{bindings.SisIsrproy031vw.collectionModel.selectedRow}" width="100%">
+                    <f:facet name="header">
+                      <af:outputText value="Planillas ISR 031 Autorizadas y Pendientes de Liquidar" id="outputTxt_encabezadoHistorico" binding="#{Liquidacion_planilla_031.outputTxt_encabezadoHistorico}"/>
+                    </f:facet>
+                    <f:facet name="actions">
+                      <h:panelGroup>
+                        <af:commandButton text="Ver Autorizados" inlineStyle="font-weight:bold;" id="cmdBtn_ver_autorizados" disabled="true"
+                                          action="#{Liquidacion_planilla_031.cmdBtn_ver_autorizados_action}" binding="#{Liquidacion_planilla_031.cmdBtn_ver_autorizados}"/>
+                        <af:objectSpacer width="10" height="10"/>
+                        <af:commandButton text="Ver Liquidados" id="cmdBtn_ver_liquidados" action="#{Liquidacion_planilla_031.cmdBtn_ver_liquidados_action}" inlineStyle="font-weight:bold;"
+                                          binding="#{Liquidacion_planilla_031.cmdBtn_ver_liquidados}"/>
+                      </h:panelGroup>
+                    </f:facet>
+                    <af:column sortable="true" headerText="ID Planilla" sortProperty="IdIsr" formatType="icon">
+                      <af:commandLink text="#{row.IdIsr}" id="cmdLink_IdIsr" action="#{Liquidacion_planilla_031.cmdLink_IdIsr_action}" actionListener="#{bindings.setCurrentRowWithKey.execute}"
+                                      disabled="#{!bindings.setCurrentRowWithKey.enabled}"/>
+                    </af:column>
+                    <af:column sortProperty="Correlativo" sortable="true" headerText="Año y Correlativo" formatType="icon">
+                      <af:outputText value="#{row.AnioPago} - #{row.Correlativo}">
+                        <f:convertNumber groupingUsed="false"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Fecha" sortable="true" headerText="Fecha" formatType="icon">
+                      <af:outputText value="#{row.Fecha}" inlineStyle="padding:5.0pt;">
+                        <f:convertDateTime pattern="dd/MM/yyyy"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Mes" sortable="true" headerText="Mes" formatType="icon">
+                      <af:outputText value="#{row.Mes}" inlineStyle="padding:5.0pt;"/>
+                    </af:column>
+                    <af:column sortProperty="Dependencia" sortable="true" headerText="Dependencia" formatType="text">
+                      <af:outputText value="#{row.Dependencia}" inlineStyle="padding:5.0pt;"/>
+                    </af:column>
+                    <af:column headerText="Documento Pendiente" formatType="icon">
+                      <af:outputText value="#{row.DocPendienteAnio} - #{row.DocPendienteNumero}" inlineStyle="padding:5.0pt;">
+                        <f:convertNumber groupingUsed="false"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="DocPendienteNumero" sortable="true" headerText="No. Doc. Pendiente" formatType="icon" rendered="false">
+                      <af:outputText value="#{row.DocPendienteNumero}">
+                        <f:convertNumber groupingUsed="false"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortable="true" headerText="No. Cheque o Nota de Débito" formatType="icon" sortProperty="NumeroCheque">
+                      <af:outputText value="#{row.NumeroCheque}"/>
+                    </af:column>
+                    <af:column sortable="true" headerText="Partida" sortProperty="Partida" formatType="icon">
+                      <af:outputText value="#{row.Partida}" inlineStyle="padding:5.0pt;"/>
+                    </af:column>
+                    <af:column headerText="Estado" formatType="icon">
+                      <af:outputText value="#{row.NomEstado}" inlineStyle="padding:5.0pt;"/>
+                    </af:column>
+                    <af:column headerText="Tipo Nómina" formatType="icon" sortProperty="NomTipoNomina" sortable="true">
+                      <af:outputText value="#{row.NomTipoNomina}" inlineStyle="padding:5.0pt;"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="Creado Por" formatType="icon" sortProperty="CreadoPor">
+                      <af:outputText value="#{row.CreadoPor}" inlineStyle="padding:5.0pt;"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="Fecha Creación" formatType="icon" sortProperty="FechaCreacion">
+                      <af:outputText value="#{row.FechaCreacion}" inlineStyle="padding:5.0pt;">
+                        <f:convertDateTime pattern="dd/MM/yyyy"/>
+                      </af:outputText>
+                    </af:column>
+                  </af:table>
+                </af:showDetailItem>
+                <af:showDetailItem text="Detalle Histórico" id="showDetIt_DetalleHist" binding="#{Liquidacion_planilla_031.showDetIt_DetalleHist}" disabled="true">
+                  <af:panelForm rows="3" maxColumns="4">
+                    <f:facet name="footer"/>
+                    <af:panelLabelAndMessage label="ID Planilla:">
+                      <af:outputText value="#{bindings.IdIsr.inputValue}" inlineStyle="font-weight:bold;">
+                        <f:convertNumber groupingUsed="false" pattern="#{bindings.IdIsr.format}"/>
+                      </af:outputText>
+                    </af:panelLabelAndMessage>
+                    <af:panelLabelAndMessage label="Año y Correlativo:">
+                      <af:outputText value="#{bindings.SisIsrproy031vwAnio.inputValue} - #{bindings.SisIsrproy031vwCorrelativo.inputValue}" inlineStyle="font-weight:bold;">
+                        <f:convertNumber groupingUsed="false" pattern="#{bindings.SisIsrproy031vwAnio.format}"/>
+                      </af:outputText>
+                    </af:panelLabelAndMessage>
+                    <af:panelLabelAndMessage label="Fecha:">
+                      <af:outputText value="#{bindings.SisIsrproy031vwFecha.inputValue}" inlineStyle="font-weight:bold;">
+                        <f:convertDateTime pattern="dd/MM/yyyy" dateStyle="default"/>
+                      </af:outputText>
+                    </af:panelLabelAndMessage>
+                    <af:panelLabelAndMessage label="Mes:">
+                      <af:outputText value="#{bindings.SisIsrproy031vwMes.inputValue}" inlineStyle="font-weight:bold;"/>
+                    </af:panelLabelAndMessage>
+                    <af:panelLabelAndMessage label="Período:">
+                      <af:outputText value="#{bindings.SisIsrproy031vwPeriodo.inputValue}" inlineStyle="font-weight:bold;">
+                        <f:convertNumber groupingUsed="false" pattern="#{bindings.SisIsrproy031vwPeriodo.format}"/>
+                      </af:outputText>
+                    </af:panelLabelAndMessage>
+                    <af:panelLabelAndMessage label="Número de Planilla:">
+                      <af:outputText value="#{bindings.SisIsrproy031vwPlanillaNumero.inputValue} - #{bindings.SisIsrproy031vwAnioPago.inputValue}" inlineStyle="font-weight:bold;">
+                        <f:convertNumber groupingUsed="false" pattern="#{bindings.SisIsrproy031vwPlanillaNumero.format}"/>
+                      </af:outputText>
+                    </af:panelLabelAndMessage>
+                    <af:panelLabelAndMessage label="Dependencia:">
+                      <af:outputText value="#{bindings.SisIsrproy031vwDependencia.inputValue}" inlineStyle="font-weight:bold;"/>
+                    </af:panelLabelAndMessage>
+                    <af:panelLabelAndMessage label="Documento Pendiente:">
+                      <af:outputText value="#{bindings.SisIsrproy031vwDocPendienteAnio.inputValue} - #{bindings.SisIsrproy031vwDocPendienteNumero.inputValue}" inlineStyle="font-weight:bold;"/>
+                    </af:panelLabelAndMessage>
+                    <af:panelLabelAndMessage label="No. Cheque o Nota de Débito">
+                      <af:outputText value="#{bindings.SisIsrproy031vwNumeroCheque.inputValue}" inlineStyle="font-weight:bold;">
+                        <f:convertNumber groupingUsed="false"/>
+                      </af:outputText>
+                    </af:panelLabelAndMessage>
+                    <af:panelLabelAndMessage label="Partida:">
+                      <af:outputText value="#{bindings.SisIsrproy031vwPartida.inputValue}" inlineStyle="font-weight:bold;"/>
+                    </af:panelLabelAndMessage>
+                    <af:panelLabelAndMessage label="Estado:">
+                      <af:outputText value="#{bindings.SisIsrproy031vwNomEstado.inputValue}" inlineStyle="font-weight:bold;">
+                        <f:convertNumber groupingUsed="false" pattern="#{bindings.SisIsrproy031vwAnioPago.format}"/>
+                      </af:outputText>
+                    </af:panelLabelAndMessage>
+                    <af:panelLabelAndMessage label="Tipo de Nómina:">
+                      <af:outputText value="#{bindings.SisIsrproy031vwNomTipoNomina.inputValue}" inlineStyle="font-weight:bold;">
+                        <f:convertNumber groupingUsed="false" pattern="#{bindings.SisIsrproy031vwCorrelativo.format}"/>
+                      </af:outputText>
+                    </af:panelLabelAndMessage>
+                  </af:panelForm>
+                  <af:panelForm width="100%">
+                    <f:facet name="footer"/>
+                    <af:table emptyText="Ninguna Fila" value="#{bindings.SisIsrproyDetvw.collectionModel}" var="row" banding="row" bandingInterval="1"
+                              selectionListener="#{bindings.SisIsrproyDetvw.collectionModel.makeCurrent}" selectionState="#{bindings.SisIsrproyDetvw.collectionModel.selectedRow}"
+                              id="tbl_listadoDetallePlanilla" binding="#{Liquidacion_planilla_031.tbl_listadoDetallePlanilla}" width="100%" rows="#{bindings.SisIsrproyDetvw.rangeSize}">
+                      <f:facet name="actions">
+                        <h:panelGroup>
+                          <af:commandButton text="Cancelar" inlineStyle="font-weight:bold;" actionListener="#{bindings.Rollback.execute}" id="cmdBtn_cancelar_global"
+                                            action="#{Liquidacion_planilla_031.cmdBtn_cancelar_global_action}" immediate="true" onclick="return confirmarCancelarGlobal();">
+                            <af:resetActionListener/>
+                          </af:commandButton>
+                          <af:objectSpacer height="10" width="10"/>
+                          <af:commandButton text="Imprimir Reporte" id="cmdBtn_imprimir_reporte" inlineStyle="font-weight:bold;" onclick='return generarReporte("#{bindings.IdIsr.inputValue}");'/>
+                          <af:objectSpacer width="10" height="10"/>
+                          <af:commandButton text="Liquidar Nómina" id="cmdBtn_liquidar_nomina" inlineStyle="font-weight:bold;" onclick="return OpenDialogo(1);"
+                                            binding="#{Liquidacion_planilla_031.cmdBtn_liquidar_nomina}"
+                                            rendered="#{bindings.SisIsrproy031vwIdEstado.inputValue eq '239'}"
+                                            actionListener="#{bindings.EjecutarPlanilla.execute}"/>
+                        </h:panelGroup>
+                      </f:facet>
+                      <f:facet name="selection">
+                        <af:tableSelectOne text="Seleccionado" disabled="true" autoSubmit="true" id="tableSelectOne1" binding="#{Liquidacion_planilla_031.tableSelectOne1}"/>
+                      </f:facet>
+                      <af:column headerText="Editar">
+                        <af:commandLink id="cmdLink_editar" action="#{Liquidacion_planilla_031.cmdLink_editar_action}" binding="#{Liquidacion_planilla_031.cmdLink_editar}"
+                                        actionListener="#{bindings.setCurrentRowWithKeyDet.execute}" rendered="#{bindings.SisIsrproy031vwIdEstado.inputValue eq '239'}">
+                          <af:objectImage source="/imagenes/form_edit.png" shortDesc="Abre la fila en modo de Edición" id="objImg_editarFila" binding="#{Liquidacion_planilla_031.objImg_editarFila}"/>
+                        </af:commandLink>
+                      </af:column>
+                      <af:column headerText="Registro Empleado" formatType="icon">
+                        <af:outputText value="#{row.RegistroEmpleado}">
+                          <af:convertNumber groupingUsed="false"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column headerText="Nombres" formatType="text">
+                        <af:outputText value="#{row.Nombres}"/>
+                      </af:column>
+                      <af:column headerText="Apellidos" formatType="text">
+                        <af:outputText value="#{row.Apellidos}"/>
+                      </af:column>
+                      <af:column headerText="Días Laborados" formatType="icon">
+                        <af:inputText columns="4" maximumLength="2" value="#{row.DiasLaborados}" rendered="#{row.Seleccionado}" inlineStyle="text-align:center;">
+                          <f:convertNumber maxIntegerDigits="2" pattern="##"/>
+                        </af:inputText>
+                        <af:outputText value="#{row.DiasLaborados}" rendered="#{!row.Seleccionado}"/>
+                      </af:column>
+                      <af:column headerText="Salario Diario" formatType="icon">
+                        <af:outputText value="#{row.SalarioDiario}">
+                          <f:convertNumber type="currency" maxFractionDigits="2"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column headerText="Total Devengado" formatType="number">
+                        <af:outputText value="#{row.TotalDevengado}">
+                          <f:convertNumber type="currency" maxFractionDigits="2"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column headerText="Total Descuentos (Sin ISR)" formatType="number">
+                        <af:outputText value="#{row.TotalDescuento}" partialTriggers="tbl_listadoDetalleDescuentos">
+                          <f:convertNumber type="currency" maxFractionDigits="2"/>
+                        </af:outputText>
+                        <af:table emptyText="Ninguna Fila" value="#{bindings.SisIsrproyDetDesc_vw.collectionModel}" var="row" banding="row" bandingInterval="1" id="tbl_listadoDetalleDescuentos"
+                                  selectionListener="#{bindings.SisIsrproyDetDesc_vw.collectionModel.makeCurrent}" selectionState="#{bindings.SisIsrproyDetDesc_vw.collectionModel.selectedRow}"
+                                  binding="#{Liquidacion_planilla_031.tbl_listadoDetalleDescuentos}" rendered="#{row.Seleccionado}"
+                                  partialTriggers="tbl_listadoDetalleDescuentos:cmdBtn_agregar_descuento tbl_listadoDetalleDescuentos:cmdLink_eliminar_descuento" rows="20">
+                          <f:facet name="actions">
+                            <af:panelForm>
+                              <f:facet name="footer"/>
+                              <af:selectOneChoice label="Descuento:" value="#{bindings.pIdAjuste.inputValue}" id="selectOneCh_Descuento" binding="#{Liquidacion_planilla_031.selectOneCh_Descuento}"
+                                                  partialTriggers="tbl_listadoDetalleDescuentos:cmdBtn_agregar_descuento">
+                                <af:selectItem label="IGSS 3%" value="25"/>
+                                <af:selectItem label="IGSS 4.83%" value="21"/>
+                                <af:selectItem label="CUOTA PLAN DE PRESTACIONES" value="24"/>
+                                <af:selectItem label="PRÉSTAMO PLAN DE PRESTACIONES" value="9"/>
+                                <af:selectItem label="CUOTA SEGURO CRÉDITO" value="10"/>
+                                <af:selectItem label="CUOTA SINDICAL STUSC" value="23"/>
+                                <af:selectItem label="CUOTA SINDICAL SINTRAUSAC" value="51"/>
+                                <af:selectItem label="DESC. JUDICIAL POR DEUDA" value="30"/>
+                                <af:selectItem label="DESC. JUDICIAL POR ALIMENTACIÓN" value="4"/>
+                                <af:selectItem label="SUELDOS PAGADOS DE MÁS" value="15"/>
+                              </af:selectOneChoice>
+                              <af:inputText label="Monto Q.:" value="#{bindings.pValorAjuste.inputValue}" inlineStyle="text-align:center;" columns="10" id="inptText_montoDescuento"
+                                            binding="#{Liquidacion_planilla_031.inptText_montoDescuento}">
+                                <f:convertNumber minIntegerDigits="1" type="number" groupingUsed="true" maxFractionDigits="2"/>
+                              </af:inputText>
+                              <af:commandButton text="Agregar" inlineStyle="font-weight:bold;" id="cmdBtn_agregar_descuento" partialSubmit="true" onclick="return confirmarAnadirDescuento();"
+                                                action="#{Liquidacion_planilla_031.cmdBtn_agregar_descuento_action}"/>
+                              <af:messages id="messagesDescuentos"/>
+                            </af:panelForm>
+                          </f:facet>
+                          <af:column sortable="false" headerText="Nombre Descuento" formatType="icon" inlineStyle="text-align:left;">
+                            <af:outputText value="[#{row.CodNomina}] - #{row.Nomajuste}" truncateAt="50"/>
+                          </af:column>
+                          <af:column sortable="false" headerText="Valor Aplicado" formatType="number">
+                            <af:outputText value="#{row.ValorAplicado}">
+                              <f:convertNumber maxFractionDigits="2" type="currency"/>
+                            </af:outputText>
+                          </af:column>
+                          <af:column sortable="false" headerText="Eliminar" formatType="icon">
+                            <af:commandLink id="cmdLink_eliminar_descuento" partialSubmit="true" shortDesc="Eliminar Descuento" onclick="return confirmarEliminarDescuento('#{row.Nomajuste}');"
+                                            action="#{Liquidacion_planilla_031.cmdLink_eliminar_descuento_action}">
+                              <af:objectImage source="/imagenes/borrar.png"/>
+                            </af:commandLink>
+                          </af:column>
+                        </af:table>
+                      </af:column>
+                      <af:column headerText="Descuento ISR" formatType="number">
+                        <af:outputText value="#{row.DescuentoIsr}">
+                          <f:convertNumber type="currency" maxFractionDigits="2"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column headerText="Bonificación Mensual" formatType="number">
+                        <af:inputText columns="6" value="#{row.Bonificacion}" maximumLength="8" inlineStyle="text-align:center;" rendered="#{row.Seleccionado}">
+                          <f:convertNumber type="number" maxFractionDigits="2"/>
+                        </af:inputText>
+                        <af:outputText value="#{row.Bonificacion}" rendered="#{!row.Seleccionado}">
+                          <f:convertNumber type="currency" maxFractionDigits="2"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column headerText="Salario Líquido" formatType="number">
+                        <af:outputText value="#{row.Total}">
+                          <f:convertNumber type="currency" maxFractionDigits="2"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column headerText="Número de Cheque" formatType="icon">
+                        <af:inputText columns="12" maximumLength="25" value="#{row.NumeroCheque}" inlineStyle="text-align:center;" rendered="#{row.Seleccionado}"/>
+                        <af:outputText value="#{row.NumeroCheque}" rendered="#{!row.Seleccionado}"/>
+                      </af:column>
+                      <af:column headerText="Grabar Cambios">
+                        <af:commandButton text="Grabar Cambios" id="cmdBtn_grabar" inlineStyle="font-size:medium; font-weight:bold;" action="#{Liquidacion_planilla_031.cmdBtn_grabar_action}"
+                                          disabled="#{!row.Seleccionado}" onclick="return confirmarGrabarCambios('#{row.RegistroEmpleado}');"/>
+                      </af:column>
+                      <af:column headerText="Cancelar Cambios">
+                        <af:commandButton text="Cancelar Cambios" disabled="#{!row.Seleccionado}" id="cmdBtn_cancelar" action="#{Liquidacion_planilla_031.cmdBtn_cancelar_action}"
+                                          inlineStyle="font-size:medium; font-weight:bold;" onclick="return confirmarCancelarCambios('#{row.RegistroEmpleado}');" immediate="true">
+                          <af:resetActionListener/>
+                        </af:commandButton>
+                      </af:column>
+                    </af:table>
+                  </af:panelForm>
+                </af:showDetailItem>
+              </af:showOneTab>
+            </af:panelBox>
+          </af:page>
+        </af:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-binding-backing-bean-name:Liquidacion_planilla_031-->
+</jsp:root>

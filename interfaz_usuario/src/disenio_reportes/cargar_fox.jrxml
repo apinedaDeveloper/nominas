@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="cargar_fox"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="2125"
+		 pageHeight="792"
+		 columnWidth="2125"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pIdProceso" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[select 
+to_char(nom.registro_Empleado) as registro_empleado,
+nom.CORRELATIVO||tip.CODIGO as fechanom,
+part2.FORMATO2 as partida,
+to_char(nom.numero_plaza) as numero_plaza,
+to_char(nom.nominal) as nominal,
+sis_util_report_pkg.OBTIENE_DESCUENTO_NOMINA(nom.ID_NOMINA) as descuento,
+to_char(nom.liquido-TOTAL_BONO) liquido,
+nvl(decode(docb.id_tipo_documento,1,'4',2,'5'),' ') as banco,
+nvl(to_char(docb.NUM_DOC_FISICO),' ') as cheque,
+nvl(to_char(docb.FECHA_EMISION,'dd/mm/yyyy'),' ') as fechacheq,
+'0' as rec_comp,
+nvl((select decode(det.ID_AJUSTE,21,'0',25,'4',26,'1') from sis_det_calculo_ajuste
+det, sis_ajuste ajuste, sis_tipo_ajuste tipajuste
+where nom.ID_NOMINA = det.ID_NOMINA and det.ID_AJUSTE =
+ajuste.ID_AJUSTE and ajuste.ID_TIPOAJUSTE = tipajuste.ID_TIPOAJUSTE
+and tipajuste.NOMBRE = 'IGSS'),' ') as cod_igss,
+to_char(part.id_dependencia) as codprof,
+to_char(nom.id_puesto) as cod_clas,
+to_char(pst.ESCALAMIN) as escala_int,
+to_char(nom.SUELDO_BASE) as suel_base,
+to_char(nom.ESCALAFON) as escalafon,
+to_char(nom.COMPL_SALARIAL) as  comp_sal,
+to_char(nom.TOTAL_BONO) as bono_sal,
+to_char(numero_plaza) as otraplaza,
+' ' as chequearep
+from
+sis_nomina nom
+left outer join sis_pago pg on  pg.id_nomina=nom.id_nomina 
+left outer join sis_documento_banco docb on pg.id_documento_banco=docb.id_documento_banco,
+sis_partida part,
+sis_tiponomina_periodo tip,
+sep_partida_vw part2,
+sis_puesto pst
+where
+nom.id_partida=part.id_partida
+and tip.id_tipo_nomina=nom.id_tipo_nomina
+and tip.id_periodo=nom.periodo
+and part2.id_partida=nvl(nom.id_partida_egreso,(select detp.id_partida from sis_pago pg, sis_det_partida_pago detp
+where id_nomina=nom.id_nomina
+and detp.ID_DOCUMENTO_BANCO=pg.ID_DOCUMENTO_BANCO
+and tipo='N'
+and rownum<=1
+))
+and pst.id_puesto=nom.id_puesto
+and nom.id_proceso
+in(
+select id_proceso_nomina
+from sis_proceso_pago_det
+where id_proceso=$P{pIdProceso}
+)
+order by nom.registro_empleado,nom.numero_plaza]]></queryString>
+
+	<field name="REGISTRO_EMPLEADO" class="java.lang.String"/>
+	<field name="FECHANOM" class="java.lang.String"/>
+	<field name="PARTIDA" class="java.lang.String"/>
+	<field name="NUMERO_PLAZA" class="java.lang.String"/>
+	<field name="NOMINAL" class="java.lang.String"/>
+	<field name="DESCUENTO" class="java.lang.String"/>
+	<field name="LIQUIDO" class="java.lang.String"/>
+	<field name="BANCO" class="java.lang.String"/>
+	<field name="CHEQUE" class="java.lang.String"/>
+	<field name="FECHACHEQ" class="java.lang.String"/>
+	<field name="REC_COMP" class="java.lang.String"/>
+	<field name="COD_IGSS" class="java.lang.String"/>
+	<field name="CODPROF" class="java.lang.String"/>
+	<field name="COD_CLAS" class="java.lang.String"/>
+	<field name="ESCALA_INT" class="java.lang.String"/>
+	<field name="SUEL_BASE" class="java.lang.String"/>
+	<field name="ESCALAFON" class="java.lang.String"/>
+	<field name="COMP_SAL" class="java.lang.String"/>
+	<field name="BONO_SAL" class="java.lang.String"/>
+	<field name="OTRAPLAZA" class="java.lang.String"/>
+	<field name="CHEQUEAREP" class="java.lang.String"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="10"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="9"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="-1"
+						width="2117"
+						height="10"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["|"+$F{REGISTRO_EMPLEADO}+"|,|"+$F{FECHANOM}+"|,|"+$F{PARTIDA}+"|,|"+$F{NUMERO_PLAZA}+"|,|"+$F{NOMINAL}.toString()+"|,"+$F{DESCUENTO}+"|,|"+$F{LIQUIDO}.toString()+"|,|"+$F{BANCO}.toString()+"|,|"+$F{CHEQUE}.toString()+"|,|"+$F{FECHACHEQ}+"|,|" +$F{REC_COMP}+"|,|"+$F{COD_IGSS}+"|,|"+ $F{CODPROF}+"|,|"+$F{COD_CLAS}+"|,|"+$F{ESCALA_INT}+"|,|"+$F{SUEL_BASE}+"|,|"+$F{ESCALAFON}+"|,|"+$F{COMP_SAL}+"|,|"+$F{BONO_SAL}+"|,|"+$F{OTRAPLAZA}+"|,|"+$F{CHEQUEAREP}+"|"]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel"
+                version="10.1.3.42.70" id="gestiones_sel_plazasPageDef"
+                Package="interfaz_usuario.pageDefs">
+  <parameters/>
+  <executables>
+    <iterator id="dependenciasIterator" Binds="dependencias"
+              DataControl="QUERRYSDataControl" RangeSize="-1"/>
+    <iterator id="unidades_ejecIterator" Binds="unidades_ejec"
+              DataControl="QUERRYSDataControl" RangeSize="-1">
+      <sortCriteria>
+        <sort attribute="Formato" ascending="true"/>
+      </sortCriteria>
+    </iterator>
+    <iterator id="plazasIterator" Binds="plazas"
+              DataControl="QUERRYSDataControl" RangeSize="-1"/>
+    <invokeAction id="Exe_dependencias" Binds="Action_dependencias"
+                  Refresh="renderModel"
+                  RefreshCondition="#{!adfFacesContext.postback}"/>
+    <invokeAction id="Exe_unidades" Binds="unidades" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback || (adfFacesContext.postback &amp;&amp; sel_plazas.comboDependencia)}"/>
+    <invokeAction id="Exe_plazas" Binds="Action_plazas" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback || (adfFacesContext.postback &amp;&amp; (sel_plazas.comboUnidad || sel_plazas.comboDependencia))}"/>
+  </executables>
+  <bindings>
+    <list StaticList="false" ListOperMode="1" id="dependencias"
+          IterBinding="dependenciasIterator">
+      <AttrNames>
+        <Item Value="nombre_codigo"/>
+      </AttrNames>
+    </list>
+    <list StaticList="false" ListOperMode="1" id="unidades_ejec"
+          IterBinding="unidades_ejecIterator">
+      <AttrNames>
+        <Item Value="Formato"/>
+        <Item Value="Nombre"/>
+      </AttrNames>
+    </list>
+    <table id="plazas" IterBinding="plazasIterator">
+      <AttrNames>
+        <Item Value="IdPartida"/>
+        <Item Value="IdPuesto"/>
+        <Item Value="NumeroPlaza"/>
+        <Item Value="Correlativo"/>
+        <Item Value="Formato1"/>
+        <Item Value="Nombre"/>
+        <Item Value="CantidadHoras"/>
+        <Item Value="FechaInicio"/>
+        <Item Value="FechaFin"/>
+        <Item Value="SalarioBase"/>
+        <Item Value="SalarioBasepuesto"/>
+        <Item Value="ComplementoSal"/>
+        <Item Value="Escalafon"/>
+        <Item Value="Nomplaza"/>
+      </AttrNames>
+    </table>
+    <action IterBinding="dependenciasIterator" id="Action_dependencias"
+            InstanceName="QUERRYSDataControl.dependencias"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="usuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+    </action>
+    <action IterBinding="unidades_ejecIterator" id="unidades"
+            InstanceName="QUERRYSDataControl.unidades_ejec"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="id_depe"
+                 NDValue="${bindings.dependencias.currentRow['idDependencia']}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+    </action>
+    <action IterBinding="plazasIterator" id="Action_plazas"
+            InstanceName="QUERRYSDataControl.plazas"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="id_unidad"
+                 NDValue="${bindings.unidades_ejec.currentRow['idUnidad']}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="id_depe"
+                 NDValue="${bindings.unidades_ejec.currentRow['idDependencia']}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="id_programa"
+                 NDValue="${bindings.unidades_ejec.currentRow['idPrograma']}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pAnio" NDValue="${flujo_usuario.anioActual}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+  </bindings>
+</pageDefinition>

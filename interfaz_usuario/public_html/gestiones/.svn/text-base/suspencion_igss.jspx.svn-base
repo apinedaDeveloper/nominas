@@ -1,0 +1,156 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns="http://www.w3.org/1999/xhtml"
+          xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <f:view>
+    <afh:html>
+      <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+      <afh:head title="Suspencion IGSS">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+      </afh:head>
+      <f:loadBundle basename="propiedades" var="tx"/>
+       <script language="javascript" type="text/javascript"> 
+        function openNewWindow(nomArchivo){ 
+                window.open("../ver_documento?source="+nomArchivo,"preview","width=640,height=640,scrollbars=YES"); 
+       } 
+      </script> 
+      
+      <afh:body>
+        <af:messages/>
+        <h:form>
+          <af:page  value="#{modeloMenu.modeloBD}" var="node"
+                   chromeType="compact"
+                   title="#{flujo_usuario.datosEmpleadoSel}">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"
+                                  action="#{node.getOutcome}"
+                                  />
+            </f:facet>
+        <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+          <af:panelBox text="Id: #{bindings.IdSolicitud.inputValue}"
+                       partialTriggers="btn_autoriza">
+              <af:showOneTab position="above">
+                <af:showDetailItem text="#{tx['suspensionIgss.tb1.texto']}">
+                  <af:panelForm partialTriggers="btn_autoriza">
+                    <af:selectOneChoice value="#{bindings.SisTipoSuspIgssDescripcion.inputValue}"
+                                        disabled="#{bindings.estContrl.inputValue}"
+                                        label="#{tx['suspensionIgss.cmb_motivo.texto']}">
+                      <f:selectItems value="#{bindings.SisTipoSuspIgssDescripcion.items}"/>
+                    </af:selectOneChoice>
+                    <af:selectInputDate value="#{bindings.FechaInicioSuspIgss.inputValue}"
+                                        disabled="#{bindings.estContrl.inputValue}"
+                                        label="#{tx['suspensionIgss.inpt_fechaInicio.texto']}"
+                                        required="#{bindings.FechaInicioSuspIgss.mandatory}">
+                      <af:validator binding="#{bindings.FechaInicioSuspIgss.validator}"/>
+                      <f:convertDateTime pattern="#{bindings.FechaInicioSuspIgss.format}"/>
+                    </af:selectInputDate>
+                    <af:inputText value="#{bindings.Observaciones.inputValue}"
+                                  label="#{tx['suspensionIgss.inpt_Observaciones.texto']}"
+                                  disabled="#{bindings.estContrl.inputValue}"
+                                  required="#{bindings.Observaciones.mandatory}"
+                                  columns="60" rows="5">
+                      <af:validator binding="#{bindings.Observaciones.validator}"/>
+                    </af:inputText>
+                  </af:panelForm>
+                  <af:objectSpacer width="10" height="20"/>
+                  <af:panelHorizontal halign="center">
+                    <af:commandButton
+                                      text="#{tx['suspensionIgss.btn_grabar.texto']}"
+                                      action="#{backing_bean_comun.btn_grabar_suspencion_igss_action}"/>
+                    <af:commandButton actionListener="#{bindings.Rollback.execute}"
+                                      text="#{tx['suspensionIgss.btn_can.texto']}"
+                                      immediate="true" action="ver_solicitudes"
+                                      rendered="true">
+                      <af:resetActionListener/>
+                    </af:commandButton>
+                    <f:facet name="separator">
+                      <af:objectSpacer width="25" height="10"/>
+                    </f:facet>
+                    <af:commandButton text="#{tx['suspensionIgss.btn_trasl.texto']}"
+                                      action="dialog:autoriza"
+                                      useWindow="true" windowHeight="450"
+                                      windowWidth="400"
+                                      launchListener="#{susp_igss.autorizar_list_susp_igss}"
+                                      id="btn_autoriza" partialSubmit="true"/>
+                  </af:panelHorizontal>
+                </af:showDetailItem>
+                <af:showDetailItem text="#{tx['sol_licencia.tab2.texto']}"
+                                     disclosed="false"
+                                   disabled="#{flujo_usuario.vistaSuspIgss!=1 &amp;&amp; bindings.estContrl.inputValue}">                                     
+                    <af:objectSpacer width="10" height="25"/>
+                    <af:table value="#{bindings.SisArchivoAdjuntoSol.collectionModel}"
+                              var="row"
+                              rows="#{bindings.SisArchivoAdjuntoSol.rangeSize}"
+                              first="#{bindings.SisArchivoAdjuntoSol.rangeStart}"
+                              emptyText="#{bindings.SisArchivoAdjuntoSol.viewable ? 'Ninguna Fila' : 'Ninguna Fila'}"
+                              selectionState="#{bindings.SisArchivoAdjuntoSol.collectionModel.selectedRow}"
+                              selectionListener="#{bindings.SisArchivoAdjuntoSol.collectionModel.makeCurrent}"
+                              width="600">
+                      <f:facet name="selection">
+                        <af:tableSelectOne/>
+                      </f:facet>
+                      <f:facet name="header">
+                        <af:outputText value="#{tx['tbl_adjuntar.header.texto']}"/>
+                      </f:facet>
+                    <af:column sortProperty="NomArchivo" sortable="false"
+                               headerText="#{tx['tbl_adjuntar.nomArch.texto']}">
+                      <h:outputLink value="javascript:openNewWindow('#{row.nomArchEncript}')">
+                        <h:outputText value="#{row.NomArchivo}"/>
+                      </h:outputLink>
+                    </af:column>
+                    <af:column sortProperty="Descripcion" sortable="false"
+                               headerText="#{tx['tbl_adjuntar.descrip.texto']}"
+                               width="60%">
+                      <af:outputText value="#{row.Descripcion}"/>
+                    </af:column>
+                    <af:column sortProperty="FechaCreacion" sortable="false"
+                               headerText="#{tx['tbl_adjuntar.fecha.texto']}">
+                      <af:outputText value="#{row.FechaCreacion}">
+                        <f:convertDateTime pattern="#{bindings.SisArchivoAdjuntoSol.formats.FechaCreacion}"/>
+                      </af:outputText>
+                    </af:column>
+                  </af:table>
+                    <af:objectSpacer width="10" height="20"/>
+                    <af:panelHorizontal>
+                      <af:commandButton text="#{tx['tbl_adjuntar.btn_adjuntar.texto']}"
+                                        id="btn_adjuntarArch"
+                                        action="#{backing_bean_comun.btn_adjuntar_archivo_solicitud}"
+                                        disabled="#{flujo_usuario.vistaSuspIgss!=1}"
+                                        partialSubmit="true"/>
+                      <af:commandButton actionListener="#{bindings.Ejecutar.execute}"
+                                        text="#{tx['tbl_adjuntar.btn_actualizar.texto']}"
+                                        disabled="#{flujo_usuario.vistaSuspIgss!=1}"/>
+                      <f:facet name="separator">
+                        <af:objectSpacer width="30" height="10"/>
+                      </f:facet>
+                    </af:panelHorizontal>
+                  </af:showDetailItem>
+              </af:showOneTab>
+            </af:panelBox>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+</jsp:root>

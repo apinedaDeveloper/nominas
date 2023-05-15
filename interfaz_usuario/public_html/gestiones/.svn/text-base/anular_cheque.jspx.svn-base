@@ -1,0 +1,153 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <jsp:output omit-xml-declaration="true" doctype-root-element="HTML"
+              doctype-system="http://www.w3.org/TR/html4/loose.dtd"
+              doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN"/>
+  <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+  <f:view>
+    <afh:html>
+      <afh:head title="Buscar Cheque Para Anular">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+         
+         <script src="../js/jquery/jquery.js" type="text/javascript"> var a; </script>
+         <script src="../js/jquery/jquery.ui.draggable.js" type="text/javascript"> var a; </script>
+	 <script src="../js/jquery/jquery.alerts.js" type="text/javascript">var a;</script>
+         <link href="../js/jquery/jquery.alerts.css" rel="stylesheet" type="text/css" media="screen" />
+
+          <script src="../js/dialog_anul_pago.js" type="text/javascript">var a; </script>
+
+
+          <script language="javascript" type="text/javascript"> 
+             function openNewWindow(idDocPagoAnulado){ 
+                window.open("../verreportepdf?id="+idDocPagoAnulado+String.fromCharCode(38)+"rep=SIS-21","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+                 }
+                 
+         </script> 
+      </afh:head>
+      <f:loadBundle basename="propiedades" var="tx"/>
+      <afh:body>
+        <af:messages/>
+        <h:form id="forma1">
+          <af:page 
+              value="#{modeloMenu.modeloBD}" var="node" id="pageForm">
+           <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+             <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+           
+                <af:panelHorizontal halign="center">
+              <af:panelBox>
+                <af:panelForm id="panelForm1">
+                  <af:panelHeader text="#{tx['anular_cheque.ouptnumpago.texto']} #{bindings.NoDocFisico.inputValue}"
+                                  messageType="info" size="0"/>
+                  <af:objectSpacer width="10" height="30"/>
+                  <af:selectOneChoice value="#{bindings['view_SisDocPagoAnulado1IdMotivoAnulacion'].inputValue}"
+                                      disabled="#{bindings.FechaCreacion.inputValue!=null}"
+                                      label="#{tx['anular_cheque.cmb_motivo_anulacion.label']}"
+                                      autoSubmit="false" showRequired="true">
+                    <f:selectItems value="#{bindings['view_SisDocPagoAnulado1IdMotivoAnulacion'].items}"/>
+                  </af:selectOneChoice>
+                  <af:inputText value="#{bindings.IdDocPagoReposicion.inputValue}"
+                                label="#{bindings.IdDocPagoReposicion.label}"
+                                required="#{bindings.IdDocPagoReposicion.mandatory}"
+                                columns="#{bindings.IdDocPagoReposicion.displayWidth}"
+                                rendered="false">
+                    <af:validator binding="#{bindings.IdDocPagoReposicion.validator}"/>
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.IdDocPagoReposicion.format}"/>
+                  </af:inputText>
+                  <af:inputText value="#{bindings.IdActaFacsimil.inputValue}"
+                                label="#{bindings.IdActaFacsimil.label}"
+                                required="#{bindings.IdActaFacsimil.mandatory}"
+                                columns="#{bindings.IdActaFacsimil.displayWidth}"
+                                rendered="false">
+                    <af:validator binding="#{bindings.IdActaFacsimil.validator}"/>
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.IdActaFacsimil.format}"/>
+                  </af:inputText>
+                  <af:selectInputText value="#{bindings.SolicitadoPor.inputValue}"
+                                      label="#{tx['anular_cheque.inpt_solicitado.label']}"
+                                      disabled="#{bindings.FechaCreacion.inputValue!=null}"
+                                      required="#{bindings.SolicitadoPor.mandatory}"
+                                      columns="9" action="dialog:buscaEmpl"
+                                      binding="#{anular_cheque.sel_inpt_reg_Empleado}"
+                                      rendered="false">
+                    <af:validator binding="#{bindings.SolicitadoPor.validator}"/>
+                  </af:selectInputText>
+                  <af:inputHidden value="#{bindings.CreadoPor.inputValue}"
+                                  binding="#{backing_bean_comun.inpt_hidden_creado_por}"/>
+                  <af:selectOneRadio value="#{bindings['view_SisDocPagoAnulado1Reposicion'].inputValue}"
+                                     disabled="#{bindings.FechaCreacion.inputValue!=null}"
+                                     label="#{tx['anular_cheque.shw_one_opcionRep.label']}"
+                                     showRequired="true" rendered="false">
+                    <f:selectItems value="#{bindings['view_SisDocPagoAnulado1Reposicion'].items}"/>
+                  </af:selectOneRadio>
+                  <af:inputText label="Observaciones" rows="2"
+                                value="#{bindings.Observacion.inputValue}"
+                                disabled="#{bindings.FechaCreacion.inputValue!=null}"/>
+                  <af:panelHorizontal valign="top">
+                    <af:outputFormatted value="Nota:"
+                                        inlineStyle="color:rgb(255,33,33); font-weight:bold; font-size:medium;"/>
+                    <af:objectSpacer width="10" height="10"/>
+                    <af:panelList>
+                      <af:outputFormatted value="Para documentos extraviados o revocados, por favor ir al Depto de Caja Central."
+                                          inlineStyle="color:rgb(0,107,165); font-size:medium;"/>
+                    </af:panelList>
+                  </af:panelHorizontal>
+                </af:panelForm>
+                <af:objectSpacer width="10" height="25"/>
+                <af:panelHorizontal halign="center">
+                  <af:commandButton text="#{tx['anular_cheque.btn_commit.texto']}"
+                                    disabled="#{bindings.FechaCreacion.inputValue!=null}"
+                                    action="#{anular_cheque.btn_commit_anula_cheque_action}"
+                                    onclick="return confirmarAnulacion('#{bindings.NoDocFisico.inputValue}','#{bindings.IdTipoDocumento.inputValue}')"
+                                    id="btn_commit">
+                    <af:setActionListener from="#{flujo_usuario.selRegEmpleado_login}"
+                                          to="#{bindings.SolicitadoPor.inputValue}"/>
+                  </af:commandButton>
+                  <af:commandButton actionListener="#{bindings.Rollback.execute}"
+                                    text="#{tx['anular_cheque.btn_rollback.texto']}" disabled="#{''}"
+                                    immediate="true" action="buscar">
+                    <af:resetActionListener/>
+                  </af:commandButton>
+                  <f:facet name="separator">
+                    <af:objectSpacer width="30" height="10"/>
+                  </f:facet>
+                  <af:commandButton actionListener="#{bindings.Rollback.execute}"
+                                    text="#{tx['anular_cheque.btn_otro.texto']}"
+                                    immediate="true" action="buscar">
+                    <af:resetActionListener/>
+                  </af:commandButton>
+                  <af:commandButton text="SIS - 21"
+                                    onclick="javascript:openNewWindow(#{bindings.IdDocPagoAnulado.inputValue})"
+                                    disabled="#{bindings.IdDocPagoAnulado.inputValue==null}"/>
+                </af:panelHorizontal>
+              </af:panelBox>
+            </af:panelHorizontal>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:anular_cheque-->
+</jsp:root>

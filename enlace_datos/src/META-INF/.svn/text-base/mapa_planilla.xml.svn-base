@@ -1,0 +1,1052 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<toplink:object-persistence version="Oracle TopLink - 10g Release 3 (10.1.3.4.0) (Build 080602)" xmlns:opm="http://xmlns.oracle.com/ias/xsds/opm" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:toplink="http://xmlns.oracle.com/ias/xsds/toplink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <opm:name>mapa_planilla</opm:name>
+   <opm:class-mapping-descriptors>
+      <opm:class-mapping-descriptor xsi:type="toplink:relational-class-mapping-descriptor">
+         <opm:class>enlace_datos.tablas.SisAjuste</opm:class>
+         <opm:alias>SisAjuste</opm:alias>
+         <opm:primary-key>
+            <opm:field table="SIS_AJUSTE" name="ID_AJUSTE" xsi:type="opm:column"/>
+         </opm:primary-key>
+         <opm:events xsi:type="toplink:event-policy"/>
+         <opm:querying xsi:type="toplink:query-policy">
+            <opm:queries>
+               <opm:query name="ajuste_oblig_contrato" xsi:type="toplink:read-all-query">
+                  <opm:arguments>
+                     <opm:argument name="programa">
+                        <opm:type>java.lang.Number</opm:type>
+                     </opm:argument>
+                     <opm:argument name="dependencia">
+                        <opm:type>java.lang.Number</opm:type>
+                     </opm:argument>
+                     <opm:argument name="unidad">
+                        <opm:type>java.lang.Number</opm:type>
+                     </opm:argument>
+                     <opm:argument name="salario">
+                        <opm:type>java.lang.Number</opm:type>
+                     </opm:argument>
+                     <opm:argument name="horas">
+                        <opm:type>java.lang.Number</opm:type>
+                     </opm:argument>
+                  </opm:arguments>
+                  <toplink:bind-all-parameters>true</toplink:bind-all-parameters>
+                  <toplink:cache-statement>false</toplink:cache-statement>
+                  <toplink:timeout>0</toplink:timeout>
+                  <toplink:prepare>false</toplink:prepare>
+                  <toplink:call xsi:type="toplink:sql-call">
+                     <toplink:sql>select id_ajuste,b.id_tipoajuste,a.nombre,opcional,nivel,sis_pkg_calculos.GETVALORAJUSTEXVAR(id_ajuste,#salario,#horas,1,1,sysdate) as calculado
+from sis_ajuste a,sis_tipo_ajuste b
+where
+a.opcional='N'
+and a.id_tipoajuste=b.id_tipoajuste
+and not exists(
+select 1 from sis_ajuste_exclud_unidad c
+where a.id_ajuste=c.id_ajuste
+and c.ID_PROGRAMA=#programa
+and c.ID_DEPENDENCIA=#dependencia
+and c.ID_UNIDAD=#unidad
+)
+order by b.operacion 
+</toplink:sql>
+                  </toplink:call>
+                  <toplink:reference-class>enlace_datos.tablas.SisAjuste</toplink:reference-class>
+                  <toplink:refresh>true</toplink:refresh>
+                  <toplink:remote-refresh>true</toplink:remote-refresh>
+                  <toplink:cache-usage>primary-key</toplink:cache-usage>
+                  <toplink:lock-mode>none</toplink:lock-mode>
+                  <toplink:container xsi:type="toplink:list-container-policy">
+                     <toplink:collection-type>java.util.Vector</toplink:collection-type>
+                  </toplink:container>
+               </opm:query>
+               <opm:query name="findAllSisAjuste" xsi:type="toplink:read-all-query">
+                  <toplink:timeout>0</toplink:timeout>
+                  <toplink:call xsi:type="toplink:sql-call">
+                     <toplink:sql>select * from sis_ajuste</toplink:sql>
+                  </toplink:call>
+                  <toplink:reference-class>enlace_datos.tablas.SisAjuste</toplink:reference-class>
+                  <toplink:cache-usage>primary-key</toplink:cache-usage>
+                  <toplink:lock-mode>none</toplink:lock-mode>
+                  <toplink:container xsi:type="toplink:list-container-policy">
+                     <toplink:collection-type>java.util.Vector</toplink:collection-type>
+                  </toplink:container>
+               </opm:query>
+            </opm:queries>
+            <toplink:read-object-query xsi:type="toplink:read-object-query">
+               <toplink:call xsi:type="toplink:sql-call">
+                  <toplink:sql>select * from sis_ajuste</toplink:sql>
+               </toplink:call>
+               <toplink:reference-class>enlace_datos.tablas.SisAjuste</toplink:reference-class>
+            </toplink:read-object-query>
+            <toplink:read-all-query xsi:type="toplink:read-all-query">
+               <toplink:reference-class>enlace_datos.tablas.SisAjuste</toplink:reference-class>
+               <toplink:container xsi:type="toplink:list-container-policy">
+                  <toplink:collection-type>java.util.Vector</toplink:collection-type>
+               </toplink:container>
+            </toplink:read-all-query>
+         </opm:querying>
+         <opm:attribute-mappings>
+            <opm:attribute-mapping xsi:type="toplink:one-to-many-mapping">
+               <opm:attribute-name>sisAjusteContratoCollection</opm:attribute-name>
+               <opm:get-method>getSisAjusteContratoCollection</opm:get-method>
+               <opm:set-method>setSisAjusteContratoCollection</opm:set-method>
+               <opm:reference-class>enlace_datos.tablas.SisAjusteContrato</opm:reference-class>
+               <opm:target-foreign-key>
+                  <opm:field-reference>
+                     <opm:source-field table="SIS_AJUSTE_CONTRATO" name="ID_AJUSTE" xsi:type="opm:column"/>
+                     <opm:target-field table="SIS_AJUSTE" name="ID_AJUSTE" xsi:type="opm:column"/>
+                  </opm:field-reference>
+               </opm:target-foreign-key>
+               <toplink:container xsi:type="toplink:container-policy">
+                  <toplink:collection-type>oracle.toplink.indirection.IndirectList</toplink:collection-type>
+               </toplink:container>
+               <toplink:indirection xsi:type="toplink:transparent-collection-indirection-policy"/>
+               <toplink:selection-query xsi:type="toplink:read-all-query">
+                  <toplink:container xsi:type="toplink:container-policy">
+                     <toplink:collection-type>oracle.toplink.indirection.IndirectList</toplink:collection-type>
+                  </toplink:container>
+               </toplink:selection-query>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:one-to-many-mapping">
+               <opm:attribute-name>sisAjusteEmpleadoCollection</opm:attribute-name>
+               <opm:get-method>getSisAjusteEmpleadoCollection</opm:get-method>
+               <opm:set-method>setSisAjusteEmpleadoCollection</opm:set-method>
+               <opm:reference-class>enlace_datos.tablas.SisAjusteEmpleado</opm:reference-class>
+               <opm:target-foreign-key>
+                  <opm:field-reference>
+                     <opm:source-field table="SIS_AJUSTE_EMPLEADO" name="ID_AJUSTE" xsi:type="opm:column"/>
+                     <opm:target-field table="SIS_AJUSTE" name="ID_AJUSTE" xsi:type="opm:column"/>
+                  </opm:field-reference>
+               </opm:target-foreign-key>
+               <toplink:container xsi:type="toplink:container-policy">
+                  <toplink:collection-type>oracle.toplink.indirection.IndirectList</toplink:collection-type>
+               </toplink:container>
+               <toplink:indirection xsi:type="toplink:transparent-collection-indirection-policy"/>
+               <toplink:selection-query xsi:type="toplink:read-all-query">
+                  <toplink:container xsi:type="toplink:container-policy">
+                     <toplink:collection-type>oracle.toplink.indirection.IndirectList</toplink:collection-type>
+                  </toplink:container>
+               </toplink:selection-query>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>idAjuste</opm:attribute-name>
+               <opm:field table="SIS_AJUSTE" name="ID_AJUSTE" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>idTipoajuste</opm:attribute-name>
+               <opm:read-only>true</opm:read-only>
+               <opm:field table="SIS_AJUSTE" name="ID_TIPOAJUSTE" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>prioridad</opm:attribute-name>
+               <opm:field table="SIS_AJUSTE" name="PRIORIDAD" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>nombre</opm:attribute-name>
+               <opm:field table="SIS_AJUSTE" name="NOMBRE" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>codNomina</opm:attribute-name>
+               <opm:field table="SIS_AJUSTE" name="COD_NOMINA" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>descripcion</opm:attribute-name>
+               <opm:field table="SIS_AJUSTE" name="DESCRIPCION" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>opcional</opm:attribute-name>
+               <opm:field table="SIS_AJUSTE" name="OPCIONAL" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>removible</opm:attribute-name>
+               <opm:field table="SIS_AJUSTE" name="REMOVIBLE" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>aplicacion</opm:attribute-name>
+               <opm:field table="SIS_AJUSTE" name="APLICACION" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>nivel</opm:attribute-name>
+               <opm:field table="SIS_AJUSTE" name="NIVEL" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>valorAprox</opm:attribute-name>
+               <opm:read-only>true</opm:read-only>
+               <opm:field table="SIS_AJUSTE" name="CALCULADO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:one-to-one-mapping">
+               <opm:attribute-name>sisTipoAjuste</opm:attribute-name>
+               <opm:reference-class>enlace_datos.tablas.SisTipoAjuste</opm:reference-class>
+               <opm:foreign-key>
+                  <opm:field-reference>
+                     <opm:source-field table="SIS_AJUSTE" name="ID_TIPOAJUSTE" xsi:type="opm:column"/>
+                     <opm:target-field table="SIS_TIPO_AJUSTE" name="ID_TIPOAJUSTE" xsi:type="opm:column"/>
+                  </opm:field-reference>
+               </opm:foreign-key>
+               <opm:foreign-key-fields>
+                  <opm:field table="SIS_AJUSTE" name="ID_TIPOAJUSTE" xsi:type="opm:column"/>
+               </opm:foreign-key-fields>
+               <toplink:indirection xsi:type="toplink:value-holder-indirection-policy"/>
+               <toplink:selection-query xsi:type="toplink:read-object-query"/>
+            </opm:attribute-mapping>
+         </opm:attribute-mappings>
+         <toplink:descriptor-type>independent</toplink:descriptor-type>
+         <toplink:instantiation/>
+         <toplink:copying xsi:type="toplink:instantiation-copy-policy"/>
+         <toplink:change-policy xsi:type="toplink:deferred-detection-change-policy"/>
+         <toplink:tables>
+            <toplink:table name="SIS_AJUSTE"/>
+         </toplink:tables>
+      </opm:class-mapping-descriptor>
+      <opm:class-mapping-descriptor xsi:type="toplink:relational-class-mapping-descriptor">
+         <opm:class>enlace_datos.tablas.SisAjusteContrato</opm:class>
+         <opm:alias>SisAjusteContrato</opm:alias>
+         <opm:primary-key>
+            <opm:field table="SIS_AJUSTE_CONTRATO" name="ID_CONTRATO" xsi:type="opm:column"/>
+            <opm:field table="SIS_AJUSTE_CONTRATO" name="ID_AJUSTE" xsi:type="opm:column"/>
+            <opm:field table="SIS_AJUSTE_CONTRATO" name="ID_CORRELATIVO" xsi:type="opm:column"/>
+         </opm:primary-key>
+         <opm:events xsi:type="toplink:event-policy"/>
+         <opm:querying xsi:type="toplink:query-policy">
+            <opm:queries>
+               <opm:query name="findAllSisAjusteContrato" xsi:type="toplink:read-all-query">
+                  <toplink:timeout>0</toplink:timeout>
+                  <toplink:reference-class>enlace_datos.tablas.SisAjusteContrato</toplink:reference-class>
+                  <toplink:cache-usage>primary-key</toplink:cache-usage>
+                  <toplink:lock-mode>none</toplink:lock-mode>
+                  <toplink:container xsi:type="toplink:list-container-policy">
+                     <toplink:collection-type>java.util.Vector</toplink:collection-type>
+                  </toplink:container>
+               </opm:query>
+            </opm:queries>
+         </opm:querying>
+         <opm:attribute-mappings>
+            <opm:attribute-mapping xsi:type="toplink:one-to-one-mapping">
+               <opm:attribute-name>sisContrato</opm:attribute-name>
+               <opm:reference-class>enlace_datos.tablas.SisContrato</opm:reference-class>
+               <opm:foreign-key>
+                  <opm:field-reference>
+                     <opm:source-field table="SIS_AJUSTE_CONTRATO" name="ID_CONTRATO" xsi:type="opm:column"/>
+                     <opm:target-field table="SIS_CONTRATO" name="ID_CONTRATO" xsi:type="opm:column"/>
+                  </opm:field-reference>
+               </opm:foreign-key>
+               <opm:foreign-key-fields>
+                  <opm:field table="SIS_AJUSTE_CONTRATO" name="ID_CONTRATO" xsi:type="opm:column"/>
+               </opm:foreign-key-fields>
+               <toplink:indirection xsi:type="toplink:value-holder-indirection-policy"/>
+               <toplink:selection-query xsi:type="toplink:read-object-query"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>idContrato</opm:attribute-name>
+               <opm:read-only>true</opm:read-only>
+               <opm:field table="SIS_AJUSTE_CONTRATO" name="ID_CONTRATO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>idAjuste</opm:attribute-name>
+               <opm:read-only>true</opm:read-only>
+               <opm:field table="SIS_AJUSTE_CONTRATO" name="ID_AJUSTE" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>idCorrelativo</opm:attribute-name>
+               <opm:field table="SIS_AJUSTE_CONTRATO" name="ID_CORRELATIVO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>idProceso</opm:attribute-name>
+               <opm:field table="SIS_AJUSTE_CONTRATO" name="ID_PROCESO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>fechaInicio</opm:attribute-name>
+               <opm:field table="SIS_AJUSTE_CONTRATO" name="FECHA_INICIO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>fechaFin</opm:attribute-name>
+               <opm:field table="SIS_AJUSTE_CONTRATO" name="FECHA_FIN" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>valor</opm:attribute-name>
+               <opm:field table="SIS_AJUSTE_CONTRATO" name="VALOR" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:one-to-one-mapping">
+               <opm:attribute-name>sisAjuste</opm:attribute-name>
+               <opm:reference-class>enlace_datos.tablas.SisAjuste</opm:reference-class>
+               <opm:foreign-key>
+                  <opm:field-reference>
+                     <opm:source-field table="SIS_AJUSTE_CONTRATO" name="ID_AJUSTE" xsi:type="opm:column"/>
+                     <opm:target-field table="SIS_AJUSTE" name="ID_AJUSTE" xsi:type="opm:column"/>
+                  </opm:field-reference>
+               </opm:foreign-key>
+               <opm:foreign-key-fields>
+                  <opm:field table="SIS_AJUSTE_CONTRATO" name="ID_AJUSTE" xsi:type="opm:column"/>
+               </opm:foreign-key-fields>
+               <toplink:indirection xsi:type="toplink:value-holder-indirection-policy"/>
+               <toplink:selection-query xsi:type="toplink:read-object-query"/>
+            </opm:attribute-mapping>
+         </opm:attribute-mappings>
+         <toplink:descriptor-type>independent</toplink:descriptor-type>
+         <toplink:instantiation/>
+         <toplink:copying xsi:type="toplink:instantiation-copy-policy"/>
+         <toplink:change-policy xsi:type="toplink:deferred-detection-change-policy"/>
+         <toplink:tables>
+            <toplink:table name="SIS_AJUSTE_CONTRATO"/>
+         </toplink:tables>
+      </opm:class-mapping-descriptor>
+      <opm:class-mapping-descriptor xsi:type="toplink:relational-class-mapping-descriptor">
+         <opm:class>enlace_datos.tablas.SisAjusteEmpleado</opm:class>
+         <opm:alias>SisAjusteEmpleado</opm:alias>
+         <opm:primary-key>
+            <opm:field table="SIS_AJUSTE_EMPLEADO" name="REGISTRO_EMPLEADO" xsi:type="opm:column"/>
+            <opm:field table="SIS_AJUSTE_EMPLEADO" name="ID_AJUSTE" xsi:type="opm:column"/>
+            <opm:field table="SIS_AJUSTE_EMPLEADO" name="ID_CORRELATIVO" xsi:type="opm:column"/>
+         </opm:primary-key>
+         <opm:events xsi:type="toplink:event-policy"/>
+         <opm:querying xsi:type="toplink:query-policy">
+            <opm:queries>
+               <opm:query name="findAllSisAjusteEmpleado" xsi:type="toplink:read-all-query">
+                  <toplink:timeout>0</toplink:timeout>
+                  <toplink:reference-class>enlace_datos.tablas.SisAjusteEmpleado</toplink:reference-class>
+                  <toplink:cache-usage>primary-key</toplink:cache-usage>
+                  <toplink:lock-mode>none</toplink:lock-mode>
+                  <toplink:container xsi:type="toplink:list-container-policy">
+                     <toplink:collection-type>java.util.Vector</toplink:collection-type>
+                  </toplink:container>
+               </opm:query>
+            </opm:queries>
+         </opm:querying>
+         <opm:attribute-mappings>
+            <opm:attribute-mapping xsi:type="toplink:one-to-one-mapping">
+               <opm:attribute-name>sisAjuste</opm:attribute-name>
+               <opm:reference-class>enlace_datos.tablas.SisAjuste</opm:reference-class>
+               <opm:foreign-key>
+                  <opm:field-reference>
+                     <opm:source-field table="SIS_AJUSTE_EMPLEADO" name="ID_AJUSTE" xsi:type="opm:column"/>
+                     <opm:target-field table="SIS_AJUSTE" name="ID_AJUSTE" xsi:type="opm:column"/>
+                  </opm:field-reference>
+               </opm:foreign-key>
+               <opm:foreign-key-fields>
+                  <opm:field table="SIS_AJUSTE_EMPLEADO" name="ID_AJUSTE" xsi:type="opm:column"/>
+               </opm:foreign-key-fields>
+               <toplink:indirection xsi:type="toplink:value-holder-indirection-policy"/>
+               <toplink:selection-query xsi:type="toplink:read-object-query"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:one-to-one-mapping">
+               <opm:attribute-name>sisEmpleado</opm:attribute-name>
+               <opm:reference-class>enlace_datos.tablas.SisEmpleado</opm:reference-class>
+               <opm:foreign-key>
+                  <opm:field-reference>
+                     <opm:source-field table="SIS_AJUSTE_EMPLEADO" name="REGISTRO_EMPLEADO" xsi:type="opm:column"/>
+                     <opm:target-field table="SIS_EMPLEADO" name="REGISTRO_EMPLEADO" xsi:type="opm:column"/>
+                  </opm:field-reference>
+               </opm:foreign-key>
+               <opm:foreign-key-fields>
+                  <opm:field table="SIS_AJUSTE_EMPLEADO" name="REGISTRO_EMPLEADO" xsi:type="opm:column"/>
+               </opm:foreign-key-fields>
+               <toplink:indirection xsi:type="toplink:value-holder-indirection-policy"/>
+               <toplink:selection-query xsi:type="toplink:read-object-query"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>registroEmpleado</opm:attribute-name>
+               <opm:read-only>true</opm:read-only>
+               <opm:field table="SIS_AJUSTE_EMPLEADO" name="REGISTRO_EMPLEADO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>idAjuste</opm:attribute-name>
+               <opm:read-only>true</opm:read-only>
+               <opm:field table="SIS_AJUSTE_EMPLEADO" name="ID_AJUSTE" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>idCorrelativo</opm:attribute-name>
+               <opm:field table="SIS_AJUSTE_EMPLEADO" name="ID_CORRELATIVO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>idProceso</opm:attribute-name>
+               <opm:field table="SIS_AJUSTE_EMPLEADO" name="ID_PROCESO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>fechaInicio</opm:attribute-name>
+               <opm:field table="SIS_AJUSTE_EMPLEADO" name="FECHA_INICIO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>fechaFin</opm:attribute-name>
+               <opm:field table="SIS_AJUSTE_EMPLEADO" name="FECHA_FIN" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>valor</opm:attribute-name>
+               <opm:field table="SIS_AJUSTE_EMPLEADO" name="VALOR" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+         </opm:attribute-mappings>
+         <toplink:descriptor-type>independent</toplink:descriptor-type>
+         <toplink:instantiation/>
+         <toplink:copying xsi:type="toplink:instantiation-copy-policy"/>
+         <toplink:change-policy xsi:type="toplink:deferred-detection-change-policy"/>
+         <toplink:tables>
+            <toplink:table name="SIS_AJUSTE_EMPLEADO"/>
+         </toplink:tables>
+      </opm:class-mapping-descriptor>
+      <opm:class-mapping-descriptor xsi:type="toplink:relational-class-mapping-descriptor">
+         <opm:class>enlace_datos.tablas.SisContrato</opm:class>
+         <opm:alias>SisContrato</opm:alias>
+         <opm:primary-key>
+            <opm:field table="SIS_CONTRATO" name="ID_CONTRATO" xsi:type="opm:column"/>
+         </opm:primary-key>
+         <opm:events xsi:type="toplink:event-policy"/>
+         <opm:querying xsi:type="toplink:query-policy">
+            <opm:queries>
+               <opm:query name="findAllSisContrato" xsi:type="toplink:read-all-query">
+                  <toplink:timeout>0</toplink:timeout>
+                  <toplink:reference-class>enlace_datos.tablas.SisContrato</toplink:reference-class>
+                  <toplink:cache-usage>primary-key</toplink:cache-usage>
+                  <toplink:lock-mode>none</toplink:lock-mode>
+                  <toplink:container xsi:type="toplink:list-container-policy">
+                     <toplink:collection-type>java.util.Vector</toplink:collection-type>
+                  </toplink:container>
+               </opm:query>
+               <opm:query name="contrato_by_id" xsi:type="toplink:read-all-query">
+                  <opm:criteria operator="equal" xsi:type="toplink:relation-expression">
+                     <toplink:left name="idContrato" xsi:type="toplink:query-key-expression">
+                        <toplink:base xsi:type="toplink:base-expression"/>
+                     </toplink:left>
+                     <toplink:right xsi:type="toplink:parameter-expression">
+                        <toplink:parameter name="numContrato" xsi:type="opm:column"/>
+                     </toplink:right>
+                  </opm:criteria>
+                  <opm:arguments>
+                     <opm:argument name="numContrato">
+                        <opm:type>java.lang.Number</opm:type>
+                     </opm:argument>
+                  </opm:arguments>
+                  <toplink:timeout>0</toplink:timeout>
+                  <toplink:reference-class>enlace_datos.tablas.SisContrato</toplink:reference-class>
+                  <toplink:cache-usage>primary-key</toplink:cache-usage>
+                  <toplink:lock-mode>none</toplink:lock-mode>
+                  <toplink:container xsi:type="toplink:list-container-policy">
+                     <toplink:collection-type>java.util.Vector</toplink:collection-type>
+                  </toplink:container>
+               </opm:query>
+               <opm:query name="contrato_busqueda" xsi:type="toplink:read-all-query">
+                  <opm:arguments>
+                     <opm:argument name="reg_empleado">
+                        <opm:type>java.lang.Number</opm:type>
+                     </opm:argument>
+                     <opm:argument name="numContrato">
+                        <opm:type>java.lang.Number</opm:type>
+                     </opm:argument>
+                  </opm:arguments>
+                  <toplink:timeout>0</toplink:timeout>
+                  <toplink:call xsi:type="toplink:sql-call">
+                     <toplink:sql>select id_contrato,d.formato1 as partida,a.registro_empleado,c.nombre as nom_puesto,a.horascontratadas,fecha_inicio,fecha_fin,b.nombre as estado
+from sis_contrato a,sis_estado_contrato_vw b,sis_puesto c,sis_partida_vw d
+where a.estatus=b.id_estado
+and c.id_puesto=a.id_puesto
+and d.id_partida=a.id_partida
+and (a.registro_empleado=#reg_empleado
+or id_contrato=#numContrato
+)
+</toplink:sql>
+                  </toplink:call>
+                  <toplink:reference-class>enlace_datos.tablas.SisContrato</toplink:reference-class>
+                  <toplink:cache-usage>primary-key</toplink:cache-usage>
+                  <toplink:lock-mode>none</toplink:lock-mode>
+                  <toplink:container xsi:type="toplink:list-container-policy">
+                     <toplink:collection-type>java.util.Vector</toplink:collection-type>
+                  </toplink:container>
+               </opm:query>
+            </opm:queries>
+            <toplink:insert-query xsi:type="toplink:insert-object-query">
+               <toplink:call xsi:type="toplink:sql-call">
+                  <toplink:sql>INSERT INTO SIS_CONTRATO (ID_CONTRATO, HORASCONTRATADAS, LUGAR_POSESION, ID_TIPO_CONTRATO, FECHA_POSESION, ID_PARTIDA, INSTALACION_POSESION, CORRELATIVO, SUELDOBASE, ESTATUS, NUMERO_PLAZA, ID_PUESTO, FECHA_INICIO, ATRIBUCION, FECHA_FIN, REGISTRO_EMPLEADO, ID_FORMA_OBT_PUESTO) VALUES (#ID_CONTRATO, #HORASCONTRATADAS, #LUGAR_POSESION,#ID_TIPO_CONTRATO,#FECHA_POSESION, #ID_PARTIDA, #INSTALACION_POSESION, #CORRELATIVO, #SUELDOBASE,(select id_estado from sis_estado_contrato_vw where nombre='INGRESADO'), #NUMERO_PLAZA,#ID_PUESTO, #FECHA_INICIO, #ATRIBUCION,#FECHA_FIN, #REGISTRO_EMPLEADO, #ID_FORMA_OBT_PUESTO)</toplink:sql>
+               </toplink:call>
+            </toplink:insert-query>
+         </opm:querying>
+         <opm:attribute-mappings>
+            <opm:attribute-mapping xsi:type="toplink:one-to-many-mapping">
+               <opm:attribute-name>sisAjusteContratoCollection</opm:attribute-name>
+               <opm:get-method>getSisAjusteContratoCollection</opm:get-method>
+               <opm:set-method>setSisAjusteContratoCollection</opm:set-method>
+               <opm:reference-class>enlace_datos.tablas.SisAjusteContrato</opm:reference-class>
+               <opm:target-foreign-key>
+                  <opm:field-reference>
+                     <opm:source-field table="SIS_AJUSTE_CONTRATO" name="ID_CONTRATO" xsi:type="opm:column"/>
+                     <opm:target-field table="SIS_CONTRATO" name="ID_CONTRATO" xsi:type="opm:column"/>
+                  </opm:field-reference>
+               </opm:target-foreign-key>
+               <toplink:container xsi:type="toplink:container-policy">
+                  <toplink:collection-type>oracle.toplink.indirection.IndirectList</toplink:collection-type>
+               </toplink:container>
+               <toplink:indirection xsi:type="toplink:transparent-collection-indirection-policy"/>
+               <toplink:selection-query xsi:type="toplink:read-all-query">
+                  <toplink:container xsi:type="toplink:container-policy">
+                     <toplink:collection-type>oracle.toplink.indirection.IndirectList</toplink:collection-type>
+                  </toplink:container>
+               </toplink:selection-query>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:one-to-one-mapping">
+               <opm:attribute-name>sisEmpleado</opm:attribute-name>
+               <opm:reference-class>enlace_datos.tablas.SisEmpleado</opm:reference-class>
+               <opm:foreign-key>
+                  <opm:field-reference>
+                     <opm:source-field table="SIS_CONTRATO" name="REGISTRO_EMPLEADO" xsi:type="opm:column"/>
+                     <opm:target-field table="SIS_EMPLEADO" name="REGISTRO_EMPLEADO" xsi:type="opm:column"/>
+                  </opm:field-reference>
+               </opm:foreign-key>
+               <opm:foreign-key-fields>
+                  <opm:field table="SIS_CONTRATO" name="REGISTRO_EMPLEADO" xsi:type="opm:column"/>
+               </opm:foreign-key-fields>
+               <toplink:indirection xsi:type="toplink:value-holder-indirection-policy"/>
+               <toplink:selection-query xsi:type="toplink:read-object-query"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>idContrato</opm:attribute-name>
+               <opm:field table="SIS_CONTRATO" name="ID_CONTRATO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>idTipoContrato</opm:attribute-name>
+               <opm:field table="SIS_CONTRATO" name="ID_TIPO_CONTRATO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>idFormaObtPuesto</opm:attribute-name>
+               <opm:field table="SIS_CONTRATO" name="ID_FORMA_OBT_PUESTO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>idPartida</opm:attribute-name>
+               <opm:field table="SIS_CONTRATO" name="ID_PARTIDA" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>idPuesto</opm:attribute-name>
+               <opm:field table="SIS_CONTRATO" name="ID_PUESTO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>correlativo</opm:attribute-name>
+               <opm:field table="SIS_CONTRATO" name="CORRELATIVO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>registroEmpleado</opm:attribute-name>
+               <opm:read-only>true</opm:read-only>
+               <opm:field table="SIS_CONTRATO" name="REGISTRO_EMPLEADO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>sueldobase</opm:attribute-name>
+               <opm:field table="SIS_CONTRATO" name="SUELDOBASE" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>atribucion</opm:attribute-name>
+               <opm:field table="SIS_CONTRATO" name="ATRIBUCION" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>horascontratadas</opm:attribute-name>
+               <opm:field table="SIS_CONTRATO" name="HORASCONTRATADAS" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>lugarPosesion</opm:attribute-name>
+               <opm:field table="SIS_CONTRATO" name="LUGAR_POSESION" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>fechaPosesion</opm:attribute-name>
+               <opm:field table="SIS_CONTRATO" name="FECHA_POSESION" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>instalacionPosesion</opm:attribute-name>
+               <opm:field table="SIS_CONTRATO" name="INSTALACION_POSESION" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>fechaCreacion</opm:attribute-name>
+               <opm:field table="SIS_CONTRATO" name="FECHA_CREACION" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>estatus</opm:attribute-name>
+               <opm:field table="SIS_CONTRATO" name="ESTATUS" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>numeroPlaza</opm:attribute-name>
+               <opm:field table="SIS_CONTRATO" name="NUMERO_PLAZA" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>fechaInicio</opm:attribute-name>
+               <opm:field table="SIS_CONTRATO" name="FECHA_INICIO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>fechaFin</opm:attribute-name>
+               <opm:field table="SIS_CONTRATO" name="FECHA_FIN" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:one-to-many-mapping">
+               <opm:attribute-name>sisHorarioContratoCollection</opm:attribute-name>
+               <opm:get-method>getSisHorarioContratoCollection</opm:get-method>
+               <opm:set-method>setSisHorarioContratoCollection</opm:set-method>
+               <opm:reference-class>enlace_datos.tablas.SisHorarioContrato</opm:reference-class>
+               <opm:private-owned>true</opm:private-owned>
+               <opm:target-foreign-key>
+                  <opm:field-reference>
+                     <opm:source-field table="SIS_HORARIO_CONTRATO" name="ID_CONTRATO" xsi:type="opm:column"/>
+                     <opm:target-field table="SIS_CONTRATO" name="ID_CONTRATO" xsi:type="opm:column"/>
+                  </opm:field-reference>
+               </opm:target-foreign-key>
+               <toplink:container xsi:type="toplink:container-policy">
+                  <toplink:collection-type>oracle.toplink.indirection.IndirectList</toplink:collection-type>
+               </toplink:container>
+               <toplink:indirection xsi:type="toplink:transparent-collection-indirection-policy"/>
+               <toplink:selection-query xsi:type="toplink:read-all-query">
+                  <toplink:container xsi:type="toplink:container-policy">
+                     <toplink:collection-type>oracle.toplink.indirection.IndirectList</toplink:collection-type>
+                  </toplink:container>
+               </toplink:selection-query>
+            </opm:attribute-mapping>
+         </opm:attribute-mappings>
+         <toplink:descriptor-type>independent</toplink:descriptor-type>
+         <toplink:instantiation/>
+         <toplink:copying xsi:type="toplink:instantiation-copy-policy"/>
+         <toplink:change-policy xsi:type="toplink:deferred-detection-change-policy"/>
+         <toplink:tables>
+            <toplink:table name="SIS_CONTRATO"/>
+         </toplink:tables>
+      </opm:class-mapping-descriptor>
+      <opm:class-mapping-descriptor xsi:type="toplink:relational-class-mapping-descriptor">
+         <opm:class>enlace_datos.tablas.SisDiaSemana</opm:class>
+         <opm:alias>SisDiaSemana</opm:alias>
+         <opm:primary-key>
+            <opm:field table="SIS_DIA_SEMANA" name="ID_DIA" xsi:type="opm:column"/>
+         </opm:primary-key>
+         <opm:events xsi:type="toplink:event-policy"/>
+         <opm:querying xsi:type="toplink:query-policy">
+            <opm:queries>
+               <opm:query name="findAllSisDiaSemana" xsi:type="toplink:read-all-query">
+                  <toplink:timeout>0</toplink:timeout>
+                  <toplink:reference-class>enlace_datos.tablas.SisDiaSemana</toplink:reference-class>
+                  <toplink:cache-usage>primary-key</toplink:cache-usage>
+                  <toplink:lock-mode>none</toplink:lock-mode>
+                  <toplink:container xsi:type="toplink:list-container-policy">
+                     <toplink:collection-type>java.util.Vector</toplink:collection-type>
+                  </toplink:container>
+               </opm:query>
+            </opm:queries>
+         </opm:querying>
+         <opm:attribute-mappings>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>idDia</opm:attribute-name>
+               <opm:field table="SIS_DIA_SEMANA" name="ID_DIA" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>nombre</opm:attribute-name>
+               <opm:field table="SIS_DIA_SEMANA" name="NOMBRE" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+         </opm:attribute-mappings>
+         <toplink:descriptor-type>independent</toplink:descriptor-type>
+         <toplink:instantiation/>
+         <toplink:copying xsi:type="toplink:instantiation-copy-policy"/>
+         <toplink:change-policy xsi:type="toplink:deferred-detection-change-policy"/>
+         <toplink:tables>
+            <toplink:table name="SIS_DIA_SEMANA"/>
+         </toplink:tables>
+      </opm:class-mapping-descriptor>
+      <opm:class-mapping-descriptor xsi:type="toplink:relational-class-mapping-descriptor">
+         <opm:class>enlace_datos.tablas.SisDireccion</opm:class>
+         <opm:alias>SisDireccion</opm:alias>
+         <opm:primary-key>
+            <opm:field table="SIS_DIRECCION" name="ID_DIRECCION" xsi:type="opm:column"/>
+         </opm:primary-key>
+         <opm:events xsi:type="toplink:event-policy"/>
+         <opm:querying xsi:type="toplink:query-policy">
+            <opm:queries>
+               <opm:query name="findAllSisDireccion" xsi:type="toplink:read-all-query">
+                  <toplink:timeout>0</toplink:timeout>
+                  <toplink:reference-class>enlace_datos.tablas.SisDireccion</toplink:reference-class>
+                  <toplink:cache-usage>primary-key</toplink:cache-usage>
+                  <toplink:lock-mode>none</toplink:lock-mode>
+                  <toplink:container xsi:type="toplink:list-container-policy">
+                     <toplink:collection-type>java.util.Vector</toplink:collection-type>
+                  </toplink:container>
+               </opm:query>
+            </opm:queries>
+         </opm:querying>
+         <opm:attribute-mappings>
+            <opm:attribute-mapping xsi:type="toplink:one-to-one-mapping">
+               <opm:attribute-name>sisEmpleado</opm:attribute-name>
+               <opm:reference-class>enlace_datos.tablas.SisEmpleado</opm:reference-class>
+               <opm:foreign-key>
+                  <opm:field-reference>
+                     <opm:source-field table="SIS_DIRECCION" name="REGISTRO_EMPLEADO" xsi:type="opm:column"/>
+                     <opm:target-field table="SIS_EMPLEADO" name="REGISTRO_EMPLEADO" xsi:type="opm:column"/>
+                  </opm:field-reference>
+               </opm:foreign-key>
+               <opm:foreign-key-fields>
+                  <opm:field table="SIS_DIRECCION" name="REGISTRO_EMPLEADO" xsi:type="opm:column"/>
+               </opm:foreign-key-fields>
+               <toplink:indirection xsi:type="toplink:value-holder-indirection-policy"/>
+               <toplink:selection-query xsi:type="toplink:read-object-query"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>idDireccion</opm:attribute-name>
+               <opm:field table="SIS_DIRECCION" name="ID_DIRECCION" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>idMunicipio</opm:attribute-name>
+               <opm:field table="SIS_DIRECCION" name="ID_MUNICIPIO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>avecalle</opm:attribute-name>
+               <opm:field table="SIS_DIRECCION" name="AVECALLE" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>numCasa</opm:attribute-name>
+               <opm:field table="SIS_DIRECCION" name="NUM_CASA" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>apto</opm:attribute-name>
+               <opm:field table="SIS_DIRECCION" name="APTO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>zona</opm:attribute-name>
+               <opm:field table="SIS_DIRECCION" name="ZONA" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>colonia</opm:attribute-name>
+               <opm:field table="SIS_DIRECCION" name="COLONIA" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+         </opm:attribute-mappings>
+         <toplink:descriptor-type>independent</toplink:descriptor-type>
+         <toplink:sequencing>
+            <toplink:sequence-name>sis_direccion_sq</toplink:sequence-name>
+            <toplink:sequence-field table="SIS_DIRECCION" name="ID_DIRECCION" xsi:type="opm:column"/>
+         </toplink:sequencing>
+         <toplink:instantiation/>
+         <toplink:copying xsi:type="toplink:instantiation-copy-policy"/>
+         <toplink:change-policy xsi:type="toplink:deferred-detection-change-policy"/>
+         <toplink:tables>
+            <toplink:table name="SIS_DIRECCION"/>
+         </toplink:tables>
+      </opm:class-mapping-descriptor>
+      <opm:class-mapping-descriptor xsi:type="toplink:relational-class-mapping-descriptor">
+         <opm:class>enlace_datos.tablas.SisEmpleado</opm:class>
+         <opm:alias>SisEmpleado</opm:alias>
+         <opm:primary-key>
+            <opm:field table="SIS_EMPLEADO" name="REGISTRO_EMPLEADO" xsi:type="opm:column"/>
+         </opm:primary-key>
+         <opm:events xsi:type="toplink:event-policy"/>
+         <opm:querying xsi:type="toplink:query-policy">
+            <opm:queries>
+               <opm:query name="empleado_porId" xsi:type="toplink:read-all-query">
+                  <opm:criteria operator="equal" xsi:type="toplink:relation-expression">
+                     <toplink:left name="registroEmpleado" xsi:type="toplink:query-key-expression">
+                        <toplink:base xsi:type="toplink:base-expression"/>
+                     </toplink:left>
+                     <toplink:right xsi:type="toplink:parameter-expression">
+                        <toplink:parameter name="reg_empleado" xsi:type="opm:column"/>
+                     </toplink:right>
+                  </opm:criteria>
+                  <opm:arguments>
+                     <opm:argument name="reg_empleado">
+                        <opm:type>java.lang.Number</opm:type>
+                     </opm:argument>
+                  </opm:arguments>
+                  <toplink:timeout>0</toplink:timeout>
+                  <toplink:reference-class>enlace_datos.tablas.SisEmpleado</toplink:reference-class>
+                  <toplink:cache-usage>primary-key</toplink:cache-usage>
+                  <toplink:lock-mode>none</toplink:lock-mode>
+                  <toplink:container xsi:type="toplink:list-container-policy">
+                     <toplink:collection-type>java.util.Vector</toplink:collection-type>
+                  </toplink:container>
+               </opm:query>
+               <opm:query name="findAllSisEmpleado" xsi:type="toplink:read-all-query">
+                  <toplink:timeout>0</toplink:timeout>
+                  <toplink:reference-class>enlace_datos.tablas.SisEmpleado</toplink:reference-class>
+                  <toplink:cache-usage>primary-key</toplink:cache-usage>
+                  <toplink:lock-mode>none</toplink:lock-mode>
+                  <toplink:container xsi:type="toplink:list-container-policy">
+                     <toplink:collection-type>java.util.Vector</toplink:collection-type>
+                  </toplink:container>
+               </opm:query>
+            </opm:queries>
+         </opm:querying>
+         <opm:attribute-mappings>
+            <opm:attribute-mapping xsi:type="toplink:one-to-many-mapping">
+               <opm:attribute-name>sisDireccionCollection</opm:attribute-name>
+               <opm:get-method>getSisDireccionCollection</opm:get-method>
+               <opm:set-method>setSisDireccionCollection</opm:set-method>
+               <opm:reference-class>enlace_datos.tablas.SisDireccion</opm:reference-class>
+               <opm:target-foreign-key>
+                  <opm:field-reference>
+                     <opm:source-field table="SIS_DIRECCION" name="REGISTRO_EMPLEADO" xsi:type="opm:column"/>
+                     <opm:target-field table="SIS_EMPLEADO" name="REGISTRO_EMPLEADO" xsi:type="opm:column"/>
+                  </opm:field-reference>
+               </opm:target-foreign-key>
+               <toplink:container xsi:type="toplink:container-policy">
+                  <toplink:collection-type>oracle.toplink.indirection.IndirectList</toplink:collection-type>
+               </toplink:container>
+               <toplink:indirection xsi:type="toplink:transparent-collection-indirection-policy"/>
+               <toplink:selection-query xsi:type="toplink:read-all-query">
+                  <toplink:container xsi:type="toplink:container-policy">
+                     <toplink:collection-type>oracle.toplink.indirection.IndirectList</toplink:collection-type>
+                  </toplink:container>
+               </toplink:selection-query>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:one-to-many-mapping">
+               <opm:attribute-name>sisAjusteEmpleadoCollection</opm:attribute-name>
+               <opm:get-method>getSisAjusteEmpleadoCollection</opm:get-method>
+               <opm:set-method>setSisAjusteEmpleadoCollection</opm:set-method>
+               <opm:reference-class>enlace_datos.tablas.SisAjusteEmpleado</opm:reference-class>
+               <opm:target-foreign-key>
+                  <opm:field-reference>
+                     <opm:source-field table="SIS_AJUSTE_EMPLEADO" name="REGISTRO_EMPLEADO" xsi:type="opm:column"/>
+                     <opm:target-field table="SIS_EMPLEADO" name="REGISTRO_EMPLEADO" xsi:type="opm:column"/>
+                  </opm:field-reference>
+               </opm:target-foreign-key>
+               <toplink:container xsi:type="toplink:container-policy">
+                  <toplink:collection-type>oracle.toplink.indirection.IndirectList</toplink:collection-type>
+               </toplink:container>
+               <toplink:indirection xsi:type="toplink:transparent-collection-indirection-policy"/>
+               <toplink:selection-query xsi:type="toplink:read-all-query">
+                  <toplink:container xsi:type="toplink:container-policy">
+                     <toplink:collection-type>oracle.toplink.indirection.IndirectList</toplink:collection-type>
+                  </toplink:container>
+               </toplink:selection-query>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>registroEmpleado</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="REGISTRO_EMPLEADO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>idNivel</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="ID_NIVEL" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>idEstado</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="ID_ESTADO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>idNacionalidad</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="ID_NACIONALIDAD" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>apellido1</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="APELLIDO1" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>apellido2</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="APELLIDO2" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>apellidocasada</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="APELLIDOCASADA" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>nombre1</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="NOMBRE1" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>nombre2</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="NOMBRE2" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>nombre3</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="NOMBRE3" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>estadocivil</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="ESTADOCIVIL" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>genero</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="GENERO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>fechaNacimiento</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="FECHA_NACIMIENTO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>ordenCedula</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="ORDEN_CEDULA" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>registroCedula</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="REGISTRO_CEDULA" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>municipioCedula</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="MUNICIPIO_CEDULA" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>nit</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="NIT" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>igss</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="IGSS" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>telCasa</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="TEL_CASA" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>celular</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="CELULAR" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>fax</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="FAX" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>email</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="EMAIL" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>titulo</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="TITULO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>colegiado</opm:attribute-name>
+               <opm:field table="SIS_EMPLEADO" name="COLEGIADO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+         </opm:attribute-mappings>
+         <toplink:descriptor-type>independent</toplink:descriptor-type>
+         <toplink:sequencing>
+            <toplink:sequence-name>sis_empleado_sq</toplink:sequence-name>
+            <toplink:sequence-field table="SIS_EMPLEADO" name="REGISTRO_EMPLEADO" xsi:type="opm:column"/>
+         </toplink:sequencing>
+         <toplink:instantiation/>
+         <toplink:copying xsi:type="toplink:instantiation-copy-policy"/>
+         <toplink:change-policy xsi:type="toplink:deferred-detection-change-policy"/>
+         <toplink:tables>
+            <toplink:table name="SIS_EMPLEADO"/>
+         </toplink:tables>
+      </opm:class-mapping-descriptor>
+      <opm:class-mapping-descriptor xsi:type="toplink:relational-class-mapping-descriptor">
+         <opm:class>enlace_datos.tablas.SisHorarioContrato</opm:class>
+         <opm:alias>SisHorarioContrato</opm:alias>
+         <opm:primary-key>
+            <opm:field table="SIS_HORARIO_CONTRATO" name="ID_CONTRATO" xsi:type="opm:column"/>
+            <opm:field table="SIS_HORARIO_CONTRATO" name="ID_DIA" xsi:type="opm:column"/>
+         </opm:primary-key>
+         <opm:events xsi:type="toplink:event-policy"/>
+         <opm:querying xsi:type="toplink:query-policy">
+            <opm:queries>
+               <opm:query name="findAllSisHorarioContrato" xsi:type="toplink:read-all-query">
+                  <toplink:timeout>0</toplink:timeout>
+                  <toplink:reference-class>enlace_datos.tablas.SisHorarioContrato</toplink:reference-class>
+                  <toplink:cache-usage>primary-key</toplink:cache-usage>
+                  <toplink:lock-mode>none</toplink:lock-mode>
+                  <toplink:container xsi:type="toplink:list-container-policy">
+                     <toplink:collection-type>java.util.Vector</toplink:collection-type>
+                  </toplink:container>
+               </opm:query>
+            </opm:queries>
+         </opm:querying>
+         <opm:attribute-mappings>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>horaSalida</opm:attribute-name>
+               <opm:field table="SIS_HORARIO_CONTRATO" name="HORA_SALIDA" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>idContrato</opm:attribute-name>
+               <opm:read-only>true</opm:read-only>
+               <opm:field table="SIS_HORARIO_CONTRATO" name="ID_CONTRATO" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>idDia</opm:attribute-name>
+               <opm:field table="SIS_HORARIO_CONTRATO" name="ID_DIA" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:one-to-one-mapping">
+               <opm:attribute-name>sisContrato</opm:attribute-name>
+               <opm:reference-class>enlace_datos.tablas.SisContrato</opm:reference-class>
+               <opm:foreign-key>
+                  <opm:field-reference>
+                     <opm:source-field table="SIS_HORARIO_CONTRATO" name="ID_CONTRATO" xsi:type="opm:column"/>
+                     <opm:target-field table="SIS_CONTRATO" name="ID_CONTRATO" xsi:type="opm:column"/>
+                  </opm:field-reference>
+               </opm:foreign-key>
+               <opm:foreign-key-fields>
+                  <opm:field table="SIS_HORARIO_CONTRATO" name="ID_CONTRATO" xsi:type="opm:column"/>
+               </opm:foreign-key-fields>
+               <toplink:indirection xsi:type="toplink:value-holder-indirection-policy"/>
+               <toplink:selection-query xsi:type="toplink:read-object-query"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>horaEntrada</opm:attribute-name>
+               <opm:field table="SIS_HORARIO_CONTRATO" name="HORA_ENTRADA" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+         </opm:attribute-mappings>
+         <toplink:descriptor-type>independent</toplink:descriptor-type>
+         <toplink:instantiation/>
+         <toplink:copying xsi:type="toplink:instantiation-copy-policy"/>
+         <toplink:change-policy xsi:type="toplink:deferred-detection-change-policy"/>
+         <toplink:tables>
+            <toplink:table name="SIS_HORARIO_CONTRATO"/>
+         </toplink:tables>
+      </opm:class-mapping-descriptor>
+      <opm:class-mapping-descriptor xsi:type="toplink:relational-class-mapping-descriptor">
+         <opm:class>enlace_datos.tablas.SisTipoAjuste</opm:class>
+         <opm:alias>SisTipoAjuste</opm:alias>
+         <opm:primary-key>
+            <opm:field table="SIS_TIPO_AJUSTE" name="ID_TIPOAJUSTE" xsi:type="opm:column"/>
+         </opm:primary-key>
+         <opm:events xsi:type="toplink:event-policy"/>
+         <opm:querying xsi:type="toplink:query-policy">
+            <opm:queries>
+               <opm:query name="findAllSisTipoAjuste" xsi:type="toplink:read-all-query">
+                  <toplink:timeout>0</toplink:timeout>
+                  <toplink:reference-class>enlace_datos.tablas.SisTipoAjuste</toplink:reference-class>
+                  <toplink:cache-usage>primary-key</toplink:cache-usage>
+                  <toplink:lock-mode>none</toplink:lock-mode>
+                  <toplink:container xsi:type="toplink:list-container-policy">
+                     <toplink:collection-type>java.util.Vector</toplink:collection-type>
+                  </toplink:container>
+               </opm:query>
+            </opm:queries>
+         </opm:querying>
+         <opm:attribute-mappings>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>idTipoajuste</opm:attribute-name>
+               <opm:field table="SIS_TIPO_AJUSTE" name="ID_TIPOAJUSTE" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>nombre</opm:attribute-name>
+               <opm:field table="SIS_TIPO_AJUSTE" name="NOMBRE" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>descripcion</opm:attribute-name>
+               <opm:field table="SIS_TIPO_AJUSTE" name="DESCRIPCION" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>operacion</opm:attribute-name>
+               <opm:field table="SIS_TIPO_AJUSTE" name="OPERACION" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:one-to-many-mapping">
+               <opm:attribute-name>sisAjusteCollection</opm:attribute-name>
+               <opm:get-method>getSisAjusteCollection</opm:get-method>
+               <opm:set-method>setSisAjusteCollection</opm:set-method>
+               <opm:reference-class>enlace_datos.tablas.SisAjuste</opm:reference-class>
+               <opm:target-foreign-key>
+                  <opm:field-reference>
+                     <opm:source-field table="SIS_AJUSTE" name="ID_TIPOAJUSTE" xsi:type="opm:column"/>
+                     <opm:target-field table="SIS_TIPO_AJUSTE" name="ID_TIPOAJUSTE" xsi:type="opm:column"/>
+                  </opm:field-reference>
+               </opm:target-foreign-key>
+               <toplink:container xsi:type="toplink:container-policy">
+                  <toplink:collection-type>oracle.toplink.indirection.IndirectList</toplink:collection-type>
+               </toplink:container>
+               <toplink:indirection xsi:type="toplink:transparent-collection-indirection-policy"/>
+               <toplink:selection-query xsi:type="toplink:read-all-query">
+                  <toplink:container xsi:type="toplink:container-policy">
+                     <toplink:collection-type>oracle.toplink.indirection.IndirectList</toplink:collection-type>
+                  </toplink:container>
+               </toplink:selection-query>
+            </opm:attribute-mapping>
+         </opm:attribute-mappings>
+         <toplink:descriptor-type>independent</toplink:descriptor-type>
+         <toplink:instantiation/>
+         <toplink:copying xsi:type="toplink:instantiation-copy-policy"/>
+         <toplink:change-policy xsi:type="toplink:deferred-detection-change-policy"/>
+         <toplink:tables>
+            <toplink:table name="SIS_TIPO_AJUSTE"/>
+         </toplink:tables>
+      </opm:class-mapping-descriptor>
+   </opm:class-mapping-descriptors>
+   <toplink:login xsi:type="toplink:database-login">
+      <toplink:platform-class>oracle.toplink.platform.database.oracle.OraclePlatform</toplink:platform-class>
+      <toplink:user-name>luis_oxlaj</toplink:user-name>
+      <toplink:password>89F992D76049666EA7ED8D5E7140F7BE</toplink:password>
+      <toplink:sequencing>
+         <toplink:default-sequence xsi:type="toplink:native-sequence">
+            <toplink:preallocation-size>1</toplink:preallocation-size>
+         </toplink:default-sequence>
+      </toplink:sequencing>
+      <toplink:driver-class>oracle.jdbc.OracleDriver</toplink:driver-class>
+      <toplink:connection-url>jdbc:oracle:thin:@172.16.1.119:1521:xe</toplink:connection-url>
+   </toplink:login>
+</toplink:object-persistence>

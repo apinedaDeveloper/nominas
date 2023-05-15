@@ -1,0 +1,611 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="partidas_no_existen_conta"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="612"
+		 pageHeight="792"
+		 columnWidth="552"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="p_fecha_ini" isForPrompting="true" class="java.util.Date"/>
+	<parameter name="p_fecha_fin" isForPrompting="true" class="java.util.Date"/>
+	<queryString><![CDATA[select distinct d1,d2,d3d4,d5,d6,d7,d8,d9d10,nombre,
+d1||'.'||d2||'.'||ltrim(to_char(d3d4,'09'))||'.'||d5||'.'||d6||d7||'.'||d8||ltrim(to_char(d9d10,'09')) as strpart
+from(
+select d1, d2, d3d4, nvl(d5,0) as d5, nvl(d6,0) as d6, nvl(d7,0) as d7, nvl(d8,0) as d8, nvl(d9d10,0) as d9d10, nombre
+from (
+	select d1,d2,d3d4,d5,d6,d7,d8,d9d10,nombre
+	from sis_poliza a, sis_partida2_vw b
+	where a.id_partida=b.id_partida
+	and valor >0
+	and a.id_proceso in(
+		select p.id_proceso
+		from
+			sis_proceso p
+		where
+			p.tipoproceso=7 and
+			p.id_estado=(select id_estado from sis_estado_proceso_vw where nombre='PROCESADO') and
+			trunc(p.fecha_inicio) between $P{p_fecha_ini} and $P{p_fecha_fin}
+                )
+	-- and a.no_poliza_diario is null
+	
+	union 
+	
+	select d1,d2,d3d4,d5,d6,d7,d8,d9d10, nombre
+	from sis_poliza a, sis_partida2_vw b, sis_ajuste_partida d
+	where a.id_partida=b.id_partida
+	and d.id_partida=a.id_partida
+	and d.id_ajuste<>7
+	and valor <0
+	and a.id_proceso in(
+		select p.id_proceso
+		from
+			sis_proceso p
+		where
+			p.tipoproceso=7 and
+			p.id_estado=(select id_estado from sis_estado_proceso_vw where nombre='PROCESADO') and
+			trunc(p.fecha_inicio) between $P{p_fecha_ini} and $P{p_fecha_fin}
+                )
+	-- and a.no_poliza_diario is null
+	
+	union
+
+	select d1,d2,d3d4,d5,d6,d7,d8,d9d10, nombre
+	from sis_poliza a, sis_partida2_vw b
+	where a.id_partida=b.id_partida
+	and valor <0
+	and not exists(
+		select 1 from sis_ajuste_partida d
+		where d.id_partida=b.id_partida
+	)
+	and a.id_proceso in(
+		select p.id_proceso
+		from
+			sis_proceso p
+		where
+			p.tipoproceso=7 and
+			p.id_estado=(select id_estado from sis_estado_proceso_vw where nombre='PROCESADO') and
+			trunc(p.fecha_inicio) between $P{p_fecha_ini} and $P{p_fecha_fin}
+                )
+	-- and a.no_poliza_diario is null
+	
+	union
+
+	select 
+  case 
+	 when total_des<monto then 
+	   case 
+		when (judicial='SI') then
+		to_number(substr(replace(deudor.deu_jud,'.'),1,1))
+		when por_unidad='SI' and judicial='NO' then
+		to_number(substr(replace(deudor.deu_uni,'.'),1,1))
+		when por_unidad='NO' and judicial='NO' then
+		to_number(substr(replace(deudor.deu_dep,'.'),1,1))
+	   end
+	 else
+	   case 
+		when (judicial='SI') then
+		to_number(substr(replace(deudor.acre_jud,'.'),1,1))
+		when por_unidad='SI' and judicial='NO' then
+		to_number(substr(replace(deudor.acre_uni,'.'),1,1))
+		when por_unidad='NO' and judicial='NO' then
+		to_number(substr(replace(deudor.acre_dep,'.'),1,1))
+	   end   
+	end as d1,
+
+  case 
+	 when total_des<monto then 
+	   case 
+		when (judicial='SI') then
+		to_number(substr(replace(deudor.deu_jud,'.'),2,1))
+		when por_unidad='SI' and judicial='NO' then
+		to_number(substr(replace(deudor.deu_uni,'.'),2,1))
+		when por_unidad='NO' and judicial='NO' then
+		to_number(substr(replace(deudor.deu_dep,'.'),2,1))
+	   end
+	 else
+	   case 
+		when (judicial='SI') then
+		to_number(substr(replace(deudor.acre_jud,'.'),2,1))
+		when por_unidad='SI' and judicial='NO' then
+		to_number(substr(replace(deudor.acre_uni,'.'),2,1))
+		when por_unidad='NO' and judicial='NO' then
+		to_number(substr(replace(deudor.acre_dep,'.'),2,1))
+	   end   
+	end as d2,
+
+  case 
+	 when total_des<monto then 
+	   case 
+		when (judicial='SI') then
+		to_number(substr(replace(deudor.deu_jud,'.'),3,2))
+		when por_unidad='SI' and judicial='NO' then
+		to_number(substr(replace(deudor.deu_uni,'.'),3,2))
+		when por_unidad='NO' and judicial='NO' then
+		to_number(substr(replace(deudor.deu_dep,'.'),3,2))
+	   end
+	 else
+	   case 
+		when (judicial='SI') then
+		to_number(substr(replace(deudor.acre_jud,'.'),3,2))
+		when por_unidad='SI' and judicial='NO' then
+		to_number(substr(replace(deudor.acre_uni,'.'),3,2))
+		when por_unidad='NO' and judicial='NO' then
+		to_number(substr(replace(deudor.acre_dep,'.'),3,2))
+	   end   
+	end as d3d4,
+
+  case 
+	 when total_des<monto then 
+	   case 
+		when (judicial='SI') then
+		to_number(substr(replace(deudor.deu_jud,'.'),5,1))
+		when por_unidad='SI' and judicial='NO' then
+		to_number(substr(replace(deudor.deu_uni,'.'),5,1))
+		when por_unidad='NO' and judicial='NO' then
+		to_number(substr(replace(deudor.deu_dep,'.'),5,1))
+	   end
+	 else
+	   case 
+		when (judicial='SI') then
+		to_number(substr(replace(deudor.acre_jud,'.'),5,1))
+		when por_unidad='SI' and judicial='NO' then
+		to_number(substr(replace(deudor.acre_uni,'.'),5,1))
+		when por_unidad='NO' and judicial='NO' then
+		to_number(substr(replace(deudor.acre_dep,'.'),5,1))
+	   end   
+	end as d5,
+
+  case 
+	 when total_des<monto then 
+	   case 
+		when (judicial='SI') then
+		to_number(substr(replace(deudor.deu_jud,'.'),6,1))
+		when por_unidad='SI' and judicial='NO' then
+		to_number(substr(replace(deudor.deu_uni,'.'),6,1))
+		when por_unidad='NO' and judicial='NO' then
+		to_number(substr(replace(deudor.deu_dep,'.'),6,1))
+	   end
+	 else
+	   case 
+		when (judicial='SI') then
+		to_number(substr(replace(deudor.acre_jud,'.'),6,1))
+		when por_unidad='SI' and judicial='NO' then
+		to_number(substr(replace(deudor.acre_uni,'.'),6,1))
+		when por_unidad='NO' and judicial='NO' then
+		to_number(substr(replace(deudor.acre_dep,'.'),6,1))
+	   end   
+	end as d6,
+
+  case 
+	 when total_des<monto then 
+	   case 
+		when (judicial='SI') then
+		to_number(substr(replace(deudor.deu_jud,'.'),7,1))
+		when por_unidad='SI' and judicial='NO' then
+		to_number(substr(replace(deudor.deu_uni,'.'),7,1))
+		when por_unidad='NO' and judicial='NO' then
+		to_number(substr(replace(deudor.deu_dep,'.'),7,1))
+	   end
+	 else
+	   case 
+		when (judicial='SI') then
+		to_number(substr(replace(deudor.acre_jud,'.'),7,1))
+		when por_unidad='SI' and judicial='NO' then
+		to_number(substr(replace(deudor.acre_uni,'.'),7,1))
+		when por_unidad='NO' and judicial='NO' then
+		to_number(substr(replace(deudor.acre_dep,'.'),7,1))
+	   end   
+	end as d7,
+
+  case 
+	 when total_des<monto then 
+	   case 
+		when (judicial='SI') then
+		to_number(substr(replace(deudor.deu_jud,'.'),8,1))
+		when por_unidad='SI' and judicial='NO' then
+		to_number(substr(replace(deudor.deu_uni,'.'),8,1))
+		when por_unidad='NO' and judicial='NO' then
+		to_number(substr(replace(deudor.deu_dep,'.'),8,1))
+	   end
+	 else
+	   case 
+		when (judicial='SI') then
+		to_number(substr(replace(deudor.acre_jud,'.'),8,1))
+		when por_unidad='SI' and judicial='NO' then
+		to_number(substr(replace(deudor.acre_uni,'.'),8,1))
+		when por_unidad='NO' and judicial='NO' then
+		to_number(substr(replace(deudor.acre_dep,'.'),8,1))
+	   end   
+	end as d8,
+  
+  case 
+	 when total_des<monto then 
+	   case 
+		when (judicial='SI') then
+		to_number(substr(replace(deudor.deu_jud,'.'),9,2))
+		when por_unidad='SI' and judicial='NO' then
+		to_number(substr(replace(deudor.deu_uni,'.'),9,2))
+		when por_unidad='NO' and judicial='NO' then
+		to_number(substr(replace(deudor.deu_dep,'.'),9,2))
+	   end
+	 else
+	   case 
+		when (judicial='SI') then
+		to_number(substr(replace(deudor.acre_jud,'.'),9,2))
+		when por_unidad='SI' and judicial='NO' then
+		to_number(substr(replace(deudor.acre_uni,'.'),9,2))
+		when por_unidad='NO' and judicial='NO' then
+		to_number(substr(replace(deudor.acre_dep,'.'),9,2))
+	   end   
+	end as d9d10, sis_pkg_util.getnompartida_deu(deudor.nombre,deudor.nombreDep,detalle2.por_unidad,detalle2.judicial, case when total_des<monto then 0 else 1 end)
+	from (
+		select 
+			detalle1.*,deu.id_programa,deu.id_dependencia,
+			deu.id_unidad,monto,por_unidad,judicial,
+			(
+			select nvl(abs(sum(b1.valor_aplicado)),0)
+			from sis_nomina a1, 
+			sis_det_calculo_ajuste b1, sis_ajuste_empleado c1
+			where a1.id_nomina=b1.id_nomina
+			and c1.registro_empleado=a1.registro_empleado
+			and c1.id_correlativo=b1.correlativo
+			and c1.id_ajuste=b1.id_ajuste
+			and a1.registro_empleado=detalle1.registro_empleado
+			and b1.id_ajuste=detalle1.id_ajuste
+			and c1.id_solicitud=detalle1.id_solicitud
+			and a1.id_proceso<detalle1.id_proceso
+			) as total_des
+		from 
+		(
+			SELECT A.ID_AJUSTE,SUM(VALOR_APLICADO) as valorAplicado,B.REGISTRO_EMPLEADO, C.ID_SOLICITUD,B.ID_PROCESO
+			FROM SIS_DET_CALCULO_AJUSTE A, SIS_NOMINA B,SIS_AJUSTE_EMPLEADO C
+			WHERE A.ID_NOMINA=B.ID_NOMINA
+			AND C.ID_AJUSTE=A.ID_AJUSTE
+			AND C.REGISTRO_EMPLEADO=B.REGISTRO_EMPLEADO
+			AND C.ID_CORRELATIVO=A.CORRELATIVO
+			AND C.ID_AJUSTE=7
+			and exists(
+				select 1 
+					from SIS_POLIZA D, SIS_PROCESO F,SIS_PROCESO G, SIS_PROCESO_PAGO_DET H 
+					where 
+					F.ID_PROCESO=D.ID_PROCESO
+					AND G.ID_PROCESO=F.PROCESO_PADRE
+					AND G.ID_PROCESO=H.ID_PROCESO 
+					and B.ID_PROCESO=H.ID_PROCESO_NOMINA 
+					and D.id_proceso in(
+						select p.id_proceso
+						from
+							sis_proceso p
+						where
+							p.tipoproceso=7 and
+							p.id_estado=(select id_estado from sis_estado_proceso_vw where nombre='PROCESADO') and
+							trunc(p.fecha_inicio) between $P{p_fecha_ini} and $P{p_fecha_fin}
+					)
+					and D.NO_POLIZA_DIARIO IS NULL
+			)
+			GROUP BY A.ID_AJUSTE,B.REGISTRO_EMPLEADO,C.ID_SOLICITUD,B.ID_PROCESO
+		) detalle1, sis_deudor deu 
+		where detalle1.id_solicitud=deu.id_solicitud
+	) detalle2, sis_partida_deudor deudor
+	where 
+		deudor.id_programa=detalle2.id_programa
+		and deudor.id_dependencia=detalle2.id_dependencia
+		and deudor.id_unidad=detalle2.id_unidad
+) t
+where NOT EXISTS(select 1
+				 from CONTA.catalogo_cuentas@DELFOS_LINK c
+				 where 
+					c.d1 = t.d1 and
+					c.d2 = t.d2 and
+					c.d3d4 = t.d3d4 and
+					c.d5 = t.d5 and
+					c.d6 = t.d6 and
+					c.d7 = t.d7 and
+					c.d8 = t.d8 and
+					c.d9d10 = t.d9d10
+				)
+)
+order by d1,d2,d3d4,d5,d6,d7,d8,d9d10]]></queryString>
+
+	<field name="D1" class="java.math.BigDecimal"/>
+	<field name="D2" class="java.math.BigDecimal"/>
+	<field name="D3D4" class="java.math.BigDecimal"/>
+	<field name="D5" class="java.math.BigDecimal"/>
+	<field name="D6" class="java.math.BigDecimal"/>
+	<field name="D7" class="java.math.BigDecimal"/>
+	<field name="D8" class="java.math.BigDecimal"/>
+	<field name="D9D10" class="java.math.BigDecimal"/>
+	<field name="NOMBRE" class="java.lang.String"/>
+	<field name="STRPART" class="java.lang.String"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="48"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="61"
+						y="29"
+						width="412"
+						height="14"
+						key="staticText"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[PARTIDAS QUE NO EXISTEN EN CONTABILIDAD]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="2"
+						y="44"
+						width="534"
+						height="0"
+						forecolor="#000000"
+						key="line"
+						positionType="FixRelativeToBottom"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="2.0" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="2"
+						y="2"
+						width="534"
+						height="0"
+						forecolor="#000000"
+						key="line"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="2.0" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="343"
+						y="17"
+						width="170"
+						height="12"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right">
+						<font fontName="Helvetica" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Página " + $V{PAGE_NUMBER} + " de "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="514"
+						y="17"
+						width="21"
+						height="13"
+						forecolor="#000000"
+						backcolor="#FFFFFF"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" lineSpacing="Single">
+						<font fontName="Helvetica" pdfFontName="Helvetica" size="8" isBold="false" isItalic="false" isUnderline="false" isPdfEmbedded ="false" pdfEncoding ="CP1252" isStrikeThrough="false" />
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="434"
+						y="5"
+						width="101"
+						height="12"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right">
+						<font fontName="Times-Roman" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="3"
+						y="17"
+						width="169"
+						height="12"
+						key="staticText-1"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Sistema Integrado de Salarios]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3"
+						y="5"
+						width="170"
+						height="12"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Universidad de San Carlos de Guatemala]]></text>
+				</staticText>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="18"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						mode="Opaque"
+						x="2"
+						y="1"
+						width="98"
+						height="15"
+						forecolor="#000000"
+						backcolor="#FFFFFF"
+						key="element-90"/>
+					<box leftPadding="2" rightPadding="2">					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement>
+						<font fontName="" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Partida]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						mode="Opaque"
+						x="102"
+						y="1"
+						width="369"
+						height="16"
+						forecolor="#000000"
+						backcolor="#FFFFFF"
+						key="element-90"/>
+					<box leftPadding="2" rightPadding="2">					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement>
+						<font fontName="" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Nombre]]></text>
+				</staticText>
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="16"  isSplitAllowed="true" >
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="13"
+						width="535"
+						height="0"
+						forecolor="#808080"
+						key="line"
+						positionType="FixRelativeToBottom"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.25" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="1"
+						width="99"
+						height="12"
+						key="textField"/>
+					<box leftPadding="2" rightPadding="2">					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement>
+						<font fontName="Arial" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{STRPART}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="101"
+						y="1"
+						width="371"
+						height="12"
+						key="textField"/>
+					<box leftPadding="2" rightPadding="2">					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement>
+						<font fontName="Arial" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRE}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="18"  isSplitAllowed="true" >
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="1"
+						width="535"
+						height="0"
+						forecolor="#000000"
+						key="line"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="2.0" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+		<noData>
+			<band height="50"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="65"
+						y="14"
+						width="412"
+						height="14"
+						key="staticText-3"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[EL REPORTE NO GENERO DATOS]]></text>
+				</staticText>
+			</band>
+		</noData>
+</jasperReport>

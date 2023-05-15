@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel"
+                version="10.1.3.43.6"
+                id="gestiones_pago_comp_prest_x_retiPageDef"
+                Package="interfaz_usuario.pageDefs">
+  <parameters/>
+  <executables>
+    <invokeAction Binds="ExecuteSisComplemento" id="invExecuteSiscomplemento"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <iterator id="ListadoPuestoxTrabajadorVIterator" RangeSize="10"
+              Binds="ListadoPuestoxTrabajadorV"
+              DataControl="QUERRYSDataControl"/>
+    <variableIterator id="variables">
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="ListadoPuestoxTrabajadorV.variablesMap.pRegPer"
+                     Name="ListadoPuestoxTrabajadorV_pRegPer"
+                     IsQueriable="false"/>
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="ListadoPuestoxTrabajadorV.variablesMap.pAnio"
+                     Name="ListadoPuestoxTrabajadorV_pAnio"
+                     IsQueriable="false"/>
+      <variable Name="pIdVar" Type="oracle.jbo.domain.Number"
+                DefaultValue="${bindings.IdComplemento.inputValue}"/>
+      <variable Name="vMes" Type="oracle.jbo.domain.Number"
+                DefaultValue="1"/>
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="SisComplementoVw.variablesMap.pUsuario"
+                     Name="SisComplementoVw_pUsuario" IsQueriable="false"/>
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="SisComplementoVw.variablesMap.pTipoCompl"
+                     Name="SisComplementoVw_pTipoCompl" IsQueriable="false"/>
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="SisComplementoVw.variablesMap.fechaI"
+                     Name="SisComplementoVw_fechaI" IsQueriable="false"/>
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="SisComplementoVw.variablesMap.fechaF"
+                     Name="SisComplementoVw_fechaF" IsQueriable="false"/>
+    </variableIterator>
+    <iterator id="ComplementoPersonalVIterator" RangeSize="10"
+              Binds="ComplementoPersonalV" DataControl="QUERRYSDataControl"/>
+    <iterator id="SisComplementoVwIterator" RangeSize="10"
+              Binds="SisComplementoVw" DataControl="QUERRYSDataControl"/>
+    <iterator id="SisComplementoDetVwIterator" RangeSize="10"
+              Binds="SisComplementoDetVw" DataControl="QUERRYSDataControl"/>
+  </executables>
+  <bindings>
+    <attributeValues id="pRegPer" IterBinding="variables">
+      <AttrNames>
+        <Item Value="ListadoPuestoxTrabajadorV_pRegPer"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="pAnio" IterBinding="variables">
+      <AttrNames>
+        <Item Value="ListadoPuestoxTrabajadorV_pAnio"/>
+      </AttrNames>
+    </attributeValues>
+    <table id="ListadoPuestoxTrabajadorV"
+           IterBinding="ListadoPuestoxTrabajadorVIterator">
+      <AttrNames>
+        <Item Value="RegistroEmpleado"/>
+        <Item Value="NombreEmpleado"/>
+        <Item Value="IdContrato"/>
+        <Item Value="NombreContrato"/>
+        <Item Value="IdPuesto"/>
+        <Item Value="NombrePuesto"/>
+        <Item Value="NumeroPlaza"/>
+        <Item Value="Correlativo"/>
+        <Item Value="IdPartida"/>
+        <Item Value="FechaInicio"/>
+        <Item Value="FechaFin"/>
+        <Item Value="Unidad"/>
+      </AttrNames>
+    </table>
+    <table id="ComplementoPersonalV" IterBinding="ComplementoPersonalVIterator">
+      <AttrNames>
+        <Item Value="RegistroEmpleado"/>
+        <Item Value="NombreEmpleado"/>
+        <Item Value="IdContrato"/>
+        <Item Value="NombreContrato"/>
+        <Item Value="IdPuesto"/>
+        <Item Value="NombrePuesto"/>
+        <Item Value="NumeroPlaza"/>
+        <Item Value="Correlativo"/>
+        <Item Value="IdPartida"/>
+        <Item Value="FechaInicio"/>
+        <Item Value="FechaFin"/>
+        <Item Value="Unidad"/>
+        <Item Value="TienePago"/>
+      </AttrNames>
+    </table>
+    <methodAction IterBinding="SisComplementoVwIterator" id="crearComplemento"
+                  MethodName="crearComplemento" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisComplementoVw">
+      <NamedData NDName="pTipoCompl" NDValue="5"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pPeriodo"
+                 NDValue="${pago_comp_prest_x_reti.selMes.value}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pAnio" NDValue="${flujo_usuario.anioActual}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+    <NamedData NDName="pisAutofinanciable" NDType="oracle.jbo.domain.Number"
+                 NDValue="25"/>
+    </methodAction>
+    <attributeValues id="IdComplemento" IterBinding="SisComplementoVwIterator">
+      <AttrNames>
+        <Item Value="IdComplemento"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="IdEstado" IterBinding="SisComplementoVwIterator">
+      <AttrNames>
+        <Item Value="IdEstado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="IdTipo" IterBinding="SisComplementoVwIterator">
+      <AttrNames>
+        <Item Value="IdTipo"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="IdSubprograma" IterBinding="SisComplementoVwIterator">
+      <AttrNames>
+        <Item Value="IdSubprograma"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Periodo" IterBinding="SisComplementoVwIterator">
+      <AttrNames>
+        <Item Value="Periodo"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Anio" IterBinding="SisComplementoVwIterator">
+      <AttrNames>
+        <Item Value="Anio"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="FechaPresentacion"
+                     IterBinding="SisComplementoVwIterator">
+      <AttrNames>
+        <Item Value="FechaPresentacion"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="CreadoPor" IterBinding="SisComplementoVwIterator">
+      <AttrNames>
+        <Item Value="CreadoPor"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="FechaCreacion" IterBinding="SisComplementoVwIterator">
+      <AttrNames>
+        <Item Value="FechaCreacion"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="ModPor" IterBinding="SisComplementoVwIterator">
+      <AttrNames>
+        <Item Value="ModPor"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="FechaMod" IterBinding="SisComplementoVwIterator">
+      <AttrNames>
+        <Item Value="FechaMod"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="FirmaTeso" IterBinding="SisComplementoVwIterator">
+      <AttrNames>
+        <Item Value="FirmaTeso"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="FirmaJefe" IterBinding="SisComplementoVwIterator">
+      <AttrNames>
+        <Item Value="FirmaJefe"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Nomestado" IterBinding="SisComplementoVwIterator">
+      <AttrNames>
+        <Item Value="Nomestado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Nomsubprog" IterBinding="SisComplementoVwIterator">
+      <AttrNames>
+        <Item Value="Nomsubprog"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Nomunidad" IterBinding="SisComplementoVwIterator">
+      <AttrNames>
+        <Item Value="Nomunidad"/>
+      </AttrNames>
+    </attributeValues>   
+    <attributeValues id="Nomusuario" IterBinding="SisComplementoVwIterator">
+      <AttrNames>
+        <Item Value="Nomusuario"/>
+      </AttrNames>
+    </attributeValues>   
+    <attributeValues id="IsFormaActiva" IterBinding="SisComplementoVwIterator">
+      <AttrNames>
+        <Item Value="IsFormaActiva"/>
+      </AttrNames>
+    </attributeValues>
+    <table id="SisComplementoVwSisComplementoDetVw"
+           IterBinding="SisComplementoDetVwIterator">
+      <AttrNames>
+        <Item Value="IdComplementoDet"/>
+        <Item Value="IdTipoNomina"/>
+        <Item Value="IdEstado"/>
+        <Item Value="IdPartida"/>
+        <Item Value="IdPuesto"/>
+        <Item Value="NumeroPlaza"/>
+        <Item Value="Correlativo"/>
+        <Item Value="IdContrato"/>
+        <Item Value="RegistroEmpleado"/>
+        <Item Value="Anio"/>
+        <Item Value="Periodo"/>
+        <Item Value="Codigonomina"/>
+        <Item Value="SueldoBase"/>
+        <Item Value="Escalafon"/>
+        <Item Value="ComplSalarial"/>
+        <Item Value="Nominal"/>
+        <Item Value="TotalBono"/>
+        <Item Value="TotalDescuento"/>
+        <Item Value="Liquido"/>
+        <Item Value="CantidadHoras"/>
+        <Item Value="Diaslaborados"/>
+        <Item Value="Creadopor"/>
+        <Item Value="Fechacreacion"/>
+        <Item Value="ModPor"/>
+        <Item Value="FechaMod"/>
+        <Item Value="IdPartidaEgreso"/>
+        <Item Value="IdComplemento"/>
+      </AttrNames>
+    </table>
+    <attributeValues IterBinding="variables" id="pIdVar1">
+      <AttrNames>
+        <Item Value="pIdVar"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="vMes1">
+      <AttrNames>
+        <Item Value="vMes"/>
+      </AttrNames>
+    </attributeValues>
+    <action id="Delete" IterBinding="ComplementoPersonalVIterator"
+            InstanceName="QUERRYSDataControl.ComplementoPersonalV"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="30"/>
+    <action id="Rollback" InstanceName="QUERRYSDataControl"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="101"/>
+    <action id="Commit" InstanceName="QUERRYSDataControl"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="100"/>
+    <action id="First" RequiresUpdateModel="true" Action="12"
+            IterBinding="SisComplementoVwIterator"
+            InstanceName="QUERRYSDataControl.SisComplementoVw"
+            DataControl="QUERRYSDataControl"/>
+    <action id="Previous" RequiresUpdateModel="true" Action="11"
+            IterBinding="SisComplementoVwIterator"/>
+    <action id="Next" RequiresUpdateModel="true" Action="10"
+            IterBinding="SisComplementoVwIterator"/>
+    <action id="Last" RequiresUpdateModel="true" Action="13"
+            IterBinding="SisComplementoVwIterator"/>
+    <action id="ExecuteParamIngresados"
+            IterBinding="ListadoPuestoxTrabajadorVIterator"
+            InstanceName="QUERRYSDataControl.ListadoPuestoxTrabajadorV"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pRegPer" NDType="oracle.jbo.domain.Number"
+                 NDValue="${bindings.ListadoPuestoxTrabajadorV_pRegPer}"/>
+      <NamedData NDName="pAnio" NDType="oracle.jbo.domain.Number"
+                 NDValue="${bindings.ListadoPuestoxTrabajadorV_pAnio}"/>
+    </action>
+    <action IterBinding="SisComplementoVwIterator" id="ExecuteSisComplemento"
+            InstanceName="QUERRYSDataControl.SisComplementoVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="pTipoCompl" NDValue="5"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="fechaI" NDValue="${bindings.fechaI.inputValue}"
+                 NDType="oracle.jbo.domain.Date"/>
+      <NamedData NDName="fechaF" NDValue="${bindings.fechaF.inputValue}"
+                 NDType="oracle.jbo.domain.Date"/>
+      <NamedData NDName="pOpcion" NDValue="1"
+                 NDType="oracle.jbo.domain.Number"/>          
+    </action>
+    <action id="ParamComplemento" IterBinding="SisComplementoVwIterator"
+            InstanceName="QUERRYSDataControl.SisComplementoVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="3"/>
+    <action id="BuscarComplemento" IterBinding="SisComplementoVwIterator"
+            InstanceName="QUERRYSDataControl.SisComplementoVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="2"/>
+    <methodAction IterBinding="SisComplementoDetVwIterator"
+                  id="cambiarEstadoActual" MethodName="cambiarEstadoActual"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisComplementoDetVw">
+      <NamedData NDName="pValor" NDValue="true" NDType="java.lang.Boolean"/>
+    </methodAction>
+    <methodAction IterBinding="SisComplementoDetVwIterator"
+                  id="cambiarEstadoTodos" MethodName="cambiarEstadoTodos"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisComplementoDetVw">
+      <NamedData NDName="pValor" NDValue="false" NDType="java.lang.Boolean"/>
+    </methodAction>
+    <methodAction IterBinding="SisComplementoVwIterator" id="actualizarVW"
+                  MethodName="actualizarVW" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisComplementoVw">
+      <NamedData NDName="pIdComplemento"
+                 NDValue="${bindings.pIdVar1.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </methodAction>
+    <action id="Del_FilaDetalle" IterBinding="SisComplementoDetVwIterator"
+            InstanceName="QUERRYSDataControl.SisComplementoDetVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="30"/>
+    <attributeValues id="fechaI" IterBinding="variables">
+      <AttrNames>
+        <Item Value="SisComplementoVw_fechaI"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="fechaF" IterBinding="variables">
+      <AttrNames>
+        <Item Value="SisComplementoVw_fechaF"/>
+      </AttrNames>
+    </attributeValues>
+    <table id="SisComplementoVw" IterBinding="SisComplementoVwIterator">
+      <AttrNames>
+        <Item Value="IdComplemento"/>
+        <Item Value="IdEstado"/>
+        <Item Value="IdTipo"/>
+        <Item Value="IdSubprograma"/>
+        <Item Value="Periodo"/>
+        <Item Value="Anio"/>
+        <Item Value="FechaPresentacion"/>
+        <Item Value="CreadoPor"/>
+        <Item Value="FechaCreacion"/>
+        <Item Value="ModPor"/>
+        <Item Value="FechaMod"/>
+        <Item Value="FirmaTeso"/>
+        <Item Value="FirmaJefe"/>
+        <Item Value="Nomperiodo"/>
+        <Item Value="Formato2"/>
+        <Item Value="Nomsubprog"/>
+        <Item Value="Codunidad"/>
+        <Item Value="Nomunidad"/>
+        <Item Value="Nomestado"/>
+        <Item Value="Nomusuario"/>
+        <Item Value="IsFormaActiva"/>
+        <Item Value="IdSolicitud"/>
+      </AttrNames>
+    </table>
+  </bindings>
+</pageDefinition>

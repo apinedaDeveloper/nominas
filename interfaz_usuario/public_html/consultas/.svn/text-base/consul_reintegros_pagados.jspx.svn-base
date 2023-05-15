@@ -1,0 +1,222 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html"
+          xmlns:af="http://xmlns.oracle.com/adf/faces">
+  <f:view>
+    <afh:html id="html1" binding="#{Consul_reintegros_pagados.html1}">
+      <jsp:output omit-xml-declaration="true" doctype-root-element="html"
+                  doctype-system="http://www.w3.org/TR/html4/loose.dtd"
+                  doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"/>
+      <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+      <afh:head title="Consulta de Reintegros por Empleado" id="head1"
+                binding="#{Consul_reintegros_pagados.head1}">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+        <afh:script>
+            function comprobarCamposTexto() { 
+                document.getElementById('page1:inptCui').value = document.getElementById('page1:inptCui').value.trim();
+                document.getElementById('page1:inptRegistroEmpleado').value = document.getElementById('page1:inptRegistroEmpleado').value.trim();
+                document.getElementById('page1:slctInputDateFechaInicio').value = document.getElementById('page1:slctInputDateFechaInicio').value.trim();
+                document.getElementById('page1:slctInputDateFechaFin').value = document.getElementById('page1:slctInputDateFechaFin').value.trim();
+                return true; 
+            }
+            function verRepo(pIdReintegro){
+                window.open("../verreportepdf?id="+pIdReintegro+String.fromCharCode(38)+"rep=REP_REINTEGRO","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+                return false;
+            }
+            function verOrden(pIdReintegro){
+                window.open("../verreportepdf?id="+pIdReintegro+String.fromCharCode(38)+"rep=REP_ORDENPAGO","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+                return false;
+            }
+        </afh:script>
+      </afh:head>
+      <afh:body id="body1" binding="#{Consul_reintegros_pagados.body1}"
+                initialFocusId="page1:inptCui">
+        <af:messages id="messages1"
+                     binding="#{Consul_reintegros_pagados.messages1}"/>
+        <af:form id="form1" binding="#{Consul_reintegros_pagados.form1}">
+          <af:page title="Consulta de Reintegros" id="page1"
+                   binding="#{Consul_reintegros_pagados.page1}"
+                   value="#{modeloMenu.modeloBD}" var="node">
+            <f:facet name="branding">
+              <f:subview id="logo"
+                         binding="#{Consul_reintegros_pagados.logo}">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}" id="cmdMenuItem"
+                                  binding="#{Consul_reintegros_pagados.cmdMenuItem}"
+                                  action="#{node.getOutcome}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"/>
+            </f:facet>
+            <f:facet name="infoUser">
+              <f:subview id="infoUsuario">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelHeader text="Filtro de Búsqueda" messageType="info"/>
+            <af:panelForm id="panelForm1"
+                          binding="#{Consul_reintegros_pagados.panelForm1}"
+                          width="100%">
+              <af:panelHorizontal halign="center">
+                <af:inputText value="#{bindings.pCui.inputValue}"
+                              label="CUI"
+                              required="#{bindings.pCui.mandatory}"
+                              columns="10"
+                              id="inptCui"
+                              binding="#{Consul_reintegros_pagados.inptCui}"
+                              maximumLength="13"
+                              inlineStyle="font-size:medium; font-weight:bold;"
+                              tip="Digite el Dato sin espacios">
+                  <af:validator binding="#{bindings.pCui.validator}"/>
+                </af:inputText>
+                <af:objectSpacer width="10" height="10"/>
+                <af:inputText value="#{bindings.pRegistroEmpleado.inputValue}"
+                              label="Registro de Empleado"
+                              required="#{bindings.pRegistroEmpleado.mandatory}"
+                              columns="6"
+                              id="inptRegistroEmpleado"
+                              binding="#{Consul_reintegros_pagados.inptRegistroEmpleado}"
+                              maximumLength="8" converter="oracle.adf.Number"
+                              inlineStyle="font-size:medium; font-weight:bold;"
+                              tip="Digite el Dato sin espacios">
+                  <af:validator binding="#{bindings.pRegistroEmpleado.validator}"/>
+                  <f:convertNumber groupingUsed="false"
+                                   pattern="########"/>
+                </af:inputText>
+                <af:objectSpacer width="10" height="10"/>
+                <af:selectInputDate label="Fecha Inicio"
+                                    value="#{bindings.pFechaInicio.inputValue}"
+                                    required="#{bindings.pFechaInicio.mandatory}"
+                                    inlineStyle="font-size:medium; font-weight:bold;"
+                                    columns="6" maximumLength="10"
+                                    id="slctInputDateFechaInicio"
+                                    binding="#{Consul_reintegros_pagados.slctInputDateFechaInicio}">
+                  <af:convertDateTime pattern="dd/MM/yyyy"/>
+                  <af:validator binding="#{bindings.pFechaInicio.validator}"/>
+                </af:selectInputDate>
+                <af:objectSpacer width="10" height="10"/>
+                <af:selectInputDate label="Fecha Fin"
+                                    value="#{bindings.pFechaFin.inputValue}"
+                                    required="#{bindings.pFechaFin.mandatory}"
+                                    inlineStyle="font-size:medium; font-weight:bold;"
+                                    columns="6" id="slctInputDateFechaFin"
+                                    binding="#{Consul_reintegros_pagados.slctInputDateFechaFin}"
+                                    maximumLength="10">
+                  <af:convertDateTime pattern="dd/MM/yyyy"/>
+                  <af:validator binding="#{bindings.pFechaFin.validator}"/>
+                </af:selectInputDate>
+              </af:panelHorizontal>
+              <af:panelHorizontal halign="center">
+                <af:commandButton text="Buscar"
+                                  id="btnBuscar"
+                                  binding="#{Consul_reintegros_pagados.btnBuscar}"
+                                  inlineStyle="font-size:large; font-weight:bold;"
+                                  action="#{Consul_reintegros_pagados.btnBuscar_action}"
+                                  onclick="return comprobarCamposTexto();"/>
+                <af:objectSpacer width="10" height="10"/>
+                <af:commandButton text="Limpiar"
+                                  actionListener="#{bindings.Rollback.execute}"
+                                  id="btnLimpiar"
+                                  binding="#{Consul_reintegros_pagados.btnLimpiar}"
+                                  immediate="true"
+                                  action="#{Consul_reintegros_pagados.btnLimpiar_action}"
+                                  inlineStyle="font-size:large; font-weight:bold;">
+                  <af:resetActionListener/>
+                </af:commandButton>
+              </af:panelHorizontal>
+            </af:panelForm>
+            <af:messages id="messages2"
+                         binding="#{Consul_reintegros_pagados.messages2}"/>
+            <af:panelHeader text="Resultado de la Búsqueda" messageType="info"/>
+            <af:table value="#{bindings['consul_reintegros_vw1'].collectionModel}"
+                      var="row"
+                      rows="#{bindings['consul_reintegros_vw1'].rangeSize}"
+                      first="#{bindings['consul_reintegros_vw1'].rangeStart}"
+                      emptyText="#{bindings['consul_reintegros_vw1'].viewable ? 'Ninguna Fila Aún.' : 'Acceso Denegado.'}"
+                      id="tbl_reintegros"
+                      selectionState="#{bindings['consul_reintegros_vw1'].collectionModel.selectedRow}"
+                      banding="row"
+                      binding="#{Consul_reintegros_pagados.tbl_reintegros}"
+                      width="100%">
+              <af:column sortProperty="IdReintegro" sortable="true"
+                         headerText="SIS-26 ID">
+                <af:commandLink text="#{row.IdReintegro}"
+                                id="cmdLinkIdReintegro"
+                                binding="#{Consul_reintegros_pagados.cmdLinkIdReintegro}"
+                                inlineStyle="text-align:center;"
+                                onclick="verRepo('#{row.IdReintegro}');"/>
+              </af:column>
+              <af:column sortProperty="Cui" sortable="true"
+                         headerText="CUI">
+                <af:outputText value="#{row.Cui}"/>
+              </af:column>
+              <af:column sortProperty="RegistroEmpleado" sortable="true"
+                         headerText="Registro Empleado">
+                <af:outputText value="#{row.RegistroEmpleado}">
+                  <f:convertNumber groupingUsed="false"
+                                   pattern="#{bindings['consul_reintegros_vw1'].formats.RegistroEmpleado}"/>
+                </af:outputText>
+              </af:column>
+              <af:column sortProperty="NumDocFisico" sortable="true"
+                         headerText="No. Documento">
+                <af:outputText value="#{row.NumDocFisico}"
+                               inlineStyle="text-align:right;">
+                  <f:convertNumber groupingUsed="false"
+                                   pattern="#{bindings['consul_reintegros_vw1'].formats.NumDocFisico}"/>
+                </af:outputText>
+              </af:column>
+              <af:column sortProperty="TipoDoc" sortable="true"
+                         headerText="Tipo Documento">
+                <af:outputText value="#{row.TipoDoc}"/>
+              </af:column>
+              <af:column sortProperty="TotalPagar" sortable="true"
+                         headerText="Total Pagar">
+                <af:outputText value="#{row.TotalPagar}">
+                  <f:convertNumber groupingUsed="true"
+                                   pattern="#{bindings['consul_reintegros_vw1'].formats.TotalPagar}"
+                                   type="currency"/>
+                </af:outputText>
+              </af:column>
+              <af:column sortProperty="Observaciones" sortable="true"
+                         headerText="Observaciones">
+                <af:outputText value="#{row.Observaciones}"/>
+              </af:column>
+              <af:column sortProperty="FechaCreacion" sortable="true"
+                         headerText="Fecha Creación">
+                <af:outputText value="#{row.FechaCreacion}">
+                  <f:convertDateTime pattern="dd/MM/yyyy"/>
+                </af:outputText>
+              </af:column>
+              <af:column sortProperty="IdOrdenPago" sortable="true"
+                         headerText="Orden de Pago ID">
+                <af:outputText value="#{row.IdOrdenPago}"/>
+              </af:column>
+              <af:column sortProperty="EstadoOrden" sortable="true"
+                         headerText="Estado Orden de Pago">
+                <af:outputText value="#{row.EstadoOrden}"/>
+              </af:column>
+              <af:column sortable="false" headerText="Ver Orden de Pago">
+                <af:commandButton text="Ver Orden de Pago"
+                                  id="btnVerOrdenPago"
+                                  binding="#{Consul_reintegros_pagados.btnVerOrdenPago}"
+                                  inlineStyle="font-size:medium; font-weight:bold;"
+                                  onclick="verOrden('#{row.IdReintegro}');"/>
+              </af:column>
+            </af:table>
+          </af:page>
+        </af:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:Consul_reintegros_pagados-->
+</jsp:root>

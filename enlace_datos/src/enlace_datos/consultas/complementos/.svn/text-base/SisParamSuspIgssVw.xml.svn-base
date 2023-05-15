@@ -1,0 +1,165 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="SisParamSuspIgssVw"
+   OrderBy="FECHA_CREACION desc"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   ComponentClass="enlace_datos.consultas.complementos.SisParamSuspIgssVwImpl"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.43.6" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="pUsuario"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <Variable
+      Name="P_REGPER_EMP"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <SQLQuery><![CDATA[
+SELECT SisParamSuspIgss.ID_PARAM_SUSP_IGSS, 
+       SisParamSuspIgss.REGISTRO_EMPLEADO, 
+       SisParamSuspIgss.MAX_PAGA_IGSS, 
+       SisParamSuspIgss.FECHA_INICIO, 
+       SisParamSuspIgss.FECHA_FIN, 
+       SisParamSuspIgss.APLICA_COMPLEMENTO, 
+       SisParamSuspIgss.OBSERVACIONES, 
+       SisParamSuspIgss.CREADO_POR, 
+       SisParamSuspIgss.FECHA_CREACION, 
+       SisParamSuspIgss.MOD_POR, 
+       SisParamSuspIgss.FECHA_MOD,
+       empl.nombrecompleto
+FROM sis_empleado_vw empl, SIS_PARAM_SUSP_IGSS SisParamSuspIgss
+WHERE SisParamSuspIgss.REGISTRO_EMPLEADO = empl.registro_Empleado
+AND EXISTS(
+	select 1 
+	from sis_contrato s, usuario_unidad b, partida prt, partida c
+	where s.registro_empleado=SisParamSuspIgss.REGISTRO_EMPLEADO
+	and s.estatus in(
+			select id_estado 
+			from sis_estado_contrato_vw
+			where nombre in ('ACTIVO','SUSPENDIDO IGSS','BAJA LICENCIA')
+        )		
+	and prt.id_partida = s.id_partida	
+	and b.id_partida=c.id_partida
+	and b.usuario=:pUsuario
+	and b.tipo_usuario='TRABAJADOR'
+	and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+	and prt.aniomanual=c.aniomanual
+	and prt.d1=c.d1
+	and prt.d2=c.d2
+	and prt.d3d4=c.d3d4
+	and 
+	(
+		(
+		prt.d7=c.d7
+		and prt.d6=c.d6
+		and prt.d5=c.d5
+		)
+		or
+		(
+		c.d5 is null
+		and c.d6 is null
+		and c.d7 is null 
+		)
+	)
+)
+AND SisParamSuspIgss.REGISTRO_EMPLEADO = :P_REGPER_EMP
+   ]]></SQLQuery>
+   <EntityUsage
+      Name="SisParamSuspIgss"
+      Entity="enlace_datos.entidades.complementos.SisParamSuspIgss" >
+      <DesignTime>
+         <Attr Name="_queryClause" Value="false" />
+      </DesignTime>
+   </EntityUsage>
+   <ViewAttribute
+      Name="IdParamSuspIgss"
+      EntityAttrName="IdParamSuspIgss"
+      EntityUsage="SisParamSuspIgss"
+      AliasName="ID_PARAM_SUSP_IGSS" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="RegistroEmpleado"
+      IsNotNull="true"
+      EntityAttrName="RegistroEmpleado"
+      EntityUsage="SisParamSuspIgss"
+      AliasName="REGISTRO_EMPLEADO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="MaxPagaIgss"
+      EntityAttrName="MaxPagaIgss"
+      EntityUsage="SisParamSuspIgss"
+      AliasName="MAX_PAGA_IGSS" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaInicio"
+      IsNotNull="true"
+      EntityAttrName="FechaInicio"
+      EntityUsage="SisParamSuspIgss"
+      AliasName="FECHA_INICIO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaFin"
+      EntityAttrName="FechaFin"
+      EntityUsage="SisParamSuspIgss"
+      AliasName="FECHA_FIN" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="AplicaComplemento"
+      EntityAttrName="AplicaComplemento"
+      EntityUsage="SisParamSuspIgss"
+      AliasName="APLICA_COMPLEMENTO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Observaciones"
+      EntityAttrName="Observaciones"
+      EntityUsage="SisParamSuspIgss"
+      AliasName="OBSERVACIONES" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="CreadoPor"
+      EntityAttrName="CreadoPor"
+      EntityUsage="SisParamSuspIgss"
+      AliasName="CREADO_POR" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaCreacion"
+      IsNotNull="true"
+      EntityAttrName="FechaCreacion"
+      EntityUsage="SisParamSuspIgss"
+      AliasName="FECHA_CREACION" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="ModPor"
+      EntityAttrName="ModPor"
+      EntityUsage="SisParamSuspIgss"
+      AliasName="MOD_POR" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaMod"
+      EntityAttrName="FechaMod"
+      EntityUsage="SisParamSuspIgss"
+      AliasName="FECHA_MOD" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nombrecompleto"
+      IsPersistent="false"
+      Precision="305"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBRECOMPLETO"
+      Expression="NOMBRECOMPLETO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="305" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

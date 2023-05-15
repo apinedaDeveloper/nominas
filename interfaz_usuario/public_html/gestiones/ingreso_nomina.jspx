@@ -1,0 +1,457 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html"
+          xmlns:af="http://xmlns.oracle.com/adf/faces">
+  <jsp:output omit-xml-declaration="true" doctype-root-element="HTML"
+              doctype-system="http://www.w3.org/TR/html4/loose.dtd"
+              doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN"/>
+  <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+  <f:loadBundle basename="propiedades" var="tx"/>
+  <f:view>
+    <afh:html>
+      <afh:head title="#{tx['ing_nomina.title']}">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+      </afh:head>
+      <script language="javascript" type="text/javascript">  
+        function foco1(){
+            
+             var lista=document.getElementById('form:page:cmb_ajustes');
+             lista.focus();
+        }
+      </script> 
+      
+      <afh:body>
+        <af:messages/>
+        <h:form id="form">
+          <af:page value="#{modeloMenu.modeloBD}" var="node" id="page">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+            <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelBox text="Proceso: #{flujo_usuario.procesoSelOpe}">
+              <af:panelHorizontal valign="top">
+                <af:panelHeader text="#{tx['ing_nomina.pnl_nom.label']}">
+                  <af:panelForm labelWidth="130"
+                                partialTriggers="tbl_nomina:btnEditarNomina tbl_nomina btn_actAjuste btn_crear_nomina"
+                                id="frm_nomina">
+                    <af:selectInputText value="#{bindings.RegistroEmpleado.inputValue}"
+                                        label="#{tx['ing_nomina.inp_regEmpleado.label']}"
+                                        required="#{bindings.RegistroEmpleado.mandatory}"
+                                        columns="10" action="dialog:buscaEmpl"
+                                        windowHeight="400" windowWidth="600"
+                                        disabled="#{bindings.pEstado_1.inputValue eq '0'}"
+                                        showRequired="true">
+                      <af:validator binding="#{bindings.RegistroEmpleado.validator}"/>
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.RegistroEmpleado.format}"/>
+                    </af:selectInputText>
+                    <af:selectOneChoice value="#{bindings['SisPeriodoCodNomina_vwCodigo'].inputValue}"
+                                        label="#{tx['ing_nomina.cmb_codNomina.label']}"
+                                        disabled="#{bindings.pEstado_1.inputValue eq '0'}"
+                                        showRequired="true">
+                      <f:selectItems value="#{bindings['SisPeriodoCodNomina_vwCodigo'].items}"/>
+                    </af:selectOneChoice>
+                    <af:inputText value="#{bindings.pAnio1.inputValue}"
+                                  label="#{tx['ing_nomina.inpt_anio.label']}"
+                                  columns="4"
+                                  disabled="#{bindings.pEstado_1.inputValue eq '0'}"
+                                  showRequired="true"
+                                  binding="#{ingreso_nomina.inpt_anio}"
+                                  autoSubmit="true" id="inptAnio"
+                                  valueChangeListener="#{ingreso_nomina.inpt_Anio}">
+                      <af:validator binding="#{bindings.Anio.validator}"/>
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.Anio.format}"/>
+                    </af:inputText>
+                    <af:panelHorizontal>
+                      <af:inputText columns="10"
+                                    binding="#{ingreso_nomina.inpt_partida}"
+                                    autoSubmit="true"
+                                    partialTriggers="cmbPartida"
+                                    valueChangeListener="#{ingreso_nomina.inpt_partida_change}"
+                                    id="inpt_partida"
+                                    label="#{tx['ing_nomina.cmb_partida.label']}"
+                                    showRequired="true"
+                                    disabled="#{bindings.pEstado_1.inputValue eq '0'}"/>
+                      <af:selectOneChoice value="#{bindings['SisPartida2_VwFormato1'].inputValue}"
+                                          autoSubmit="true" id="cmbPartida"
+                                          valueChangeListener="#{ingreso_nomina.cmb_partida}"
+                                          disabled="#{bindings.pEstado_1.inputValue eq '0'}"
+                                          showRequired="false"
+                                          binding="#{ingreso_nomina.cmb_partida}"
+                                          valuePassThru="true"
+                                          partialTriggers="inpt_partida">
+                        <f:selectItems value="#{bindings['SisPartida2_VwFormato1'].items}"
+                                       binding="#{ingreso_nomina.item_cmb_partida}"/>
+                      </af:selectOneChoice>
+                      <f:facet name="separator">
+                        <af:objectSpacer width="15" height="10"/>
+                      </f:facet>
+                    </af:panelHorizontal>
+                    <af:selectOneListbox value="#{bindings['SisConsulPlaza_vwNombre'].inputValue}"
+                                         label="#{tx['ing_nomina.lst_plazas.label']}"
+                                         size="10"
+                                         partialTriggers="cmbPartida inpt_partida btn_crear_nomina"
+                                         disabled="#{bindings.pEstado_1.inputValue eq '0'}"
+                                         showRequired="true" id="list_plazas">
+                      <f:selectItems value="#{bindings['SisConsulPlaza_vwNombre'].items}"/>
+                    </af:selectOneListbox>
+                    <af:inputText value="#{bindings.SueldoBase.inputValue}"
+                                  label="#{tx['ing_nomina.inpt_sueldoB.label']}"
+                                  required="#{bindings.SueldoBase.mandatory}"
+                                  columns="#{bindings.SueldoBase.displayWidth}"
+                                  disabled="#{bindings.pEstado_1.inputValue eq '0'}"
+                                  showRequired="true">
+                      <af:validator binding="#{bindings.SueldoBase.validator}"/>
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.SueldoBase.format}"/>
+                    </af:inputText>
+                    <af:inputText value="#{bindings.Escalafon.inputValue}"
+                                  label="#{tx['ing_nomina.inpt_escalaf.label']}"
+                                  required="#{bindings.Escalafon.mandatory}"
+                                  columns="#{bindings.Escalafon.displayWidth}"
+                                  disabled="#{bindings.pEstado_1.inputValue eq '0'}">
+                      <af:validator binding="#{bindings.Escalafon.validator}"/>
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.Escalafon.format}"/>
+                    </af:inputText>
+                    <af:inputText value="#{bindings.ComplSalarial.inputValue}"
+                                  label="#{tx['ing_nomina.inpt_complSalarial.label']}"
+                                  required="#{bindings.ComplSalarial.mandatory}"
+                                  columns="#{bindings.ComplSalarial.displayWidth}"
+                                  disabled="#{bindings.pEstado_1.inputValue eq '0'}">
+                      <af:validator binding="#{bindings.ComplSalarial.validator}"/>
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.ComplSalarial.format}"/>
+                    </af:inputText>
+                    <af:objectSpacer width="10" height="20"/>
+                    <f:facet name="footer">
+                      <af:panelButtonBar>
+                        <af:commandButton text="#{tx['ing_nomina.btn_nuevoN.label']}"
+                                          action="#{ingreso_nomina.btn_crear_nomina}"
+                                          id="btn_crear_nomina"
+                                          partialSubmit="true"
+                                          disabled="#{bindings.pEstado_1.inputValue eq '1'}"
+                                          textAndAccessKey="#{tx['ing_nomina.btn_nuevoN.label']}">
+                          <af:setActionListener from="#{'1'}"
+                                                to="#{bindings.pEstado_1.inputValue}"/>
+                          <af:setActionListener from="#{'1'}"
+                                                to="#{bindings.pEstado_2.inputValue}"/>
+                        </af:commandButton>
+                        <af:commandButton text="#{tx['ing_nomina.btn_guardar.label']}"
+                                          action="#{ingreso_nomina.btn_commit}"
+                                          textAndAccessKey="#{tx['ing_nomina.btn_guardar.label']}"/>
+                        <af:commandButton actionListener="#{bindings.Rollback.execute}"
+                                          text="#{tx['ing_nomina.btn_rollback.label']}" immediate="true"
+                                          action="#{ingreso_nomina.btn_rollback}"
+                                          textAndAccessKey="#{tx['ing_nomina.btn_rollback.label']}">
+                          <af:resetActionListener/>
+                        </af:commandButton>
+                      </af:panelButtonBar>
+                    </f:facet>
+                  </af:panelForm>
+                </af:panelHeader>
+                <af:panelHeader text="#{tx['ing_nomina.pnl_ajuste.label']}">
+                  <af:panelForm partialTriggers="tbl_ajustes btn_crear_ajuste">
+                    <af:selectOneChoice value="#{bindings.SisAjusteNombre.inputValue}"
+                                        label="#{tx['ing_nomina.cmb_ajuste.label']}"
+                                        disabled="#{bindings.pEstado_2.inputValue eq '0'}"
+                                        id="cmb_ajustes">
+                      <f:selectItems value="#{bindings.SisAjusteNombre.items}"/>
+                    </af:selectOneChoice>
+                    <af:inputText value="#{bindings.ValorAplicado.inputValue}"
+                                  label="#{tx['ing_nomina.pnt_valorAjuste.label']}"
+                                  required="#{bindings.ValorAplicado.mandatory}"
+                                  columns="10"
+                                  disabled="#{bindings.pEstado_2.inputValue eq '0'}">
+                      <af:validator binding="#{bindings.ValorAplicado.validator}"/>
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.ValorAplicado.format}"/>
+                    </af:inputText>
+                    <af:objectSpacer width="10" height="20"/>
+                    <f:facet name="footer">
+                      <af:panelButtonBar>
+                        <af:commandButton actionListener="#{bindings.Create1.execute}"
+                                          text="#{tx['ing_nomina.btn_nuevo.label']}"
+                                          disabled="#{!bindings.Create1.enabled}"
+                                          action="#{ingreso_nomina.btn_crear_ajuste}"
+                                          partialSubmit="true"
+                                          id="btn_crear_ajuste"
+                                          textAndAccessKey="#{tx['ing_nomina.btn_nuevo.label']}">
+                          <af:setActionListener from="#{'1'}"
+                                                to="#{bindings.pEstado_2.inputValue}"/>
+                        </af:commandButton>
+                        <af:commandButton
+                                          text="#{tx['ing_nomina.btn_ok.label']}"
+                                          id="btn_actAjuste"
+                                          partialSubmit="true"
+                                          textAndAccessKey="#{tx['ing_nomina.btn_ok.label']}">
+                          <af:setActionListener from="#{'0'}"
+                                                to="#{bindings.pEstado_2.inputValue}"/>
+                        </af:commandButton>
+                      </af:panelButtonBar>
+                    </f:facet>
+                  </af:panelForm>
+                  <af:objectSpacer width="10" height="15"/>
+                  <af:objectSeparator/>
+                  <af:objectSpacer width="10" height="15"/>
+                  <af:table value="#{bindings.SisNominaVwSisDetCalculoAjusteVw.collectionModel}"
+                            var="row"
+                            rows="#{bindings.SisNominaVwSisDetCalculoAjusteVw.rangeSize}"
+                            first="#{bindings.SisNominaVwSisDetCalculoAjusteVw.rangeStart}"
+                            emptyText="#{tx['tbl_empty.texto']}"
+                            selectionState="#{bindings.SisNominaVwSisDetCalculoAjusteVw.collectionModel.selectedRow}"
+                            selectionListener="#{bindings.SisNominaVwSisDetCalculoAjusteVw.collectionModel.makeCurrent}"
+                            id="tbl_ajustes"
+                            partialTriggers="btn_crear_ajuste btn_actAjuste tbl_nomina btn_crear_nomina tbl_ajustes:btn_borrar_ajuste tbl_nomina:btn_borrar_nomina"
+                            banding="row" bandingInterval="1">
+                    <f:facet name="selection">
+                      <af:tableSelectOne autoSubmit="true"
+                                         partialTriggers="btn_actAjuste tbl_ajustes btn_crear_ajuste btn_borrar_ajuste"
+                                         disabled="#{bindings.pEstado_2.inputValue eq '1'}">
+                        <af:commandButton text="#{tx['ing_nomina.btn_editarNom.label']}">
+                          <af:setActionListener from="#{'1'}"
+                                                to="#{bindings.pEstado_2.inputValue}"/>
+                        </af:commandButton>
+                        <af:commandButton actionListener="#{bindings.Delete1.execute}"
+                                          text="#{tx['ing_nomina.btn_borrar.label']}"
+                                          partialSubmit="true"
+                                          id="btn_borrar_ajuste">
+                          <af:setActionListener from="#{'0'}"
+                                                to="#{bindings.pEstado_2.inputValue}"/>
+                        </af:commandButton>
+                      </af:tableSelectOne>
+                    </f:facet>
+                    <af:column sortProperty="IdNomina" sortable="false"
+                               headerText="#{bindings.SisNominaVwSisDetCalculoAjusteVw.labels.IdNomina}">
+                      <af:outputText value="#{row.IdNomina}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.SisNominaVwSisDetCalculoAjusteVw.formats.IdNomina}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="IdAjuste" sortable="false"
+                               headerText="#{bindings.SisNominaVwSisDetCalculoAjusteVw.labels.CodNomina}">
+                      <af:outputText value="#{row.CodNomina}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.SisNominaVwSisDetCalculoAjusteVw.formats.IdAjuste}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Nombre" sortable="false"
+                               headerText="#{bindings.SisNominaVwSisDetCalculoAjusteVw.labels.Nombre}">
+                      <af:outputText value="#{row.Nombre}"/>
+                    </af:column>
+                    <af:column sortProperty="ValorAplicado" sortable="false"
+                               headerText="#{bindings.SisNominaVwSisDetCalculoAjusteVw.labels.ValorAplicado}">
+                      <af:outputText value="#{row.ValorAplicado}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.SisNominaVwSisDetCalculoAjusteVw.formats.ValorAplicado}"/>
+                      </af:outputText>
+                    </af:column>
+                  </af:table>
+                </af:panelHeader>
+                <f:facet name="separator">
+                  <af:objectSpacer width="30" height="10"/>
+                </f:facet>
+              </af:panelHorizontal>
+              <af:objectSeparator/>
+              <af:panelButtonBar>
+                <af:commandButton actionListener="#{bindings.Find.execute}"
+                                  disabled="#{bindings.pEstado_1.inputValue eq '1'}"
+                                  text="#{tx['ing_nomina.btn_modoBusqueda']}"
+                                  partialTriggers="btn_crear_nomina"/>
+                <af:commandButton text="#{tx['ing_nomina.btn_resetBusqueda']}"
+                                  action="#{ingreso_nomina.btn_reset_busqueda_action}"
+                                  disabled="#{bindings.pEstado_1.inputValue eq '1'}"
+                                  partialTriggers="btn_crear_nomina"/>
+              </af:panelButtonBar>
+              <af:panelHeader text="#{tx['ing_nomina.pnl_search']}"
+                              rendered="#{bindings.SisNominaVwIterator.findMode}">
+                <af:panelForm labelWidth="100">
+                  <f:facet name="footer">
+                    <af:commandButton actionListener="#{bindings.EjeNomina.execute}"
+                                      text="#{tx['ing_nomina.btn_Busqueda']}"
+                                      disabled="#{!bindings.EjeNomina.enabled}"/>
+                  </f:facet>
+                  <af:inputText label="#{tx['ing_nomina.inp_regEmpleado.label']}"
+                                value="#{bindings.RegistroEmpleado.inputValue}"
+                                columns="10">
+                    <af:validator binding="#{bindings.RegistroEmpleado.validator}"/>
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.RegistroEmpleado.format}"/>
+                  </af:inputText>
+                  <af:inputText value="#{bindings.Numpartida.inputValue}"
+                                label="#{tx['ing_nomina.cmb_partida.label']}"
+                                required="#{bindings.Numpartida.mandatory}"
+                                columns="12">
+                    <af:validator binding="#{bindings.Numpartida.validator}"/>
+                  </af:inputText>
+                  <af:objectSpacer width="10" height="20"/>
+                </af:panelForm>
+              </af:panelHeader>
+              <af:table value="#{bindings.SisNominaVw.collectionModel}"
+                        var="row" rows="#{bindings.SisNominaVw.rangeSize}"
+                        first="#{bindings.SisNominaVw.rangeStart}"
+                        emptyText="#{tx['tbl_empty.texto']}"
+                        selectionState="#{bindings.SisNominaVw.collectionModel.selectedRow}"
+                        selectionListener="#{bindings.SisNominaVw.collectionModel.makeCurrent}"
+                        banding="row" bandingInterval="1" id="tbl_nomina"
+                        partialTriggers="btn_crear_nomina btnEditarNomina sel_nomina frm_nomina btn_crear_ajuste tbl_nomina:btn_borrar_nomina tbl_ajustes:btn_borrar_ajuste">
+                <f:facet name="selection">
+                  <af:tableSelectOne autoSubmit="true"
+                                     disabled="#{bindings.pEstado_1.inputValue eq '1'}"
+                                     partialTriggers="tbl_nomina btnEditarNomina btn_crear_nomina"
+                                     id="sel_nomina">
+                    <af:commandButton text="#{tx['ing_nomina.btn_editarNom.label']}"
+                                      partialSubmit="false"
+                                      id="btnEditarNomina"
+                                      disabled="#{bindings.pEstado_1.inputValue eq '1'}"
+                                      action="#{ingreso_nomina.btnEditarNomina_action}">
+                      <af:setActionListener from="#{'1'}"
+                                            to="#{bindings.pEstado_1.inputValue}"/>
+                    </af:commandButton>
+                    <af:commandButton actionListener="#{bindings.Delete.execute}"
+                                      text="#{tx['ing_nomina.btn_borrar.label']}"
+                                      disabled="#{!bindings.Delete.enabled}"
+                                      id="btn_borrar_nomina"
+                                      partialSubmit="true"/>
+                  </af:tableSelectOne>
+                </f:facet>
+                <af:column sortProperty="IdNomina" sortable="false"
+                           headerText="#{bindings.SisNominaVw.labels.IdNomina}">
+                  <af:outputText value="#{row.IdNomina}">
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.SisNominaVw.formats.IdNomina}"/>
+                  </af:outputText>
+                </af:column>
+                <af:column sortProperty="RegistroEmpleado" sortable="true"
+                           headerText="#{bindings.SisNominaVw.labels.RegistroEmpleado}">
+                  <af:outputText value="#{row.RegistroEmpleado}">
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.SisNominaVw.formats.RegistroEmpleado}"/>
+                  </af:outputText>
+                </af:column>
+                <af:column sortable="true"
+                           headerText="#{bindings.SisNominaVw.labels.Codigo}"
+                           sortProperty="Codigo">
+                  <af:outputText value="#{row.Codigo}"/>
+                </af:column>
+                <af:column sortProperty="Nomtipnomina" sortable="true"
+                           headerText="#{bindings.SisNominaVw.labels.Nomtipnomina}"
+                           noWrap="true">
+                  <af:outputText value="#{row.Nomtipnomina}"/>
+                </af:column>
+                <af:column sortProperty="Anio" sortable="true"
+                           headerText="#{bindings.SisNominaVw.labels.Anio}">
+                  <af:outputText value="#{row.Anio}">
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.SisNominaVw.formats.Anio}"/>
+                  </af:outputText>
+                </af:column>
+                <af:column sortProperty="Periodo" sortable="true"
+                           headerText="#{bindings.SisNominaVw.labels.Periodo}">
+                  <af:outputText value="#{row.Periodo}">
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.SisNominaVw.formats.Periodo}"/>
+                  </af:outputText>
+                </af:column>
+                <af:column sortable="true"
+                           headerText="#{bindings.SisNominaVw.labels.Numpartida}"
+                           sortProperty="Numpartida">
+                  <af:outputText value="#{row.Numpartida}"/>
+                </af:column>
+                <af:column sortProperty="NumeroPlaza" sortable="true"
+                           headerText="#{bindings.SisNominaVw.labels.NumeroPlaza}">
+                  <af:outputText value="#{row.NumeroPlaza}">
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.SisNominaVw.formats.NumeroPlaza}"/>
+                  </af:outputText>
+                </af:column>
+                <af:column sortable="false"
+                           headerText="#{bindings.SisNominaVw.labels.IdPuesto}"
+                           noWrap="true">
+                  <af:outputText value="#{row.IdPuesto} - #{row.Nombrepuesto}"/>
+                </af:column>
+                <af:column sortProperty="SueldoBase" sortable="false"
+                           headerText="#{bindings.SisNominaVw.labels.SueldoBase}"
+                           formatType="number">
+                  <af:outputText value="#{row.SueldoBase}">
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.SisNominaVw.formats.SueldoBase}"/>
+                  </af:outputText>
+                </af:column>
+                <af:column sortProperty="Escalafon" sortable="false"
+                           headerText="#{bindings.SisNominaVw.labels.Escalafon}"
+                           formatType="number">
+                  <af:outputText value="#{row.Escalafon}">
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.SisNominaVw.formats.Escalafon}"/>
+                  </af:outputText>
+                </af:column>
+                <af:column sortProperty="ComplSalarial" sortable="false"
+                           headerText="#{bindings.SisNominaVw.labels.ComplSalarial}"
+                           formatType="number">
+                  <af:outputText value="#{row.ComplSalarial}">
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.SisNominaVw.formats.ComplSalarial}"/>
+                  </af:outputText>
+                </af:column>
+                <af:column sortProperty="Nominal" sortable="false"
+                           headerText="#{bindings.SisNominaVw.labels.Nominal}"
+                           formatType="number">
+                  <af:outputText value="#{row.Nominal}">
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.SisNominaVw.formats.Nominal}"/>
+                  </af:outputText>
+                </af:column>
+                <af:column sortProperty="TotalBono" sortable="false"
+                           headerText="#{bindings.SisNominaVw.labels.TotalBono}"
+                           formatType="number">
+                  <af:outputText value="#{row.TotalBono}">
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.SisNominaVw.formats.TotalBono}"/>
+                  </af:outputText>
+                </af:column>
+                <af:column sortProperty="TotalDescuento" sortable="false"
+                           headerText="#{bindings.SisNominaVw.labels.TotalDescuento}"
+                           formatType="number">
+                  <af:outputText value="#{row.TotalDescuento}">
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.SisNominaVw.formats.TotalDescuento}"/>
+                  </af:outputText>
+                </af:column>
+                <af:column sortProperty="Liquido" sortable="false"
+                           headerText="#{bindings.SisNominaVw.labels.Liquido}"
+                           formatType="number">
+                  <af:outputText value="#{row.Liquido}">
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.SisNominaVw.formats.Liquido}"/>
+                  </af:outputText>
+                </af:column>
+              </af:table>
+            </af:panelBox>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:ingreso_nomina-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:ingreso_nomina-->
+</jsp:root>

@@ -1,0 +1,155 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html"
+          xmlns:af="http://xmlns.oracle.com/adf/faces">
+  <jsp:directive.page contentType="text/html;charset=windows-1252"
+                      autoFlush="true" language="java"/>
+                      
+   <jsp:include page="/js/libJQ.js"/>   
+      <script type="text/javascript" src="/${flujo_usuario.dominioApp}/js/gestiones/scrptcambioC.js">var xy;</script>                    
+  <f:view>
+    <afh:html>
+      <afh:head title="Cambio de cuenta">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+      </afh:head>
+      <afh:body>
+        <af:messages/>
+        <h:form id="form1">
+          <af:page title="Cambio de cuenta monetaria" value="#{modeloMenu.modeloBD}" var="node"
+                   id="page1">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+             <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelBox width="650">
+              <af:panelHeader text="Datos De La Cuenta Monetaria Actual" messageType="info" size="0">
+                <af:panelForm>
+                  <f:facet name="footer"/>
+                  <af:panelLabelAndMessage label="Banco:"
+                                           inlineStyle="font-size:large; font-weight:bold; color:rgb(255,156,49);">
+                    <af:outputText value="#{bindings['sis_cuenta_actual_vwBanco'].inputValue}"
+                                   inlineStyle="font-size:large; font-weight:bold; color:rgb(0,74,231);"/>
+                  </af:panelLabelAndMessage>
+                  <af:panelLabelAndMessage label="No cuenta:"
+                                           inlineStyle="font-size:large; font-weight:bold; color:rgb(255,156,49);">
+                    <af:outputText value="#{bindings['sis_cuenta_actual_vwNumCuenta'].inputValue}"
+                                   inlineStyle="font-size:large; font-weight:bold; color:rgb(0,74,231);"/>
+                  </af:panelLabelAndMessage>
+                  <af:inputHidden value="#{bindings['sis_cuenta_actual_vwNumCuenta'].inputValue}"
+                                  id="inptCuentaA"/>
+                </af:panelForm>
+              </af:panelHeader>
+              <af:objectSeparator/>
+              <af:panelHeader text="Ingreso De Nueva Cuenta Monetaria (Banrural)">
+                <af:panelForm>
+                  <f:facet name="footer"/>
+                  <af:panelHorizontal>
+                    <af:inputText label="No Cuenta:" id="inpt_cuenta"
+                                  value="#{bindings.pnumcuenta1.inputValue}"
+                                  tip="No Cuenta sin espacios ni guiones"/>
+                    <af:commandButton text="Validar Cuenta" id="btn_validar"
+                                      onclick="return checkCuenta();"/>
+                    <f:verbatim>
+                      <div id="ajaxBusy" style="display:none">
+                        <table>
+                          <tr>
+                            <td>
+                              <img src="/${flujo_usuario.dominioApp}/imagenes/ajax-loader2.gif"/>
+                            </td>
+                            <td class="ui-state-highlight">Verificando ....</td>
+                          </tr>
+                        </table>
+                      </div>
+                    </f:verbatim>
+                    <f:facet name="separator">
+                      <af:objectSpacer width="10" height="10"/>
+                    </f:facet>
+                  </af:panelHorizontal>
+                  <af:inputHidden id="inpthdnNomCuenta"
+                                  value="#{bindings.NombreCompleto.inputValue}"/>
+                  <af:inputHidden id="inpthdnStatusCnt"/>
+                  <af:outputFormatted value="#{''}"
+                                      inlineStyle="color:rgb(0,173,255); font-size:medium; font-weight:bold; border-width:thin; border-color:rgb(255,156,49);"
+                                      id="lblNomReg"/>
+                  <af:outputFormatted value=""
+                                      inlineStyle="color:rgb(148,0,0); font-size:medium; font-weight:bold;"
+                                      id="lblNomRegEr"/>
+                  <af:outputFormatted value="&lt;i>Cuenta validada en Banrural&lt;/i>&lt;br/>"
+                                      rendered="" styleUsage="instruction"
+                                      inlineStyle="color:rgb(0,173,255); font-size:medium; font-weight:bold; border-width:thin; border-color:rgb(255,156,49);"/>
+                  <af:inputHidden id="inpthdnOrdenCedula"
+                                  value="#{bindings.OrdenCedula.inputValue}"/>
+                  <af:inputHidden id="inpt_registrocedula"
+                                  value="#{bindings.RegistroCedula.inputValue}"/>
+                  <af:inputHidden id="inpt_cui"
+                                  value="#{bindings.Cui.inputValue}"/>
+                  <af:inputHidden id="hdn_cuenta"
+                                  value="#{bindings.pnumcuenta_2.inputValue}"/>                  
+                </af:panelForm>
+              </af:panelHeader>
+              <af:commandLink
+                              action="#{ficha_empleado.cambiar_cuenta}"
+                              disabled="false" id="cmd_cambiar"/>
+              <f:verbatim>
+               <div id="dvChkA" style="display:none">
+               <table>
+                 <tr>
+                   <td style="font-weight:bold;" valign="middle">
+                   <input type="checkbox"  name="chk_acepto" id="chk_acepto"
+                          onclick="verificaCheck(this);"/> Acepto el uso de esta nueva cuenta bancaria para el pago de mi salario y me hago responsable del estado de la cuenta en el banco.              
+                   </td>
+                 </tr>
+                 <tr>
+                  <td height="10" ></td>
+                 </tr>
+                </table>
+               </div>
+               <div id="dvcambiarC" style="display:none">
+                <a onclick="cambiarCuenta();" href="#" id="aref_cambio">
+                    <img  id="imgBtnC" border="0" align="middle" alt="Cambiar Cuenta" src="../imagenes/btn_cambiarC.gif"/>
+                </a>
+                </div>
+              </f:verbatim>
+              <af:objectSpacer width="10" height="15"/>
+              <af:panelHorizontal valign="top">
+                <af:outputFormatted value="Nota:"
+                                    inlineStyle="color:rgb(255,33,33); font-weight:bold; font-size:small;"/>
+                <af:objectSpacer width="10" height="10"/>
+                <af:panelList>
+                  <af:outputFormatted value="Si tiene problemas con el documento de identificación en la validación de la cuenta, por favor verifique sus datos personales en la Actualización de Datos."
+                                      inlineStyle="color:rgb(0,107,165); font-size:small;"/>
+                  <af:outputFormatted value="La validación de la cuenta monetaria se realiza en el Banco, por favor espere hasta que le muestre el resultado de la operación."
+                                      inlineStyle="color:rgb(0,107,165); font-size:small;"/>
+                  <af:outputFormatted value="Si tiene problemas con la validación de la cuenta, comuníquese al Depto de Procesamiento de Datos."
+                                      inlineStyle="color:rgb(0,107,165); font-size:small;"/>
+                </af:panelList>
+              </af:panelHorizontal>
+            </af:panelBox>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:ficha_empleado-->
+</jsp:root>

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel"
+                version="10.1.3.42.70"
+                id="gestiones_renuncia_descuentosPageDef"
+                Package="interfaz_usuario.pageDefs">
+  <parameters/>
+  <executables>
+    <variableIterator id="variables">
+      <variable Type="oracle.jbo.domain.Number" Name="insertar_det_renuncia_IdAjuste"
+                IsQueriable="false"/>
+      <variable Type="oracle.jbo.domain.Number" Name="insertar_det_renuncia_pCorrealtivo"
+                IsQueriable="false"/>          
+      <variable Type="oracle.jbo.domain.Date"
+                Name="insertar_det_renuncia_pFechaUltimoProc"
+                IsQueriable="false"/>
+      <variable Type="boolean" Name="insertar_det_renuncia_pBaja"
+                IsQueriable="false"/>
+      <variable Type="java.lang.String"
+                Name="insertar_det_renuncia_pObservaciones"
+                IsQueriable="false"/>
+    </variableIterator>
+    <iterator id="Sis_descuentos_empleadoIterator" RangeSize="-1"
+              Binds="Sis_descuentos_empleado" DataControl="QUERRYSDataControl"/>
+    <invokeAction Binds="listadoAjustes" id="EjeListado" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback and empty bindings.exceptionsList}"/>
+  </executables>
+  <bindings>
+    <methodAction id="insertar_det_renuncia" MethodName="insertar_det_renuncia"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.sis_variacion_nomina">
+      <NamedData NDName="pRegistroEmpl"
+                 NDValue="${flujo_usuario.selRegEmpleado}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="IdAjuste"
+                 NDValue="${bindings.insertar_det_renuncia_IdAjuste}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pCorrealtivo"
+                 NDValue="${bindings.pCorrealtivo.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pFechaUltimoProc"
+                 NDValue="${bindings.insertar_det_renuncia_pFechaUltimoProc}"
+                 NDType="oracle.jbo.domain.Date"/>
+      <NamedData NDName="pBaja"
+                 NDValue="${bindings.insertar_det_renuncia_pBaja}"
+                 NDType="boolean"/>
+      <NamedData NDName="pObservaciones"
+                 NDValue="${bindings.insertar_det_renuncia_pObservaciones}"
+                 NDType="java.lang.String"/>
+    </methodAction>
+    <attributeValues id="pFechaUltimoProc" IterBinding="variables">
+      <AttrNames>
+        <Item Value="insertar_det_renuncia_pFechaUltimoProc"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="pBaja" IterBinding="variables">
+      <AttrNames>
+        <Item Value="insertar_det_renuncia_pBaja"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="pObservaciones" IterBinding="variables">
+      <AttrNames>
+        <Item Value="insertar_det_renuncia_pObservaciones"/>
+      </AttrNames>
+    </attributeValues>
+    <list id="Sis_descuentos_empleadoIdAjuste"
+          IterBinding="variables" StaticList="false"
+          ListOperMode="0" ListIter="Sis_descuentos_empleadoIterator">
+      <AttrNames>
+        <Item Value="insertar_det_renuncia_IdAjuste"/>
+        <Item Value="insertar_det_renuncia_pCorrealtivo"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdAjuste"/>
+        <Item Value="IdCorrelativo"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Nombre"/>
+      </ListDisplayAttrNames>
+    </list>
+    <action IterBinding="Sis_descuentos_empleadoIterator" id="listadoAjustes"
+            InstanceName="QUERRYSDataControl.Sis_descuentos_empleado"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="reg_empleado" NDValue="${flujo_usuario.selRegEmpleado}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pRestriccion" NDValue="EXCLUD"
+                 NDType="java.lang.String"/>
+    </action>
+    <action id="Rollback" InstanceName="QUERRYSDataControl"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="101"/>
+    <attributeValues IterBinding="variables"
+                     id="pCorrealtivo">
+      <AttrNames>
+        <Item Value="insertar_det_renuncia_pCorrealtivo"/>
+      </AttrNames>
+    </attributeValues>
+  </bindings>
+</pageDefinition>

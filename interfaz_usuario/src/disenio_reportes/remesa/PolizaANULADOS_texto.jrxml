@@ -1,0 +1,676 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="PolizaANULADOS_texto"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="1206"
+		 pageHeight="730"
+		 columnWidth="1149"
+		 columnSpacing="0"
+		 leftMargin="28"
+		 rightMargin="29"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="fechainicio" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="fechafinal" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="p_periodo" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="pTipoDocumento" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="pIdRemesa" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[select 3 as orden, b.formato2, b.nombre_partida, 0 AS DEBE, sum(b.valor) as HABER, sum(b.valor) as MONTO
+from
+(
+select 
+case 
+	when $P{p_periodo} = 'AA' and spv.d1 = 4  then '5.0.20.5.00.0.00'
+	else spv.d1 ||'.'|| spv.d2 ||'.'|| ltrim(to_char(spv.d3d4,'09')) ||'.'|| spv.d5 ||'.'|| spv.d6 || spv.d7 ||'.'|| spv.d8 ||'.'|| ltrim(to_char(spv.d9d10,'09'))
+end as formato2,
+case 
+	when $P{p_periodo} = 'MAC' and $P{pTipoDocumento}= 'CHEQUE' then '          CHEQUES ANULADOS MES ACTUAL'
+	when $P{p_periodo} = 'MAC' and $P{pTipoDocumento}= 'ACREDITACION' then '          BOLETAS ANULADAS MES ACTUAL'
+	when $P{p_periodo} = 'MAN' and $P{pTipoDocumento}= 'CHEQUE' then '          CHEQUES ANULADOS MES ANTERIOR'
+	when $P{p_periodo} = 'MAN' and $P{pTipoDocumento}= 'ACREDITACION' then '          BOLETAS ANULADAS MES ANTERIOR'
+	when $P{p_periodo} = 'AA' and $P{pTipoDocumento}= 'CHEQUE' then '          CHEQUES ANULADOS AÑOS ANTERIORES'
+	when $P{p_periodo} = 'AA' and $P{pTipoDocumento}= 'ACREDITACION' then '          BOLETAS ANULADAS AÑOS ANTERIORES'
+end as nombre_partida,
+sdpp.valor,
+sdb.num_doc_fisico,
+sdb.id_documento_banco
+from 
+	partida spv,
+	sis_det_partida_pago sdpp,
+	sis_tipo_documento std,
+	sis_documento_banco sdb
+where 
+	exists (
+		select 1
+		from sis_nomina sn,
+			 sis_pago sp
+		where sn.id_tipo_nomina <>20 and
+			  sn.ID_NOMINA = sp.ID_NOMINA and
+			  sp.ID_DOCUMENTO_BANCO = sdb.ID_DOCUMENTO_BANCO
+	) and
+	spv.ID_PARTIDA=sdpp.ID_PARTIDA and
+	sdpp.tipo = 'N' and
+	sdpp.id_documento_banco = sdb.id_documento_banco and
+	std.nombre like $P{pTipoDocumento} and
+	std.id_tipo_documento = sdb.id_tipo_documento and
+	( ($P{p_periodo} = 'MAC' and sdb.id_remesa=$P{pIdRemesa}) --TRUNC(sdb.FECHA_EMISION) BETWEEN to_date(:fechainicio,'DD/MM/YYYY') and to_date(:fechafinal,'DD/MM/YYYY'))
+	  OR
+	  ($P{p_periodo} = 'MAN'
+	   AND 
+            ( trunc(sdb.FECHA_EMISION) < to_date($P{fechainicio},'DD/MM/YYYY') 
+             or ( sdb.id_remesa<>$P{pIdRemesa})
+            )
+	   AND TO_CHAR(sdb.FECHA_EMISION,'YYYY')=TO_CHAR(to_date($P{fechainicio},'DD/MM/YYYY'),'YYYY')
+	  )
+	  OR
+	  ($P{p_periodo} = 'AA' 
+	   AND TO_CHAR(sdb.FECHA_EMISION,'YYYY')<TO_CHAR(to_date($P{fechainicio},'DD/MM/YYYY'),'YYYY')
+	  )
+	)
+	and trunc(sdb.fecha_anulacion) between to_date($P{fechainicio},'DD/MM/YYYY') and to_date($P{fechafinal},'DD/MM/YYYY')
+
+) b
+GROUP BY b.formato2, b.nombre_partida
+UNION ALL
+select 2 as orden, b.formato2, b.nombre_partida, sum(b.valor_desc_aplicado) as DEBE, 0 AS HABER, sum(b.valor_desc_aplicado) as MONTO
+from
+( 
+select spv.d1 ||'.'|| spv.d2 ||'.'|| ltrim(to_char(spv.d3d4,'09')) ||'.'|| spv.d5 ||'.'|| spv.d6 || spv.d7 ||'.'|| spv.d8 ||'.'|| ltrim(to_char(spv.d9d10,'09')) as formato2,
+spv.nombre as nombre_partida,
+sdca.valor_aplicado * -1 as valor_desc_aplicado
+from
+	partida spv, 
+	sis_ajuste_partida sap,
+	sis_det_calculo_ajuste sdca,
+	sis_nomina sn,
+	sis_pago sp,
+	sis_tipo_documento std,
+	sis_documento_banco sdb
+where 	
+	spv.ID_PARTIDA=sap.ID_PARTIDA and
+	sdca.ID_AJUSTE = sap.ID_AJUSTE and
+	sdca.ID_AJUSTE <> 27 and
+	sdca.VALOR_APLICADO <> 0 and
+	sdca.ID_NOMINA=sn.ID_NOMINA and
+	sn.id_tipo_nomina <>20 and
+	sp.ID_NOMINA=sn.ID_NOMINA and
+	sdb.ID_DOCUMENTO_BANCO=sp.ID_DOCUMENTO_BANCO and
+	std.nombre like $P{pTipoDocumento} and
+	std.id_tipo_documento = sdb.id_tipo_documento and
+	( ($P{p_periodo} = 'MAC' and sdb.id_remesa=$P{pIdRemesa})--TRUNC(sdb.FECHA_EMISION) BETWEEN to_date(:fechainicio,'DD/MM/YYYY') and to_date(:fechafinal,'DD/MM/YYYY'))
+	  OR
+	  ($P{p_periodo} = 'MAN'
+	   AND 
+            (trunc(sdb.FECHA_EMISION) < to_date($P{fechainicio},'DD/MM/YYYY') 
+             or ( sdb.id_remesa<>$P{pIdRemesa})
+            ) 
+	   AND TO_CHAR(sdb.FECHA_EMISION,'YYYY')=TO_CHAR(to_date($P{fechainicio},'DD/MM/YYYY'),'YYYY')
+	  )
+	  OR
+	  ($P{p_periodo} = 'AA' 
+	   AND TO_CHAR(sdb.FECHA_EMISION,'YYYY')<TO_CHAR(to_date($P{fechainicio},'DD/MM/YYYY'),'YYYY')
+	  )
+	)
+	and trunc(sdb.fecha_anulacion) between to_date($P{fechainicio},'DD/MM/YYYY') and to_date($P{fechafinal},'DD/MM/YYYY')
+) b
+GROUP BY b.formato2, b.nombre_partida 
+UNION ALL
+select 1 as orden, b.formato2, b.nombre_partida, 
+	   sum(b.valor) - nvl((
+	   select sum(b.valor)
+		from
+		(
+		select sdpp.valor
+		from 
+			partida spv,
+			sis_det_partida_pago sdpp,
+			sis_tipo_documento std,
+			sis_documento_banco sdb
+		where 
+			exists (
+				select 1
+				from sis_nomina sn,
+					 sis_pago sp
+				where sn.id_tipo_nomina <>20 and
+					  sn.ID_NOMINA = sp.ID_NOMINA and
+					  sp.ID_DOCUMENTO_BANCO = sdb.ID_DOCUMENTO_BANCO
+			) and
+			spv.ID_PARTIDA=sdpp.ID_PARTIDA and
+			sdpp.tipo = 'A' and
+			sdpp.id_documento_banco = sdb.id_documento_banco and
+			std.nombre like $P{pTipoDocumento} and
+			std.id_tipo_documento = sdb.id_tipo_documento and
+			( ($P{p_periodo} = 'MAC' and sdb.id_remesa=$P{pIdRemesa})--TRUNC(sdb.FECHA_EMISION) BETWEEN to_date(:fechainicio,'DD/MM/YYYY') and to_date(:fechafinal,'DD/MM/YYYY'))
+			  OR
+			  ($P{p_periodo} = 'MAN'
+			   AND 
+                             (trunc(sdb.FECHA_EMISION) < to_date($P{fechainicio},'DD/MM/YYYY') 
+			      or ( sdb.id_remesa<>$P{pIdRemesa})	
+                             )
+			   AND TO_CHAR(sdb.FECHA_EMISION,'YYYY')=TO_CHAR(to_date($P{fechainicio},'DD/MM/YYYY'),'YYYY')
+			  )
+			  OR
+			  ($P{p_periodo} = 'AA' 
+			   AND TO_CHAR(sdb.FECHA_EMISION,'YYYY')<TO_CHAR(to_date($P{fechainicio},'DD/MM/YYYY'),'YYYY')
+			  )
+			)
+			and trunc(sdb.fecha_anulacion) between to_date($P{fechainicio},'DD/MM/YYYY') and to_date($P{fechafinal},'DD/MM/YYYY')
+		) b
+	   ),0)
+	   as DEBE, 
+	   0 AS HABER,
+           sum(b.valor) - nvl((
+	   select sum(b.valor)
+		from
+		(
+		select sdpp.valor
+		from 
+			partida spv,
+			sis_det_partida_pago sdpp,
+			sis_tipo_documento std,
+			sis_documento_banco sdb
+		where 
+			exists (
+				select 1
+				from sis_nomina sn,
+					 sis_pago sp
+				where sn.id_tipo_nomina <>20 and
+					  sn.ID_NOMINA = sp.ID_NOMINA and
+					  sp.ID_DOCUMENTO_BANCO = sdb.ID_DOCUMENTO_BANCO
+			) and
+			spv.ID_PARTIDA=sdpp.ID_PARTIDA and
+			sdpp.tipo = 'A' and
+			sdpp.id_documento_banco = sdb.id_documento_banco and
+			std.nombre like $P{pTipoDocumento} and
+			std.id_tipo_documento = sdb.id_tipo_documento and
+			( ($P{p_periodo} = 'MAC' and sdb.id_remesa=$P{pIdRemesa}) --TRUNC(sdb.FECHA_EMISION) BETWEEN to_date(:fechainicio,'DD/MM/YYYY') and to_date(:fechafinal,'DD/MM/YYYY'))
+			  OR
+			  ($P{p_periodo} = 'MAN'
+			   AND 
+                            (trunc(sdb.FECHA_EMISION) < to_date($P{fechainicio},'DD/MM/YYYY') 
+                            or ( sdb.id_remesa<>$P{pIdRemesa})
+                            ) 
+			   AND TO_CHAR(sdb.FECHA_EMISION,'YYYY')=TO_CHAR(to_date($P{fechainicio},'DD/MM/YYYY'),'YYYY')
+			  )
+			  OR
+			  ($P{p_periodo} = 'AA' 
+			   AND TO_CHAR(sdb.FECHA_EMISION,'YYYY')<TO_CHAR(to_date($P{fechainicio},'DD/MM/YYYY'),'YYYY')
+			  )
+			)
+			and trunc(sdb.fecha_anulacion) between to_date($P{fechainicio},'DD/MM/YYYY') and to_date($P{fechafinal},'DD/MM/YYYY')
+		) b
+	   ),0)
+	   as MONTO
+from
+( 
+select sdb.valor,
+	   p.d1 ||'.'|| p.d2 ||'.'|| ltrim(to_char(p.d3d4,'09')) ||'.'|| p.d5 ||'.'|| p.d6 || p.d7 ||'.'|| p.d8 ||'.'|| ltrim(to_char(p.d9d10,'09')) as formato2,
+	   p.nombre as nombre_partida
+from
+	partida p,
+	cuenta_bancaria c,
+	sis_tipo_documento std,
+	sis_documento_banco sdb
+where
+	exists (
+		select 1
+		from sis_nomina sn,
+			 sis_pago sp
+		where sn.id_tipo_nomina <>20 and
+			  sn.ID_NOMINA = sp.ID_NOMINA and
+			  sp.ID_DOCUMENTO_BANCO = sdb.ID_DOCUMENTO_BANCO
+	) and 	
+	p.id_partida = c.id_partida and
+	sdb.id_cuenta_bancaria_sueldo = c.id_cuenta_bancaria and
+	std.nombre like $P{pTipoDocumento} and
+	std.id_tipo_documento = sdb.id_tipo_documento and
+	( ($P{p_periodo} = 'MAC' and sdb.id_remesa=$P{pIdRemesa})--TRUNC(sdb.FECHA_EMISION) BETWEEN to_date(:fechainicio,'DD/MM/YYYY') and to_date(:fechafinal,'DD/MM/YYYY'))
+	  OR
+	  ($P{p_periodo} = 'MAN'
+	   AND (trunc(sdb.FECHA_EMISION) < to_date($P{fechainicio},'DD/MM/YYYY') 
+            or ( sdb.id_remesa<>$P{pIdRemesa})
+            )
+	   AND TO_CHAR(sdb.FECHA_EMISION,'YYYY')=TO_CHAR(to_date($P{fechainicio},'DD/MM/YYYY'),'YYYY')
+	  )
+	  OR
+	  ($P{p_periodo} = 'AA' 
+	   AND TO_CHAR(sdb.FECHA_EMISION,'YYYY')<TO_CHAR(to_date($P{fechainicio},'DD/MM/YYYY'),'YYYY')
+	  )
+	)
+	and trunc(sdb.fecha_anulacion) between to_date($P{fechainicio},'DD/MM/YYYY') and to_date($P{fechafinal},'DD/MM/YYYY')
+) b
+GROUP BY b.formato2, b.nombre_partida 
+order by ORDEN ASC, FORMATO2 asc]]></queryString>
+
+	<field name="ORDEN" class="java.math.BigDecimal"/>
+	<field name="FORMATO2" class="java.lang.String"/>
+	<field name="NOMBRE_PARTIDA" class="java.lang.String"/>
+	<field name="DEBE" class="java.math.BigDecimal"/>
+	<field name="HABER" class="java.math.BigDecimal"/>
+	<field name="MONTO" class="java.math.BigDecimal"/>
+
+	<variable name="suma_debe" class="java.math.BigDecimal" resetType="Group" resetGroup="dependencia" calculation="Sum">
+		<variableExpression><![CDATA[$F{DEBE}]]></variableExpression>
+	</variable>
+	<variable name="suma_haber" class="java.math.BigDecimal" resetType="Group" resetGroup="dependencia" calculation="Sum">
+		<variableExpression><![CDATA[$F{HABER}]]></variableExpression>
+	</variable>
+	<variable name="suma_total_debe" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{DEBE}]]></variableExpression>
+	</variable>
+	<variable name="suma_total_haber" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{HABER}]]></variableExpression>
+	</variable>
+
+		<group  name="dependencia" >
+			<groupExpression><![CDATA[$F{NOMBRE_PARTIDA}]]></groupExpression>
+			<groupHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="11"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="805"
+						y="-1"
+						width="150"
+						height="12"
+						key="textField">
+							<printWhenExpression><![CDATA[new Boolean ($V{suma_debe}.compareTo( new BigDecimal(0) ) != 0 )]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{suma_debe}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="972"
+						y="-1"
+						width="150"
+						height="12"
+						key="textField">
+							<printWhenExpression><![CDATA[new Boolean ( $V{suma_haber}.compareTo( new BigDecimal(0) ) != 0  )]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{suma_haber}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="956"
+						y="-1"
+						width="12"
+						height="12"
+						key="textField-6">
+							<printWhenExpression><![CDATA[new Boolean ($V{suma_debe}.compareTo( new BigDecimal(0) ) != 0 )]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[new String("*")]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1123"
+						y="-1"
+						width="16"
+						height="12"
+						key="textField-7">
+							<printWhenExpression><![CDATA[new Boolean ( $V{suma_haber}.compareTo( new BigDecimal(0) ) != 0  )]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[new String("*")]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupFooter>
+		</group>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="88"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="41"
+						y="66"
+						width="170"
+						height="12"
+						key="staticText-1"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Courier" size="10"/>
+					</textElement>
+				<text><![CDATA[PARTIDA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="216"
+						y="66"
+						width="119"
+						height="12"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Courier" size="10"/>
+					</textElement>
+				<text><![CDATA[CONCEPTO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="643"
+						y="66"
+						width="119"
+						height="12"
+						key="staticText-3"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="10"/>
+					</textElement>
+				<text><![CDATA[PARCIALES]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="826"
+						y="66"
+						width="100"
+						height="12"
+						key="staticText-4"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="10"/>
+					</textElement>
+				<text><![CDATA[DEBE]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="986"
+						y="66"
+						width="100"
+						height="12"
+						key="staticText-5"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="10"/>
+					</textElement>
+				<text><![CDATA[HABER]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="490"
+						y="45"
+						width="385"
+						height="12"
+						key="staticText-6"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="10"/>
+					</textElement>
+				<text><![CDATA[P O L I Z A   D E   S U E L D O S      No.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="2"
+						y="12"
+						width="440"
+						height="12"
+						key="staticText-7"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Courier" size="10"/>
+					</textElement>
+				<text><![CDATA[UNIVERSIDAD DE SAN CARLOS DE GUATEMALA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="580"
+						y="23"
+						width="198"
+						height="12"
+						key="staticText-8"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="10"/>
+					</textElement>
+				<text><![CDATA[CONTABILIDAD]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1036"
+						y="23"
+						width="101"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$V{PAGE_NUMBER}.toString()]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1035"
+						y="34"
+						width="102"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" pdfFontName="Courier" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new java.util.Date()]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3"
+						y="-1"
+						width="294"
+						height="13"
+						key="textField-4">
+							<printWhenExpression><![CDATA[new Boolean ($V{PAGE_NUMBER}.compareTo( new Integer (1) ) == 0)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[new String (new char[]{27,48,27,67,68,27,77})]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="971"
+						y="23"
+						width="91"
+						height="12"
+						key="staticText-10"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+				<text><![CDATA[HOJA No.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="971"
+						y="34"
+						width="59"
+						height="12"
+						key="staticText-11"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+				<text><![CDATA[FECHA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="2"
+						y="23"
+						width="440"
+						height="12"
+						key="staticText-12"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Courier" size="10"/>
+					</textElement>
+				<text><![CDATA[DEPARTAMENTO DE CAJA CENTRAL]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="2"
+						y="34"
+						width="512"
+						height="12"
+						key="textField-8"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{p_periodo}.compareTo( "MAC" ) == 0 && $P{pTipoDocumento}.compareTo( "CHEQUE" ) == 0 ? "CHEQUES ANULADOS MES ACTUAL" : 
+$P{p_periodo}.compareTo( "MAC" ) == 0 && $P{pTipoDocumento}.compareTo( "ACREDITACION" ) == 0 ? "BOLETAS ANULADAS MES ACTUAL" : 
+$P{p_periodo}.compareTo( "MAN" ) == 0 && $P{pTipoDocumento}.compareTo( "CHEQUE" ) == 0 ? "CHEQUES ANULADOS MESES ANTERIORES" :
+$P{p_periodo}.compareTo( "MAN" ) == 0 && $P{pTipoDocumento}.compareTo( "ACREDITACION" ) == 0 ? "BOLETAS ANULADAS MESES ANTERIORES" :
+$P{p_periodo}.compareTo( "AA" ) == 0 && $P{pTipoDocumento}.compareTo( "CHEQUE" ) == 0 ? "CHEQUES ANULADOS AÑOS ANTERIORES" :
+$P{p_periodo}.compareTo( "AA" ) == 0 && $P{pTipoDocumento}.compareTo( "ACREDITACION" ) == 0 ? "BOLETAS ANULADAS AÑOS ANTERIORES" : " "]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="11"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="41"
+						y="-1"
+						width="170"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{FORMATO2}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="216"
+						y="-1"
+						width="414"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRE_PARTIDA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="639"
+						y="-1"
+						width="150"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{MONTO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="790"
+						y="-1"
+						width="38"
+						height="12"
+						key="textField-5">
+							<printWhenExpression><![CDATA[new Boolean($F{ORDEN}.compareTo( new BigDecimal(3))==0)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[new String("CR")]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="11"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="467"
+						y="-1"
+						width="150"
+						height="12"
+						key="staticText-9"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+				<text><![CDATA[TOTALES]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="805"
+						y="-1"
+						width="150"
+						height="12"
+						key="textField-2"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{suma_total_debe}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="972"
+						y="-1"
+						width="150"
+						height="12"
+						key="textField-3"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{suma_total_haber}]]></textFieldExpression>
+				</textField>
+			</band>
+		</summary>
+</jasperReport>

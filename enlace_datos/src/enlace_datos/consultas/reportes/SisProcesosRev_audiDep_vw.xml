@@ -1,0 +1,275 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="SisProcesosRev_audiDep_vw"
+   Extends="enlace_datos.consultas.reportes.SisProcesosRev_audi"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   RowClass="enlace_datos.consultas.reportes.SisProcesosRev_audiDep_vwRowImpl"
+   ComponentClass="enlace_datos.consultas.reportes.SisProcesosRev_audiDep_vwImpl"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isCodegen" Value="true" />
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="pIdDependencia"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select 
+* from(
+select proc.id_proceso,
+tproc.nombre,
+proc.anio,
+proc.periodo,
+pd.NOMBRE as nom_periodo, 
+proc.fecha_fin as fechacalculo,
+(
+select 
+fecha
+from sis_autorizacion au, sis_autorizacion_det dt
+where dt.id_autorizacion=au.id_autorizacion
+and id_estado=44
+and au.id_proceso=proc.id_proceso
+and rownum<=1
+) as fecha_auto, 
+decode(
+(
+select count(0) from sis_proceso_pago_det dt, sis_proceso prc
+where dt.id_proceso_nomina=proc.id_proceso
+and prc.id_proceso=dt.id_proceso and prc.id_estado in(7,44,53)
+),0,est.nombre,'EMITIDO CAJA') AS  ESTADO2,
+est.nombre as estado,
+proc.observaciones,
+(
+select min(b.num_doc_fisico) || ' - ' || max(b.num_doc_fisico)  from sis_documento_banco b, sis_nomina n, sis_pago p
+where b.id_documento_banco = p.id_documento_banco
+and n.id_nomina = p.id_nomina
+and n.id_proceso = proc.id_proceso
+and b.id_tipo_documento=1
+) cheques,
+(
+select min(b.num_doc_fisico) || ' - ' || max(b.num_doc_fisico)  from sis_documento_banco b, sis_nomina n, sis_pago p
+where b.id_documento_banco = p.id_documento_banco
+and n.id_nomina = p.id_nomina
+and n.id_proceso = proc.id_proceso
+and b.id_tipo_documento=2
+) acreditamiento
+from sis_proceso proc, sis_tipo_proceso tproc, sis_estado_proceso_vw est, sis_periodo pd 
+where proc.tipoproceso=tproc.id_tipoproceso
+and proc.id_estado=est.id_estado
+and pd.id_periodo=proc.periodo
+and est.id_estado in (44,53) 
+and proc.id_proceso not in (101,98,99)
+and (tproc.id_tipo_nomina not in(6,9,10,20,22,26) or tproc.id_tipoproceso in(15))
+and trunc(proc.fecha_inicio) between nvl(:pFechaI,sysdate-30) and nvl(:pFechaF,sysdate+1)
+and exists(
+select 1 from sis_nomina nom, sis_partida prt
+where nom.id_partida=prt.id_partida
+and nom.id_proceso=proc.id_proceso
+and prt.id_dependencia in (:pIdDependencia)
+)
+)
+where estado2='EMITIDO CAJA'
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="IdProceso"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_PROCESO"
+      Expression="ID_PROCESO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_OverrideAttr" Value="true" />
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nombre"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBRE"
+      Expression="NOMBRE"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_OverrideAttr" Value="true" />
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Anio"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="4"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ANIO"
+      Expression="ANIO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_OverrideAttr" Value="true" />
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Periodo"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="2"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="PERIODO"
+      Expression="PERIODO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_OverrideAttr" Value="true" />
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="NomPeriodo"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="50"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOM_PERIODO"
+      Expression="NOM_PERIODO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_OverrideAttr" Value="true" />
+         <Attr Name="_DisplaySize" Value="50" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Fechacalculo"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHACALCULO"
+      Expression="FECHACALCULO"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_OverrideAttr" Value="true" />
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaAuto"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_AUTO"
+      Expression="FECHA_AUTO"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_OverrideAttr" Value="true" />
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Estado2"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="ESTADO2"
+      Expression="ESTADO2"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_OverrideAttr" Value="true" />
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Estado"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="ESTADO"
+      Expression="ESTADO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_OverrideAttr" Value="true" />
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Observaciones"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="1000"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="OBSERVACIONES"
+      Expression="OBSERVACIONES"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_OverrideAttr" Value="true" />
+         <Attr Name="_DisplaySize" Value="1000" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Cheques"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="255"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="CHEQUES"
+      Expression="CHEQUES"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_OverrideAttr" Value="true" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Acreditamiento"
+      IsPersistent="false"
+      Precision="83"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="ACREDITAMIENTO"
+      Expression="ACREDITAMIENTO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_OverrideAttr" Value="true" />
+         <Attr Name="_DisplaySize" Value="83" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdProcesoEmision"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_PROCESO_EMISION"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_OverrideAttr" Value="true" />
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

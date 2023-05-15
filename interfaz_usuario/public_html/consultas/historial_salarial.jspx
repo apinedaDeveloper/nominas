@@ -1,0 +1,632 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <jsp:output omit-xml-declaration="true" doctype-root-element="HTML"
+              doctype-system="http://www.w3.org/TR/html4/loose.dtd"
+              doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN"/>
+  <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+  <f:loadBundle basename="propiedades" var="tx"/>
+  <f:view>
+    <afh:html>
+      <afh:head title="Historial Salarial">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+        <style type="text/css">
+        .x2n,.x2o,.x2p,.x2q
+            {
+        font-size:8pt;
+        white-space: nowrap;
+            }     
+            
+        </style>
+        
+         <script language="javascript" type="text/javascript"> 
+            var selecRadio = 1;
+            
+             function showReport(pIdAnulacion){ 
+                window.open("../verreportepdf?id="+pIdAnulacion+String.fromCharCode(38)+"rep=SIS-21"+String.fromCharCode(38)+"id2=1","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+                 }
+            
+            function cambioBusquedaPor(id){
+                var busqueda = document.getElementById(id).value;
+                
+                if(busqueda==0){
+                    selecRadio = 1;
+                    document.getElementById('form:pag:fechaI').disabled=false;
+                    document.getElementById("form:pag:fechaI").className = "x8";                    
+                    document.getElementById('form:pag:fechaF').disabled=false;  
+                    document.getElementById("form:pag:fechaF").className = "x8";
+                    
+                    document.getElementById('form:pag:chequeI').disabled=true;
+                    document.getElementById("form:pag:chequeI").className = "x9";
+                    document.getElementById('form:pag:chequeF').disabled=true;
+                    document.getElementById("form:pag:chequeF").className = "x9";
+                    document.getElementById('form:pag:acrI').disabled=true;
+                    document.getElementById("form:pag:acrI").className = "x9";
+                    document.getElementById('form:pag:acrF').disabled=true;
+                    document.getElementById("form:pag:acrF").className = "x9";
+                }
+                else{
+                    selecRadio = 2;
+                    document.getElementById('form:pag:fechaI').disabled=true;
+                    document.getElementById("form:pag:fechaI").className = "x9";
+                    document.getElementById('form:pag:fechaF').disabled=true;
+                    document.getElementById("form:pag:fechaF").className = "x9";
+                    
+                    document.getElementById('form:pag:chequeI').disabled=false;
+                    document.getElementById("form:pag:chequeI").className = "x8";
+                    document.getElementById('form:pag:chequeF').disabled=false;
+                    document.getElementById("form:pag:chequeF").className = "x8";
+                    document.getElementById('form:pag:acrI').disabled=false;
+                    document.getElementById("form:pag:acrI").className = "x8";
+                    document.getElementById('form:pag:acrF').disabled=false;
+                    document.getElementById("form:pag:acrF").className = "x8";
+                }
+            }
+            
+            function genRepExcel(){
+                
+                if(selecRadio!=0){
+                    
+                    //dependencia 
+                    x = document.getElementById('form:pag:cb_dep').selectedIndex;
+                    y = document.getElementById('form:pag:cb_dep').options;
+                    var valor =y[x].text;
+                    var vector = valor.split('-');
+                    var dep = vector[0].trim();
+                    
+                    //Tipo proceso
+                    x = document.getElementById('form:pag:cb_tipo_proc').selectedIndex;
+                    y = document.getElementById('form:pag:cb_tipo_proc').options;
+                    valor =y[x].text;
+                    vector = valor.split(' ');
+                    var proc = vector[0].trim();
+                    
+                    //Descuentos
+                    x = document.getElementById('form:pag:cb_desc').selectedIndex;
+                    y = document.getElementById('form:pag:cb_desc').options;
+                    valor =y[x].text;
+                    vector = valor.split(' ');
+                    var desc = vector[0].trim();
+                    
+                    //Cheques
+                    var chI = document.getElementById('form:pag:chequeI').value.trim();
+                    var chF = document.getElementById('form:pag:chequeF').value.trim();
+                    var strCh = "";                    
+                    
+                    if( chI != ""){
+                        if(chF != ""){
+                            strCh="var1="+chI+String.fromCharCode(38)+"var2="+chF;
+                        }
+                        else{
+                            alert("Debe ingresar numero de cheque fin");
+                            return false;
+                        }
+                    }
+                    else{
+                        if(chF != ""){
+                            alert("Debe ingresar numero de cheque inicio");
+                            return false;
+                        }
+                    }
+                    
+                    //Acreditamientos
+                    var acrI = document.getElementById('form:pag:acrI').value.trim();
+                    var acrF = document.getElementById('form:pag:acrF').value.trim();
+                    var strAcr = "";
+                    
+                    if( acrI != ""){
+                        if(acrF != ""){
+                            strAcr="inicio="+acrI+String.fromCharCode(38)+"id4="+acrF;
+                        }
+                        else{
+                            alert("Debe ingresar numero de acreditamiento fin");
+                            return false;
+                        }
+                    }
+                    else{
+                        if(acrF != ""){
+                            alert("Debe ingresar numero de acreditamiento inicio");
+                            return false;
+                        }
+                    }
+                    
+                    //check migracion
+                    var migra = document.getElementById('form:pag:migracion').checked;
+                    var strMigra ="id5=0";
+                    
+                    if(migra){
+                        strMigra ="id5=1"    
+                    }
+                    
+                    
+                    if(strCh !="" || strAcr !=""){                        
+                        var cadena =    "id=" +dep +String.fromCharCode(38)+
+                                "id2="+proc+String.fromCharCode(38)+
+                                "id3="+desc+String.fromCharCode(38)+
+                                "rep=HIST_SAL_EMPL_AUDI"+String.fromCharCode(38)+
+                                strMigra+String.fromCharCode(38)+strCh+String.fromCharCode(38)+strAcr;
+                        
+                        window.open("../verreporteexcel?"+cadena,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1");
+                    }
+                    else{
+                        alert("Debe ingresar rango de cheques o acreditamientos");                        
+                    }                                                                        
+                }
+                else{
+                    alert('Debe seleccionar el tipo de búsqueda que realizará');
+                }
+                return false;
+            }
+                 
+         </script> 
+      </afh:head>
+      <afh:body>
+        <af:messages/>
+        <h:form id="form">
+           <af:page 
+           value="#{modeloMenu.modeloBD}" var="node"  id="pag">
+           <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+            <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:showOneTab>
+              <af:showDetailItem text="Historial Salarial" disclosed="false">
+                <af:panelBox>
+                  <af:panelForm>
+                    <f:facet name="footer">
+                      <h:panelGroup>
+                        <af:panelButtonBar>
+                          <af:commandButton text="#{tx['histSal.btn_buscar.texto']}"
+                                            id="btn_buscar"
+                                            action="#{historial_salarial.btn_buscar_action}"
+                                            partialSubmit="true"/>
+                          <af:commandLink text="Excel por rango fechas"
+                                          action="#{historial_salarial.excel_sal_fechas}"/>
+                          <af:commandLink text="Excel historial salarial completo"
+                                          action="#{historial_salarial.cmd_excel_action}"/>
+                        </af:panelButtonBar>
+                      </h:panelGroup>
+                    </f:facet>
+                    <af:panelLabelAndMessage label="#{tx['histSal.inpt_regEmp.texto']}">
+                      <af:panelHorizontal>
+                        <af:inputText value="#{bindings.reg_empleado1.inputValue}"
+                                      columns="10"
+                                      binding="#{historial_salarial.inpt_registroE}"
+                                      partialTriggers="cmd_buscar">
+                          <f:convertNumber pattern="#{bindings.reg_empleado1.format}"
+                                           groupingUsed="false"/>
+                        </af:inputText>
+                        <af:commandLink action="dialog:buscaEmpl"
+                                        useWindow="true" windowHeight="400"
+                                        windowWidth="700"
+                                        returnListener="#{historial_salarial.return_nombre_listener}"
+                                        shortDesc="Buscar por nombre y apellidos"
+                                        id="cmd_buscar">
+                          <af:objectImage source="/imagenes/search.png"/>
+                        </af:commandLink>
+                      </af:panelHorizontal>
+                    </af:panelLabelAndMessage>
+                    <af:inputText label="CUI"
+                                  value="#{bindings.pCui.inputValue}"/>
+                    <af:inputText label="#{tx['histSal.inpt_nombreE.texto']}"
+                                  columns="20"
+                                  value="#{bindings.nomEmpleado1.inputValue}">
+                      <af:validateRegExp pattern="[a-z_A-Z0-8ñÑ]*"
+                                         noMatchMessageDetail="Nombre no válido"/>
+                    </af:inputText>
+                    <af:inputText label="#{tx['histSal.inpt_numPago.texto']}"
+                                  columns="10"
+                                  value="#{bindings.numPago1.inputValue}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.numPago1.format}"/>
+                    </af:inputText>
+                    <af:panelLabelAndMessage label="De">
+                      <af:panelHorizontal>
+                        <af:selectInputDate value="#{bindings.fecha_de1.inputValue}"/>
+                        <af:selectInputDate label="#{tx['histSal.inpt_fecha2.texto']}"
+                                            value="#{bindings.fecha_hasta1.inputValue}"/>
+                        <f:facet name="separator">
+                          <af:objectSpacer width="20" height="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                    </af:panelLabelAndMessage>
+                    <af:panelHorizontal valign="top">
+                      <af:objectImage source="/imagenes/tip.gif"/>
+                      <af:outputText value="#{tx['histSal.output_tip.texto']}"
+                                     styleClass="x69"/>
+                      <af:panelList styleClass="x6a">
+                        <af:outputText value="Si no se define el periodo se toma todo el año actual."/>
+                        <af:outputText value="Para buscar desde una fecha específica, ingresar solo la fecha de inicio del período"/>
+                      </af:panelList>
+                    </af:panelHorizontal>
+                    <af:objectSpacer width="10" height="20"/>
+                  </af:panelForm>
+                  <af:panelHeader text="Sistema regulatorio de Administración de Recursos Humanos"
+                                  rendered="#{roles_usuario.administrador || roles_usuario.auxiliarTesoreria || roles_usuario.tesorero|| roles_usuario.consultaHistsalLab}"
+                                  icon="/imagenes/doc.png">
+                    <af:menuList>
+                      <af:goMenuItem text="Ver"
+                                     destination="#{flujo_usuario.paginaDoc}?ps=#{flujo_usuario.usuarioMD5}&amp;r=#{flujo_usuario.selRegEmpleado_login}"
+                                     targetFrame="_blank"/>
+                    </af:menuList>
+                  </af:panelHeader>
+                  <af:showDetailHeader text="#{tx['histSal.inpt_opc.texto']}"
+                                       disclosed="false">
+                    <af:panelHeader text="Dependencias" size="1">
+                      <af:selectManyShuttle binding="#{historial_salarial.lst_Many_dependencias}"
+                                            value="#{Shuttle_Dep_histSal.selectedValues}"
+                                            trailingHeader="#{tx['histSal.shut_dep.asig.texto']}"
+                                            leadingHeader="#{tx['histSal.shut_dep.disp.texto']}"
+                                            partialTriggers="check2" size="5">
+                        <f:selectItems value="#{Shuttle_Dep_histSal.allItems}"
+                                       binding="#{historial_salarial.item_dependencias}"/>
+                      </af:selectManyShuttle>
+                    </af:panelHeader>
+                    <af:panelHeader text="Unidades">
+                      <af:commandButton text="#{tx['histSal.btn_buscar_un.texto']}"
+                                        action="#{historial_salarial.btn_buscar_unidades_action}"
+                                        partialSubmit="true"
+                                        id="btn_buscar_uni"/>
+                      <af:objectSpacer width="10" height="40"/>
+                      <af:selectManyShuttle value="#{Shuttle_unidades_histSal.selectedValues}"
+                                            leadingHeader="#{tx['histSal.shut_dep.disp.texto']}"
+                                            trailingHeader="#{tx['histSal.shut_dep.asig.texto']}"
+                                            partialTriggers="btn_buscar_uni"
+                                            size="5">
+                        <f:selectItems value="#{Shuttle_unidades_histSal.allItems}"/>
+                      </af:selectManyShuttle>
+                    </af:panelHeader>
+                    <af:panelHeader text="Plan de egreso" size="1">
+                      <af:selectManyShuttle leadingHeader="#{tx['histSal.shut_dep.disp.texto']}"
+                                            trailingHeader="#{tx['histSal.shut_dep.asig.texto']}"
+                                            size="5"
+                                            value="#{Shuttle_programa_histSal.selectedValues}">
+                        <f:selectItems value="#{Shuttle_programa_histSal.allItems}"/>
+                      </af:selectManyShuttle>
+                    </af:panelHeader>
+                    <af:panelHeader text="Renglones" size="1">
+                      <af:selectManyShuttle value="#{Shuttle_renglon_histSal.selectedValues}"
+                                            leadingHeader="#{tx['histSal.shut_dep.disp.texto']}"
+                                            trailingHeader="#{tx['histSal.shut_dep.asig.texto']}">
+                        <f:selectItems value="#{Shuttle_renglon_histSal.allItems}"/>
+                      </af:selectManyShuttle>
+                    </af:panelHeader>
+                    <af:panelHeader text="Nomina" size="1">
+                      <af:selectManyShuttle value="#{Shuttle_tipNomina_histSal.selectedValues}"
+                                            leadingHeader="#{tx['histSal.shut_dep.disp.texto']}"
+                                            trailingHeader="#{tx['histSal.shut_dep.asig.texto']}">
+                        <f:selectItems value="#{Shuttle_tipNomina_histSal.allItems}"/>
+                      </af:selectManyShuttle>
+                    </af:panelHeader>
+                    <af:panelHeader text="Tipo Proceso SIIF" rendered="true"
+                                    size="1">
+                      <af:selectManyShuttle value="#{Shuttle_tipProc_histSal.selectedValues}"
+                                            leadingHeader="#{tx['histSal.shut_dep.disp.texto']}"
+                                            trailingHeader="#{tx['histSal.shut_dep.asig.texto']}">
+                        <f:selectItems value="#{Shuttle_tipProc_histSal.allItems}"/>
+                      </af:selectManyShuttle>
+                    </af:panelHeader>
+                    <af:panelHeader text="Descuentos" size="1">
+                      <af:selectManyShuttle value="#{Shuttle_ajustes_histSal.selectedValues}"
+                                            leadingHeader="#{tx['histSal.shut_dep.disp.texto']}"
+                                            trailingHeader="#{tx['histSal.shut_dep.asig.texto']}"
+                                            size="5">
+                        <f:selectItems value="#{Shuttle_ajustes_histSal.allItems}"/>
+                      </af:selectManyShuttle>
+                    </af:panelHeader>
+                    <af:panelHeader text="Puesto" size="1">
+                      <af:selectOneChoice label="#{tx['histSal.tblRsl_carr.texto']}"
+                                          value="#{bindings.carreraClasif1.inputValue}">
+                        <af:selectItem label="TODOS" value="TODOS"/>
+                        <af:selectItem label="ADMINISTRATIVO"
+                                       value="ADMINISTRATIVO"/>
+                        <af:selectItem label="DOCENTE" value="DOCENTE"/>
+                      </af:selectOneChoice>
+                      <af:objectSpacer width="10" height="30"/>
+                      <af:selectManyShuttle leadingHeader="#{tx['histSal.shut_dep.disp.texto']}"
+                                            trailingHeader="#{tx['histSal.shut_dep.asig.texto']}"
+                                            value="#{Shuttle_puesto_histSal.selectedValues}"
+                                            size="5">
+                        <f:selectItems value="#{Shuttle_puesto_histSal.allItems}"/>
+                      </af:selectManyShuttle>
+                    </af:panelHeader>
+                    <af:panelHeader text="Periodo" size="1">
+                      <af:panelHorizontal>
+                        <af:selectInputDate label="#{tx['histSal.inpt_fecha1.texto']}"
+                                            value="#{bindings.fecha_de1.inputValue}"/>
+                        <af:selectInputDate label="#{tx['histSal.inpt_fecha2.texto']}"
+                                            value="#{bindings.fecha_hasta1.inputValue}"/>
+                        <f:facet name="separator">
+                          <af:objectSpacer width="20" height="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                    </af:panelHeader>
+                    <af:objectSpacer width="10" height="20"/>
+                    <af:panelHorizontal valign="top">
+                      <af:objectImage source="/imagenes/tip.gif"/>
+                      <af:outputText value="#{tx['histSal.output_tip.texto']}"
+                                     styleClass="x69"/>
+                      <af:panelList styleClass="x6a">
+                        <af:outputText value="En las listas si no se selecciona ningún elemento se toma en cuenta todo."/>
+                        <af:outputText value="Si no se define el periodo se toma todo el año actual."/>
+                        <af:outputText value="Para buscar desde una fecha específica, ingresar solo la fecha de inicio del período"/>
+                      </af:panelList>
+                    </af:panelHorizontal>
+                  </af:showDetailHeader>
+                  <af:commandButton text="#{tx['histSal.btn_buscar.texto']}"
+                                    id="btn_buscar2"
+                                    action="#{historial_salarial.btn_buscar_action}"
+                                    partialSubmit="true"/>
+                  <af:objectSpacer width="10" height="10"/>
+                  <af:objectSeparator/>
+                  <af:table value="#{bindings['Sis_historial_salarial'].collectionModel}"
+                            var="row"
+                            rows="#{bindings['Sis_historial_salarial'].rangeSize}"
+                            first="#{bindings['Sis_historial_salarial'].rangeStart}"
+                            emptyText="Ninguna Fila" banding="row"
+                            bandingInterval="1"
+                            partialTriggers="btn_buscar btn_buscar2"
+                            selectionState="#{bindings['Sis_historial_salarial'].collectionModel.selectedRow}"
+                            selectionListener="#{bindings['Sis_historial_salarial'].collectionModel.makeCurrent}"
+                            inlineStyle="font-size:smaller;">
+                    <f:facet name="selection">
+                      <af:tableSelectOne/>
+                    </f:facet>
+                    <f:facet name="header">
+                      <af:commandLink action="#{historial_salarial.cmd_to_CSV}">
+                        <af:objectImage source="/imagenes/csv_icon1.gif"/>
+                      </af:commandLink>
+                    </f:facet>
+                    <af:column sortProperty="RegistroEmpleado" sortable="false"
+                               headerText="#{tx['histSal.tblRsl_regper.texto']}">
+                      <af:outputText value="#{row.RegistroEmpleado}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_historial_salarial'].formats.RegistroEmpleado}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortable="false" headerText="CUI">
+                      <af:outputText value="#{row.Cui}"/>
+                    </af:column>
+                    <af:column sortProperty="Nombrecompleto" sortable="false"
+                               headerText="#{tx['histSal.tblRsl_nombre.texto']}"
+                               noWrap="true" formatType="text">
+                      <af:outputText value="#{row.Nombrecompleto}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="Sexo">
+                      <af:outputText value="#{row.Genero}"/>
+                    </af:column>
+                    <af:column sortProperty="Partida2" sortable="false"
+                               headerText="#{tx['histSal.tblRsl_partida.texto']}">
+                      <af:outputText value="#{row.Partida2}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="NomSubprog">
+                      <af:outputText value="#{row.Nomsubprog}"/>
+                    </af:column>
+                    <af:column sortProperty="NumeroPlaza" sortable="false"
+                               headerText="#{tx['histSal.tblRsl_plaza.texto']}">
+                      <af:outputText value="#{row.NumeroPlaza}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_historial_salarial'].formats.NumeroPlaza}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortable="false" headerText="IdContr">
+                      <af:outputText value="#{row.IdContrato}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="FormObtPst">
+                      <af:outputText value="#{row.Formaobtpuesto}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="Proceso">
+                      <af:outputText value="#{row.IdProceso}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="Nombre Proceso">
+                      <af:outputText value="#{row.Nombreproceso}"/>
+                    </af:column>
+                    <af:column sortProperty="Tiponomina" sortable="false"
+                               headerText="#{tx['histSal.tblRsl_nomina.texto']}">
+                      <af:outputText value="#{row.Tiponomina}"/>
+                    </af:column>
+                    <af:column sortProperty="Periodo" sortable="false"
+                               headerText="#{bindings['Sis_historial_salarial'].labels.Periodo}">
+                      <af:outputText value="#{row.Periodo}"/>
+                    </af:column>
+                    <af:column sortProperty="Anio" sortable="false"
+                               headerText="#{tx['histSal.tblRsl_anio.texto']}">
+                      <af:outputText value="#{row.Correlativo}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_historial_salarial'].formats.Anio}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortable="false" headerText="CodNom">
+                      <af:outputText value="#{row.Codigonomina}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="SueldoBase"
+                               formatType="number">
+                      <af:outputText value="#{row.SueldoBase}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_historial_salarial'].formats.Nominal}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortable="false" headerText="Compl"
+                               formatType="number">
+                      <af:outputText value="#{row.ComplSalarial}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_historial_salarial'].formats.Nominal}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortable="false" headerText="Escalaf"
+                               formatType="number">
+                      <af:outputText value="#{row.Escalafon}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_historial_salarial'].formats.Nominal}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Nominal" sortable="false"
+                               headerText="#{bindings['Sis_historial_salarial'].labels.Nominal}"
+                               formatType="number">
+                      <af:outputText value="#{row.Nominal}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_historial_salarial'].formats.Nominal}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="TotalBono" sortable="false"
+                               headerText="#{tx['histSal.tblRsl_bono.texto']}"
+                               formatType="number">
+                      <af:outputText value="#{row.TotalBono}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_historial_salarial'].formats.TotalBono}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Nombrebanco" sortable="false"
+                               headerText="#{tx['histSal.tblRsl_banco.texto']}">
+                      <af:outputText value="#{row.Nombrebanco}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="TipoDoc">
+                      <af:outputText value="#{row.Nomtipodoc}"/>
+                    </af:column>
+                    <af:column sortProperty="NumDocFisico" sortable="false"
+                               headerText="#{tx['histSal.tblRsl_nodoc.texto']}">
+                      <af:commandLink text="#{row.NumDocFisico}"
+                                      actionListener="#{bindings.setCurrentRowWithKey.execute}"
+                                      disabled="#{!bindings.setCurrentRowWithKey.enabled}"
+                                      partialSubmit="false"
+                                      action="#{historial_salarial.btn_command_lnk_action}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="FechaEmision">
+                      <af:outputText value="#{row.FechaEmision}">
+                        <f:convertDateTime pattern="#{bindings['Sis_historial_salarial'].formats.FechaAnulacion}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="FechaAnulacion" sortable="false"
+                               headerText="#{bindings['Sis_historial_salarial'].labels.FechaAnulacion}">
+                      <af:outputText value="#{row.FechaAnulacion}">
+                        <f:convertDateTime pattern="#{bindings['Sis_historial_salarial'].formats.FechaAnulacion}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortable="false" headerText="Sis21"
+                               formatType="number">
+                      <af:commandLink text="#{row.Sis21}"
+                                      onclick="avascript:showReport(#{row.Sis21})"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="Clasif"
+                               formatType="number">
+                      <af:outputText value="#{row.IdPuesto}">
+                        <f:convertNumber pattern="0"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Nombre" sortable="false"
+                               headerText="NomPuesto" noWrap="true">
+                      <af:outputText value="#{row.Nombre}"/>
+                    </af:column>
+                    <af:column sortProperty="Nomtipo" sortable="false"
+                               headerText="#{tx['histSal.tblRsl_tipclasif.texto']}">
+                      <af:outputText value="#{row.Nomtipo}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="NivelPuesto">
+                      <af:outputText value="#{row.Nivelpuesto}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="CatPuesto">
+                      <af:outputText value="#{row.Catepuesto}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="TipoServ">
+                      <af:outputText value="#{row.NomServicio}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="Req Prof">
+                      <af:outputText value="#{row.ReqProf}"/>
+                    </af:column>
+                  </af:table>
+                  <af:objectSpacer width="10" height="20"/>
+                </af:panelBox>
+              </af:showDetailItem>
+              <af:showDetailItem text="Historial Salarial CH/ACR"
+                                 rendered="#{roles_usuario.auditor || roles_usuario.administrador}"
+                                 disclosed="false" disabled="false">
+                <af:panelBox>
+                  <af:selectOneRadio label="Búqueda por" id="rb_busqueda"
+                                     onchange="cambioBusquedaPor(id);"
+                                     value="1">
+                    <af:selectItem label="Por Cheques/Acreditamientos"
+                                   value="1"/>
+                  </af:selectOneRadio>
+                  <af:panelForm labelWidth="20" rows="1" maxColumns="2"
+                                width="50%" rendered="false">
+                    <f:facet name="footer"/>
+                    <af:selectInputDate label="Periodo       Del   "
+                                        disabled="false" id="fechaI"/>
+                    <af:selectInputDate label="Hasta" disabled="false"
+                                        id="fechaF"/>
+                  </af:panelForm>
+                  <af:objectSpacer width="10" height="20"/>
+                  <af:panelForm labelWidth="20" rows="1" maxColumns="4"
+                                width="50%">
+                    <f:facet name="footer"/>
+                    <af:inputText label="Cheque Inicio" columns="10"
+                                  id="chequeI" disabled="false"/>
+                    <af:inputText label="Cheque Fin" id="chequeF" columns="10"
+                                  disabled="false"/>
+                    <af:inputText label="Acreditamiento Incial" columns="10"
+                                  id="acrI" disabled="false"/>
+                    <af:inputText label="Acreditamiento Fin" columns="10"
+                                  id="acrF" disabled="false"/>
+                  </af:panelForm>
+                  <af:objectSpacer width="10" height="20"/>
+                  <af:panelHorizontal>
+                    <af:selectOneChoice value="#{bindings['dependenciasnombre_codigo'].inputValue}"
+                                        label="Dependencia" id="cb_dep">
+                      <f:selectItems value="#{bindings['dependenciasnombre_codigo'].items}"/>
+                    </af:selectOneChoice>
+                    <af:selectOneChoice value="#{bindings['listDescuentos'].inputValue}"
+                                        label="Descuentos" id="cb_desc">
+                      <f:selectItems value="#{bindings['listDescuentos'].items}"/>
+                    </af:selectOneChoice>
+                  </af:panelHorizontal>
+                  <af:panelHorizontal>
+                    <af:selectOneChoice value="#{bindings['tipoProceso'].inputValue}"
+                                        label="Tipo Proceso" id="cb_tipo_proc">
+                      <f:selectItems value="#{bindings['tipoProceso'].items}"/>
+                    </af:selectOneChoice>
+                    <af:selectBooleanCheckbox text="Pagos Migrados" id="migracion"/>
+                  </af:panelHorizontal>
+                  <af:panelHorizontal>
+                    <af:commandButton text="Genera Reporte"
+                                      onclick="return genRepExcel();"/>
+                  </af:panelHorizontal>
+                </af:panelBox>
+              </af:showDetailItem>
+            </af:showOneTab>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:historial_salarial-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:historial_salarial-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:historial_salarial-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:historial_salarial-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:historial_salarial-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:historial_salarial-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:historial_salarial-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:historial_salarial-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:historial_salarial-->
+</jsp:root>

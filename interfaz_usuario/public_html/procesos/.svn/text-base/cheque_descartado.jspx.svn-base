@@ -1,0 +1,176 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns="http://www.w3.org/1999/xhtml"
+          xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <f:view>
+    <f:loadBundle basename="propiedades" var="tx"/>
+    <afh:html>
+      <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+      <afh:head title="#{tx['cheq_descartado.title']}">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+      </afh:head>
+      <afh:body>
+        <af:messages/>
+        <h:form>
+                    <af:page value="#{modeloMenu.modeloBD}" var="node">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+           <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelBox>
+              <af:panelForm partialTriggers="tbl_cheques_excld">
+                <af:selectOneChoice value="#{bindings.banco1Nombre.inputValue}"
+                                    label="#{tx['cheq_descartado.cmb_banco.texto']}"
+                                    unselectedLabel="SELECCIONAR"
+                                    disabled="#{bindings.estado1.inputValue eq '0'}"
+                                    required="true">
+                  <f:selectItems value="#{bindings.banco1Nombre.items}"/>
+                </af:selectOneChoice>
+                <af:selectOneChoice value="#{bindings['SisMotivoChequeRecha_vwNombreMotivo'].inputValue}"
+                                    label="#{tx['cheq_descartado.cmb_motivo.texto']}"
+                                    unselectedLabel="SELECCIONAR"
+                                    required="true"
+                                    disabled="#{bindings.estado1.inputValue eq '0'}">
+                  <f:selectItems value="#{bindings['SisMotivoChequeRecha_vwNombreMotivo'].items}"/>
+                </af:selectOneChoice>
+                <af:inputText value="#{bindings.NumChequeInicial.inputValue}"
+                              label="#{tx['cheq_descartado.inpt_numChequeI.texto']}"
+                              required="#{bindings.NumChequeInicial.mandatory}"
+                              columns="10"
+                              disabled="#{bindings.estado1.inputValue eq '0'}">
+                  <af:validator binding="#{bindings.NumChequeInicial.validator}"/>
+                  <f:convertNumber groupingUsed="false"
+                                   pattern="#{bindings.NumChequeInicial.format}"/>
+                </af:inputText>
+                <af:inputText value="#{bindings.NumChequeFinal.inputValue}"
+                              label="#{tx['cheq_descartado.inpt_numChequeF.texto']}"
+                              required="#{bindings.NumChequeFinal.mandatory}"
+                              columns="10"
+                              disabled="#{bindings.estado1.inputValue eq '0'}">
+                  <af:validator binding="#{bindings.NumChequeFinal.validator}"/>
+                  <f:convertNumber groupingUsed="false"
+                                   pattern="#{bindings.NumChequeFinal.format}"/>
+                </af:inputText>
+                <af:inputText value="#{bindings.Observaciones.inputValue}"
+                              label="#{tx['cheq_descartado.inpt_observaciones.texto']}"
+                              required="#{bindings.Observaciones.mandatory}"
+                              columns="40" rows="4"
+                              disabled="#{bindings.estado1.inputValue eq '0'}">
+                  <af:validator binding="#{bindings.Observaciones.validator}"/>
+                </af:inputText>
+                <f:facet name="footer">
+                  <af:panelButtonBar>
+                    <af:commandButton text="#{tx['cheq_descartado.btn_agregar.texto']}"
+                                      actionListener="#{bindings.Create.execute}"
+                                      disabled="#{!bindings.Create.enabled}"
+                                      id="btn_agregar">
+                      <af:setActionListener from="#{'1'}"
+                                            to="#{bindings.estado1.inputValue}"/>
+                    </af:commandButton>
+                    <af:commandButton text="#{tx['cheq_descartado.btn_commit_texto']}"
+                                      id="btn_commit"
+                                      action="#{backing_bean_comun_procesos.btn_commit_chequeDescartado_action}"/>
+                    <af:commandButton actionListener="#{bindings.Rollback.execute}"
+                                      text="#{tx['cheq_descartado.btn_rollback_texto']}"
+                                      immediate="true" id="btn_cancelar">
+                      <af:resetActionListener/>
+                      <af:setActionListener from="#{'0'}"
+                                            to="#{bindings.estado1.inputValue}"/>
+                    </af:commandButton>
+                  </af:panelButtonBar>
+                </f:facet>
+                <af:objectSpacer width="10" height="40"/>
+              </af:panelForm>
+              <af:objectSpacer width="10" height="30"/>
+              <af:table value="#{bindings.SisChequeDescartadoVw.collectionModel}"
+                        var="row"
+                        rows="#{bindings.SisChequeDescartadoVw.rangeSize}"
+                        first="#{bindings.SisChequeDescartadoVw.rangeStart}"
+                        emptyText="#{tx['tbl_empty.texto']}"
+                        selectionState="#{bindings.SisChequeDescartadoVw.collectionModel.selectedRow}"
+                        selectionListener="#{bindings.SisChequeDescartadoVw.collectionModel.makeCurrent}"
+                        id="tbl_cheques_excld">
+                <f:facet name="selection">
+                  <af:tableSelectOne autoSubmit="true"
+                                     disabled="#{bindings.estado1.inputValue eq '1'}">
+                    <af:commandButton text="#{tx['cheq_descartado.btn_editar.texto']}">
+                      <af:setActionListener from="#{'1'}"
+                                            to="#{bindings.estado1.inputValue}"/>
+                    </af:commandButton>
+                  </af:tableSelectOne>
+                </f:facet>
+                <af:column sortProperty="IdChequeDescartado" sortable="false"
+                           headerText="#{tx['cheq_descartado.tbl_id.texto']}">
+                  <af:outputText value="#{row.IdChequeDescartado}">
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.SisChequeDescartadoVw.formats.IdChequeDescartado}"/>
+                  </af:outputText>
+                </af:column>
+                <af:column sortProperty="NombreBanco" sortable="false"
+                           headerText="#{tx['cheq_descartado.tbl_banco.texto']}">
+                  <af:outputText value="#{row.NombreBanco}"/>
+                </af:column>
+                <af:column sortProperty="NombreMotivo" sortable="false"
+                           headerText="#{tx['cheq_descartado.tbl_mot.texto']}"
+                           noWrap="true">
+                  <af:outputText value="#{row.NombreMotivo}"/>
+                </af:column>
+                <af:column sortProperty="NumChequeInicial" sortable="false"
+                           headerText="#{tx['cheq_descartado.inpt_numChequeI.texto']}"
+                           noWrap="true">
+                  <af:outputText value="#{row.NumChequeInicial}">
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.SisChequeDescartadoVw.formats.NumChequeInicial}"/>
+                  </af:outputText>
+                </af:column>
+                <af:column sortProperty="NumChequeFinal" sortable="false"
+                           headerText="#{tx['cheq_descartado.inpt_numChequeF.texto']}"
+                           noWrap="true">
+                  <af:outputText value="#{row.NumChequeFinal}">
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.SisChequeDescartadoVw.formats.NumChequeFinal}"/>
+                  </af:outputText>
+                </af:column>
+                <af:column sortProperty="Observaciones" sortable="false"
+                           headerText="#{bindings.SisChequeDescartadoVw.labels.Observaciones}">
+                  <af:outputText value="#{row.Observaciones}"/>
+                </af:column>
+                <af:column sortProperty="CreadoPor" sortable="false"
+                           headerText="#{bindings.SisChequeDescartadoVw.labels.CreadoPor}">
+                  <af:outputText value="#{row.CreadoPor}"/>
+                </af:column>
+                <af:column sortProperty="FechaCreacion" sortable="false"
+                           headerText="#{bindings.SisChequeDescartadoVw.labels.FechaCreacion}"
+                           noWrap="true">
+                  <af:outputText value="#{row.FechaCreacion}">
+                    <f:convertDateTime pattern="#{bindings.SisChequeDescartadoVw.formats.FechaCreacion}"/>
+                  </af:outputText>
+                </af:column>
+              </af:table>
+              <af:objectSpacer width="10" height="20"/>
+            </af:panelBox>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+</jsp:root>

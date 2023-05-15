@@ -1,0 +1,198 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html"
+          xmlns:af="http://xmlns.oracle.com/adf/faces">
+  <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+  <f:loadBundle basename="propiedades" var="tx"/>
+  <f:view>
+    <afh:html>
+      <afh:head title="#{tx['reppDep.title']}">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>       
+      </afh:head>
+        <script language="javascript" type="text/javascript"> 
+        function mostrarReporte(){          
+             var lista=document.getElementById('pag:cmb_periodo');
+             var indice=lista.selectedIndex;
+             var vMes = lista.options[indice].value;
+              
+              submitForm('form',1,{source:'pag:lista:cmdReporte1'});
+              window.open("../verreportepdf?id="+vMes+String.fromCharCode(38)+"rep=NOMINAPRUEBA","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+              return false;
+            }
+            
+        function mostrarReporte2(idProc){          
+
+              submitForm('form',1,{source:'pag:lista:cmdReporte2'});
+              window.open("../verreportepdf?id="+idProc+String.fromCharCode(38)+"rep=NOMPROC","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+              return false;
+            }
+            
+            
+         function mostrarReporteNom(idProc){          
+
+              window.open("../verreportepdf?id="+idProc+String.fromCharCode(38)+"rep=DOCNOMINAT","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable=1"); 
+              return false;
+            }
+                 
+            
+      </script> 
+      <afh:body>
+        <af:messages/>
+        <af:form id="form">
+          <af:page value="#{modeloMenu.modeloBD}" var="node" id="pag">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+            <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelBox width="600">
+              <af:panelHeader text="#{tx['reppDep.pnelParem.texto']}" size="1">
+                <af:selectOneChoice label="#{tx['reppDep.cmbPeriodo.texto']}"
+                                    valuePassThru="true" value="1"
+                                    id="cmb_periodo">
+                  <af:selectItem label="Enero" value="1"/>
+                  <af:selectItem label="Febrero" value="2"/>
+                  <af:selectItem label="Marzo" value="3"/>
+                  <af:selectItem label="Abril" value="4"/>
+                  <af:selectItem label="Mayo" value="5"/>
+                  <af:selectItem label="Junio" value="6"/>
+                  <af:selectItem label="Julio" value="7"/>
+                  <af:selectItem label="Agosto" value="8"/>
+                  <af:selectItem label="Septiembre" value="9"/>
+                  <af:selectItem label="Octubre" value="10"/>
+                  <af:selectItem label="Noviembre" value="11"/>
+                  <af:selectItem label="Diciembre" value="12"/>
+                </af:selectOneChoice>
+                <af:objectSeparator/>
+                <af:panelHeader text="#{tx['reppDep.pnel_dep.texto']}"/>
+                <af:selectManyShuttle binding="#{historial_salarial.lst_Many_dependencias}"
+                                      value="#{Shuttle_Dep_histSal.selectedValues}"
+                                      trailingHeader="#{tx['histSal.shut_dep.asig.texto']}"
+                                      leadingHeader="#{tx['histSal.shut_dep.disp.texto']}"
+                                      partialTriggers="check2" size="5">
+                  <f:selectItems value="#{Shuttle_Dep_histSal.allItems}"
+                                 binding="#{historial_salarial.item_dependencias}"/>
+                </af:selectManyShuttle>
+              </af:panelHeader>
+              <af:objectSpacer width="10" height="20"/>
+              <af:showDetailHeader disclosed="false"
+                                   text="#{tx['reppDep.pnlhdr1.texto']}">
+                <af:panelForm>
+                  <af:selectInputDate value="#{bindings.pFechaI.inputValue}"
+                                      label="#{tx['reppDep.inptFecha1.texto']}"
+                                      required="#{bindings.pFechaI.mandatory}">
+                    <af:validator binding="#{bindings.pFechaI.validator}"/>
+                    <f:convertDateTime pattern="#{bindings.pFechaI.format}"/>
+                  </af:selectInputDate>
+                  <af:selectInputDate value="#{bindings.pFechaF.inputValue}"
+                                      label="#{tx['reppDep.inptFecha2.texto']}"
+                                      required="#{bindings.pFechaF.mandatory}">
+                    <af:validator binding="#{bindings.pFechaF.validator}"/>
+                    <f:convertDateTime pattern="#{bindings.pFechaF.format}"/>
+                  </af:selectInputDate>
+                  <af:commandButton actionListener="#{bindings.ExecuteWithParams.execute}"
+                                    text="#{tx['reppDep.btn_buscar.texto']}"
+                                    disabled="#{!bindings.ExecuteWithParams.enabled}"/>
+                </af:panelForm>
+                <af:objectSpacer width="10" height="20"/>
+                <af:table value="#{bindings.SisProcesosNominaVw.collectionModel}"
+                          var="row"
+                          rows="#{bindings.SisProcesosNominaVw.rangeSize}"
+                          first="#{bindings.SisProcesosNominaVw.rangeStart}"
+                          emptyText="#{tx['tbl_empty.texto']}"
+                          selectionState="#{bindings.SisProcesosNominaVw.collectionModel.selectedRow}"
+                          selectionListener="#{bindings.SisProcesosNominaVw.collectionModel.makeCurrent}"
+                          id="tbl_procesos" partialTriggers="btnSelc"
+                          banding="row" bandingInterval="1">
+                  <f:facet name="selection">
+                    <af:tableSelectOne autoSubmit="true" id="btnSelc"/>
+                  </f:facet>
+                  <af:column sortable="false" headerText=" -">
+                    <af:commandLink
+                                    onclick="mostrarReporteNom('#{row.IdProceso}')">
+                      <af:objectImage source="/imagenes/print.png"/>
+                    </af:commandLink>
+                  </af:column>
+                  <af:column sortProperty="IdProceso" sortable="false"
+                             headerText="#{bindings.SisProcesosNominaVw.labels.IdProceso}">
+                    <af:outputText value="#{row.IdProceso}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.SisProcesosNominaVw.formats.IdProceso}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="Nombre" sortable="false"
+                             headerText="#{bindings.SisProcesosNominaVw.labels.Nombre}">
+                    <af:outputText value="#{row.Nombre}"/>
+                  </af:column>
+                  <af:column sortProperty="Anio" sortable="false"
+                             headerText="#{bindings.SisProcesosNominaVw.labels.Anio}">
+                    <af:outputText value="#{row.Anio}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.SisProcesosNominaVw.formats.Anio}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="Periodo" sortable="false"
+                             headerText="#{bindings.SisProcesosNominaVw.labels.Periodo}">
+                    <af:outputText value="#{row.Periodo}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.SisProcesosNominaVw.formats.Periodo}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="NomPeriodo" sortable="false"
+                             headerText="#{bindings.SisProcesosNominaVw.labels.NomPeriodo}">
+                    <af:outputText value="#{row.NomPeriodo}"/>
+                  </af:column>
+                  <af:column sortProperty="FechaInicio" sortable="false"
+                             headerText="#{bindings.SisProcesosNominaVw.labels.FechaInicio}">
+                    <af:outputText value="#{row.FechaInicio}">
+                      <f:convertDateTime pattern="#{bindings.SisProcesosNominaVw.formats.FechaInicio}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="Estado" sortable="false"
+                             headerText="#{bindings.SisProcesosNominaVw.labels.Estado}">
+                    <af:outputText value="#{row.Estado2}"/>
+                  </af:column>
+                  <af:column sortProperty="Observaciones" sortable="false"
+                             headerText="#{bindings.SisProcesosNominaVw.labels.Observaciones}">
+                    <af:outputText value="#{row.Observaciones}"/>
+                  </af:column>
+                </af:table>
+              </af:showDetailHeader>
+              <af:panelHeader text="#{tx['reppDep.pnel1.texto']}">
+                <af:menuList id="lista" partialTriggers="tbl_procesos">
+                  <af:commandLink text="#{tx['reppDep.cmdlinkRep1.texto']}" partialSubmit="false"
+                                  action="#{backing_bean_reportes.cmd_reporte1_rep_por_dep_action}"
+                                  id="cmdReporte1"
+                                  onclick="return mostrarReporte();"/>
+                  <af:commandLink text="#{tx['reppDep.cmdlinkRep2.texto']}"
+                                  id="cmdReporte2"
+                                  action="#{backing_bean_reportes.cmdLinkRep2_rep_por_dep_action}"
+                                  onclick="return mostrarReporte2(#{bindings.IdProceso.inputValue});"
+                                  partialTriggers="tbl_procesos lista"/>
+                </af:menuList>
+              </af:panelHeader>
+              <af:objectSpacer width="10" height="20"/>
+            </af:panelBox>
+          </af:page>
+        </af:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+</jsp:root>

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="Sis-04_subreport0"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="535"
+		 pageHeight="802"
+		 columnWidth="535"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pIdContrato" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[SELECT 
+sis_horario_contrato.id_dia,
+lower(sis_dia_semana.nombre) as nombre,
+to_char(EXTRACT(HOUR FROM hora_entrada),'00')||':'||trim(to_char(EXTRACT(MINUTE FROM hora_entrada),'00'))||' a '|| to_char(EXTRACT(HOUR FROM hora_salida),'00')||':'||trim(to_char(EXTRACT(MINUTE FROM hora_salida),'00')) horario
+,to_number(to_char(abs(EXTRACT(HOUR FROM (hora_salida-hora_entrada))))||'.'||trim(to_char((abs(EXTRACT(MINUTE FROM (hora_salida-hora_entrada)))/60)*100,'00'))) as horas,
+lower(cnt.OBSERVHORARIO) OBSERVHORARIO 
+FROM sis_horario_contrato inner join sis_dia_semana
+on sis_horario_contrato.id_dia = sis_dia_semana.id_dia,
+sis_contrato cnt 
+where 
+sis_horario_contrato.id_contrato = $P{pIdContrato}
+and cnt.id_contrato=sis_horario_contrato.id_contrato
+union
+select 'Y', lower(observhorario) observhorario,' ',null,null
+from sis_contrato
+where id_contrato = $P{pIdContrato}
+and observhorario is not null
+Union All
+select 'Z',sis_pkg_util.getCadenaLicencias($P{pIdContrato}),null,null,null from dual
+order by 1]]></queryString>
+
+	<field name="ID_DIA" class="java.lang.String"/>
+	<field name="NOMBRE" class="java.lang.String"/>
+	<field name="HORARIO" class="java.lang.String"/>
+	<field name="HORAS" class="java.math.BigDecimal"/>
+	<field name="OBSERVHORARIO" class="java.lang.String"/>
+
+	<variable name="vTotalHoras" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{HORAS}]]></variableExpression>
+	</variable>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="12"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="0"
+						width="105"
+						height="12"
+						key="textField"/>
+					<box leftPadding="2" rightPadding="2">					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="Times-Roman" pdfFontName="Helvetica" size="9" isBold="false"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="84"
+						y="0"
+						width="75"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement verticalAlignment="Top">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{HORARIO}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

@@ -1,0 +1,131 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="Sis_firmas_docs_vw"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   ComponentClass="enlace_datos.consultas.gestiones.contrato.Sis_firmas_docs_vwImpl"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="pUsuario"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select distinct nombre||'|'||cargo as firma,nombre,cargo,nivel from SIS_AUTH_CONTRATO_DATOS_VW 
+where id_auth_contrato in  
+(
+select id_auth_contrato from sis_auth_contrato auth 
+  where fecha_baja is null  
+  and exists 
+  (
+    select 1 from partida part 
+      where
+    d1=4 and d8 is null and d9d10 is null 
+    and exists 
+      (
+        select 1 from usuario_unidad b, partida c 
+          where b.id_partida=c.id_partida 
+             and usuario=:pUsuario 
+             and b.tipo_usuario='TRABAJADOR'
+             and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate) 
+             and part.aniomanual=c.aniomanual 
+             and part.d1=c.d1 
+             and part.d2=c.d2 
+             and part.d3d4=c.d3d4 
+             and 
+               ( 
+                   (
+                     part.d7=c.d7 
+                     and part.d6=c.d6 
+                     and part.d5=c.d5 
+                     ) 
+                     or 
+                     (
+                     c.d5 is null 
+                     and c.d6 is null 
+                     and c.d7 is null  
+                     ) 
+                 ) 
+             ) 
+     and 
+     (
+        auth.id_dependencia=part.d3d4 
+        or
+        ( 
+            auth.id_unidad_prog=to_number(part.d1||d2) 
+            and auth.id_unidad_depen=part.d3d4
+            and auth.id_unidad=to_number(part.d5||d6||d7) 
+        ) 
+    )
+    )        
+    )
+UNION
+SELECT 'SEÑORES|CONSEJO DIRECTIVO','SEÑORES CONSEJO DIRECTIVO','CONSEJO DIRECTIVO',4
+FROM DUAL
+UNION
+SELECT 'SEÑORES|JUNTA DIRECTIVA','SEÑORES JUNTA DIRECTIVA','JUNTA DIRECTIVA',4
+FROM DUAL
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="Firma"
+      IsPersistent="false"
+      Precision="457"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="FIRMA"
+      Expression="FIRMA"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="457" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nombre"
+      IsPersistent="false"
+      Precision="306"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBRE"
+      Expression="NOMBRE"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="306" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Cargo"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="150"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="CARGO"
+      Expression="CARGO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="150" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nivel"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="2"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="NIVEL"
+      Expression="NIVEL"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

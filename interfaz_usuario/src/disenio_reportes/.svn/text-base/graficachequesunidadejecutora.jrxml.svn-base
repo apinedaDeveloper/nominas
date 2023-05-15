@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="graficachequesunidadejecutora"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="792"
+		 pageHeight="612"
+		 columnWidth="732"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="fechainicio" isForPrompting="true" class="java.util.Date"/>
+	<parameter name="fechafinal" isForPrompting="true" class="java.util.Date"/>
+	<parameter name="dependencia" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="unidad" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[select 'EMITIDO' AS ESTADO,NVL(SUM(SDB.VALOR),0) AS VALOR
+from sis_pago sp
+left join sis_documento_banco sdb on sdb.ID_DOCUMENTO_BANCO=sp.ID_DOCUMENTO_BANCO
+left join sis_nomina sn on sp.ID_NOMINA=sn.ID_NOMINA
+left join sis_partida sip on sip.ID_PARTIDA=sn.ID_PARTIDA
+where sdb.FECHA_EMISION between $P{fechainicio} and $P{fechafinal}
+and sip.ID_DEPENDENCIA=$P{dependencia}
+AND SIP.ID_UNIDAD=$P{unidad}
+UNION
+SELECT 'ANULADO' AS ESTADO, NVL(SUM(SDB.VALOR),0) AS VALOR
+FROM SIS_PAGO SP
+left join sis_documento_banco sdb on sdb.ID_DOCUMENTO_BANCO=sp.ID_DOCUMENTO_BANCO
+left join sis_estado  sie on sie.ID_ESTADO=sdb.ID_ESTADO
+left join sis_nomina sn on sp.ID_NOMINA=sn.ID_NOMINA
+left join sis_partida sip on sip.ID_PARTIDA=sn.ID_PARTIDA
+where sie.NOMBRE='ANULADO'
+AND sdb.FECHA_EMISION between $P{fechainicio} and $P{fechafinal}
+and sip.ID_DEPENDENCIA=$P{dependencia}
+AND SIP.ID_UNIDAD=$P{unidad}
+UNION
+SELECT 'PAGADO' AS ESTADO, NVL(SUM(SDB.VALOR),0) AS VALOR
+FROM SIS_PAGO SP
+left join sis_documento_banco sdb on sdb.ID_DOCUMENTO_BANCO=sp.ID_DOCUMENTO_BANCO
+left join sis_estado  sie on sie.ID_ESTADO=sdb.ID_ESTADO
+left join sis_nomina sn on sp.ID_NOMINA=sn.ID_NOMINA
+left join sis_partida sip on sip.ID_PARTIDA=sn.ID_PARTIDA
+where sie.NOMBRE='PAGADO'
+AND sdb.FECHA_EMISION between $P{fechainicio} and $P{fechafinal}
+and sip.ID_DEPENDENCIA=$P{dependencia}
+AND SIP.ID_UNIDAD=$P{unidad}
+UNION
+SELECT 'CIRCULACION' AS ESTADO, NVL((A.VALOR-(B.VALOR+C.VALOR)),0) AS VALOR
+FROM (select 'EMITIDO' AS ESTADO,NVL(SUM(SDB.VALOR),0) AS VALOR
+from sis_pago sp
+left join sis_documento_banco sdb on sdb.ID_DOCUMENTO_BANCO=sp.ID_DOCUMENTO_BANCO
+left join sis_nomina sn on sp.ID_NOMINA=sn.ID_NOMINA
+left join sis_partida sip on sip.ID_PARTIDA=sn.ID_PARTIDA
+WHERE sdb.FECHA_EMISION between $P{fechainicio} and $P{fechafinal}
+and sip.ID_DEPENDENCIA=$P{dependencia}
+AND SIP.ID_UNIDAD=$P{unidad}
+)  A,
+(SELECT 'ANULADO' AS ESTADO, NVL(SUM(SDB.VALOR),0) AS VALOR
+FROM SIS_PAGO SP
+left join sis_documento_banco sdb on sdb.ID_DOCUMENTO_BANCO=sp.ID_DOCUMENTO_BANCO
+left join sis_estado  sie on sie.ID_ESTADO=sdb.ID_ESTADO
+left join sis_nomina sn on sp.ID_NOMINA=sn.ID_NOMINA
+left join sis_partida sip on sip.ID_PARTIDA=sn.ID_PARTIDA
+where sie.NOMBRE='ANULADO'
+AND sdb.FECHA_EMISION between $P{fechainicio} and $P{fechafinal}
+and sip.ID_DEPENDENCIA=$P{dependencia}
+AND SIP.ID_UNIDAD=$P{unidad}
+) B,
+(SELECT 'PAGADO' AS ESTADO, NVL(SUM(SDB.VALOR),0) AS VALOR
+FROM SIS_PAGO SP
+left join sis_documento_banco sdb on sdb.ID_DOCUMENTO_BANCO=sp.ID_DOCUMENTO_BANCO
+left join sis_estado  sie on sie.ID_ESTADO=sdb.ID_ESTADO
+left join sis_nomina sn on sp.ID_NOMINA=sn.ID_NOMINA
+left join sis_partida sip on sip.ID_PARTIDA=sn.ID_PARTIDA
+where sie.NOMBRE='PAGADO'
+AND sdb.FECHA_EMISION between $P{fechainicio} and $P{fechafinal}
+and sip.ID_DEPENDENCIA=$P{dependencia}
+AND SIP.ID_UNIDAD=$P{unidad}
+) C]]></queryString>
+
+	<field name="ESTADO" class="java.lang.String"/>
+	<field name="VALOR" class="java.math.BigDecimal"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="20"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="265"
+						y="0"
+						width="100"
+						height="18"
+						key="staticText-2"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" size="14" isBold="true"/>
+					</textElement>
+				<text><![CDATA[ESTADO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="365"
+						y="0"
+						width="100"
+						height="18"
+						key="staticText-3"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" size="14" isBold="true"/>
+					</textElement>
+				<text><![CDATA[VALOR]]></text>
+				</staticText>
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="19"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						mode="Opaque"
+						x="265"
+						y="-2"
+						width="100"
+						height="18"
+						forecolor="#000000"
+						key="textField"/>
+					<box>					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
+					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{ESTADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="365"
+						y="-2"
+						width="100"
+						height="18"
+						forecolor="#000000"
+						key="textField"/>
+					<box>					<pen lineWidth="0.5" lineStyle="Solid"/>
+					<topPen lineWidth="0.5" lineStyle="Solid"/>
+					<leftPen lineWidth="0.5" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+</box>
+					<textElement textAlignment="Right">
+						<font size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{VALOR}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="463"  isSplitAllowed="true" >
+				<bar3DChart>
+					<chart  hyperlinkTarget="Self" >
+					<reportElement
+						x="34"
+						y="138"
+						width="674"
+						height="297"
+						key="element-2"/>
+					<box></box>
+						<chartLegend textColor="#000000" backgroundColor="#FFFFFF" >
+					</chartLegend>
+					</chart>
+					<categoryDataset>
+						<dataset resetType="None" >
+						</dataset>
+						<categorySeries>
+							<seriesExpression><![CDATA[$F{ESTADO}]]></seriesExpression>
+							<categoryExpression><![CDATA[$F{ESTADO}]]></categoryExpression>
+							<valueExpression><![CDATA[$F{VALOR}]]></valueExpression>
+				<itemHyperlink >
+				</itemHyperlink>
+						</categorySeries>
+					</categoryDataset>
+					<bar3DPlot isShowLabels="true" >
+						<plot />
+						<categoryAxisFormat>
+							<axisFormat >
+							</axisFormat>
+						</categoryAxisFormat>
+						<valueAxisFormat>
+							<axisFormat >
+							</axisFormat>
+						</valueAxisFormat>
+					</bar3DPlot>
+				</bar3DChart>
+				<staticText>
+					<reportElement
+						x="83"
+						y="41"
+						width="589"
+						height="67"
+						key="staticText-1"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" size="24" isBold="true"/>
+					</textElement>
+				<text><![CDATA[TOTAL EN QUETZALES UNIDAD EJECUTORA]]></text>
+				</staticText>
+			</band>
+		</summary>
+</jasperReport>

@@ -1,0 +1,162 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="nominas_a_liquidar"
+   OrderBy="anio,periodo"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   RowClass="enlace_datos.consultas.procesos.nominas_a_liquidarRowImpl"
+   ComponentClass="enlace_datos.consultas.procesos.nominas_a_liquidarImpl"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isCodegen" Value="true" />
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.41.57" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|Prog|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="pDependencia"
+      Kind="where"
+      Type="java.lang.Integer" >
+   </Variable>
+   <Variable
+      Name="pUnidad"
+      Kind="where"
+      Type="java.lang.Integer" >
+   </Variable>
+   <Variable
+      Name="pPrograma"
+      Kind="where"
+      Type="java.lang.Integer" >
+   </Variable>
+   <Variable
+      Name="dependenciaCompleta"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select distinct
+sis_proceso.id_proceso,sis_nomina.anio,sis_nomina.periodo,sis_partida.ID_DEPENDENCIA,
+CASE :dependenciaCompleta 
+WHEN 'true' THEN 0
+WHEN 'false' THEN  sis_partida.ID_UNIDAD
+END ID_UNIDAD,
+sis_partida.ID_PROGRAMA,(select  sis_pkg_util.GETNOMINASPROCESOPAGO(sis_proceso.id_proceso) from dual) nomina
+from sis_proceso_pago_det
+inner join sis_pago on sis_pago.ID_PROCESO=sis_proceso_pago_det.id_proceso
+inner join sis_nomina on sis_pago.ID_NOMINA=sis_nomina.ID_NOMINA
+inner join sis_partida on sis_nomina.id_partida =sis_partida.ID_PARTIDA
+inner join sis_proceso on sis_proceso.ID_PROCESO=sis_proceso_pago_det.id_proceso
+inner join sis_tipo_proceso on sis_tipo_proceso.ID_TIPOPROCESO=sis_proceso.TIPOPROCESO
+where sis_tipo_proceso.NOMBRE='PAGO'
+and id_dependencia=:pDependencia
+and :pUnidad=:pUnidad
+and :pPrograma=:pPrograma
+and :dependenciaCompleta=:dependenciaCompleta
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="IdProceso"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_PROCESO"
+      Expression="ID_PROCESO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Anio"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="4"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ANIO"
+      Expression="ANIO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Periodo"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="2"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="PERIODO"
+      Expression="PERIODO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdDependencia"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="5"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_DEPENDENCIA"
+      Expression="ID_DEPENDENCIA"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdUnidad"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="6"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_UNIDAD"
+      Expression="ID_UNIDAD"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdPrograma"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="6"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_PROGRAMA"
+      Expression="ID_PROGRAMA"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomina"
+      IsPersistent="false"
+      Precision="192"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMINA"
+      Expression="NOMINA"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="192" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

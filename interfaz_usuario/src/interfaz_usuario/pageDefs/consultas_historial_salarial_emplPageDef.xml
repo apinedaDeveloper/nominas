@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel"
+                version="10.1.3.42.70"
+                id="consultas_historial_salarial_emplPageDef"
+                Package="interfaz_usuario.pageDefs"
+                MsgBundleClass="interfaz_usuario.pageDefs.consultas_historial_salarial_emplPageDefMsgBundle">
+  <parameters/>
+  <executables>
+    <iterator id="Sis_historial_salarialIterator" RangeSize="50"
+              Binds="Sis_historial_salarial" DataControl="QUERRYSDataControl"
+              StateValidation="false"/>
+    <variableIterator id="variables">
+      <variable Name="pAnio" Type="oracle.jbo.domain.Number"
+                DefaultValue="${flujo_usuario.anioActual}"/>
+      <variable Type="java.lang.String" Name="setCurrentRowWithKey_rowKey"
+                IsQueriable="false"/>
+      <variable Type="oracle.jbo.domain.Number" Name="getTotalNominal_return"
+                IsQueriable="false" IsUpdateable="0"
+                DefaultValue="${bindings.getTotalNominal.result}"/>
+      <variable Type="oracle.jbo.domain.Number" Name="getTotalBono_return"
+                IsQueriable="false" IsUpdateable="0"
+                DefaultValue="${bindings.getTotalBono.result}"/>
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="Sis_list_detPagoDesc_vw.variablesMap.pRegistroEmpleado"
+                     Name="Sis_list_detPagoDesc_vw_pRegistroEmpleado"
+                     IsQueriable="false"/>
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="Sis_list_detPagoDesc_vw.variablesMap.pAnio"
+                     Name="Sis_list_detPagoDesc_vw_pAnio" IsQueriable="false"/>
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="Sis_list_detPagoDesc_vw.variablesMap.pIdAjuste"
+                     Name="Sis_list_detPagoDesc_vw_pIdAjuste"
+                     IsQueriable="false"/>
+      <variable Type="oracle.jbo.domain.Number" Name="getTotalNominal3_return"
+                IsQueriable="false" IsUpdateable="0"
+                DefaultValue="${bindings.getTotalNominal3.result}"/>
+    </variableIterator>
+    <invokeAction Binds="consultaEmpl" id="ExeInicio" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <invokeAction id="ExeNominal" Binds="getTotalNominal2" Refresh="renderModel"/>
+    <invokeAction id="ExeBono" Binds="getTotalBono" Refresh="renderModel"/>
+    <iterator id="Sis_list_dest_empleado_vwIterator" RangeSize="-1"
+              Binds="Sis_list_dest_empleado_vw"
+              DataControl="QUERRYSDataControl">
+      <sortCriteria>
+        <sort attribute="CodNomina" ascending="true"/>
+      </sortCriteria>
+    </iterator>
+    <iterator id="Sis_list_detPagoDesc_vwIterator" RangeSize="-1"
+              Binds="Sis_list_detPagoDesc_vw" DataControl="QUERRYSDataControl">
+      <sortCriteria>
+        <sort attribute="Periodo" ascending="true"/>
+        <sort attribute="NumeroPlaza" ascending="true"/>
+      </sortCriteria>
+    </iterator>
+    <invokeAction Binds="ExeAjustes" id="ExeDesc" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <iterator id="Sis_historial_salarial_IsrIterator" RangeSize="-1"
+              Binds="Sis_historial_salarial_Isr"
+              DataControl="QUERRYSDataControl">
+      <sortCriteria>
+        <sort attribute="Periodo" ascending="false"/>
+        <sort attribute="FechaEmision" ascending="false"/>
+      </sortCriteria>
+    </iterator>
+    <invokeAction Binds="ExeISR" id="EjeISR" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <invokeAction id="EjeNominalISR" Binds="getTotalNominal3"
+                  Refresh="renderModel"/>
+  </executables>
+  <bindings>
+    <table id="Sis_historial_salarial"
+           IterBinding="Sis_historial_salarialIterator">
+      <AttrNames>
+        <Item Value="RegistroEmpleado"/>
+        <Item Value="Nombrecompleto"/>
+        <Item Value="Partida1"/>
+        <Item Value="Partida2"/>
+        <Item Value="NumeroPlaza"/>
+        <Item Value="Tiponomina"/>
+        <Item Value="Periodo"/>
+        <Item Value="Nominal"/>
+        <Item Value="TotalBono"/>
+        <Item Value="NumDocFisico"/>
+        <Item Value="Nombrebanco"/>
+        <Item Value="FechaAnulacion"/>
+        <Item Value="Nombre"/>
+        <Item Value="Nomcategoria"/>
+        <Item Value="Nomnivel"/>
+        <Item Value="Nomtipo"/>
+        <Item Value="IdPrograma"/>
+        <Item Value="IdDependencia"/>
+        <Item Value="IdUnidad"/>
+        <Item Value="IdRenglon"/>
+        <Item Value="IdNomina"/>
+        <Item Value="IdTipoNomina"/>
+        <Item Value="Anio"/>
+        <Item Value="IdPeriodo"/>
+        <Item Value="IdDocumentoBanco"/>
+        <Item Value="IdPuesto"/>
+        <Item Value="D1d2"/>
+        <Item Value="FechaEmision"/>
+        <Item Value="Correlativo"/>
+        <Item Value="Codigonomina"/>
+        <Item Value="Nomtipodoc"/>
+      </AttrNames>
+    </table>
+    <attributeValues IterBinding="variables" id="pAnio1">
+      <AttrNames>
+        <Item Value="pAnio"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="Sis_historial_salarialIterator" id="consultaEmpl"
+                  MethodName="consultaEmplNoAnulados" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.Sis_historial_salarial">
+      <NamedData NDName="pRegistroEmpleado"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pAnio" NDValue="${bindings.pAnio1.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </methodAction>
+    <action id="setCurrentRowWithKey"
+            IterBinding="Sis_historial_salarialIterator"
+            InstanceName="QUERRYSDataControl.Sis_historial_salarial"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="96">
+      <NamedData NDName="rowKey" NDValue="${row.rowKeyStr}"
+                 NDType="java.lang.String"/>
+    </action>
+    <methodAction id="getTotalNominal"
+                  InstanceName="QUERRYSDataControl.Sis_historial_salarial"
+                  DataControl="QUERRYSDataControl" MethodName="getTotalNominal"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true"
+                  ReturnName="QUERRYSDataControl.methodResults.QUERRYSDataControl_Sis_historial_salarial_getTotalNominal_result"/>
+    <attributeValues id="getTotalNominal1" IterBinding="variables">
+      <AttrNames>
+        <Item Value="getTotalNominal_return"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="Sis_historial_salarialIterator"
+                  id="getTotalNominal2" MethodName="getTotalNominal"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.Sis_historial_salarial"
+                  ReturnName="QUERRYSDataControl.methodResults.QUERRYSDataControl_Sis_historial_salarial_getTotalNominal_result"/>
+    <methodAction id="getTotalBono"
+                  InstanceName="QUERRYSDataControl.Sis_historial_salarial"
+                  DataControl="QUERRYSDataControl" MethodName="getTotalBono"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true"
+                  ReturnName="QUERRYSDataControl.methodResults.QUERRYSDataControl_Sis_historial_salarial_getTotalBono_result"/>
+    <attributeValues id="getTotalBono1" IterBinding="variables">
+      <AttrNames>
+        <Item Value="getTotalBono_return"/>
+      </AttrNames>
+    </attributeValues>
+    <list StaticList="false" ListOperMode="1" id="Sis_list_dest_empleado_vw"
+          IterBinding="Sis_list_dest_empleado_vwIterator">
+      <AttrNames>
+        <Item Value="CodNomina"/>
+        <Item Value="Nombre"/>
+      </AttrNames>
+    </list>
+    <table id="Sis_list_detPagoDesc_vw"
+           IterBinding="Sis_list_detPagoDesc_vwIterator">
+      <AttrNames>
+        <Item Value="Tiponomina"/>
+        <Item Value="IdNomina"/>
+        <Item Value="RegistroEmpleado"/>
+        <Item Value="Anio"/>
+        <Item Value="Periodo"/>
+        <Item Value="Nomperiodo"/>
+        <Item Value="Numpartida"/>
+        <Item Value="NumeroPlaza"/>
+        <Item Value="ValorAplicado"/>
+        <Item Value="IdDocPago"/>
+        <Item Value="Tipopago"/>
+        <Item Value="Banco"/>
+        <Item Value="NumDocFisico"/>
+        <Item Value="CodNomina"/>
+        <Item Value="Nomdesc"/>
+      </AttrNames>
+    </table>
+    <action id="ListadoDesc" IterBinding="Sis_list_detPagoDesc_vwIterator"
+            InstanceName="QUERRYSDataControl.Sis_list_detPagoDesc_vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pRegistroEmpleado"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pAnio" NDValue="${bindings.pAnio1.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pIdAjuste" NDValue="${bindings.IdAjuste.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <attributeValues IterBinding="Sis_list_dest_empleado_vwIterator"
+                     id="IdAjuste">
+      <AttrNames>
+        <Item Value="IdAjuste"/>
+      </AttrNames>
+    </attributeValues>
+    <action IterBinding="Sis_list_dest_empleado_vwIterator"
+            id="ExeAjustes"
+            InstanceName="QUERRYSDataControl.Sis_list_dest_empleado_vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pRegEmpleado"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <attributeValues IterBinding="Sis_list_detPagoDesc_vwIterator" id="Nomdesc">
+      <AttrNames>
+        <Item Value="Nomdesc"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="Sis_list_detPagoDesc_vwIterator"
+                     id="TotalAplicado">
+      <AttrNames>
+        <Item Value="TotalAplicado"/>
+      </AttrNames>
+    </attributeValues>
+    <action IterBinding="Sis_list_detPagoDesc_vwIterator"
+            id="setPosicionarDesc"
+            InstanceName="QUERRYSDataControl.Sis_list_detPagoDesc_vw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="96">
+      <NamedData NDName="rowKey" NDValue="${row.rowKeyStr}"
+                 NDType="java.lang.String"/>
+    </action>
+    <attributeValues IterBinding="Sis_list_detPagoDesc_vwIterator"
+                     id="IdDocPago">
+      <AttrNames>
+        <Item Value="IdDocPago"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="Sis_historial_salarialIterator"
+                     id="IdDocumentoBanco">
+      <AttrNames>
+        <Item Value="IdDocumentoBanco"/>
+      </AttrNames>
+    </attributeValues>
+    <table IterBinding="Sis_historial_salarial_IsrIterator"
+           id="Sis_historial_salarial_Isr">
+      <AttrNames>
+        <Item Value="RegistroEmpleado"/>
+        <Item Value="Anio"/>
+        <Item Value="Catepuesto"/>
+        <Item Value="Codigonomina"/>
+        <Item Value="ComplSalarial"/>
+        <Item Value="Correlativo"/>
+        <Item Value="D1d2"/>
+        <Item Value="D8"/>
+        <Item Value="D9d10"/>
+        <Item Value="Descu"/>
+        <Item Value="Escalafon"/>
+        <Item Value="FechaAnulacion"/>
+        <Item Value="FechaEmision"/>
+        <Item Value="Formaobtpuesto"/>
+        <Item Value="Genero"/>
+        <Item Value="IdContrato"/>
+        <Item Value="IdDependencia"/>
+        <Item Value="IdDocumentoBanco"/>
+        <Item Value="IdEstado"/>
+        <Item Value="IdNomina"/>
+        <Item Value="IdPeriodo"/>
+        <Item Value="IdProceso"/>
+        <Item Value="IdPrograma"/>
+        <Item Value="IdPuesto"/>
+        <Item Value="IdRenglon"/>
+        <Item Value="IdTipoNomina"/>
+        <Item Value="IdUnidad"/>
+        <Item Value="Liquido"/>
+        <Item Value="Nivelpuesto"/>
+        <Item Value="Nombre"/>
+        <Item Value="Nombrebanco"/>
+        <Item Value="Nombrecompleto"/>
+        <Item Value="Nomcategoria"/>
+        <Item Value="Nominal"/>
+        <Item Value="Nomnivel"/>
+        <Item Value="NomServicio"/>
+        <Item Value="Nomsubprog"/>
+        <Item Value="Nomtipo"/>
+        <Item Value="NumDocFisico"/>
+        <Item Value="NumeroPlaza"/>
+        <Item Value="Partida1"/>
+        <Item Value="Partida2"/>
+        <Item Value="Periodo"/>
+        <Item Value="ReqProf"/>
+        <Item Value="Subprog"/>
+        <Item Value="SueldoBase"/>
+        <Item Value="Tiponomina"/>
+        <Item Value="Tipoproceso"/>
+        <Item Value="TotalBono"/>
+        <Item Value="TotalDescuento"/>
+      </AttrNames>
+    </table>
+    <action IterBinding="Sis_historial_salarial_IsrIterator"
+            id="ExeISR"
+            InstanceName="QUERRYSDataControl.Sis_historial_salarial_Isr"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pRegistroEmpleado"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pAnio" NDValue="${bindings.pAnio1.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <methodAction id="getTotalNominal3"
+                  InstanceName="QUERRYSDataControl.Sis_historial_salarial_Isr"
+                  DataControl="QUERRYSDataControl" MethodName="getTotalNominal"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true"
+                  ReturnName="QUERRYSDataControl.methodResults.QUERRYSDataControl_Sis_historial_salarial_Isr_getTotalNominal_result"/>
+    <attributeValues id="getTotalNominal4" IterBinding="variables">
+      <AttrNames>
+        <Item Value="getTotalNominal3_return"/>
+      </AttrNames>
+    </attributeValues>
+  </bindings>
+</pageDefinition>

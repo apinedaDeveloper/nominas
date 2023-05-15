@@ -1,0 +1,683 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="SIS-24"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="612"
+		 pageHeight="792"
+		 columnWidth="552"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="IdProceso" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pUsuario" isForPrompting="true" class="java.lang.String"/>
+	<queryString><![CDATA[select id_dependencia2, nomdep, nomunidad, partidae, tienedesc, tipoproc
+, sum(totNominal) totNominal, 
+sum(total_Bono) total_Bono, 
+sum(total_Desc) total_desc
+, sum(total_liquido) total_liquido
+from (
+select 
+datos.id_dependencia2,
+datos.nomDep,
+datos.nomUnidad,
+--datos.formato2,
+datos.formato,
+datos.partidae,
+datos.totNominal,
+datos.total_bono,
+datos.total_desc, 
+datos.total_liquido,
+(select sistp.nombre||' '||sisp.nombre||' '||sisproc.anio
+from sis_periodo sisp, sis_proceso sisproc,sis_tipo_proceso sistp
+where sisp.id_periodo=sisproc.periodo
+and sistp.id_tipoproceso=sisproc.tipoproceso
+and sisproc.id_proceso=$P{IdProceso}
+) as tipoProc,
+sis_util_report_pkg.gettieneprocdesc($P{IdProceso}) as tieneDesc
+from 
+(
+select 
+datos2.id_dependencia2,
+d.nombre as nomDep,
+c.nombre as nomUnidad,
+--prt.formato2,
+prt.formato, 
+prte.formato as partidaE,
+sum(nominal) as totNominal,
+sum(total_bono) as total_bono,
+sum(total_Descuento) as total_desc,
+sum(liquido) as total_liquido
+from
+(
+select
+nvl(a.id_partida_egreso,a.id_partida) as id_partida_egreso,
+case when a.id_partida_egreso is not null
+and (part.d9d10 in (41,42)  or (part.d2<>2 and part.d8=9 and part.d9d10=81)) then
+  a.id_partida_egreso else
+  a.id_partida
+ end as id_partida,
+case when a.id_partida_egreso is not null
+ and (part.d9d10 in (41,42)  or (part.d2<>2 and part.d8=9 and part.d9d10=81)) then
+  part.d3d4 
+   else
+    case when a.id_partida_egreso is not null and part.d1=2 and part.d3d4=16 and part.d8=0 then
+      to_number(part.d6||part.d7)
+     else
+     prt.d3d4
+    end 
+ end as id_dependencia2,
+a.id_tipo_nomina,
+a.nominal,
+a.total_bono,
+total_Descuento,
+liquido
+from sis_nomina a
+left outer join partida part on part.id_partida=a.id_partida_egreso, 
+sep_partida_vw prt 
+where 
+a.id_proceso=$P{IdProceso}
+and prt.id_partida=a.id_partida
+) datos2,
+sis_unidad_ejecutora c, 
+sis_dependencia d, 
+sis_tipo_nomina e,
+sep_partida_vw prt,
+sep_partida_vw prte
+where datos2.id_partida=prt.id_partida
+and prte.id_partida=datos2.id_partida_egreso
+and e.id_tipo_nomina=datos2.id_tipo_nomina
+and d.id_dependencia=datos2.id_dependencia2
+and c.id_programa=to_number(prt.d1||prt.d2)
+and c.id_dependencia=prt.d3d4
+and c.id_unidad=to_number(prt.d5||prt.d6||prt.d7)
+and 
+exists(
+select 1 from usuario_unidad b, partida c
+where b.id_partida=c.id_partida
+and usuario=$P{pUsuario}
+and b.tipo_usuario='TRABAJADOR'
+and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+and prt.aniomanual=c.aniomanual
+and prt.d1=c.d1
+and prt.d2=c.d2
+and prt.d3d4=c.d3d4
+and 
+(
+(prt.d7=c.d7
+and prt.d6=c.d6
+and prt.d5=c.d5
+)
+or
+(
+c.d5 is null
+and c.d6 is null
+and c.d7 is null 
+)
+)
+)
+group by datos2.id_dependencia2,d.nombre,c.nombre,prte.formato,prt.formato
+)datos
+)
+group by id_dependencia2, nomdep, nomunidad, partidae, tienedesc, tipoproc
+order by id_dependencia2,partidae]]></queryString>
+
+	<field name="ID_DEPENDENCIA2" class="java.math.BigDecimal"/>
+	<field name="NOMDEP" class="java.lang.String"/>
+	<field name="NOMUNIDAD" class="java.lang.String"/>
+	<field name="PARTIDAE" class="java.lang.String"/>
+	<field name="TIENEDESC" class="java.lang.String"/>
+	<field name="TIPOPROC" class="java.lang.String"/>
+	<field name="TOTNOMINAL" class="java.math.BigDecimal"/>
+	<field name="TOTAL_BONO" class="java.math.BigDecimal"/>
+	<field name="TOTAL_DESC" class="java.math.BigDecimal"/>
+	<field name="TOTAL_LIQUIDO" class="java.math.BigDecimal"/>
+
+	<variable name="TotalDependencia" class="java.math.BigDecimal" resetType="Group" resetGroup="Dependencia" calculation="Sum">
+		<variableExpression><![CDATA[$F{TOTNOMINAL}]]></variableExpression>
+	</variable>
+	<variable name="totalBono" class="java.math.BigDecimal" resetType="Group" resetGroup="Dependencia" calculation="Sum">
+		<variableExpression><![CDATA[$F{TOTAL_BONO}]]></variableExpression>
+	</variable>
+	<variable name="total_desc" class="java.math.BigDecimal" resetType="Group" resetGroup="Dependencia" calculation="Sum">
+		<variableExpression><![CDATA[$F{TOTAL_DESC}]]></variableExpression>
+	</variable>
+	<variable name="totalLiquido" class="java.math.BigDecimal" resetType="Group" resetGroup="Dependencia" calculation="Sum">
+		<variableExpression><![CDATA[$F{TOTAL_LIQUIDO}]]></variableExpression>
+	</variable>
+
+		<group  name="Dependencia" isStartNewPage="true" >
+			<groupExpression><![CDATA[$F{NOMDEP}]]></groupExpression>
+			<groupHeader>
+			<band height="250"  isSplitAllowed="true" >
+				<rectangle>
+					<reportElement
+						x="1"
+						y="230"
+						width="549"
+						height="20"
+						key="rectangle-2"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.75" lineStyle="Solid"/>
+</graphicElement>
+				</rectangle>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						mode="Opaque"
+						x="10"
+						y="75"
+						width="530"
+						height="140"
+						key="textField">
+							<printWhenExpression><![CDATA[new Boolean($F{TIENEDESC}.equals("SI"))]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Justified" markup="html">
+						<font fontName="Courier New"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Por este medio informo que se ha concluido la revisión en forma analítica, de la nomina <b>" + $F{TIPOPROC}+"</b>,de la dependencia <b>"+$F{NOMDEP} +"</b>. La entrega de la nomina garantiza que todos los casos incluidos en la misma cuentan con el respaldo legal y presupuestario respectivo, asi como que se han efectuado y registrado los descuentos correspondientes a , timbre de colegio CCEE, suspensiones de trabajo sin goce de sueldo, pago deudores, cuota pendiente del Plan de Prestaciones, faltas en el trabajo, cuota colegio de profesionales. Asi mismo, informo que se han incluido los documentos de soporte que respaldan los cambios efectuados en la nomina, dentro del sobre de Traslado de Nomina."]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="10"
+						y="5"
+						width="320"
+						height="50"
+						key="staticText-4"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New"/>
+					</textElement>
+				<text><![CDATA[Atentamente pase a
+Coordinador
+Unidad de Sueldos y Nombramientos
+Division de Administración de Recursos Humanos]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="20"
+						y="231"
+						width="70"
+						height="15"
+						key="staticText-5"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="11" isBold="true"/>
+					</textElement>
+				<text><![CDATA[PARTIDA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="106"
+						y="231"
+						width="180"
+						height="15"
+						key="staticText-6"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="11" isBold="true"/>
+					</textElement>
+				<text><![CDATA[SUBPROGRAMA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="314"
+						y="231"
+						width="53"
+						height="15"
+						key="staticText-7"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="11" isBold="true"/>
+					</textElement>
+				<text><![CDATA[NOMINAL]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="105"
+						y="230"
+						width="0"
+						height="20"
+						key="line-3"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.75" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="379"
+						y="230"
+						width="0"
+						height="20"
+						key="line-4"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.75" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<staticText>
+					<reportElement
+						x="376"
+						y="231"
+						width="53"
+						height="15"
+						key="staticText-11"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="11" isBold="true"/>
+					</textElement>
+				<text><![CDATA[BONO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="433"
+						y="231"
+						width="53"
+						height="15"
+						key="staticText-12"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="11" isBold="true"/>
+					</textElement>
+				<text><![CDATA[DESC]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="493"
+						y="231"
+						width="53"
+						height="15"
+						key="staticText-13"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="11" isBold="true"/>
+					</textElement>
+				<text><![CDATA[LIQUIDO]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="432"
+						y="230"
+						width="0"
+						height="20"
+						key="line-6"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="489"
+						y="230"
+						width="0"
+						height="20"
+						key="line-9"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="313"
+						y="230"
+						width="0"
+						height="20"
+						key="line-10"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						mode="Opaque"
+						x="10"
+						y="75"
+						width="530"
+						height="140"
+						key="textField-2">
+							<printWhenExpression><![CDATA[new Boolean($F{TIENEDESC}.equals("NO"))]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Justified" markup="html">
+						<font fontName="Courier New"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Por este medio informo que se ha concluido la revisión en forma analítica, de la nomina <b>" + $F{TIPOPROC}+"</b>,de la dependencia <b>"+$F{NOMDEP} +"</b>. La entrega de la nomina garantiza que todos los casos incluidos en la misma cuentan con el respaldo legal y presupuestario respectivo. Asi mismo, informo que se han incluido los documentos de soporte que respaldan los cambios efectuados en la nomina, dentro del sobre de Traslado de Nomina."]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="26"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="256"
+						y="10"
+						width="121"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{TotalDependencia}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="100"
+						y="10"
+						width="70"
+						height="15"
+						key="staticText-8"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="11" isBold="true"/>
+					</textElement>
+				<text><![CDATA[TOTAL]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="372"
+						y="10"
+						width="60"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{totalBono}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="430"
+						y="10"
+						width="58"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{total_desc}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="481"
+						y="10"
+						width="69"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{totalLiquido}]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupFooter>
+		</group>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="75"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="0"
+						y="0"
+						width="260"
+						height="30"
+						key="staticText-1"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New"/>
+					</textElement>
+				<text><![CDATA[UNIVERSIDAD DE SAN CARLOS DE GUATEMALA
+COMISION INTEGRADA DE SALARIOS]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="490"
+						y="0"
+						width="60"
+						height="14"
+						key="staticText-2"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New"/>
+					</textElement>
+				<text><![CDATA[SIS-24]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="130"
+						y="50"
+						width="270"
+						height="20"
+						key="staticText-3"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font pdfFontName="Helvetica-Bold" size="12" isBold="true"/>
+					</textElement>
+				<text><![CDATA[INFORME DE FINALIZACION DE NOMINA]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="430"
+						y="14"
+						width="120"
+						height="14"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Proceso No. " + $P{IdProceso}.toString()]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="15"  isSplitAllowed="true" >
+				<rectangle>
+					<reportElement
+						x="1"
+						y="0"
+						width="549"
+						height="15"
+						key="rectangle-1"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.75" lineStyle="Solid"/>
+</graphicElement>
+				</rectangle>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="10"
+						y="0"
+						width="108"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PARTIDAE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="107"
+						y="2"
+						width="203"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMUNIDAD}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="313"
+						y="2"
+						width="64"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTNOMINAL}]]></textFieldExpression>
+				</textField>
+				<line direction="TopDown">
+					<reportElement
+						x="105"
+						y="0"
+						width="0"
+						height="15"
+						key="line-1"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.75" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="379"
+						y="0"
+						width="0"
+						height="15"
+						key="line-2"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.75" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="379"
+						y="2"
+						width="53"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_BONO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="430"
+						y="2"
+						width="58"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_DESC}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="487"
+						y="2"
+						width="62"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_LIQUIDO}]]></textFieldExpression>
+				</textField>
+				<line direction="TopDown">
+					<reportElement
+						x="489"
+						y="0"
+						width="0"
+						height="15"
+						key="line-7"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="432"
+						y="0"
+						width="0"
+						height="15"
+						key="line-8"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="313"
+						y="0"
+						width="0"
+						height="15"
+						key="line-11"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="38"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="310"
+						y="4"
+						width="91"
+						height="12"
+						key="staticText-9"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8"/>
+					</textElement>
+				<text><![CDATA[Firma y sello]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="425"
+						y="19"
+						width="99"
+						height="10"
+						key="staticText-10"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="5"/>
+					</textElement>
+				<text><![CDATA[Profesional de Recursos Humanos]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="410"
+						y="16"
+						width="140"
+						height="0"
+						key="line-5"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

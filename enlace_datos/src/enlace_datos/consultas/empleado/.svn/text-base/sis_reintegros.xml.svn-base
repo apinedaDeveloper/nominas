@@ -1,0 +1,301 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="sis_reintegros"
+   OrderBy="fecha_creacion desc"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   ComponentClass="enlace_datos.consultas.empleado.sis_reintegrosImpl"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="pUsuario"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <SQLQuery><![CDATA[
+SELECT distinct SisReintegro.ID_REINTEGRO, 
+       SisReintegro.ID_DOCUMENTO_BANCO, 
+       SisReintegro.TOTAL_PAGAR, 
+       SisReintegro.OBSERVACIONES, 
+       SisReintegro.CREADO_POR, 
+       SisReintegro.FECHA_CREACION, 
+       SisReintegro.MOD_POR, 
+       SisReintegro.FECHA_MOD, 
+       SisReintegro.ID_ESTADO,
+       SisReintegro.id_orden_pago,
+	SisReintegro.FECHA_CREACION as fecha_inicio, 
+	sis_db.NUM_DOC_FISICO,
+       	sis_db.ID_TIPO_DOCUMENTO,
+       	sis_td.NOMBRE TIPO_DOCUMENTO_NOMBRE,
+       	sis_e.nombre ESTADO,
+       	(case when g.status is null then '' else (case when g.status=1 then 'PAGADO' else 'PENDIENTE DE PAGO' end) end) estado_orden,
+	sis_emp.REGISTRO_EMPLEADO,
+	sis_emp.CUI,
+    	p2.nombre as unidad_ejecutora,
+    	dep.id_dependencia
+FROM SIS_REINTEGRO SisReintegro 
+inner join SIS_DOCUMENTO_BANCO sis_db on SisReintegro.ID_DOCUMENTO_BANCO = sis_db.ID_DOCUMENTO_BANCO
+inner join SIS_ESTADO sis_e on SisReintegro.ID_ESTADO = sis_e.ID_ESTADO
+inner join SIS_TIPO_DOCUMENTO sis_td on sis_db.ID_TIPO_DOCUMENTO = sis_td.ID_TIPO_DOCUMENTO
+inner join SIS_PAGO sis_p on SisReintegro.ID_DOCUMENTO_BANCO = sis_p.ID_DOCUMENTO_BANCO
+inner join SIS_NOMINA sis_n on sis_p.ID_NOMINA = sis_n.ID_NOMINA
+inner join PARTIDA p on sis_n.id_partida = p.id_partida
+inner join SIS_EMPLEADO sis_emp on sis_n.REGISTRO_EMPLEADO = sis_emp.REGISTRO_EMPLEADO
+inner join partida p2 on p.d1 = p2.d1 and p.d2 = p2.d2 and p.d3d4 = p2.d3d4 and p.d5 = p2.d5 and p.d6 = p2.d6 and p.d7 = p2.d7 and p2.d8 is null and p2.d9d10 is null
+inner join sis_dependencia dep on p2.d3d4 = dep.id_dependencia 
+left join sgi_orden_pago g on SisReintegro.id_orden_pago = g.id_orden_pago
+WHERE /*SisReintegro.ID_ESTADO = 214 and */ exists(
+select 1 from usuario_unidad b, partida c
+where b.id_partida=c.id_partida
+and usuario=:pUsuario
+and b.tipo_usuario='TRABAJADOR'
+and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+and p.aniomanual=c.aniomanual
+and p.d1=c.d1
+and p.d2=c.d2
+and p.d3d4=c.d3d4
+and ( ( p.d7=c.d7
+and p.d6=c.d6
+and p.d5=c.d5
+) or ( c.d5 is null
+and c.d6 is null
+and c.d7 is null 
+) ) )
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="IdReintegro"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_REINTEGRO"
+      Expression="ID_REINTEGRO"
+      SQLType="NUMERIC" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdDocumentoBanco"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_DOCUMENTO_BANCO"
+      Expression="ID_DOCUMENTO_BANCO"
+      SQLType="NUMERIC" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="TotalPagar"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="TOTAL_PAGAR"
+      Expression="TOTAL_PAGAR"
+      SQLType="NUMERIC" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Observaciones"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="200"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="OBSERVACIONES"
+      Expression="OBSERVACIONES"
+      SQLType="VARCHAR" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="CreadoPor"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="20"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="CREADO_POR"
+      Expression="CREADO_POR"
+      SQLType="VARCHAR" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaCreacion"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_CREACION"
+      Expression="FECHA_CREACION"
+      SQLType="DATE" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="ModPor"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="20"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="MOD_POR"
+      Expression="MOD_POR"
+      SQLType="VARCHAR" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaMod"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_MOD"
+      Expression="FECHA_MOD"
+      SQLType="DATE" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdEstado"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_ESTADO"
+      Expression="ID_ESTADO"
+      SQLType="NUMERIC" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdOrdenPago"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_ORDEN_PAGO"
+      Expression="ID_ORDEN_PAGO"
+      SQLType="NUMERIC" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaInicio"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="fecha_inicio"
+      Expression="fecha_inicio"
+      SQLType="DATE" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="NumDocFisico"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="12"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="NUM_DOC_FISICO"
+      Expression="NUM_DOC_FISICO"
+      SQLType="NUMERIC" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdTipoDocumento"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="3"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_TIPO_DOCUMENTO"
+      Expression="ID_TIPO_DOCUMENTO"
+      SQLType="NUMERIC" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="TipoDocumentoNombre"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="TIPO_DOCUMENTO_NOMBRE"
+      Expression="TIPO_DOCUMENTO_NOMBRE"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Estado"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="ESTADO"
+      Expression="ESTADO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="EstadoOrden"
+      IsPersistent="false"
+      Precision="17"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="ESTADO_ORDEN"
+      Expression="ESTADO_ORDEN"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="17" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="RegistroEmpleado"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="REGISTRO_EMPLEADO"
+      Expression="REGISTRO_EMPLEADO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Cui"
+      IsPersistent="false"
+      Precision="13"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="CUI"
+      Expression="CUI"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="13" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="UnidadEjecutora"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="UNIDAD_EJECUTORA"
+      Expression="UNIDAD_EJECUTORA"
+      SQLType="VARCHAR" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdDependencia"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="2"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_DEPENDENCIA"
+      Expression="ID_DEPENDENCIA"
+      SQLType="NUMERIC" >
+   </ViewAttribute>
+</ViewObject>

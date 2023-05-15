@@ -1,0 +1,263 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html"
+          xmlns:af="http://xmlns.oracle.com/adf/faces">
+  <jsp:directive.page contentType="text/html;charset=windows-1252"
+                      autoFlush="true" language="java"/>
+  <f:view>
+    <afh:html>
+      <afh:head title="Reversión de gestiones">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+      </afh:head>
+      <afh:body>
+        <af:messages/>
+        <h:form>
+          <af:page title="Revertir Gestiones" value="#{modeloMenu.modeloBD}"
+                   var="node">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+            <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelBox>
+              <af:showOneTab>
+                <af:showDetailItem text="Solicitudes">
+                  <af:panelForm>
+                    <af:inputText value="#{bindings['reg_empleado'].inputValue}"
+                                  label="Registro Empleado"
+                                  required="#{bindings['reg_empleado'].mandatory}"
+                                  columns="10">
+                      <af:validator binding="#{bindings['reg_empleado'].validator}"/>
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings['reg_empleado'].format}"/>
+                    </af:inputText>
+                    <af:inputText value="#{bindings.pIdSolicitud.inputValue}"
+                                  label="Id Solicitud"
+                                  required="#{bindings.pIdSolicitud.mandatory}"
+                                  columns="10">
+                      <af:validator binding="#{bindings.pIdSolicitud.validator}"/>
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.pIdSolicitud.format}"/>
+                    </af:inputText>
+                    <f:facet name="footer">
+                      <af:commandButton actionListener="#{bindings.ExecuteWithParams.execute}"
+                                        text="Buscar"
+                                        disabled="#{!bindings.ExecuteWithParams.enabled}"
+                                        rendered="true"/>
+                    </f:facet>
+                    <af:objectSpacer width="10" height="20"/>
+                  </af:panelForm>
+                  <af:objectSeparator/>
+                  <af:panelHorizontal valign="top">
+                    <af:outputFormatted value="Nota:"
+                                        inlineStyle="color:rgb(255,33,33); font-weight:bold; font-size:medium;"/>
+                    <af:objectSpacer width="10" height="10"/>
+                    <af:panelList>
+                      <af:outputFormatted value="Es importante realizar las reversiones del más reciente al más antiguo."
+                                          inlineStyle="color:rgb(0,107,165); font-size:medium;"/>
+                      <af:outputFormatted value="Puede buscar por ID de la gestión o bien por registro de empleado"
+                                          inlineStyle="color:rgb(0,107,165); font-size:medium;"/>
+                    </af:panelList>
+                  </af:panelHorizontal>
+                  <af:table value="#{bindings.SisSolicitudVw.collectionModel}"
+                            var="row"
+                            rows="#{bindings.SisSolicitudVw.rangeSize}"
+                            first="#{bindings.SisSolicitudVw.rangeStart}"
+                            emptyText="Ninguna fila" banding="row"
+                            bandingInterval="1">
+                    <af:column sortProperty="IdSolicitud" sortable="false"
+                               headerText="#{bindings.SisSolicitudVw.labels.IdSolicitud}">
+                      <af:outputText value="#{row.IdSolicitud}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.SisSolicitudVw.formats.IdSolicitud}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortable="false" headerText="Revertir"
+                               noWrap="true">
+                      <af:commandLink rendered="#{row.Nomestado eq 'AUTORIZADO'}"
+                                      action="#{list_rever.btn_ir_aReversion}">
+                        <af:objectImage source="/imagenes/document-revert.png"/>
+                        <af:outputText value="Ir a Reversión"/>
+                      </af:commandLink>
+                    </af:column>
+                    <af:column sortProperty="RegistroEmpleado" sortable="false"
+                               headerText="#{bindings.SisSolicitudVw.labels.RegistroEmpleado}">
+                      <af:outputText value="#{row.RegistroEmpleado}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.SisSolicitudVw.formats.RegistroEmpleado}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="NombreSolicitud" sortable="false"
+                               headerText="#{bindings.SisSolicitudVw.labels.NombreSolicitud}"
+                               noWrap="true">
+                      <af:outputText value="#{row.NombreSolicitud}"/>
+                    </af:column>
+                    <af:column sortProperty="FechaGestion" sortable="false"
+                               headerText="#{bindings.SisSolicitudVw.labels.FechaGestion}"
+                               noWrap="true">
+                      <af:outputText value="#{row.FechaGestion}"/>
+                    </af:column>
+                    <af:column sortProperty="IdContrato" sortable="false"
+                               headerText="#{bindings.SisSolicitudVw.labels.IdContrato}">
+                      <af:outputText value="#{row.IdContrato}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.SisSolicitudVw.formats.IdContrato}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Partida" sortable="false"
+                               headerText="#{bindings.SisSolicitudVw.labels.Partida}">
+                      <af:outputText value="#{row.Partida}"/>
+                    </af:column>
+                    <af:column sortProperty="NumeroPlaza" sortable="false"
+                               headerText="#{bindings.SisSolicitudVw.labels.NumeroPlaza}">
+                      <af:outputText value="#{row.NumeroPlaza}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.SisSolicitudVw.formats.NumeroPlaza}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Nomestado" sortable="false"
+                               headerText="#{bindings.SisSolicitudVw.labels.Nomestado}">
+                      <af:outputText value="#{row.Nomestado}"/>
+                    </af:column>
+                    <af:column sortProperty="CreadoPor" sortable="false"
+                               headerText="#{bindings.SisSolicitudVw.labels.CreadoPor}"
+                               noWrap="true">
+                      <af:outputText value="#{row.CreadoPor}-#{row.NomUsr}"/>
+                    </af:column>
+                    <af:column sortProperty="FechaCreacion" sortable="false"
+                               headerText="#{bindings.SisSolicitudVw.labels.FechaCreacion}"
+                               noWrap="true">
+                      <af:outputText value="#{row.FechaCreacion}">
+                        <f:convertDateTime pattern="#{bindings.SisSolicitudVw.formats.FechaCreacion}"/>
+                      </af:outputText>
+                    </af:column>
+                  </af:table>
+                </af:showDetailItem>
+                <af:showDetailItem text="Tiempos Extraordinarios" 
+                  rendered="#{roles_usuario.administrador|| roles_usuario.coordinadorSueldos|| roles_usuario.auxiliarSueldos}">
+                  <af:panelForm>
+                    <af:inputText value="#{bindings['pIdHoraExtra'].inputValue}" 
+                                  label="Hora Extra ID:"
+                                  columns="10" inlineStyle="text-align:center;"
+                                  required="#{bindings['pIdHoraExtra'].mandatory}">
+                      <af:validator binding="#{bindings['pIdHoraExtra'].validator}"/>
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.pIdHoraExtra.format}"/>
+                    </af:inputText>
+                    <f:facet name="footer">
+                      <af:commandButton text="Buscar"
+                                        id="btn_buscar_tiempo_extraordinario"
+                                        action="#{list_rever.btn_buscar_tiempo_extraordinario}"/>
+                    </f:facet>
+                    <af:objectSpacer width="10" height="10"/>
+                  </af:panelForm>
+                  <af:objectSeparator/>
+                  <af:table emptyText="Ninguna fila"
+                            value="#{bindings.sis_hora_extra_vw.collectionModel}"
+                            var="row" banding="row" bandingInterval="1" 
+                            rows="#{bindings.sis_hora_extra_vw.rangeSize}"
+                            first="#{bindings.sis_hora_extra_vw.rangeStart}">
+                    <af:column sortProperty="IdHoraExtra" sortable="false"
+                               headerText="#{bindings.sis_hora_extra_vw.labels.IdHoraExtra}">
+                        <af:outputText value="#{row.IdHoraExtra}">
+                            <af:convertNumber groupingUsed="false"
+                                pattern="#{bindings.sis_hora_extra_vw.formats.IdHoraExtra}"/>
+                        </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Nombre" sortable="false"
+                               headerText="#{bindings.sis_hora_extra_vw.labels.Nombre}">
+                        <af:outputText value="#{row.Nombre}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="Estado"
+                               sortProperty="Nomestado">
+                        <af:outputText value="#{row.Nomestado}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="Revertir" noWrap="true">
+                        <af:commandLink rendered="#{row.Nomestado eq 'AUTORIZADO'}"
+                            action="#{list_rever.btn_ir_aReversionTiempoExtraordinario}">
+                            <af:objectImage source="/imagenes/document-revert.png"/>
+                            <af:outputText value="Ir a Reversión"/>
+                        </af:commandLink>
+                    </af:column>
+                  </af:table>
+                </af:showDetailItem>
+                <af:showDetailItem text="Complementos">
+                  <af:panelForm>
+                    <f:facet name="footer">
+                      <af:commandButton text="Buscar" actionListener="#{bindings.ExecuteWithParamsComplementosCorregido.execute}"
+                                        id="btn_buscar_complemento_corregido"
+                                        disabled="#{!bindings.ExecuteWithParamsComplementosCorregido.enabled}"/>
+                    </f:facet>
+                    <af:inputText label="Complemento ID" columns="10"
+                                  value="#{bindings['pIdComplementoCorregido'].inputValue}"
+                                  required="#{bindings['pIdComplementoCorregido'].mandatory}"
+                                  inlineStyle="text-align:center;">
+                      <af:validator binding="#{bindings['pIdComplementoCorregido'].validator}"/>
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings['pIdComplementoCorregido'].format}"/>
+                    </af:inputText>
+                    <af:objectSpacer width="10" height="10"/>
+                  </af:panelForm>
+                  <af:objectSeparator/>
+                  <af:table emptyText="Ninguna Fila"
+                            value="#{bindings.SisComplementoPorIdVw.collectionModel}"
+                            var="row" banding="row" bandingInterval="1">
+                    <af:column sortProperty="IdComplemento" sortable="false"
+                               headerText="#{bindings.SisComplementoPorIdVw.labels.IdComplemento}">
+                      <af:outputText value="#{row.IdComplemento}">
+                        <af:convertNumber groupingUsed="false"
+                                          pattern="#{bindings.SisComplementoPorIdVw.formats.IdComplemento}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Nomsubprog" sortable="false"
+                               headerText="SubPrograma"
+                               noWrap="true">
+                      <af:outputText value="#{row.Nomsubprog}"/>
+                    </af:column>
+                    <af:column sortProperty="Nomestado" sortable="false"
+                               headerText="Estado Actual">
+                      <af:outputText value="#{row.Nomestado}"/>
+                    </af:column>
+                    <af:column sortProperty="TipoComplemento" sortable="false"
+                               headerText="Tipo de Complemento">
+                      <af:outputText value="#{row.TipoComplemento}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="Revertir"
+                               noWrap="true">
+                      <af:commandLink rendered="#{row.Nomestado eq 'PROCESADO'}" action="#{list_rever.btn_ir_aReversionComplemento}">
+                        <af:objectImage source="/imagenes/document-revert.png"/>
+                        <af:outputText value="Ir a Reversión"/>
+                      </af:commandLink>
+                    </af:column>
+                  </af:table>
+                </af:showDetailItem>
+              </af:showOneTab>
+              <af:objectSpacer width="10" height="15"/>
+            </af:panelBox>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:list_rever-->
+</jsp:root>

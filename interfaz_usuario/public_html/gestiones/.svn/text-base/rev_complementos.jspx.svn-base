@@ -1,0 +1,303 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html"
+          xmlns:af="http://xmlns.oracle.com/adf/faces">
+  <jsp:directive.page contentType="text/html;charset=windows-1252"
+                      autoFlush="true" language="java"/>
+  <f:view>
+    <afh:html>
+      <afh:head title="Complementos">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+       
+             <jsp:include page="/js/libJQ.js"/>       
+       <jsp:include page="/js/librariesDialog.js"/>           
+      <script type="text/javascript" src="/${flujo_usuario.dominioApp}/js/gestiones/scrptAutorizacion.js">
+      var xy=new Date().getMilliseconds();      
+      </script>
+      <script language="javascript" type="text/javascript"> 
+       gbl_form="form1";
+       gbl_actionId="form1:page1:cmdRefresh";
+    
+      
+         function verRepo(IdC, tipo){
+         
+            if(tipo=='PROMOCIONES DOCENTES'){                
+                window.open("../verreportepdf?id="+IdC+String.fromCharCode(38)+"rep=CMPLSALPROM","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+            }
+            else{
+                window.open("../verreportepdf?id="+IdC+String.fromCharCode(38)+"rep=CMPLSAL","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+            }
+            return false;    
+   
+         }
+         
+         function verRepoCompIgss(IdC){
+         
+           window.open("../verreportepdf?id="+IdC+String.fromCharCode(38)+"rep=SIS-15","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+           return false;    
+   
+         }
+         
+         function verRepoRepetidas(IdC){
+         
+           window.open("../verreportepdf?id="+IdC+String.fromCharCode(38)+"rep=CMPLDUPL","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+           return false;    
+   
+         }
+      
+      </script>
+        
+      </afh:head>
+      <afh:body>
+        <af:messages/>
+        <h:form>
+          <af:page title="Revisión de Complementos" value="#{modeloMenu.modeloBD}" var="node">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+             <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelBox>
+            <f:verbatim>
+                <input type="hidden" name="hdn_tipo" id="hdn_tipo" value="12"/>
+                <input type="hidden" name="hdn_Id" id="hdn_Id"
+                       value="${bindings.pIdVar1.inputValue}"/>
+              </f:verbatim>
+              <af:panelHeader text="Complementos" size="0"/>
+              <af:panelButtonBar>
+                <af:selectOneChoice label="Tipo"
+                                    value="#{bindings.pIdTipoC1.inputValue}">
+                  <af:selectItem label="TODOS" value="0"/>
+                  <af:selectItem label="COMPLEMENTOS IGSS" value="4"/>
+                  <af:selectItem label="PRESTACIONES POR RETIRO" value="5"/>
+                  <af:selectItem label="PROMOCIONES DOCENTES" value="3"/>
+                  <af:selectItem label="COMPLEMENTOS AÑO ANTERIOR" value="7"/>
+                  <af:selectItem label="PAGO COMPLEMENTO" value="2"/>
+                </af:selectOneChoice>
+                <af:commandButton text="Filtrar tabla"
+                                  disabled="#{!bindings.EjecutarPend.enabled}"
+                                  id="btn_refrescar"
+                                  binding="#{pago_complementos.btn_refrescaPendientes}"
+                                  action="#{pago_complementos.btn_filtrar_rev_complementos}"/>
+              </af:panelButtonBar>
+              <af:showOneTab>
+                <af:showDetailItem text="Pendientes">
+                  <af:table value="#{bindings.SisCompleRevPendVw.collectionModel}"
+                            var="row"
+                            rows="#{bindings.SisCompleRevPendVw.rangeSize}"
+                            first="#{bindings.SisCompleRevPendVw.rangeStart}"
+                            emptyText="Ningún Complemento"
+                            selectionState="#{bindings.SisCompleRevPendVw.collectionModel.selectedRow}"
+                            selectionListener="#{bindings.SisCompleRevPendVw.collectionModel.makeCurrent}"
+                            banding="row" bandingInterval="1"
+                            id="tbl_complementos"
+                            partialTriggers="btn_refrescar cmd_objetaTabla">
+                    <f:facet name="actions"/>
+                    <af:column sortable="false" headerText="Visto Bueno">
+                      <af:commandLink action="#{pago_complementos.cmd_ok_rev_contra}">
+                        <af:objectImage source="/imagenes/ok.png"/>
+                      </af:commandLink>
+                    </af:column>
+                    <af:column sortable="false" headerText="Objetar">
+                      <af:commandLink action="#{pago_complementos.cmd_objetar}"
+                                      useWindow="true" windowHeight="450"
+                                      windowWidth="600"
+                                      launchListener="#{pago_complementos.launch_objetar}"
+                                      returnListener="#{pago_complementos.return_listener_objetar}"
+                                      id="cmd_objetaTabla">
+                        <af:objectImage source="/imagenes/fail.png"/>
+                      </af:commandLink>
+                    </af:column>
+                    <af:column sortProperty="IdComplemento" sortable="false"
+                               headerText="Id">
+                      <af:commandLink text="#{row.IdComplemento}"
+                                      onclick="verRepo('#{row.IdComplemento}', '#{row.TipoComplemento}');"
+                                      disabled="#{row.TipoComplemento eq 'COMPLEMENTOS IGSS'}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="Prioridad">
+                      <af:commandButton text="Aplicar Extraordinario"
+                                        action="#{pago_complementos.aplicaExtraordinario}"
+                                        rendered="#{row.LogEstPendiente}"/>
+                      <af:outputText value="COMPLEMENTO EXTRAORDINARIO"
+                                     rendered='#{row.Prioridad =="1"}'/>
+                    </af:column>
+                    <af:column sortProperty="TipoComplemento" sortable="false"
+                               headerText="#{bindings.SisCompleRevPendVw.labels.TipoComplemento}"
+                               noWrap="true">
+                      <af:outputText value="#{row.TipoComplemento}"/>
+                      <af:commandLink text="SIS-15"
+                                      onclick="verRepoCompIgss('#{row.IdComplemento}');"
+                                      rendered="#{row.TipoComplemento eq 'COMPLEMENTOS IGSS'}"/>
+                    </af:column>
+                    <af:column sortProperty="Anio" sortable="false"
+                               headerText="#{bindings.SisCompleRevPendVw.labels.Anio}">
+                      <af:outputText value="#{row.Anio}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.SisCompleRevPendVw.formats.Anio}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Periodo" sortable="false"
+                               headerText="#{bindings.SisCompleRevPendVw.labels.Periodo}">
+                      <af:outputText value="#{row.Periodo}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.SisCompleRevPendVw.formats.Periodo}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Formato2" sortable="false"
+                               headerText="Subprograma" noWrap="true">
+                      <af:outputText value="#{row.Formato2} - #{row.Nomsubprog}"/>
+                    </af:column>
+                    <af:column sortProperty="Nomunidad" sortable="false"
+                               headerText="#{bindings.SisCompleRevPendVw.labels.Nomunidad}"
+                               noWrap="true">
+                      <af:outputText value="#{row.Codunidad} - #{row.Nomunidad}"/>
+                    </af:column>
+                    <af:column sortProperty="Nomestado" sortable="false"
+                               headerText="#{bindings.SisCompleRevPendVw.labels.Nomestado}">
+                      <af:outputText value="#{row.Nomestado}"/>
+                    </af:column>
+                    <af:column sortProperty="CreadoPor" sortable="false"
+                               headerText="#{bindings.SisCompleRevPendVw.labels.CreadoPor}">
+                      <af:outputText value="#{row.CreadoPor} - #{row.Nomusuario}"/>
+                    </af:column>
+                    <af:column sortable="false"
+                               headerText="Pagos Realizados o en Gestión">
+                      <af:commandLink shortDesc="Pagos del Complemento ya Realizados o en Gestión"
+                                      onclick="verRepoRepetidas('#{row.IdComplemento}');">
+                        <af:objectImage source="/imagenes/img_pagosComplementos.png"/>
+                      </af:commandLink>
+                    </af:column>
+                  </af:table>
+                </af:showDetailItem>
+                <af:showDetailItem text="Revisados">
+                  <af:table value="#{bindings['Sis_CompleRevisados_vw'].collectionModel}"
+                            var="row"
+                            rows="#{bindings['Sis_CompleRevisados_vw'].rangeSize}"
+                            first="#{bindings['Sis_CompleRevisados_vw'].rangeStart}"
+                            emptyText="#{bindings['Sis_CompleRevisados_vw'].viewable ? 'No rows yet.' : 'Access Denied.'}"
+                            banding="row" bandingInterval="1"
+                            partialTriggers="cmdRefrescarRevisados">
+                    <af:column sortable="false" headerText="Objetar">
+                      <af:commandLink action="#{pago_complementos.cmd_objetar_rev}"
+                                      launchListener="#{pago_complementos.launch_objetar_rev}"
+                                      returnListener="#{pago_complementos.return_listener_objetar_rev}"
+                                      useWindow="true" windowHeight="450"
+                                      windowWidth="600"
+                                      rendered='#{row.Nomestado=="AUTORIZADO"}'>
+                        <af:objectImage source="/imagenes/fail.png"/>
+                      </af:commandLink>
+                    </af:column>
+                    <af:column sortProperty="IdComplemento" sortable="false"
+                               headerText="Id">
+                      <af:commandLink text="#{row.IdComplemento}"
+                                      onclick="verRepo('#{row.IdComplemento}', '#{row.TipoComplemento}');"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="Prioridad">
+                      <af:commandButton text="Aplicar Extraordinario"
+                                        action="#{pago_complementos.aplicaExtraordinario_rev}"
+                                        rendered="#{row.logEstado}"/>
+                      <af:outputText value="COMPLEMENTO EXTRAORDINARIO"
+                                     rendered='#{row.PrioridadRev =="1"}'/>
+                    </af:column>
+                    <af:column sortProperty="Ultimoestado" sortable="false"
+                               headerText="Estado Actual">
+                      <af:outputText value="#{row.Nomestado}"/>
+                    </af:column>
+                    <af:column sortProperty="TipoComplemento" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.TipoComplemento}"
+                               noWrap="true">
+                      <af:outputText value="#{row.TipoComplemento}"/>
+                      <af:commandLink text="SIS-15"
+                                      onclick="verRepoCompIgss('#{row.IdComplemento}');"
+                                      rendered="#{row.TipoComplemento eq 'COMPLEMENTOS IGSS'}"/>
+                    </af:column>
+                    <af:column sortProperty="Anio" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.Anio}">
+                      <af:outputText value="#{row.Anio}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_CompleRevisados_vw'].formats.Anio}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Periodo" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.Periodo}">
+                      <af:outputText value="#{row.Periodo}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_CompleRevisados_vw'].formats.Periodo}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Formato2" sortable="false"
+                               headerText="SubPrograma" noWrap="true">
+                      <af:outputText value="#{row.Formato2} - #{row.Nomsubprog}"/>
+                    </af:column>
+                    <af:column sortProperty="Codunidad" sortable="false"
+                               headerText="#{bindings['Sis_CompleRevisados_vw'].labels.Codunidad}"
+                               noWrap="true">
+                      <af:outputText value="#{row.Codunidad} - #{row.Nomunidad}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_CompleRevisados_vw'].formats.Codunidad}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Nomusuario" sortable="false"
+                               headerText="UsuarioCreacion">
+                      <af:outputText value="#{row.CreadoPor}  - #{row.Nomusuario}"/>
+                    </af:column>
+                    <af:column sortProperty="Ultimoestado" sortable="false"
+                               headerText="Estado">
+                      <af:outputText value="#{row.Ultimoestado}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="UsuarioRevisión"
+                               noWrap="true">
+                      <af:outputText value="#{row.Usuarioauto} - #{row.Nombreauto}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="FechaRevisión">
+                      <af:outputText value="#{row.Fechaauto}"/>
+                    </af:column>
+                    <af:column sortProperty="Proceso" sortable="false"
+                               headerText="Proceso" noWrap="true">
+                      <af:outputText value="#{row.Proceso}"/>
+                    </af:column>
+                  </af:table>
+                  <af:objectSpacer width="10" height="10"/>
+                  <af:panelButtonBar>
+                    <af:commandButton actionListener="#{bindings.EjecutarRev.execute}"
+                                      text="Refrescar revisados"
+                                      disabled="#{!bindings.EjecutarRev.enabled}"
+                                      id="cmdRefrescarRevisados"
+                                      binding="#{pago_complementos.btn_refrescarRevisados}"/>
+                  </af:panelButtonBar>
+                </af:showDetailItem>
+              </af:showOneTab>
+            </af:panelBox>
+          </af:page>
+             <f:verbatim>
+          <jsp:include page="../util/dialog_autoriza.txt"/>     
+          </f:verbatim>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:pago_complementos-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:pago_complementos-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:pago_complementos-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:pago_complementos-->
+</jsp:root>

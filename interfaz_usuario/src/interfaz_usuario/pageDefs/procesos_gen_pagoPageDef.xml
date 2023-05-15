@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel"
+                version="10.1.3.41.57" id="procesos_gen_pagoPageDef"
+                Package="interfaz_usuario.pageDefs">
+  <parameters/>
+  <executables>
+    <iterator id="ProcesoVwIterator" RangeSize="10" Binds="ProcesoVw"
+              DataControl="QUERRYSDataControl"/>
+    <iterator id="SisProcesoPagoDetVwIterator" RangeSize="10"
+              Binds="SisProcesoPagoDetVw" DataControl="QUERRYSDataControl"/>
+    <variableIterator id="variables">
+      <variable Name="porcentaje" Type="oracle.jbo.domain.Number"
+                DefaultValue="100"/>
+    </variableIterator>
+    <iterator id="pagos_pendientesVwIterator" RangeSize="-1"
+              Binds="pagos_pendientesVw" DataControl="PROCESOSDataControl"/>
+    <invokeAction id="ExeRollback" Binds="Rollback" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <invokeAction id="eje_pagos_pendientes" Binds="ExecuteWithParams"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback and empty bindings.exceptionsList}"/>
+    <invokeAction Binds="ExeConsultaProc" id="Eje_consulta"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback and empty bindings.exceptionsList}"/>
+    <invokeAction Binds="Create" id="invokeCreate" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback and empty bindings.exceptionsList}"/>
+  </executables>
+  <bindings>
+    <action id="Create" RequiresUpdateModel="true" Action="41"
+            IterBinding="ProcesoVwIterator"
+            InstanceName="QUERRYSDataControl.ProcesoVw"
+            DataControl="QUERRYSDataControl"/>
+    <action id="Commit" InstanceName="QUERRYSDataControl"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="100"/>
+    <action id="Delete" IterBinding="SisProcesoPagoDetVwIterator"
+            InstanceName="QUERRYSDataControl.SisProcesoPagoDetVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="30"/>
+    <action id="Create1" IterBinding="SisProcesoPagoDetVwIterator"
+            InstanceName="QUERRYSDataControl.SisProcesoPagoDetVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="41"/>
+    <attributeValues id="PorcentajePago"
+                     IterBinding="variables">
+      <AttrNames>
+        <Item Value="porcentaje"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="ProcesoVwIterator" id="operacion">
+      <AttrNames>
+        <Item Value="operacion"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="ProcesoVwIterator" id="IdProceso">
+      <AttrNames>
+        <Item Value="IdProceso"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction id="generar_pago"
+                  InstanceName="procedimientosDataControl.dataProvider"
+                  DataControl="procedimientosDataControl"
+                  MethodName="generar_pago" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="false"
+                  ReturnName="procedimientosDataControl.methodResults.procedimientosDataControl_dataProvider_generar_pago_result">
+      <NamedData NDName="pIdProceso" NDValue="${bindings.IdProceso.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </methodAction>
+    <action id="Rollback" InstanceName="QUERRYSDataControl"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="101"/>
+    <table id="ProcesoVwSisProcesoPagoDetVw"
+           IterBinding="SisProcesoPagoDetVwIterator">
+      <AttrNames>
+        <Item Value="IdProceso"/>
+        <Item Value="IdTipoNomina"/>
+        <Item Value="PorcentajePago"/>
+        <Item Value="IdPeriodo"/>
+        <Item Value="Anio"/>
+        <Item Value="Tiponomina"/>
+        <Item Value="Nomperido"/>
+        <Item Value="IdProcesoNomina"/>
+      </AttrNames>
+    </table>
+    <action IterBinding="pagos_pendientesVwIterator" id="ExecuteWithParams"
+            InstanceName="PROCESOSDataControl.pagos_pendientesVw"
+            DataControl="PROCESOSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="tipo_nomina"
+                 NDValue="${bindings.SisTipoNominaVwNombre.currentRow['idTipoNomina']}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <attributeValues id="ProcesoVwObservaciones"
+                     IterBinding="ProcesoVwIterator">
+      <AttrNames>
+        <Item Value="Observaciones"/>
+      </AttrNames>
+    </attributeValues>
+    <list ListOperMode="1" IterBinding="pagos_pendientesVwIterator"
+          id="pagos_pendientesVwNombre">
+      <AttrNames>
+        <Item Value="IdProceso"/>
+        <Item Value="Nomtiponomina"/>
+        <Item Value="Nombre"/>
+      </AttrNames>
+    </list>
+    <methodAction IterBinding="ProcesoVwIterator" id="crearFila1"
+                  MethodName="crearFila" RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.ProcesoVw">
+      <NamedData NDName="pProcesoNomina"
+                 NDValue="${bindings.pagos_pendientesVwNombre.currentRow['idProceso']}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pIdTipoNomina"
+                 NDValue="${bindings.pagos_pendientesVwNombre.currentRow['idTipoNomina']}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pIdPeriodo"
+                 NDValue="${bindings.pagos_pendientesVwNombre.currentRow['periodo']}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pPorcentaje"
+                 NDValue="${bindings.PorcentajePago.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pNomPeriodo"
+                 NDValue="${bindings.pagos_pendientesVwNombre.currentRow['nombre']}"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="pTipoNomina"
+                 NDValue="${bindings.pagos_pendientesVwNombre.currentRow['nomtiponomina']}"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="pAnio"
+                 NDValue="${bindings.pagos_pendientesVwNombre.currentRow['anio']}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </methodAction>
+    <methodAction id="crearFila" MethodName="crearFila"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisProcesoPagoDetVw">
+     <NamedData NDName="pProcesoNomina"
+                 NDValue="${bindings.pagos_pendientesVwNombre.currentRow['idProceso']}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pIdTipoNomina"
+                 NDValue="${bindings.pagos_pendientesVwNombre.currentRow['idTipoNomina']}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pIdPeriodo"
+                 NDValue="${bindings.pagos_pendientesVwNombre.currentRow['periodo']}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pPorcentaje"
+                 NDValue="${bindings.PorcentajePago.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pNomPeriodo"
+                 NDValue="${bindings.pagos_pendientesVwNombre.currentRow['nombre']}"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="pTipoNomina"
+                 NDValue="${bindings.pagos_pendientesVwNombre.currentRow['nomtiponomina']}"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="pAnio"
+                 NDValue="${bindings.pagos_pendientesVwNombre.currentRow['anio']}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </methodAction>
+    <attributeValues id="ProcesoVwFechaRef" IterBinding="ProcesoVwIterator">
+      <AttrNames>
+        <Item Value="FechaRef"/>
+      </AttrNames>
+    </attributeValues>
+    <action IterBinding="ProcesoVwIterator" id="ExeConsultaProc"
+            InstanceName="QUERRYSDataControl.ProcesoVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="tipo_proceso" NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="fechaI" NDType="oracle.jbo.domain.Date"/>
+      <NamedData NDName="fechaF" NDType="oracle.jbo.domain.Date"/>
+    </action>
+    <attributeValues IterBinding="ProcesoVwIterator" id="Datos_proceso_pago">
+      <AttrNames>
+        <Item Value="Datos_proceso_pago"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="pagos_pendientesVwIterator"
+                     id="Nomtiponomina">
+      <AttrNames>
+        <Item Value="Nomtiponomina"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="ProcesoVwIterator" id="Periodo">
+      <AttrNames>
+        <Item Value="Periodo"/>
+      </AttrNames>
+    </attributeValues>
+  </bindings>
+</pageDefinition>

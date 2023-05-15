@@ -1,0 +1,220 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns="http://www.w3.org/1999/xhtml"
+          xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <f:view>
+    <afh:html>
+      <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+      <f:loadBundle basename="propiedades" var="tx"/>
+      <afh:head title="#{tx['repPagoAnul.title.texto']}">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+              
+              
+          <script language="javascript" type="text/javascript"> 
+             function showReport(pIdAnulacion){ 
+                window.open("../verreportepdf?id="+pIdAnulacion+String.fromCharCode(38)+"rep=SIS-21"+String.fromCharCode(38)+"id2=1","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+                 }
+                 
+             function showReport2(pIdForm22){ 
+                window.open("../verreportepdf?id="+pIdForm22+String.fromCharCode(38)+"rep=SIS-22","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+                 }    
+                 
+         </script>      
+      </afh:head>
+      <afh:body>
+        <af:messages/>
+        <h:form>
+            <af:page 
+              value="#{modeloMenu.modeloBD}" var="node">
+           <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+             <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelBox width="800">
+              <af:showOneTab position="above">
+                <af:showDetailItem text="#{tx['repPagoAnul.tb_docAnulado.texto']}">
+                  <af:panelForm>
+                    <af:inputText value="#{bindings.pNumPago.inputValue}"
+                                  label="#{tx['repPagoAnul.inpt_numPago.texto']}"
+                                  required="#{bindings.pNumPago.mandatory}"
+                                  columns="15">
+                      <af:validator binding="#{bindings.pNumPago.validator}"/>
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings.pNumPago.format}"/>
+                    </af:inputText>
+                    <af:selectInputDate value="#{bindings.vFechaI.inputValue}"
+                                        label="#{tx['repPagoAnul.inpt_fechaI.texto']}"
+                                        required="#{bindings.vFechaI.mandatory}">
+                      <af:validator binding="#{bindings.vFechaI.validator}"/>
+                      <f:convertDateTime pattern="#{bindings.vFechaI.format}"/>
+                    </af:selectInputDate>
+                    <af:selectInputDate value="#{bindings.vFechaF.inputValue}"
+                                        label="#{tx['repPagoAnul.inpt_fechaF.texto']}"
+                                        required="#{bindings.vFechaF.mandatory}">
+                      <af:validator binding="#{bindings.vFechaF.validator}"/>
+                      <f:convertDateTime pattern="#{bindings.vFechaF.format}"/>
+                    </af:selectInputDate>
+                    <af:objectSpacer width="10" height="10"/>
+                    <af:commandButton actionListener="#{bindings['consulta_anulados'].execute}"
+                                      text="#{tx['repPagoAnul.btn_consultar.texto']}"
+                                      disabled="#{!bindings['consulta_anulados'].enabled}"/>
+                  </af:panelForm>
+                  <af:objectSpacer width="10" height="20"/>
+                  <af:panelHorizontal valign="top">
+                    <af:outputFormatted value="Nota:"
+                                        inlineStyle="color:rgb(255,33,33); font-weight:bold; font-size:medium;"/>
+                    <af:objectSpacer width="10" height="10"/>
+                    <af:panelList>
+                      <af:outputFormatted value="Los cheques y boletas tienen que entregarse en el departamento de Caja Central para hacer efectiva la anulación"
+                                          inlineStyle="color:rgb(0,107,165); font-size:medium;"/>
+                      <af:outputFormatted value="No se podrá reponer un cheque si no han sido entregado en el departamento de Caja Central"
+                                          inlineStyle="color:rgb(0,107,165); font-size:medium;"/>
+                    </af:panelList>
+                  </af:panelHorizontal>
+                  <af:objectSeparator/>
+                  <af:objectSpacer width="10" height="20"/>
+                  <af:table value="#{bindings['Sis_pagosAnuladosVw'].collectionModel}"
+                            var="row"
+                            rows="#{bindings['Sis_pagosAnuladosVw'].rangeSize}"
+                            first="#{bindings['Sis_pagosAnuladosVw'].rangeStart}"
+                            emptyText="#{tx['tbl_empty.texto']}" banding="row"
+                            bandingInterval="1">
+                    <af:column sortProperty="IdDocPagoAnulado" sortable="false"
+                               headerText="#{tx['repPagoAnul.tbl_idAnulado.texto']}">
+                      <af:commandLink text="#{row.IdDocPagoAnulado}"
+                                      onclick="javascript:showReport(#{row.IdDocPagoAnulado})"/>
+                    </af:column>
+                    <af:column sortProperty="Nombanco" sortable="false"
+                               headerText="#{tx['repPagoAnul.tbl_banco.texto']}">
+                      <af:outputText value="#{row.Nombanco}"/>
+                    </af:column>
+                    <af:column sortProperty="Tipopago" sortable="false"
+                               headerText="#{tx['repPagoAnul.tbl_tipPago.texto']}">
+                      <af:outputText value="#{row.Tipopago}"/>
+                    </af:column>
+                    <af:column sortProperty="NoDocFisico" sortable="false"
+                               headerText="#{tx['repPagoAnul.tbl_numPago.texto']}">
+                      <af:outputText value="#{row.NoDocFisico}"/>
+                    </af:column>
+                    <af:column sortable="false"
+                               headerText="Fecha creacion SIS21" noWrap="true">
+                      <af:outputText value="#{row.Fechasis21}"/>
+                    </af:column>
+                    <af:column sortProperty="FechaAnulacion" sortable="false"
+                               headerText="#{bindings['Sis_pagosAnuladosVw'].labels.FechaAnulacion}">
+                      <af:outputText value="#{row.FechaAnulacion}">
+                        <f:convertDateTime pattern="#{bindings['Sis_pagosAnuladosVw'].formats.FechaAnulacion}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Motivoanulacion" sortable="false"
+                               headerText="#{tx['repPagoAnul.tbl_motivo.texto']}"
+                               noWrap="true">
+                      <af:outputText value="#{row.Motivoanulacion}"/>
+                    </af:column>
+                    <af:column sortProperty="CreadoPor" sortable="false"
+                               headerText="Observación">
+                      <af:outputText value="#{row.Observacion}"/>
+                    </af:column>
+                    <af:column sortProperty="Reposicion" sortable="false"
+                               headerText="#{tx['repPagoAnul.tbl_reposicion.texto']}">
+                      <af:outputText value="#{row.Reposicion}"/>
+                    </af:column>
+                    <af:column sortProperty="Anuladopor" sortable="false"
+                               headerText="#{bindings['Sis_pagosAnuladosVw'].labels.Anuladopor}"
+                               noWrap="true">
+                      <af:outputText value="#{row.CreadoPor}-#{row.Anuladopor}"/>
+                    </af:column>
+                  </af:table>
+                </af:showDetailItem>
+                <af:showDetailItem text="#{tx['repPagoAnul.tb_sis_22.texto']}"
+                                   disclosed="false" rendered="false">
+                  <af:panelHorizontal>
+                    <af:panelForm>
+                      <af:selectInputDate value="#{bindings.vFechaI1.inputValue}"
+                                          label="#{tx['repPagoAnul.inpt_fechaI.texto']}"
+                                          required="#{bindings.vFechaI1.mandatory}">
+                        <af:validator binding="#{bindings.vFechaI1.validator}"/>
+                        <f:convertDateTime pattern="#{bindings.vFechaI1.format}"/>
+                      </af:selectInputDate>
+                      <af:selectInputDate value="#{bindings.vFechaF1.inputValue}"
+                                          label="#{tx['repPagoAnul.inpt_fechaF.texto']}"
+                                          required="#{bindings.vFechaF1.mandatory}">
+                        <af:validator binding="#{bindings.vFechaF1.validator}"/>
+                        <f:convertDateTime pattern="#{bindings.vFechaF1.format}"/>
+                      </af:selectInputDate>
+                    </af:panelForm>
+                    <af:commandButton actionListener="#{bindings.filtarXFechas.execute}"
+                                      text="#{tx['repPagoAnul.btn_consultar.texto']}"
+                                      disabled="#{!bindings.filtarXFechas.enabled}"/>
+                    <f:facet name="separator">
+                      <af:objectSpacer width="20" height="10"/>
+                    </f:facet>
+                    <af:commandButton text="#{tx['repPagoAnul.btn_gensis_22.texto']}"
+                                      disabled="#{!bindings['generarSis_22'].enabled}"
+                                      action="#{backing_bean_reportes.btn_generarsis_22_reppagos_anulados}"/>
+                  </af:panelHorizontal>
+                  <af:objectSpacer width="10" height="30"/>
+                  <af:objectSeparator/>
+                  <af:objectSpacer width="10" height="20"/>
+                  <af:table value="#{bindings['SisListSis_22Vw'].collectionModel}"
+                            var="row"
+                            rows="#{bindings['SisListSis_22Vw'].rangeSize}"
+                            first="#{bindings['SisListSis_22Vw'].rangeStart}"
+                            emptyText="#{tx['tbl_empty.texto']}">
+                    <af:column sortProperty="IdForm22" sortable="false"
+                               headerText="#{tx['repPagoAnul.tbl2_Id.texto']}">
+                      <af:commandLink text="#{row.IdForm22}"
+                                      onclick="javascript:showReport2(#{row.IdForm22})"/>
+                    </af:column>
+                    <af:column sortProperty="CantAnulados" sortable="false"
+                               headerText="#{tx['repPagoAnul.tbl2_cntAnulados.texto']}">
+                      <af:outputText value="#{row.CantAnulados}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['SisListSis_22Vw'].formats.CantAnulados}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Fecha" sortable="false"
+                               headerText="#{bindings['SisListSis_22Vw'].labels.Fecha}">
+                      <af:outputText value="#{row.Fecha}">
+                        <f:convertDateTime pattern="#{bindings['SisListSis_22Vw'].formats.Fecha}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="CreadoPor" sortable="false"
+                               headerText="#{tx['repPagoAnul.tbl2_creadoPor.texto']}">
+                      <af:outputText value="#{row.CreadoPor}"/>
+                    </af:column>
+                    <af:column sortProperty="Nomusuario" sortable="false"
+                               headerText="#{tx['repPagoAnul.tbl2_nomUsuario.texto']}">
+                      <af:outputText value="#{row.Nomusuario}"/>
+                    </af:column>
+                  </af:table>
+                </af:showDetailItem>
+              </af:showOneTab>
+              <af:objectSpacer width="10" height="20"/>
+            </af:panelBox>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:backing_bean_reportes-->
+</jsp:root>

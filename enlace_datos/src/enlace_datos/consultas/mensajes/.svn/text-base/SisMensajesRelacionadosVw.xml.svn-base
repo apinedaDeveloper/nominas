@@ -1,0 +1,235 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="SisMensajesRelacionadosVw"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   RowClass="enlace_datos.consultas.mensajes.SisMensajesRelacionadosVwRowImpl"
+   ComponentClass="enlace_datos.consultas.mensajes.SisMensajesRelacionadosVwImpl"
+   ComponentInterface="enlace_datos.consultas.mensajes.common.SisMensajesRelacionadosVw"
+   ClientProxyName="enlace_datos.consultas.mensajes.client.SisMensajesRelacionadosVwClient"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isCodegen" Value="true" />
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="pUsuario"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <Variable
+      Name="pMsgSal"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select 
+ID_MENSAJE_ENTRANTE, 
+ID_MENSAJE_SAL, 
+ID_REPLY,
+USUARIO, 
+ESTADO,      
+FECHA_LECTURA,
+USUARIO_ENVIO,
+ASUNTO,
+MENSAJE,
+FECHA_CREACION,
+NOMBREENVIA,  
+RECIBE     
+from 
+(
+SELECT 
+SisMensajeEntrante.ID_MENSAJE_ENTRANTE, 
+SisMensajeEntrante.ID_MENSAJE_SAL, 
+b.id_reply,
+SisMensajeEntrante.USUARIO, 
+SisMensajeEntrante.ESTADO,      
+SisMensajeEntrante.FECHA_LECTURA,
+b.usuario_envio,
+b.asunto,
+b.mensaje,
+to_char(b.fecha_creacion,'dd/mm/yyyy HH24:mi') as fecha_creacion,
+c.nombres||' '||c.apellidos as nombreEnvia,  
+SisMensajeEntrante.usuario as recibe    
+FROM SIS_MENSAJE_ENTRANTE SisMensajeEntrante, sis_mensaje_saliente b, usuario c
+where SisMensajeEntrante.id_mensaje_sal=b.id_mensaje_sal
+and b.usuario_envio=c.usuario
+start with b.id_mensaje_sal=:pMsgSal
+connect by b.id_mensaje_sal= prior id_reply
+) datos
+where id_mensaje_sal<>:pMsgSal
+and
+( usuario_envio=:pUsuario
+or recibe=:pUsuario
+)
+order by id_mensaje_sal desc
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="IdMensajeEntrante"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="16"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_MENSAJE_ENTRANTE"
+      Expression="ID_MENSAJE_ENTRANTE"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdMensajeSal"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="16"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_MENSAJE_SAL"
+      Expression="ID_MENSAJE_SAL"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdReply"
+      IsPersistent="false"
+      Precision="16"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_REPLY"
+      Expression="ID_REPLY"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Usuario"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="20"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="USUARIO"
+      Expression="USUARIO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="20" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Estado"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="1"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="ESTADO"
+      Expression="ESTADO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="1" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaLectura"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_LECTURA"
+      Expression="FECHA_LECTURA"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="UsuarioEnvio"
+      IsPersistent="false"
+      Precision="20"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="USUARIO_ENVIO"
+      Expression="USUARIO_ENVIO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="20" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Asunto"
+      IsPersistent="false"
+      Precision="40"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="ASUNTO"
+      Expression="ASUNTO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="40" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Mensaje"
+      IsPersistent="false"
+      Precision="1000"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="MENSAJE"
+      Expression="MENSAJE"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="1000" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaCreacion"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="25"
+      Type="java.lang.String"
+      ColumnType="varchar2"
+      AliasName="FECHA_CREACION"
+      Expression="FECHA_CREACION"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nombreenvia"
+      IsPersistent="false"
+      Precision="201"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBREENVIA"
+      Expression="NOMBREENVIA"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="201" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Recibe"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="20"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="RECIBE"
+      Expression="RECIBE"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="20" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

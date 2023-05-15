@@ -1,0 +1,798 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="circulacion_cheques_concilia"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="612"
+		 pageHeight="792"
+		 columnWidth="584"
+		 columnSpacing="0"
+		 leftMargin="14"
+		 rightMargin="14"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pFecha" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="pWhere" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA[" and dep.id_dependencia = 8"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="pFechaAnul" isForPrompting="true" class="java.lang.String"/>
+	<queryString><![CDATA[select
+distinct Extract (year from SysDate) AnioActual, 
+doc.ID_DOCUMENTO_BANCO, 
+per.id_periodo,
+to_char(em.cui,'9999G99999G9999','NLS_NUMERIC_CHARACTERS= '', ''') cui,
+em.REGISTRO_EMPLEADO, 
+em.NOMBRECOMPLETO,
+dep.ID_DEPENDENCIA, 
+dep.NOMBREABREV as nombre, 
+doc.FECHA_EMISION, 
+doc.NUM_DOC_FISICO,
+doc.VALOR, 
+per.NOMBRE as nom_mes, 
+to_char(doc.FECHA_EMISION,'yyyy') as anio,
+nvl (per2.nombre,per.nombre) as mesConcilia,
+nvl (per2.id_periodo,per.id_periodo) as codmesconcilia,
+(
+select nombre from sis_periodo
+ where id_periodo= to_char(to_date($P{pFecha},'dd/MM/yyyy'),'mm')
+) as hastaConcilia,
+cba.numero_cuenta,
+ban.nombre as nomBanco
+from sis_documento_banco doc
+left outer join sis_proceso_conciliacion pc on pc.id_proceso_conciliacion=doc.id_proceso_conciliacion
+left outer join sis_periodo per2 on pc.mes=id_periodo, 
+sis_pago pago, 
+sis_nomina nomina,
+sis_empleado_vw em, 
+sis_partida par, 
+sis_dependencia dep, 
+sis_periodo per,
+cuenta_bancaria cba,
+banco ban
+where doc.ID_DOCUMENTO_BANCO = pago.ID_DOCUMENTO_BANCO
+and pago.ID_NOMINA = nomina.ID_NOMINA
+and nomina.REGISTRO_EMPLEADO = em.REGISTRO_EMPLEADO
+and per.ID_PERIODO = to_number(to_char(doc.FECHA_EMISION,'MM'))
+and nomina.ID_PARTIDA = par.ID_PARTIDA
+and par.ID_DEPENDENCIA = dep.ID_DEPENDENCIA
+and doc.id_tipo_documento = 1
+and cba.id_cuenta_bancaria=doc.id_cuenta_bancaria_sueldo
+and ban.id_banco=cba.id_banco
+$P!{pWhere}
+and to_char(doc.fecha_emision,'yyyy')>='2012'
+and ( ($P{pFecha} = '27/10/2017' and doc.NUM_DOC_FISICO <= 1933657 and doc.FECHA_EMISION between to_date($P{pFecha},'dd/MM/yyyy')-1095 and to_date($P{pFecha},'dd/MM/yyyy') )
+or ($P{pFecha} = '27/11/2017' and doc.NUM_DOC_FISICO > 1933657 and doc.FECHA_EMISION between to_date($P{pFecha},'dd/MM/yyyy')-1095 and to_date($P{pFecha},'dd/MM/yyyy')  )
+or ($P{pFecha} = '27/11/2018' and doc.FECHA_EMISION <> to_date('28/05/2018','dd/MM/yyyy') and doc.FECHA_EMISION between to_date($P{pFecha},'dd/MM/yyyy')-1095 and to_date($P{pFecha},'dd/MM/yyyy')  )
+or ( $P{pFecha} = '30/04/2019' and not ( doc.FECHA_EMISION between to_date('02/11/2018','dd/MM/yyyy') and   to_date('29/11/2018','dd/MM/yyyy') ) 
+                           and doc.FECHA_EMISION between to_date( $P{pFecha},'dd/MM/yyyy')-1095 and to_date( $P{pFecha},'dd/MM/yyyy')   )    
+or ( $P{pFecha} = '31/05/2019' and  doc.FECHA_EMISION between to_date( $P{pFecha},'dd/MM/yyyy')-1095 and to_date( $P{pFecha},'dd/MM/yyyy') and doc.NUM_DOC_FISICO >= 2003198 )
+or ( $P{pFecha} = '25/11/2019' and doc.FECHA_EMISION between to_date($P{pFecha},'dd/MM/yyyy')-1095 and to_date($P{pFecha},'dd/MM/yyyy') and  doc.NUM_DOC_FISICO not in (2034699,2035864,2035887)  ) 
+or ($P{pFecha} <> '27/10/2017' and $P{pFecha} <> '27/11/2017' and $P{pFecha} <> '27/11/2018' and $P{pFecha} <> '30/04/2019' and $P{pFecha} <> '31/05/2019' and $P{pFecha} <> '25/11/2019'
+    and doc.FECHA_EMISION between to_date($P{pFecha},'dd/MM/yyyy')-1095 and to_date($P{pFecha},'dd/MM/yyyy') )
+)
+and doc.id_estado != 162  
+and (doc.FECHA_ANULACION is null 
+ or  1 =(case when doc.fecha_dmg is null then 
+ (case when (select max(fecha_anulacion_i) from sis_proceso_conciliacion where trunc(fecha_emision_f)=$P{pFecha}) is null 
+        and doc.FECHA_ANULACION >= (select max(fecha_emision_i) from sis_proceso_conciliacion where trunc(fecha_emision_f)=$P{pFecha})
+  then 1 else (case when ( trunc(doc.fecha_anulacion) > to_date($P{pFechaAnul},'dd/MM/yyyy')) then 1  else 0 end) end)
+else (case when doc.fecha_dmg > to_date($P{pFechaAnul},'dd/mm/yyyy') then 1 else 0 end)  end)
+ or  ( 1 = (
+     case when to_char(to_date($P{pFecha},'dd/MM/yyyy'),'mm') = '10' 
+     and to_char(to_date($P{pFecha},'dd/MM/yyyy'),'yyyy') = '2014'  
+     and trunc(doc.fecha_anulacion) < to_date($P{pFecha},'dd/MM/yyyy') + 1 
+     and trunc(doc.fecha_anulacion ) > to_date('01/01/2013','dd/mm/yyyy')
+     then 1
+     else 
+       case when trunc(doc.fecha_anulacion) < to_date($P{pFecha},'dd/MM/yyyy')  and trunc(doc.fecha_anulacion ) > to_date('01/01/2013','dd/mm/yyyy')
+         then 1
+         else 0
+        end
+     end)
+     and exists (  
+      select 1 from sis_doc_pago_anulado dpa
+       where  dpa.id_doc_pago=doc.id_documento_banco
+      and dpa.id_proceso_conciliacion is null
+   )
+  )
+ or  exists (
+  select 1 from sis_doc_pago_anulado dpa, sis_proceso_conciliacion pc
+  where dpa.id_doc_pago=doc.id_documento_banco
+  and pc.id_proceso_conciliacion=dpa.id_proceso_conciliacion
+  and to_date('01/'||pc.mes||'/'||pc.anio,'dd/mm/yyyy')>to_date($P{pFecha},'dd/mm/yyyy')
+ )
+
+-- se agrego para no excluir los cheque anulados en abril y mayo 2014 con fecha de anulacion de junio 2014 en adelante al ser concialiaciones de 8 meses
+or 1=(
+    case when to_date($P{pFecha},'dd/mm/yyyy') < to_date('01/06/2014','dd/mm/yyyy') and to_date($P{pFecha},'dd/mm/yyyy') > to_date('31/03/2014','dd/mm/yyyy') and doc.fecha_anulacion > to_date('01/06/2014','dd/mm/yyyy') then
+      1 else 0 end	    
+  )
+)
+and not exists (
+select 1  from sis_conciliacion_bancaria conciliacion
+where 
+nvl(conciliacion.FECHA_COBRO,to_date($P{pFecha},'dd/MM/yyyy')) <= last_day(to_date($P{pFecha},'dd/MM/yyyy'))
+and doc.ID_DOCUMENTO_BANCO=conciliacion.id_documento_banco
+)
+
+-- se agrego para filtrar los cheques emitidos a partir del 01/04/2014
+and 1=(
+  case when to_date($P{pFecha},'dd/mm/yyyy') = to_date('31/05/2019','dd/mm/yyyy') then  -- mayo 2019 es 7 meses
+    (case when (SELECT add_months(doc.fecha_emision,+7) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') then 1 else 0 end)  
+  else
+  case when to_date($P{pFecha},'dd/mm/yyyy') > to_date('31/05/2016','dd/mm/yyyy') then  -- junio 2016 es 6 meses
+    (case when (SELECT add_months(doc.fecha_emision,+6) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') then 1 else 0 end)       
+  else
+  case when to_date($P{pFecha},'dd/mm/yyyy') > to_date('30/04/2016','dd/mm/yyyy') then  -- mayo 2016 es 6 meses agregando los de dic q estan en nov
+    (case when (SELECT add_months(last_day(doc.fecha_emision),+7) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') and  doc.num_doc_fisico >= 1776329 then 1 else 0 end)       
+  else
+  case when to_date($P{pFecha},'dd/mm/yyyy') > to_date('31/03/2016','dd/mm/yyyy') then  -- abril 2016 es 8 meses 
+    (case when (SELECT add_months(last_day(doc.fecha_emision),+6) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') then 1 else 0 end)       
+  else
+  case when to_date($P{pFecha},'dd/mm/yyyy') > to_date('29/02/2016','dd/mm/yyyy') then  -- marzo 2016 es 8 meses 
+    (case when (SELECT add_months(last_day(doc.fecha_emision),+7) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') then 1 else 0 end)       
+  else
+  case when to_date($P{pFecha},'dd/mm/yyyy') > to_date('29/01/2016','dd/mm/yyyy') then  -- feb 2016 es 6 meses 
+    (case when (SELECT add_months(last_day(doc.fecha_emision),+6) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') then 1 else 0 end)       
+  else
+  case when to_date($P{pFecha},'dd/mm/yyyy') > to_date('18/12/2015','dd/mm/yyyy') then  -- dic 2015 es 6 meses 
+    (case when (SELECT add_months(last_day(doc.fecha_emision),+5) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') then 1 else 0 end)       
+  else
+  case when to_date($P{pFecha},'dd/mm/yyyy') > to_date('28/10/2015','dd/mm/yyyy') then  -- octubre 2015 es 6 meses 
+    (case when (SELECT add_months(last_day(doc.fecha_emision),+6) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') then 1 else 0 end)       
+  else
+  case when to_date($P{pFecha},'dd/mm/yyyy') > to_date('01/09/2015','dd/mm/yyyy') then  -- sep 2015 es 7 meses 
+    (case when (SELECT add_months(last_day(doc.fecha_emision),+7) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy')  then 1 else 0 end)
+  else
+  case when to_date($P{pFecha},'dd/mm/yyyy') > to_date('01/08/2015','dd/mm/yyyy') then  -- agosto 2015 es 7 meses 
+    (case when (SELECT add_months(last_day(doc.fecha_emision),+6) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') and  doc.num_doc_fisico >= 1683353  then 1 else 0 end)
+  else
+  case when to_date($P{pFecha},'dd/mm/yyyy') > to_date('01/07/2015','dd/mm/yyyy') then  -- julio 2015 es 7 meses 
+    (case when (SELECT add_months(last_day(doc.fecha_emision),+10) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') and  doc.num_doc_fisico >= 1683353  then 1 else 0 end)
+  else
+  case when to_date($P{pFecha},'dd/mm/yyyy') > to_date('01/06/2015','dd/mm/yyyy') then  -- may 2015 es 7 meses 
+    (case when (SELECT add_months(last_day(doc.fecha_emision),+9) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') and  doc.num_doc_fisico >= 1683353  then 1 else 0 end)
+  else
+  case when to_date($P{pFecha},'dd/mm/yyyy') > to_date('03/05/2015','dd/mm/yyyy') then  -- may 2015 es 7 meses 
+    (case when (SELECT add_months(last_day(doc.fecha_emision),+7) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') and  doc.num_doc_fisico >= 1683353  then 1 else 0 end)
+  else
+  case when to_date($P{pFecha},'dd/mm/yyyy') > to_date('03/04/2015','dd/mm/yyyy') then  -- abr 2015 es 8 meses 
+    (case when (SELECT add_months(last_day(doc.fecha_emision),+9) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') then 1 else 0 end)
+  else
+  case when to_date($P{pFecha},'dd/mm/yyyy') > to_date('28/02/2015','dd/mm/yyyy') then  -- mar 2015 es 8 meses 
+    (case when (SELECT add_months(last_day(doc.fecha_emision),+7) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') then 1 else 0 end)
+  else
+  case when to_date($P{pFecha},'dd/mm/yyyy') > to_date('31/12/2014','dd/mm/yyyy') then  -- ene 2015 es 7 meses 
+    (case when (SELECT add_months(last_day(doc.fecha_emision),+6) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') then 1 else 0 end)
+  else
+  case when to_date($P{pFecha},'dd/mm/yyyy') >= to_date('27/11/2014','dd/mm/yyyy')  then  -- dic 2014 es 7 meses 
+    (case when (SELECT add_months(last_day(doc.fecha_emision),+8) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') and doc.num_doc_fisico <= 1706101 then 1 else 0 end)
+  else
+  case when to_date($P{pFecha},'dd/mm/yyyy') >= to_date('29/10/2014','dd/mm/yyyy')  then  -- nov 2014 es 7 meses 
+    (case when (SELECT add_months(last_day(doc.fecha_emision),+6) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') and  doc.num_doc_fisico <= 1687124 then 1 else 0 end)
+  else
+  case when to_date($P{pFecha},'dd/mm/yyyy') > to_date('30/09/2014','dd/mm/yyyy')  then  -- oct 2014 es 7 meses 
+    (case when (SELECT add_months(last_day(doc.fecha_emision),+6) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') and doc.NUM_DOC_FISICO <=1683197 then 1 else 0 end)
+  else
+  case when to_date($P{pFecha},'dd/mm/yyyy') > to_date('31/08/2014','dd/mm/yyyy') then  -- sep 2014 es 7 meses 
+    (case when (SELECT add_months(last_day(doc.fecha_emision),+7) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') then 1 else 0 end)
+  else
+  case when to_date($P{pFecha},'dd/mm/yyyy') > to_date('31/07/2014','dd/mm/yyyy') then  -- agosto 2014 es 8 meses 
+    (case when (SELECT add_months(last_day(doc.fecha_emision),+8) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') then 1 else 0 end)
+  else
+  case when to_date($P{pFecha},'dd/mm/yyyy') > to_date('30/06/2014','dd/mm/yyyy') then  -- julio 2014 es 7 meses 
+    (case when (SELECT add_months(last_day(doc.fecha_emision),+7) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') then 1 else 0 end)
+  else
+  case when to_date($P{pFecha},'dd/mm/yyyy') > to_date('31/05/2014','dd/mm/yyyy') then  -- junio 2014 es 6 meses 
+    (case when (SELECT add_months(last_day(doc.fecha_emision),+6) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') then 1 else 0 end)
+else
+  case when to_date($P{pFecha},'dd/mm/yyyy') > to_date('27/10/2015','dd/mm/yyyy') then  -- octubre 2015 es 6 meses 
+    (case when (SELECT add_months(last_day(doc.fecha_emision),-6) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') then 1 else 0 end)   
+else  -- abril y mayo 2014 son de 8 meses
+   (case when to_date($P{pFecha},'dd/mm/yyyy') < to_date('01/06/2014','dd/mm/yyyy') and to_date($P{pFecha},'dd/mm/yyyy') > to_date('31/03/2014','dd/mm/yyyy') then
+      (case when (SELECT add_months(last_day(doc.fecha_emision),+8) FROM dual) > to_date($P{pFecha},'dd/mm/yyyy') then 1 else 0 end)
+   else -- el resto de meses menor de abril 2014 se toma como se venia trabajando
+	1 end	
+   )
+   end end  end end end end end end end end end end end end end end end end end end end end end end
+)
+order by anio,codmesconcilia,doc.NUM_DOC_FISICO]]></queryString>
+
+	<field name="ANIOACTUAL" class="java.math.BigDecimal"/>
+	<field name="ID_DOCUMENTO_BANCO" class="java.math.BigDecimal"/>
+	<field name="ID_PERIODO" class="java.math.BigDecimal"/>
+	<field name="CUI" class="java.lang.String"/>
+	<field name="REGISTRO_EMPLEADO" class="java.math.BigDecimal"/>
+	<field name="NOMBRECOMPLETO" class="java.lang.String"/>
+	<field name="ID_DEPENDENCIA" class="java.math.BigDecimal"/>
+	<field name="NOMBRE" class="java.lang.String"/>
+	<field name="FECHA_EMISION" class="java.sql.Timestamp"/>
+	<field name="NUM_DOC_FISICO" class="java.math.BigDecimal"/>
+	<field name="VALOR" class="java.math.BigDecimal"/>
+	<field name="NOM_MES" class="java.lang.String"/>
+	<field name="ANIO" class="java.lang.String"/>
+	<field name="MESCONCILIA" class="java.lang.String"/>
+	<field name="CODMESCONCILIA" class="java.math.BigDecimal"/>
+	<field name="HASTACONCILIA" class="java.lang.String"/>
+	<field name="NUMERO_CUENTA" class="java.lang.String"/>
+	<field name="NOMBANCO" class="java.lang.String"/>
+
+	<variable name="total_periodo" class="java.math.BigDecimal" resetType="Group" resetGroup="periodo" calculation="Sum">
+		<variableExpression><![CDATA[$F{VALOR}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="total_anio" class="java.math.BigDecimal" resetType="Group" resetGroup="anio" calculation="Sum">
+		<variableExpression><![CDATA[$F{VALOR}]]></variableExpression>
+	</variable>
+	<variable name="total" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{VALOR}]]></variableExpression>
+	</variable>
+
+		<group  name="anio" isStartNewPage="true" >
+			<groupExpression><![CDATA[$F{ANIO}]]></groupExpression>
+			<groupHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="23"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="426"
+						y="4"
+						width="155"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{total_anio}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="208"
+						y="4"
+						width="120"
+						height="14"
+						key="staticText-9"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Total circulante en el año]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="327"
+						y="4"
+						width="100"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{ANIO}]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupFooter>
+		</group>
+		<group  name="periodo" isStartNewPage="true" isReprintHeaderOnEachPage="true" >
+			<groupExpression><![CDATA[$F{CODMESCONCILIA}]]></groupExpression>
+			<groupHeader>
+			<band height="17"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="3"
+						y="2"
+						width="207"
+						height="15"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Circulante mes de "+$F{MESCONCILIA}+ " de "+$F{ANIO}]]></textFieldExpression>
+				</textField>
+				<line direction="TopDown">
+					<reportElement
+						x="2"
+						y="16"
+						width="580"
+						height="0"
+						key="line-1"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="2"
+						y="1"
+						width="580"
+						height="0"
+						key="line-14"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="20"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="484"
+						y="6"
+						width="100"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{total_periodo}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="209"
+						y="6"
+						width="207"
+						height="13"
+						key="textField-6"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Total circulante del mes de " + $F{MESCONCILIA}]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupFooter>
+		</group>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="59"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="167"
+						y="19"
+						width="310"
+						height="15"
+						key="textField-7"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["CONCILIACION BANCARIA AL "+ $P{pFecha}.substring(0,2)+" DE MES DE "+$F{HASTACONCILIA}+ " "+$P{pFecha}.substring(6,10 )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="444"
+						y="1"
+						width="139"
+						height="12"
+						key="textField-4"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="SansSerif" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["HOJA NO. "+$V{PAGE_NUMBER}.toString()]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="445"
+						y="12"
+						width="139"
+						height="12"
+						key="textField-5"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="SansSerif" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new java.util.Date()]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="1"
+						y="1"
+						width="190"
+						height="23"
+						key="staticText-12"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[UNIVERSIDAD DE SAN CARLOS DE GUATEMALA
+DEPARTAMENTO DE CONTABILIDAD]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="61"
+						y="30"
+						width="135"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NUMERO_CUENTA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="61"
+						y="41"
+						width="133"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBANCO}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="6"
+						y="30"
+						width="90"
+						height="12"
+						key="staticText-13"/>
+					<box></box>
+					<textElement verticalAlignment="Bottom">
+						<font size="9"/>
+					</textElement>
+				<text><![CDATA[Cuenta No.:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="6"
+						y="41"
+						width="90"
+						height="12"
+						key="staticText-14"/>
+					<box></box>
+					<textElement verticalAlignment="Bottom">
+						<font size="9"/>
+					</textElement>
+				<text><![CDATA[Banco:]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="6"
+						y="54"
+						width="570"
+						height="0"
+						key="line-12"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="6"
+						y="57"
+						width="570"
+						height="0"
+						key="line-13"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="28"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="6"
+						y="3"
+						width="50"
+						height="25"
+						key="staticText-2"/>
+					<box></box>
+					<textElement verticalAlignment="Bottom">
+						<font pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Fecha
+Emisión]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="56"
+						y="3"
+						width="58"
+						height="25"
+						key="staticText-3"/>
+					<box></box>
+					<textElement verticalAlignment="Bottom">
+						<font pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[No. 
+Cheque]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="196"
+						y="3"
+						width="80"
+						height="25"
+						key="staticText-4"/>
+					<box></box>
+					<textElement verticalAlignment="Bottom">
+						<font pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Beneficiario]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="362"
+						y="3"
+						width="21"
+						height="25"
+						key="staticText-5"/>
+					<box></box>
+					<textElement verticalAlignment="Bottom">
+						<font pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Cod]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="391"
+						y="3"
+						width="60"
+						height="25"
+						key="staticText-6"/>
+					<box></box>
+					<textElement verticalAlignment="Bottom">
+						<font pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Unidad]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="472"
+						y="3"
+						width="40"
+						height="25"
+						key="staticText-7"/>
+					<box></box>
+					<textElement verticalAlignment="Bottom">
+						<font pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Valor]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="112"
+						y="3"
+						width="79"
+						height="25"
+						key="staRegistroEmpleado">
+							<printWhenExpression><![CDATA[new Boolean($F{ANIOACTUAL}.compareTo(new BigDecimal(2017))< 0 )]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement verticalAlignment="Bottom">
+						<font pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Registro 
+Empl]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="544"
+						y="3"
+						width="40"
+						height="25"
+						key="staticText-15"/>
+					<box></box>
+					<textElement verticalAlignment="Bottom">
+						<font pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Total
+General]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="112"
+						y="3"
+						width="79"
+						height="25"
+						key="staCUI">
+							<printWhenExpression><![CDATA[new Boolean($F{ANIOACTUAL}.compareTo(new BigDecimal(2017))>= 0 )]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement verticalAlignment="Bottom">
+						<font pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[CUI]]></text>
+				</staticText>
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="11"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1"
+						y="0"
+						width="50"
+						height="11"
+						key="textField"/>
+					<box>					<pen lineWidth="0.0"/>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+</box>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.sql.Timestamp"><![CDATA[$F{FECHA_EMISION}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="54"
+						y="0"
+						width="45"
+						height="11"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{NUM_DOC_FISICO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="183"
+						y="0"
+						width="175"
+						height="11"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRECOMPLETO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="358"
+						y="0"
+						width="20"
+						height="11"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ID_DEPENDENCIA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="380"
+						y="0"
+						width="90"
+						height="11"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="472"
+						y="0"
+						width="50"
+						height="11"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{VALOR}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="102"
+						y="0"
+						width="59"
+						height="11"
+						key="txtRegistroEmpleado">
+							<printWhenExpression><![CDATA[new Boolean($F{ANIOACTUAL}.compareTo(new BigDecimal(2017))< 0 )]]></printWhenExpression>
+						</reportElement>
+					<box>					<pen lineWidth="0.0"/>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+</box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{REGISTRO_EMPLEADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="102"
+						y="0"
+						width="77"
+						height="11"
+						key="txtCUI">
+							<printWhenExpression><![CDATA[new Boolean($F{ANIOACTUAL}.compareTo(new BigDecimal(2017))>= 0 )]]></printWhenExpression>
+						</reportElement>
+					<box>					<pen lineWidth="0.0"/>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+</box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{CUI}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="30"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="336"
+						y="5"
+						width="84"
+						height="15"
+						key="staticText-10"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="9" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Total Circulante circulante]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="426"
+						y="5"
+						width="155"
+						height="15"
+						key="textField-3"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{total}]]></textFieldExpression>
+				</textField>
+			</band>
+		</summary>
+</jasperReport>

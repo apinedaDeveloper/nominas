@@ -1,0 +1,440 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="SisSolicitudPendiente_vw"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   RowClass="enlace_datos.consultas.gestiones.SisSolicitudPendiente_vwRowImpl"
+   MsgBundleClass="enlace_datos.consultas.gestiones.common.SisSolicitudPendiente_vwRowImplMsgBundle"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isCodegen" Value="true" />
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Msg" />
+   </DesignTime>
+   <Variable
+      Name="pUsuario"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <Variable
+      Name="pAnio"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select a.id_solicitud,
+a.id_tipo_solicitud,
+a.id_contrato,
+a.registro_empleado,
+empl.cui,
+a.documento,
+a.observacion,
+a.fecha_creacion,
+a.id_estado,
+a.fecha_solicitud,
+a.creado_por,
+b.nombre_solicitud,
+c.nombre nomestado,
+(select comentario from sis_autorizacion_det where id_autorizacion_det= 
+(select max(id_autorizacion_det) from
+sis_autorizacion_det b, sis_autorizacion x 
+where
+b.id_autorizacion=x.id_autorizacion
+and id_solicitud=a.id_solicitud
+and id_estado=a.id_estado
+)
+) as comentario_estado,
+initcap(empl.nombrecompleto) as nombrecompleto,
+   a.numero_plaza,
+      e.formato2
+    from sis_solicitud a,sis_tipo_solicitud b,sis_estado_solicitud_vw c, sis_contrato d, sep_partida_vw e,sis_empleado_vw empl 
+        where a.id_tipo_solicitud=b.id_tipo_solicitud
+        and a.registro_empleado=empl.registro_empleado
+        and c.id_estado=a.id_estado
+        and c.nombre in ('EN REVISION')
+        and d.id_contrato=a.id_contrato
+        and e.id_partida=d.id_partida
+        and a.id_contrato is not null
+        and a.anio=:pAnio
+        and exists
+        (
+        select 1 from usuario_unidad b, partida part
+            where b.id_partida=part.id_partida
+            and b.usuario=:pUsuario
+            and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(vigencia_a,sysdate)
+            and part.aniomanual=e.aniomanual
+            and e.d1=part.d1
+            and e.d2=part.d2
+            and e.d3d4=part.d3d4
+            and
+            (
+            (
+            part.d5 is null
+            and part.d6 is null
+            and part.d7 is null
+            )
+            or
+            (
+            part.d5=e.d5
+            and part.d6=e.d6
+            and part.d7=e.d7
+            )
+            )            
+        )
+union    
+select a.id_solicitud,
+a.id_tipo_solicitud,
+a.id_contrato,
+a.registro_empleado,
+empl.cui,
+a.documento,
+a.observacion,
+a.fecha_creacion,
+a.id_estado,
+a.fecha_solicitud,
+a.creado_por,
+b.nombre_solicitud,
+c.nombre nomestado,
+(select comentario from sis_autorizacion_det where id_autorizacion_det= 
+(select max(id_autorizacion_det) from
+sis_autorizacion_det b, sis_autorizacion x 
+where
+b.id_autorizacion=x.id_autorizacion
+and id_solicitud=a.id_solicitud
+and id_estado=a.id_estado
+)
+) as comentario_estado,
+initcap(empl.nombrecompleto) as nombrecompleto,
+a.numero_plaza,
+null
+    from sis_solicitud a,sis_tipo_solicitud b,sis_estado_solicitud_vw c,sis_empleado_vw empl 
+        where a.id_tipo_solicitud=b.id_tipo_solicitud
+        and empl.registro_empleado=a.registro_empleado
+        and c.id_estado=a.id_estado
+        and c.nombre in ('EN REVISION')                                 
+        and a.id_contrato is null
+        and a.anio=:pAnio
+        and exists 
+        (
+            select id_partida,nombre,a.d1,a.d2,a.d3d4,a.d5,a.d6,a.d7,aniomanual
+            from partida a
+            where 
+            a.d5 is not null
+            and a.d6 is not null
+            and a.d7 is not null
+            and d8 is null
+            and a.d9d10 is null
+            and
+            (
+            exists(
+            select 1 from usuario_unidad b, partida c
+            where b.id_partida=c.id_partida
+            and b.usuario=:pUsuario
+            and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(vigencia_a,sysdate)
+            and c.aniomanual=a.aniomanual
+            and a.d1=c.d1
+            and a.d2=c.d2
+            and a.d3d4=c.d3d4
+            and
+            (
+            (
+            c.d5 is null
+            and c.d6 is null
+            and c.d7 is null
+            )
+            or
+            (
+            c.d5=a.d5
+            and c.d6=a.d6
+            and c.d7=a.d7
+            )
+            )
+            )
+            )
+             and exists (
+                select id_partida,nombre,a1.d1,a1.d2,a1.d3d4,a1.d5,a1.d6,a1.d7,aniomanual
+            from partida a1
+            where 
+            a1.d5 is not null
+            and a1.d6 is not null
+            and a1.d7 is not null
+            and d8 is null
+            and a1.d9d10 is null
+            and
+            (
+            exists(
+            select 1 from usuario_unidad b, partida c
+            where b.id_partida=c.id_partida
+            and b.usuario=a.creado_por
+            and b.tipo_usuario='TRABAJADOR'
+            and sysdate between b.vigencia_de and nvl(vigencia_a,sysdate)
+            and c.aniomanual=a1.aniomanual
+            and a1.d1=c.d1
+            and a1.d2=c.d2
+            and a1.d3d4=c.d3d4
+            and
+            (
+            (
+            c.d5 is null
+            and c.d6 is null
+            and c.d7 is null
+            )
+            or
+            (
+            c.d5=a1.d5
+            and c.d6=a1.d6
+            and c.d7=a1.d7
+            )
+            )
+            )
+            )
+             and a.id_partida=a1.id_partida           
+            )   
+           )               
+order by id_solicitud asc
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="IdSolicitud"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_SOLICITUD"
+      Expression="ID_SOLICITUD"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdTipoSolicitud"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="3"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_TIPO_SOLICITUD"
+      Expression="ID_TIPO_SOLICITUD"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdContrato"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_CONTRATO"
+      Expression="ID_CONTRATO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="RegistroEmpleado"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="REGISTRO_EMPLEADO"
+      Expression="REGISTRO_EMPLEADO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Cui"
+      IsPersistent="false"
+      Precision="13"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="CUI"
+      Expression="CUI"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="13" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Documento"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="50"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="DOCUMENTO"
+      Expression="DOCUMENTO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="50" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Observacion"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="250"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="OBSERVACION"
+      Expression="OBSERVACION"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="250" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaCreacion"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_CREACION"
+      Expression="FECHA_CREACION"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdEstado"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="3"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_ESTADO"
+      Expression="ID_ESTADO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaSolicitud"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_SOLICITUD"
+      Expression="FECHA_SOLICITUD"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="CreadoPor"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="20"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="CREADO_POR"
+      Expression="CREADO_POR"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="20" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="NombreSolicitud"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="50"
+      Type="java.lang.String"
+      ColumnType="CHAR"
+      AliasName="NOMBRE_SOLICITUD"
+      Expression="NOMBRE_SOLICITUD"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="50" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomestado"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMESTADO"
+      Expression="NOMESTADO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="ComentarioEstado"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="350"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="COMENTARIO_ESTADO"
+      Expression="COMENTARIO_ESTADO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="350" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nombrecompleto"
+      IsPersistent="false"
+      Precision="305"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBRECOMPLETO"
+      Expression="NOMBRECOMPLETO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="305" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="NumeroPlaza"
+      IsPersistent="false"
+      Precision="5"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="NUMERO_PLAZA"
+      Expression="NUMERO_PLAZA"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Formato2"
+      IsPersistent="false"
+      Precision="246"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="FORMATO2"
+      Expression="FORMATO2"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="246" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

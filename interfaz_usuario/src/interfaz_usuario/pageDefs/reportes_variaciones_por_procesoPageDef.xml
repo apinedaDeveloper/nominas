@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel"
+                version="10.1.3.43.6"
+                id="reportes_variaciones_por_procesoPageDef"
+                Package="interfaz_usuario.pageDefs">
+  <parameters/>
+  <executables>
+    <variableIterator id="variables">
+      <variable Type="oracle.jbo.domain.Number" Name="unaConsulta_regEmpleado"
+                IsQueriable="false"/>
+      <variable Type="oracle.jbo.domain.Number" Name="unaConsulta_Dependencia"
+                IsQueriable="false"/>
+      <variable Type="java.lang.String" Name="unaConsulta_pConsulta"
+                IsQueriable="false"/>
+      <variable Name="unaConsulta_buscaDep1" Type="java.lang.Boolean"/>
+      <variable Name="mostrarContr" Type="java.lang.Boolean"
+                DefaultValue="false"/>
+      <variable Name="mostrarLic" Type="java.lang.Boolean"
+                DefaultValue="false"/>
+      <variable Name="mostrarSuspIgss" Type="java.lang.Boolean"
+                DefaultValue="false"/>
+      <variable Name="mostrarDescJud" Type="java.lang.Boolean"
+                DefaultValue="false"/>
+      <variable Name="mostrarRenunDesp" Type="java.lang.Boolean"
+                DefaultValue="false"/>
+      <variable Name="mostrarHoraExtra" Type="java.lang.Boolean"
+                DefaultValue="false"/>
+      <variable Name="mostrarPromDoc" Type="java.lang.Boolean"
+                DefaultValue="false"/>
+      <variable Name="mostrarReclaf" Type="java.lang.Boolean"
+                DefaultValue="false"/>
+      <variable Name="mostrarTodo" Type="java.lang.Boolean"
+                DefaultValue="true"/>
+      <variable Name="vEstadoContrato" Type="java.lang.String"
+                DefaultValue="0"/>
+      <variable Name="vEstados" Type="java.lang.String"/>
+      <variable Name="vEstadoLic" Type="java.lang.String" DefaultValue="0"/>
+      <variable Name="vSuspIgss" Type="java.lang.String" DefaultValue="0"/>
+      <variable Name="vDescJud" Type="java.lang.String" DefaultValue="0"/>
+      <variable Name="vRenun" Type="java.lang.String" DefaultValue="0"/>
+      <variable Name="vHoraE" Type="java.lang.String" DefaultValue="0"/>
+    </variableIterator>
+    <iterator id="sis_licencias_consulIterator" Binds="sis_licencias_consul"
+              DataControl="QUERRYSDataControl" RangeSize="100"/>
+    <iterator id="sis_suspenciones_igss_consulIterator"
+              Binds="sis_suspenciones_igss_consul"
+              DataControl="QUERRYSDataControl" RangeSize="100"/>
+    <iterator id="dependenciasIterator" RangeSize="-1" Binds="dependencias"
+              DataControl="QUERRYSDataControl"/>
+    <invokeAction Binds="Eje_dependencias" id="Exe_dependencias"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <iterator id="sis_nombramientos_consulIterator"
+              Binds="sis_nombramientos_consul" DataControl="QUERRYSDataControl"
+              RangeSize="100">
+      <sortCriteria>
+        <sort attribute="Partida" ascending="true"/>
+        <sort attribute="NumeroPlaza" ascending="true"/>
+      </sortCriteria>
+    </iterator>
+    <iterator id="sis_desc_judicial_consulIterator" RangeSize="100"
+              Binds="sis_desc_judicial_consul"
+              DataControl="QUERRYSDataControl"/>
+    <iterator id="sis_renuncias_despIterator" RangeSize="100"
+              Binds="sis_renuncias_desp" DataControl="QUERRYSDataControl"/>
+    <iterator id="sis_tiempo_extra_consulIterator" RangeSize="100"
+              Binds="sis_tiempo_extra_consul" DataControl="QUERRYSDataControl"/>
+    <iterator id="sis_promo_reclaf_consulIterator" RangeSize="100"
+              Binds="sis_promo_reclaf_consul" DataControl="QUERRYSDataControl">
+      <sortCriteria>
+        <sort attribute="Partida" ascending="true"/>
+      </sortCriteria>
+    </iterator>
+  </executables>
+  <bindings>
+    <table id="sis_licencias_consul" IterBinding="sis_licencias_consulIterator">
+      <AttrNames>
+        <Item Value="IdSolicitud"/>
+        <Item Value="NombreSolicitud"/>
+        <Item Value="Motivo"/>
+        <Item Value="RegistroEmpleado"/>
+        <Item Value="Partida"/>
+        <Item Value="IdPuesto"/>
+        <Item Value="NumeroPlaza"/>
+        <Item Value="Tipolicencia"/>
+        <Item Value="FechaInicio"/>
+        <Item Value="FechaFin"/>
+        <Item Value="Procede"/>
+        <Item Value="FechaResolucion"/>
+        <Item Value="FechaCreacion"/>
+        <Item Value="Nomestado"/>
+        <Item Value="Nombrecompleto"/>
+        <Item Value="HorasBaja"/>
+      </AttrNames>
+    </table>
+    <attributeValues id="regEmpleado" IterBinding="variables">
+      <AttrNames>
+        <Item Value="unaConsulta_regEmpleado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Dependencia" IterBinding="variables">
+      <AttrNames>
+        <Item Value="unaConsulta_Dependencia"/>
+      </AttrNames>
+    </attributeValues>
+    <table id="sis_suspenciones_igss_consul"
+           IterBinding="sis_suspenciones_igss_consulIterator">
+      <AttrNames>
+        <Item Value="IdSolicitud"/>
+        <Item Value="NombreSolicitud"/>
+        <Item Value="Motivo"/>
+        <Item Value="RegistroEmpleado"/>
+        <Item Value="FechaInicioSuspIgss"/>
+        <Item Value="FechaAltaSuspIgss"/>
+        <Item Value="FechaCreacion"/>
+        <Item Value="Nomestado"/>
+        <Item Value="Nombrecompleto"/>
+      </AttrNames>
+    </table>
+    <action IterBinding="dependenciasIterator" id="Eje_dependencias"
+            InstanceName="QUERRYSDataControl.dependencias"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="usuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+    </action>
+    <attributeValues IterBinding="variables" id="unaConsulta_buscaDep">
+      <AttrNames>
+        <Item Value="unaConsulta_buscaDep1"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction id="EjecutarConsulGestiones"
+                  InstanceName="QUERRYSDataControl.dataProvider"
+                  DataControl="QUERRYSDataControl"
+                  MethodName="EjecutarConsulGestiones"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="false">
+      <NamedData NDName="FechaI" NDValue="${bindings.FechaI.inputValue}"
+                 NDType="oracle.jbo.domain.Date"/>
+      <NamedData NDName="FechaF" NDValue="${bindings.FechaF.inputValue}"
+                 NDType="oracle.jbo.domain.Date"/>
+      <NamedData NDName="regEmpleado"
+                 NDValue="${bindings.regEmpleado.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="Dependencia"
+                 NDValue="${bindings.unaConsulta_buscaDep.inputValue?bindings.Dependencia.inputValue:null}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pConsulta" NDValue="${bindings.pConsulta.inputValue}"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="pEstados" NDValue="${bindings.vEstados1.inputValue}"
+                 NDType="java.lang.String"/>
+    </methodAction>
+    <list StaticList="false" ListOperMode="0" IterBinding="variables"
+          ListIter="dependenciasIterator" id="dependencias">
+      <AttrNames>
+        <Item Value="unaConsulta_Dependencia"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdDependencia"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Nombre"/>
+      </ListDisplayAttrNames>
+    </list>
+    <table id="sis_nombramientos_consul"
+           IterBinding="sis_nombramientos_consulIterator">
+      <AttrNames>
+        <Item Value="IdContrato"/>
+        <Item Value="Partida"/>
+        <Item Value="NumeroPlaza"/>
+        <Item Value="RegistroEmpleado"/>
+        <Item Value="Nombrecompleto"/>
+        <Item Value="NomPuesto"/>
+        <Item Value="Horascontratadas"/>
+        <Item Value="FechaInicio"/>
+        <Item Value="FechaFin"/>
+        <Item Value="Sueldobase"/>
+        <Item Value="Escalaf"/>
+        <Item Value="ComplSal"/>
+        <Item Value="Estado"/>
+        <Item Value="FechaCreacion"/>
+      </AttrNames>
+    </table>
+    <table id="sis_desc_judicial_consul"
+           IterBinding="sis_desc_judicial_consulIterator">
+      <AttrNames>
+        <Item Value="IdSolicitud"/>
+        <Item Value="NombreSolicitud"/>
+        <Item Value="Motivo"/>
+        <Item Value="RegistroEmpleado"/>
+        <Item Value="Nombrecompleto"/>
+        <Item Value="NoJuicio"/>
+        <Item Value="FechaCreacion"/>
+        <Item Value="Nomestado"/>
+        <Item Value="FechaInicio"/>
+      </AttrNames>
+    </table>
+    <attributeValues IterBinding="variables" id="mostrarContr1">
+      <AttrNames>
+        <Item Value="mostrarContr"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="mostrarLic1">
+      <AttrNames>
+        <Item Value="mostrarLic"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="mostrarSuspIgss1">
+      <AttrNames>
+        <Item Value="mostrarSuspIgss"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="mostrarDescJud1">
+      <AttrNames>
+        <Item Value="mostrarDescJud"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="pConsulta">
+      <AttrNames>
+        <Item Value="unaConsulta_pConsulta"/>
+      </AttrNames>
+    </attributeValues>
+    <table id="sis_renuncias_desp" IterBinding="sis_renuncias_despIterator">
+      <AttrNames>
+        <Item Value="IdSolicitud"/>
+        <Item Value="NombreSolicitud"/>
+        <Item Value="RegistroEmpleado"/>
+        <Item Value="Nombrecompleto"/>
+        <Item Value="FechaSolicitud"/>
+        <Item Value="Observacion"/>
+        <Item Value="FechaCreacion"/>
+        <Item Value="Nomestado"/>
+        <Item Value="Formato2"/>
+        <Item Value="NumeroPlaza"/>
+      </AttrNames>
+    </table>
+    <attributeValues IterBinding="variables" id="mostrarRenunDesp1">
+      <AttrNames>
+        <Item Value="mostrarRenunDesp"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="mostrarTodo1">
+      <AttrNames>
+        <Item Value="mostrarTodo"/>
+      </AttrNames>
+    </attributeValues>
+    <table id="sis_tiempo_extra_consul"
+           IterBinding="sis_tiempo_extra_consulIterator">
+      <AttrNames>
+        <Item Value="IdHoraExtra"/>
+        <Item Value="RegistroEmpleado"/>
+        <Item Value="Nombrecompleto"/>
+        <Item Value="Partida"/>
+        <Item Value="NumeroPlaza"/>
+        <Item Value="Clasif"/>
+        <Item Value="Fechaini"/>
+        <Item Value="Fechafin"/>
+        <Item Value="Totalhorasextra"/>
+        <Item Value="Nomestado"/>
+        <Item Value="FechaCreacion"/>
+        <Item Value="IdDependencia"/>
+      </AttrNames>
+    </table>
+    <attributeValues IterBinding="variables" id="mostrarHoraExtra1">
+      <AttrNames>
+        <Item Value="mostrarHoraExtra"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="mostrarReclaf1">
+      <AttrNames>
+        <Item Value="mostrarReclaf"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="mostrarPromDoc1">
+      <AttrNames>
+        <Item Value="mostrarPromDoc"/>
+      </AttrNames>
+    </attributeValues>
+    <table id="sis_promo_reclaf_consul"
+           IterBinding="sis_promo_reclaf_consulIterator">
+      <AttrNames>
+        <Item Value="IdAnexo"/>
+        <Item Value="NomTipoMovAlta"/>
+        <Item Value="RegistroEmpleado"/>
+        <Item Value="Nombrecompleto"/>
+        <Item Value="Partida"/>
+        <Item Value="NumeroPlaza"/>
+        <Item Value="CantidadHoras"/>
+        <Item Value="Clasif"/>
+        <Item Value="Nompuesto"/>
+        <Item Value="Clasifnuevo"/>
+        <Item Value="Nompuestonuevo"/>
+        <Item Value="IdDependencia"/>
+        <Item Value="FechaCreacion"/>
+      </AttrNames>
+    </table>
+    <attributeValues IterBinding="variables" id="vEstadoContrato1">
+      <AttrNames>
+        <Item Value="vEstadoContrato"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="vEstados1">
+      <AttrNames>
+        <Item Value="vEstados"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="vEstadoLic1">
+      <AttrNames>
+        <Item Value="vEstadoLic"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="vSuspIgss1">
+      <AttrNames>
+        <Item Value="vSuspIgss"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="vDescJud1">
+      <AttrNames>
+        <Item Value="vDescJud"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="vRenun1">
+      <AttrNames>
+        <Item Value="vRenun"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="vHoraE1">
+      <AttrNames>
+        <Item Value="vHoraE"/>
+      </AttrNames>
+    </attributeValues>
+  </bindings>
+</pageDefinition>

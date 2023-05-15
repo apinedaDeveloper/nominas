@@ -1,0 +1,87 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="SisProcesosNominaPorAnioVw"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   ComponentClass="enlace_datos.consultas.reportes.SisProcesosNominaPorAnioVwImpl"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <SQLQuery><![CDATA[
+SELECT ANIO, ID_PROCESO, NOMBRE,  PERIODO
+FROM
+(
+SELECT N.ANIO, N.ID_PROCESO, TP.ID_TIPOPROCESO, TP.NOMBRE, UPPER(FU_NUMERO_MES(P.PERIODO)) PERIODO
+FROM SIS_NOMINA N, SIS_PROCESO P, SIS_TIPO_PROCESO TP
+WHERE P.TIPOPROCESO = TP.ID_TIPOPROCESO
+AND N.ID_PROCESO = P.ID_PROCESO
+AND (N.ID_TIPO_NOMINA = 1 OR N.ID_TIPO_NOMINA = 2 OR N.ID_TIPO_NOMINA = 3)
+AND TP.ID_TIPOPROCESO IN (1,2,3,25)
+AND N.ID_PROCESO != 101
+GROUP BY N.ANIO, N.ID_PROCESO, TP.ID_TIPOPROCESO, TP.NOMBRE, P.PERIODO
+ORDER BY N.ANIO DESC, TP.ID_TIPOPROCESO ASC, N.ID_PROCESO DESC
+)
+   ]]></SQLQuery>
+   <DesignTime>
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.43.6" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|VarAccess" />
+   </DesignTime>
+   <ViewAttribute
+      Name="Anio"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="4"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ANIO"
+      Expression="ANIO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdProceso"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_PROCESO"
+      Expression="ID_PROCESO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nombre"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBRE"
+      Expression="NOMBRE"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Periodo"
+      IsPersistent="false"
+      Precision="4000"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="PERIODO"
+      Expression="PERIODO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="4000" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

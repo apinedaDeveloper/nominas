@@ -1,0 +1,168 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns="http://www.w3.org/1999/xhtml"
+          xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <f:view>
+    <f:loadBundle basename="propiedades" var="tx"/>
+    <afh:html>
+      <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+      <afh:head title="#{tx['gen_pago.title']}">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+      </afh:head>
+      <afh:body>
+        <af:messages/>
+        <h:form>
+           <af:page title="Procesos" value="#{modeloMenu.modeloBD}" var="node">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+           <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelHorizontal halign="center">
+              <af:panelBox width="500">
+                <af:panelForm>
+                  <af:panelGroup>
+                    <af:panelHeader text="#{tx['gen_pago.pnl_header1.texto']}" messageType="none">
+                      <af:panelForm>
+                        <f:facet name="footer"/>
+                        <af:selectOneChoice label="#{tx['gen_pago.lst_proceso.texto']}"
+                                            value="#{bindings.pagos_pendientesVwNombre.inputValue}"
+                                            autoSubmit="true" id="cmb_proceso"
+                                            valueChangeListener="#{gen_pago.lst_procesos}"
+                                            binding="#{gen_pago.cmb_procesos}">
+                          <f:selectItems value="#{bindings.pagos_pendientesVwNombre.items}"
+                                         binding="#{gen_pago.cmb_item_proceso}"/>
+                        </af:selectOneChoice>
+                        <af:inputText value="#{bindings.PorcentajePago.inputValue}"
+                                      label="#{tx['gen_pago.inpt_porcentaje_pago.texto']}"
+                                      required="#{bindings.PorcentajePago.mandatory}"
+                                      columns="#{bindings.PorcentajePago.displayWidth}"
+                                      disabled="#{bindings.Nomtiponomina != 'AGUINALDO'}"
+                                      binding="#{gen_pago.inpt_porcentaje}"
+                                      partialTriggers="cmb_proceso">
+                          <af:validator binding="#{bindings.PorcentajePago.validator}"/>
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.PorcentajePago.format}"/>
+                        </af:inputText>
+                        <af:selectInputDate value="#{bindings.ProcesoVwFechaRef.inputValue}"
+                                            label="#{tx['gen_pago.int_fecha.texto']}"
+                                            required="#{bindings.ProcesoVwFechaRef.mandatory}"
+                                            binding="#{gen_pago.inpt_fecha}">
+                          <af:validator binding="#{bindings.ProcesoVwFechaRef.validator}"/>
+                          <f:convertDateTime pattern="#{bindings.ProcesoVwFechaRef.format}"/>
+                        </af:selectInputDate>
+                        <af:inputText value="#{bindings.ProcesoVwObservaciones.inputValue}"
+                                      label="#{tx['gen_pago.inpt_observ_pago.texto']}"
+                                      required="#{bindings.ProcesoVwObservaciones.mandatory}"
+                                      columns="50" rows="2"
+                                      binding="#{gen_pago.inpt_observaciones}">
+                          <af:validator binding="#{bindings.ProcesoVwObservaciones.validator}"/>
+                        </af:inputText>
+                      </af:panelForm>
+                      <af:panelHorizontal halign="center"
+                                          binding="#{gen_pago.panel_boton1}">
+                        <af:commandButton actionListener="#{bindings.crearFila.execute}"
+                                          text="#{tx['gen_pago.btn_agregar_proceso.texto']}"
+                                          id="btn_agregar_proceso"/>
+                        <af:commandButton actionListener="#{bindings.Delete.execute}"
+                                          text="#{tx['gen_pago.btn_eliminar_dt_pago.texto']}"
+                                          disabled="#{!bindings.Delete.enabled}"
+                                          id="btn_eliminar"
+                                          binding="#{gen_pago.btn_eliminar}"/>
+                        <f:facet name="separator">
+                          <af:objectSpacer width="15" height="60"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                    </af:panelHeader>
+                    <af:panelHeader text="#{tx['gen_pago.pnlHdr_tabla.texto']}">
+                      <af:table value="#{bindings.ProcesoVwSisProcesoPagoDetVw.collectionModel}"
+                                var="row"
+                                rows="#{bindings.ProcesoVwSisProcesoPagoDetVw.rangeSize}"
+                                first="#{bindings.ProcesoVwSisProcesoPagoDetVw.rangeStart}"
+                                emptyText="#{bindings.ProcesoVwSisProcesoPagoDetVw.viewable ? 'Ninguna Fila' : 'Ninguna Fila'}"
+                                selectionState="#{bindings.ProcesoVwSisProcesoPagoDetVw.collectionModel.selectedRow}"
+                                selectionListener="#{bindings.ProcesoVwSisProcesoPagoDetVw.collectionModel.makeCurrent}"
+                                partialTriggers="btn_nuevo btn_agregar_proceso"
+                                banding="row" bandingInterval="1">
+                        <f:facet name="selection">
+                          <af:tableSelectOne partialTriggers="btn_nuevo"
+                                             autoSubmit="true">
+                            <af:commandButton text="#{tx['gen_pago.btn_seleccionar.texto']}"
+                                              partialTriggers="btn_nuevo"/>
+                          </af:tableSelectOne>
+                        </f:facet>
+                        <af:column sortable="false" headerText="IdProceso">
+                          <af:outputText value="#{row.IdProcesoNomina}"/>
+                        </af:column>
+                        <af:column sortProperty="Tiponomina" sortable="false"
+                                   headerText="#{bindings.ProcesoVwSisProcesoPagoDetVw.labels.Tiponomina}">
+                          <af:outputText value="#{row.Tiponomina}"/>
+                        </af:column>
+                        <af:column sortProperty="Nomperido" sortable="false"
+                                   headerText="#{bindings.ProcesoVwSisProcesoPagoDetVw.labels.Nomperido}">
+                          <af:outputText value="#{row.Nomperido}"/>
+                        </af:column>
+                        <af:column sortProperty="Anio" sortable="false"
+                                   headerText="#{bindings.ProcesoVwSisProcesoPagoDetVw.labels.Anio}">
+                          <af:outputText value="#{row.Anio}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.ProcesoVwSisProcesoPagoDetVw.formats.Anio}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortProperty="PorcentajePago"
+                                   sortable="false"
+                                   headerText="#{bindings.ProcesoVwSisProcesoPagoDetVw.labels.PorcentajePago}">
+                          <af:outputText value="#{row.PorcentajePago}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.ProcesoVwSisProcesoPagoDetVw.formats.PorcentajePago}"/>
+                          </af:outputText>
+                        </af:column>
+                      </af:table>
+                    </af:panelHeader>
+                    <af:objectSpacer width="10" height="20"/>
+                    <af:inputHidden value="#{bindings.operacion.inputValue}"
+                                    binding="#{gen_pago.hiden_operacion}"/>
+                    <af:panelHorizontal halign="center">
+                      <af:commandButton text="#{tx['gen_pago.btn_descartar_dt_pago.texto']}"
+                                        immediate="true" id="btn_descartar"
+                                        binding="#{gen_pago.btn_descartar}"
+                                        action="prcs_genPago_buscar"
+                                        actionListener="#{bindings.Rollback.execute}"/>
+                      <af:commandButton text="#{tx['gen_pago.btn_siguiente.texto']}"
+                                        action="#{gen_pago.btn_siguiente_action}"
+                                        disabled="#{bindings.Datos_proceso_pago.inputValue eq ''}">
+                        <af:setActionListener from="#{flujo_usuario.mesActual}"
+                                              to="#{bindings.Periodo.inputValue}"/>
+                      </af:commandButton>
+                      <f:facet name="separator">
+                        <af:objectSpacer width="15" height="50"/>
+                      </f:facet>
+                    </af:panelHorizontal>
+                  </af:panelGroup>
+                </af:panelForm>
+              </af:panelBox>
+            </af:panelHorizontal>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+</jsp:root>

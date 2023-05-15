@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="cheques_suspIgss"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="612"
+		 pageHeight="1008"
+		 columnWidth="552"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="varDep" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="varFechIni" isForPrompting="true" class="java.util.Date"/>
+	<parameter name="varFechFin" isForPrompting="true" class="java.util.Date"/>
+	<queryString><![CDATA[select distinct Case when Extract (year from d.fecha_emision) < 2017
+Then To_Char(e.registro_empleado)
+Else Case when To_number(to_char(d.fecha_emision,'yyyymm')) < 201807
+     Then e.cui
+     Else e.cui||'<br>'||e.registro_empleado
+     End
+End Reg_CUI
+, d.NUM_DOC_FISICO, par.FORMATO, d.VALOR, d.FECHA_EMISION,
+e.NOMBRE1||' '||e.NOMBRE2||' '||e.APELLIDO1||' '||e.APELLIDO2 as empleado, tip.NOMBRE as doc, dep.NOMBRE
+from sis_nomina n, sis_tipo_nomina t, sis_pago p, sis_documento_banco d, sis_det_partida_pago detpar, sis_partida2_vw par,
+sis_contrato c, sis_empleado e,sis_tipo_documento tip, sis_partida par1, sis_dependencia dep
+where n.ID_TIPO_NOMINA = t.ID_TIPO_NOMINA
+and t.NOMBRE = 'COMPLEMENTO IGSS'
+and n.ID_NOMINA = p.ID_NOMINA
+and p.ID_DOCUMENTO_BANCO = d.ID_DOCUMENTO_BANCO
+AND D.FECHA_EMISION between $P{varFechIni} and $P{varFechFin}
+and d.ID_TIPO_DOCUMENTO = tip.ID_TIPO_DOCUMENTO
+and d.ID_DOCUMENTO_BANCO = detpar.ID_DOCUMENTO_BANCO
+and detpar.ID_PARTIDA = par.ID_PARTIDA
+and detpar.TIPO = 'N'
+and n.ID_CONTRATO = c.ID_CONTRATO
+and c.REGISTRO_EMPLEADO = e.REGISTRO_EMPLEADO
+and n.ID_PARTIDA = par1.ID_PARTIDA
+and par1.ID_DEPENDENCIA = dep.ID_DEPENDENCIA
+and dep.ID_DEPENDENCIA = $P{varDep}
+order by par.FORMATO asc, d.NUM_DOC_FISICO asc]]></queryString>
+
+	<field name="REG_CUI" class="java.lang.String"/>
+	<field name="NUM_DOC_FISICO" class="java.math.BigDecimal"/>
+	<field name="FORMATO" class="java.lang.String"/>
+	<field name="VALOR" class="java.math.BigDecimal"/>
+	<field name="FECHA_EMISION" class="java.sql.Timestamp"/>
+	<field name="EMPLEADO" class="java.lang.String"/>
+	<field name="DOC" class="java.lang.String"/>
+	<field name="NOMBRE" class="java.lang.String"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="53"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="187"
+						y="2"
+						width="193"
+						height="21"
+						key="staticText-1"/>
+					<box></box>
+					<textElement>
+						<font size="14" isBold="true"/>
+					</textElement>
+				<text><![CDATA[PAGOS SUSPENSION IGSS]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="197"
+						y="24"
+						width="22"
+						height="15"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[DEL]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="219"
+						y="24"
+						width="59"
+						height="14"
+						key="textField-1"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[$P{varFechIni}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="278"
+						y="24"
+						width="20"
+						height="15"
+						key="staticText-3"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[AL]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="298"
+						y="24"
+						width="61"
+						height="15"
+						key="textField-2"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[$P{varFechFin}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="10"
+						y="39"
+						width="296"
+						height="14"
+						key="textField-3"/>
+					<box></box>
+					<textElement>
+						<font isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Dependencia: " + $F{NOMBRE}]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="14"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="13"
+						y="2"
+						width="48"
+						height="12"
+						key="staticText-4"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<text><![CDATA[PARTIDA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="199"
+						y="1"
+						width="55"
+						height="12"
+						key="staticText-6"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<text><![CDATA[EMPLEADO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="330"
+						y="1"
+						width="30"
+						height="12"
+						key="staticText-7"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<text><![CDATA[DOC.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="396"
+						y="1"
+						width="19"
+						height="12"
+						key="staticText-8"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<text><![CDATA[No.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="442"
+						y="1"
+						width="57"
+						height="12"
+						key="staticText-9"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<text><![CDATA[MONTO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="501"
+						y="1"
+						width="50"
+						height="12"
+						key="staticText-10"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<text><![CDATA[EMISION]]></text>
+				</staticText>
+				<line direction="BottomUp">
+					<reportElement
+						x="1"
+						y="0"
+						width="551"
+						height="1"
+						key="line-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="BottomUp">
+					<reportElement
+						x="1"
+						y="13"
+						width="551"
+						height="1"
+						key="line-2"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="BottomUp">
+					<reportElement
+						x="72"
+						y="2"
+						width="1"
+						height="12"
+						key="line-3"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="BottomUp">
+					<reportElement
+						x="143"
+						y="0"
+						width="1"
+						height="12"
+						key="line-4"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="BottomUp">
+					<reportElement
+						x="1"
+						y="1"
+						width="1"
+						height="12"
+						key="line-5"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="BottomUp">
+					<reportElement
+						x="314"
+						y="0"
+						width="1"
+						height="12"
+						key="line-14"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="BottomUp">
+					<reportElement
+						x="373"
+						y="0"
+						width="1"
+						height="12"
+						key="line-15"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="BottomUp">
+					<reportElement
+						x="436"
+						y="0"
+						width="1"
+						height="12"
+						key="line-16"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="BottomUp">
+					<reportElement
+						x="499"
+						y="1"
+						width="1"
+						height="12"
+						key="line-17"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="BottomUp">
+					<reportElement
+						x="551"
+						y="1"
+						width="1"
+						height="12"
+						key="line-18"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="75"
+						y="1"
+						width="57"
+						height="12"
+						key="staCUI"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<text><![CDATA[CUI/RegPer.]]></text>
+				</staticText>
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="20"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4"
+						y="1"
+						width="68"
+						height="19"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{FORMATO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="145"
+						y="1"
+						width="170"
+						height="19"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{EMPLEADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="315"
+						y="1"
+						width="58"
+						height="19"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{DOC}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="377"
+						y="1"
+						width="58"
+						height="19"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{NUM_DOC_FISICO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="440"
+						y="1"
+						width="59"
+						height="19"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{VALOR}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="503"
+						y="1"
+						width="46"
+						height="19"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.sql.Timestamp"><![CDATA[$F{FECHA_EMISION}]]></textFieldExpression>
+				</textField>
+				<line direction="BottomUp">
+					<reportElement
+						x="72"
+						y="0"
+						width="1"
+						height="19"
+						key="line-6"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="BottomUp">
+					<reportElement
+						x="1"
+						y="19"
+						width="551"
+						height="1"
+						key="line-8"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="BottomUp">
+					<reportElement
+						x="143"
+						y="0"
+						width="1"
+						height="19"
+						key="line-9"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="BottomUp">
+					<reportElement
+						x="314"
+						y="0"
+						width="1"
+						height="19"
+						key="line-10"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="BottomUp">
+					<reportElement
+						x="373"
+						y="0"
+						width="1"
+						height="19"
+						key="line-11"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="BottomUp">
+					<reportElement
+						x="436"
+						y="0"
+						width="1"
+						height="19"
+						key="line-12"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="BottomUp">
+					<reportElement
+						x="499"
+						y="0"
+						width="1"
+						height="19"
+						key="line-13"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="BottomUp">
+					<reportElement
+						x="1"
+						y="-1"
+						width="1"
+						height="19"
+						key="line-19"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="BottomUp">
+					<reportElement
+						x="551"
+						y="0"
+						width="1"
+						height="19"
+						key="line-20"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="74"
+						y="1"
+						width="68"
+						height="19"
+						key="txtCUI"/>
+					<box></box>
+					<textElement textAlignment="Right" markup="html">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{REG_CUI}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

@@ -1,0 +1,124 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns="http://www.w3.org/1999/xhtml"
+          xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <f:view>
+    <afh:html>
+      <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+      <afh:head title="Listado de Gestiones">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+      </afh:head>
+      <f:loadBundle basename="propiedades" var="tx"/>
+      <afh:body>
+        <af:messages/>
+        <h:form>
+          <af:page  value="#{modeloMenu.modeloBD}" var="node"
+                   title="#{flujo_usuario.datosEmpleadoSel}">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+            <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>       <af:panelHorizontal halign="center">
+              <af:panelBox>
+                <af:panelForm>
+                  <af:inputText value="#{bindings['reg_empleado'].inputValue}"
+                                label="#{tx['solicitud.inp_reg_empleado.label']}"
+                                required="#{bindings['reg_empleado'].mandatory}"
+                                columns="#{bindings['reg_empleado'].displayWidth}"
+                                rendered="false">
+                    <af:validator binding="#{bindings['reg_empleado'].validator}"/>
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings['reg_empleado'].format}"/>
+                  </af:inputText>
+                  <af:panelHorizontal>
+                    <af:selectInputDate value="#{bindings.fechaI.inputValue}" label="#{tx['solicitud.inp_fechaI.label']}" required="#{bindings.fechaI.mandatory}">
+                      <af:validator binding="#{bindings.fechaI.validator}"/>
+                      <f:convertDateTime pattern="#{bindings.fechaI.format}"/>
+                    </af:selectInputDate>
+                    <af:objectSpacer width="10" height="20"/>
+                    <af:selectInputDate value="#{bindings.fechaF.inputValue}" label="#{tx['solicitud.inp_fechaF.label']}" required="#{bindings.fechaF.mandatory}">
+                      <af:validator binding="#{bindings.fechaF.validator}"/>
+                      <f:convertDateTime pattern="#{bindings.fechaF.format}"/>
+                    </af:selectInputDate>
+                  </af:panelHorizontal>
+                  <af:panelHorizontal halign="center">
+                    <af:commandButton actionListener="#{bindings.ExecuteWithParams.execute}"
+                                      text="#{tx['solicitud.btn_consultar.texto']}" inlineStyle="font-weight:bold;"/>
+                    <af:commandButton text="#{tx['solicitud.btn_nuevo.texto']}"
+                                      action="sol_nueva_sol" rendered="false" inlineStyle="font-weight:bold;"/>
+                    <f:facet name="separator">
+                      <af:objectSpacer width="30" height="10"/>
+                    </f:facet>
+                  </af:panelHorizontal>
+                  <af:objectSpacer width="10" height="30"/>
+                  <af:table value="#{bindings.SisSolicitudVw.collectionModel}"
+                            var="row"
+                            rows="#{bindings.SisSolicitudVw.rangeSize}"
+                            first="#{bindings.SisSolicitudVw.rangeStart}"
+                            emptyText="#{bindings.SisSolicitudVw.viewable ? 'Ninguna Fila' : 'Ninguna Fila'}"
+                            selectionState="#{bindings.SisSolicitudVw.collectionModel.selectedRow}"
+                            selectionListener="#{bindings.SisSolicitudVw.collectionModel.makeCurrent}"
+                            banding="row" bandingInterval="1">
+                    <af:column sortProperty="IdSolicitud" sortable="false" headerText="ID Solicitud" formatType="icon">
+                      <af:commandLink text="#{row.IdSolicitud}" disabled="#{!bindings.setCurrentRowWithKey.enabled}" actionListener="#{bindings.setCurrentRowWithKey.execute}"
+                                      action="#{solicitud.comnd_link_IdSolicitud}" partialSubmit="true"/>
+                    </af:column>
+                    <af:column sortProperty="NombreSolicitud" sortable="false" headerText="Nombre Solicitud" noWrap="true" formatType="icon">
+                      <af:outputText value="#{row.NombreSolicitud}" inlineStyle="padding:5.0pt;"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="Período Gestión" formatType="icon" noWrap="true">
+                      <af:outputText value="#{row.FechaGestion}" inlineStyle="padding:5.0pt;"/>
+                    </af:column>
+                    <af:column sortProperty="IdContrato" sortable="false" headerText="ID Contrato">
+                      <af:outputText value="#{row.IdContrato}">
+                        <f:convertNumber groupingUsed="false" pattern="#{bindings.SisSolicitudVw.formats.IdContrato}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortable="false" headerText="Partida">
+                      <af:outputText value="#{row.Partida}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="Número Plaza">
+                      <af:outputText value="#{row.NumeroPlaza}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="Estado" formatType="icon">
+                      <af:outputText value="#{row.Nomestado}" inlineStyle="padding:5.0pt;"/>
+                    </af:column>
+                    <af:column sortProperty="RegistroEmpleado" sortable="false" headerText="Creado Por" noWrap="true" formatType="icon">
+                      <af:outputText value="#{row.CreadoPor}-#{row.NomUsr}" inlineStyle="padding:5.0pt;">
+                        <f:convertNumber groupingUsed="false" pattern="#{bindings.SisSolicitudVw.formats.RegistroEmpleado}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="FechaCreacion" sortable="false" headerText="Fecha Creación" noWrap="true" formatType="icon">
+                      <af:outputText value="#{row.FechaCreacion}" inlineStyle="padding:5.0pt;"/>
+                    </af:column>
+                  </af:table>
+                </af:panelForm>
+              </af:panelBox>
+            </af:panelHorizontal>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+</jsp:root>

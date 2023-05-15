@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel"
+                version="10.1.3.42.70"
+                id="reportes_control_analista_empleadoPageDef"
+                Package="interfaz_usuario.pageDefs">
+  <parameters/>
+  <executables>
+    <iterator id="dependenciasIterator" RangeSize="-1" Binds="dependencias"
+              DataControl="QUERRYSDataControl"/>
+    <iterator id="unidades_ejecIterator" RangeSize="-1" Binds="unidades_ejec"
+              DataControl="QUERRYSDataControl">
+      <sortCriteria>
+        <sort attribute="Formato" ascending="true"/>
+      </sortCriteria>
+    </iterator>
+    <iterator id="consul_sisPartida_vw1Iterator" RangeSize="-1"
+              Binds="consul_sisPartida_vw1" DataControl="QUERRYSDataControl"/>
+    <iterator id="SisPlazaXUsuarioVwIterator" Binds="SisPlazaxUsuarioEmpl_vw"
+              RangeSize="-1" DataControl="QUERRYSDataControl"/>
+    <iterator id="consul_partidaSueldos_vw1Iterator" RangeSize="10"
+              Binds="consul_partidaSueldos_vw1"
+              DataControl="QUERRYSDataControl"/>
+    <iterator id="SisPlazaComentarioVwIterator" RangeSize="-1"
+              Binds="SisPlazaComentarioVw" DataControl="QUERRYSDataControl"/>
+    <variableIterator id="variables">
+      <variable Name="varDependencia" Type="oracle.jbo.domain.Number"/>
+      <variable Name="varAnio" Type="java.lang.String" DefaultValue="${''}"/>
+      <variable Name="varEmpleado" Type="java.lang.String"/>
+      <variable Name="varPlaza" Type="oracle.jbo.domain.Number"/>
+      <variable Name="v_id_dep" Type="oracle.jbo.domain.Number"/>
+      <variable Name="v_id_unidad" Type="oracle.jbo.domain.Number"/>
+      <variable Name="v_id_programa" Type="oracle.jbo.domain.Number"/>
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="rpt_control_plaza1.variablesMap.varDep"
+                     Name="rpt_control_plaza1_varDep" IsQueriable="false"/>
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="rpt_control_plaza1.variablesMap.varPrograma"
+                     Name="rpt_control_plaza1_varPrograma" IsQueriable="false"/>
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="rpt_control_plaza1.variablesMap.varUnidad"
+                     Name="rpt_control_plaza1_varUnidad" IsQueriable="false"/>
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="rpt_control_plaza1.variablesMap.varAnio"
+                     Name="rpt_control_plaza1_varAnio" IsQueriable="false"/>
+      <variable Type="java.lang.String" Name="setCurrentRowWithKey_rowKey"
+                IsQueriable="false"/>
+    </variableIterator>
+    <invokeAction id="ejecFiltraDependencia" Binds="filtraDependencia"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <invokeAction id="ejecFiltraUnidad" Binds="filtraUnidad"
+                  Refresh="renderModel"
+                  RefreshCondition="${analista_empleado.selecDep}"/>
+    <invokeAction id="ejecFiltraPartida" Binds="filtraPartida"
+                  RefreshCondition="${adfFacesContext.postback &amp;&amp; analista_empleado.selecPartida != false}"
+                  Refresh="renderModel"/>
+    <invokeAction Binds="ExePlazas" id="EjecPlazas" Refresh="renderModel"
+                  RefreshCondition="${analista_empleado.selecUnidad}"/>
+    <invokeAction Binds="ExeComent" id="ejecomen" Refresh="renderModel"
+                  RefreshCondition="${analista_empleado.selecPlazaU}"/>
+    <iterator id="rpt_control_plaza1Iterator" RangeSize="100"
+              Binds="rpt_control_plaza1" DataControl="QUERRYSDataControl"/>
+    <invokeAction id="ejeControlPlaza" Binds="ExeControlPLaza"
+                  Refresh="renderModel"
+                  RefreshCondition="${analista_empleado.selecUnidad}"/>
+  </executables>
+  <bindings>
+    <list StaticList="false" ListOperMode="1" id="unidades_ejec"
+          IterBinding="unidades_ejecIterator">
+      <AttrNames>
+        <Item Value="Formato"/>
+        <Item Value="Nombre"/>
+      </AttrNames>
+    </list>
+    <list StaticList="false" ListOperMode="1" id="consul_sisPartida_vw1"
+          IterBinding="consul_sisPartida_vw1Iterator">
+      <AttrNames>
+        <Item Value="Formato"/>
+      </AttrNames>
+    </list>
+    <action IterBinding="dependenciasIterator" id="filtraDependencia"
+            InstanceName="QUERRYSDataControl.dependencias"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="usuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+    </action>
+    <action IterBinding="unidades_ejecIterator" id="filtraUnidad"
+            InstanceName="QUERRYSDataControl.unidades_ejec"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="id_depe"
+                 NDValue="${bindings.varDependencia1.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+    </action>
+    <list id="dependenciasIdDependencia" IterBinding="variables"
+          StaticList="false" ListOperMode="0" ListIter="dependenciasIterator">
+      <AttrNames>
+        <Item Value="varDependencia"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdDependencia"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="nombre_codigo"/>
+      </ListDisplayAttrNames>
+    </list>
+    <attributeValues IterBinding="variables" id="varDependencia1">
+      <AttrNames>
+        <Item Value="varDependencia"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="varPlaza1">
+      <AttrNames>
+        <Item Value="varPlaza"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="varEmpleado1">
+      <AttrNames>
+        <Item Value="varEmpleado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="varAnio1">
+      <AttrNames>
+        <Item Value="varAnio"/>
+      </AttrNames>
+    </attributeValues>
+    <list StaticList="false" ListOperMode="1" id="consul_partidaSueldos_vw1"
+          IterBinding="consul_partidaSueldos_vw1Iterator">
+      <AttrNames>
+        <Item Value="Formato"/>
+      </AttrNames>
+    </list>
+    <action IterBinding="consul_partidaSueldos_vw1Iterator"
+            id="filtraPartida"
+            InstanceName="QUERRYSDataControl.consul_partidaSueldos_vw1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="varUnidad"
+                 NDValue="${bindings.unidades_ejecIdUnidad.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="varDependencia"
+                 NDValue="${bindings.varDependencia1.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="varPrograma"
+                 NDValue="${bindings.unidades_ejecIdPrograma1.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <attributeValues IterBinding="consul_partidaSueldos_vw1Iterator"
+                     id="IdPartida">
+      <AttrNames>
+        <Item Value="IdPartida"/>
+      </AttrNames>
+    </attributeValues>
+    <list id="unidades_ejecIdPrograma" IterBinding="variables"
+          StaticList="false" ListOperMode="0" ListIter="unidades_ejecIterator">
+      <AttrNames>
+        <Item Value="v_id_programa"/>
+        <Item Value="v_id_unidad"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdPrograma"/>
+        <Item Value="IdUnidad"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Formato"/>
+        <Item Value="Nombre"/>
+      </ListDisplayAttrNames>
+    </list>
+    <list ListOperMode="1" IterBinding="SisPlazaXUsuarioVwIterator"
+          id="SisPlazaXUsuarioVwIdPartida">
+      <AttrNames>
+        <Item Value="Label"/>
+      </AttrNames>
+    </list>
+    <action IterBinding="SisPlazaXUsuarioVwIterator" id="ExePlazas"
+            InstanceName="QUERRYSDataControl.SisPlazaXUsuarioVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pIdPrograma"
+                 NDValue="${bindings.p_id_programa.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pIdDepe"
+                 NDValue="${bindings.varDependencia1.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pIdUnidad" NDValue="${bindings.p_id_unidad.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pAnio" NDValue="${flujo_usuario.anioActual}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <attributeValues IterBinding="variables" id="p_id_programa">
+      <AttrNames>
+        <Item Value="v_id_programa"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="p_id_unidad">
+      <AttrNames>
+        <Item Value="v_id_unidad"/>
+      </AttrNames>
+    </attributeValues>
+    <table id="SisPlazaComentarioVw" IterBinding="SisPlazaComentarioVwIterator">
+      <AttrNames>
+        <Item Value="IdPlazaComentario"/>
+        <Item Value="IdPartida"/>
+        <Item Value="IdPuesto"/>
+        <Item Value="NumeroPlaza"/>
+        <Item Value="Correlativo"/>
+        <Item Value="Comentario"/>
+        <Item Value="CreadoPor"/>
+        <Item Value="FechaCreacion"/>
+        <Item Value="ModPor"/>
+        <Item Value="FechaMod"/>
+        <Item Value="isSelecionado"/>
+        <Item Value="Formatopartida"/>
+      </AttrNames>
+    </table>
+    <methodAction IterBinding="SisPlazaComentarioVwIterator" id="setSelFilas"
+                  MethodName="setSelFilas" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisPlazaComentarioVw">
+      <NamedData NDName="pValor" NDValue="false" NDType="boolean"/>
+    </methodAction>
+    <methodAction IterBinding="SisPlazaComentarioVwIterator" id="AgregarComen"
+                  MethodName="AgregarComen" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisPlazaComentarioVw">
+      <NamedData NDName="pIdPartida"
+                 NDValue="${bindings.IdPartidaPl.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pIdPuesto" NDValue="${bindings.IdPuestoPl.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pNumeroPlaza"
+                 NDValue="${bindings.NumeroPlazaPl.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pCorrelativo"
+                 NDValue="${bindings.CorrelativoPl.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pRegistroEmpleado"
+                 NDValue="${bindings.RegistroEmpleado.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pComen" NDType="java.lang.String"/>
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+    </methodAction>
+    <attributeValues IterBinding="SisPlazaXUsuarioVwIterator" id="IdPartidaPl">
+      <AttrNames>
+        <Item Value="IdPartida"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisPlazaXUsuarioVwIterator" id="IdPuestoPl">
+      <AttrNames>
+        <Item Value="IdPuesto"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisPlazaXUsuarioVwIterator" id="NumeroPlazaPl">
+      <AttrNames>
+        <Item Value="NumeroPlaza"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisPlazaXUsuarioVwIterator" id="CorrelativoPl">
+      <AttrNames>
+        <Item Value="Correlativo"/>
+      </AttrNames>
+    </attributeValues>
+    <action id="Commit" InstanceName="QUERRYSDataControl"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="100"/>
+    <action id="Rollback" InstanceName="QUERRYSDataControl"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="101"/>
+    <action IterBinding="SisPlazaComentarioVwIterator" id="ExeComent"
+            InstanceName="QUERRYSDataControl.SisPlazaComentarioVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="pIdPartida"
+                 NDValue="${bindings.IdPartidaPl.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pIdPuesto" NDValue="${bindings.IdPuestoPl.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pNumeroPlaza"
+                 NDValue="${bindings.NumeroPlazaPl.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pCorrelativo"
+                 NDValue="${bindings.CorrelativoPl.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pRegistroEmpleado"
+                 NDValue="${bindings.RegistroEmpleado.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <action IterBinding="SisPlazaComentarioVwIterator" id="setComent"
+            InstanceName="QUERRYSDataControl.SisPlazaComentarioVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="96">
+      <NamedData NDName="rowKey" NDValue="${row.rowKeyStr}"
+                 NDType="java.lang.String"/>
+    </action>
+    <attributeValues IterBinding="SisPlazaComentarioVwIterator"
+                     id="isSelecionado">
+      <AttrNames>
+        <Item Value="isSelecionado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisPlazaComentarioVwIterator"
+                     id="Formatopartida">
+      <AttrNames>
+        <Item Value="Formatopartida"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisPlazaXUsuarioVwIterator"
+                     id="Nombrecompleto">
+      <AttrNames>
+        <Item Value="Nombrecompleto"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisPlazaXUsuarioVwIterator"
+                     id="RegistroEmpleado">
+      <AttrNames>
+        <Item Value="RegistroEmpleado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="unidades_ejecIdPrograma1"
+                     IterBinding="unidades_ejecIterator">
+      <AttrNames>
+        <Item Value="IdPrograma"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="unidades_ejecIdUnidad"
+                     IterBinding="unidades_ejecIterator">
+      <AttrNames>
+        <Item Value="IdUnidad"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="unidades_ejecIterator" id="IdUnidad">
+      <AttrNames>
+        <Item Value="IdUnidad"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="unidades_ejecIterator" id="IdPrograma">
+      <AttrNames>
+        <Item Value="IdPrograma"/>
+      </AttrNames>
+    </attributeValues>
+    <table id="rpt_control_plaza1" IterBinding="rpt_control_plaza1Iterator">
+      <AttrNames>
+        <Item Value="NumeroPlaza"/>
+        <Item Value="Partida"/>
+        <Item Value="IdPuesto"/>
+        <Item Value="Correlativo"/>
+      </AttrNames>
+    </table>
+    <action id="ExeControlPLaza" IterBinding="rpt_control_plaza1Iterator"
+            InstanceName="QUERRYSDataControl.rpt_control_plaza1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="varDep" NDValue="${bindings.varDependencia}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="varPrograma"
+                 NDValue="${bindings.unidades_ejecIdPrograma1.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="varUnidad"
+                 NDValue="${bindings.unidades_ejecIdUnidad.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="varAnio" NDValue="${bindings.varAnio}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <action IterBinding="rpt_control_plaza1Iterator" id="setCurrentRowWithKey"
+            InstanceName="QUERRYSDataControl.rpt_control_plaza1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="96">
+      <NamedData NDName="rowKey" NDValue="${row.rowKeyStr}"
+                 NDType="java.lang.String"/>
+    </action>
+  </bindings>
+</pageDefinition>

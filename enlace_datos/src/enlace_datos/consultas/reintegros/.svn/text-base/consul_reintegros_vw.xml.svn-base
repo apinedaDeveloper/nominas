@@ -1,0 +1,254 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="consul_reintegros_vw"
+   OrderBy="ID_REINTEGRO desc"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   RowClass="enlace_datos.consultas.reintegros.consul_reintegros_vwRowImpl"
+   ComponentClass="enlace_datos.consultas.reintegros.consul_reintegros_vwImpl"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isCodegen" Value="true" />
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|Prog|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="pUsuario"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <Variable
+      Name="pStatusOrdenPago"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <SQLQuery><![CDATA[
+SELECT distinct SisReintegro.ID_REINTEGRO, 
+       SisReintegro.ID_DOCUMENTO_BANCO,
+       sis_db.NUM_DOC_FISICO,
+       sis_db.ID_TIPO_DOCUMENTO,
+       sis_td.NOMBRE TIPO_DOC,
+       SisReintegro.TOTAL_PAGAR, 
+       SisReintegro.OBSERVACIONES, 
+       SisReintegro.CREADO_POR, 
+       SisReintegro.FECHA_CREACION, 
+       SisReintegro.MOD_POR, 
+       SisReintegro.FECHA_MOD,
+       SisReintegro.ID_ESTADO,       
+       sis_e.NOMBRE ESTADO,
+       SisReintegro.ID_ORDEN_PAGO,
+       CASE sis_op.status WHEN 1 THEN 'PAGADO' ELSE 'PENDIENTE DE PAGO' END as estado_orden,
+       sis_emp.REGISTRO_EMPLEADO,
+       sis_emp.CUI 
+FROM SIS_REINTEGRO SisReintegro 
+inner join SIS_DOCUMENTO_BANCO sis_db on SisReintegro.ID_DOCUMENTO_BANCO = sis_db.ID_DOCUMENTO_BANCO
+inner join SIS_ESTADO sis_e on SisReintegro.ID_ESTADO = sis_e.ID_ESTADO
+inner join SIS_TIPO_DOCUMENTO sis_td on sis_db.ID_TIPO_DOCUMENTO = sis_td.ID_TIPO_DOCUMENTO
+inner join SIS_PAGO sis_p on SisReintegro.ID_DOCUMENTO_BANCO = sis_p.ID_DOCUMENTO_BANCO
+inner join SIS_NOMINA sis_n on sis_p.ID_NOMINA = sis_n.ID_NOMINA
+inner join SIS_EMPLEADO sis_emp on sis_n.REGISTRO_EMPLEADO = sis_emp.REGISTRO_EMPLEADO 
+inner join PARTIDA p on sis_n.id_partida = p.id_partida
+left outer join SGI_ORDEN_PAGO sis_op on SisReintegro.id_orden_pago = sis_op.id_orden_pago
+WHERE SisReintegro.ID_ESTADO = 214 AND sis_op.status = :pStatusOrdenPago and 
+exists( select 1 from partida a
+    inner join usuario_unidad b on a.id_partida = b.id_partida and b.usuario = :pUsuario and b.tipo_usuario='TRABAJADOR' and sysdate between b.vigencia_de and nvl(b.vigencia_a, sysdate)
+    inner join usuario_perfil up on b.usuario = up.usuario and up.perfil != 'rentas' and up.perfil != 'trabajador_usac'
+    where p.aniomanual = a.aniomanual
+    and p.d1 = a.d1 and p.d2 = a.d2 and p.d3d4 = a.d3d4
+    and ( ( p.d7 = a.d7 and p.d6 = a.d6 and p.d5 = a.d5 ) or
+        ( a.d5 is null and a.d6 is null and a.d7 is null )
+    )
+) 
+
+union 
+
+SELECT distinct SisReintegro.ID_REINTEGRO, 
+       SisReintegro.ID_DOCUMENTO_BANCO,
+       sis_db.NUM_DOC_FISICO,
+       sis_db.ID_TIPO_DOCUMENTO,
+       sis_td.NOMBRE TIPO_DOC,
+       SisReintegro.TOTAL_PAGAR, 
+       SisReintegro.OBSERVACIONES, 
+       SisReintegro.CREADO_POR, 
+       SisReintegro.FECHA_CREACION, 
+       SisReintegro.MOD_POR, 
+       SisReintegro.FECHA_MOD,
+       SisReintegro.ID_ESTADO,       
+       sis_e.NOMBRE ESTADO,
+       SisReintegro.ID_ORDEN_PAGO,
+       CASE sis_op.status WHEN 1 THEN 'PAGADO' ELSE 'PENDIENTE DE PAGO' END as estado_orden,
+       sis_emp.REGISTRO_EMPLEADO,
+       sis_emp.CUI 
+FROM SIS_REINTEGRO SisReintegro 
+inner join SIS_DOCUMENTO_BANCO sis_db on SisReintegro.ID_DOCUMENTO_BANCO = sis_db.ID_DOCUMENTO_BANCO
+inner join SIS_ESTADO sis_e on SisReintegro.ID_ESTADO = sis_e.ID_ESTADO
+inner join SIS_TIPO_DOCUMENTO sis_td on sis_db.ID_TIPO_DOCUMENTO = sis_td.ID_TIPO_DOCUMENTO
+inner join SIS_PAGO sis_p on SisReintegro.ID_DOCUMENTO_BANCO = sis_p.ID_DOCUMENTO_BANCO
+inner join SIS_NOMINA sis_n on sis_p.ID_NOMINA = sis_n.ID_NOMINA
+inner join SIS_EMPLEADO sis_emp on sis_n.REGISTRO_EMPLEADO = sis_emp.REGISTRO_EMPLEADO 
+inner join PARTIDA p on sis_n.id_partida = p.id_partida 
+left outer join SGI_ORDEN_PAGO sis_op on SisReintegro.id_orden_pago = sis_op.id_orden_pago
+WHERE SisReintegro.ID_ESTADO = 214 AND sis_op.status = :pStatusOrdenPago and 
+exists(
+    select 1 from usuario_perfil up where up.usuario = :pUsuario and up.perfil = 'rentas'
+)
+   ]]></SQLQuery>
+   <EntityUsage
+      Name="SisReintegro"
+      Entity="enlace_datos.entidades.gestiones.SisReintegro" >
+      <DesignTime>
+         <Attr Name="_queryClause" Value="false" />
+      </DesignTime>
+   </EntityUsage>
+   <ViewAttribute
+      Name="IdReintegro"
+      IsNotNull="true"
+      EntityAttrName="IdReintegro"
+      EntityUsage="SisReintegro"
+      AliasName="ID_REINTEGRO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdDocumentoBanco"
+      EntityAttrName="IdDocumentoBanco"
+      EntityUsage="SisReintegro"
+      AliasName="ID_DOCUMENTO_BANCO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="NumDocFisico"
+      IsPersistent="false"
+      Precision="12"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="NUM_DOC_FISICO"
+      Expression="NUM_DOC_FISICO"
+      SQLType="NUMERIC" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="idTipoDocumento1"
+      IsPersistent="false"
+      Precision="3"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_TIPO_DOCUMENTO"
+      Expression="ID_TIPO_DOCUMENTO"
+      SQLType="NUMERIC" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="TipoDoc"
+      IsPersistent="false"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="TIPO_DOC"
+      Expression="TIPO_DOC"
+      SQLType="VARCHAR" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="TotalPagar"
+      IsNotNull="true"
+      EntityAttrName="TotalPagar"
+      EntityUsage="SisReintegro"
+      AliasName="TOTAL_PAGAR" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Observaciones"
+      EntityAttrName="Observaciones"
+      EntityUsage="SisReintegro"
+      AliasName="OBSERVACIONES" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="CreadoPor"
+      IsNotNull="true"
+      EntityAttrName="CreadoPor"
+      EntityUsage="SisReintegro"
+      AliasName="CREADO_POR" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaCreacion"
+      EntityAttrName="FechaCreacion"
+      EntityUsage="SisReintegro"
+      AliasName="FECHA_CREACION" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="ModPor"
+      EntityAttrName="ModPor"
+      EntityUsage="SisReintegro"
+      AliasName="MOD_POR" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaMod"
+      EntityAttrName="FechaMod"
+      EntityUsage="SisReintegro"
+      AliasName="FECHA_MOD" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdEstado"
+      IsNotNull="true"
+      EntityAttrName="IdEstado"
+      EntityUsage="SisReintegro"
+      AliasName="ID_ESTADO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Estado"
+      IsPersistent="false"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="ESTADO"
+      Expression="ESTADO"
+      SQLType="VARCHAR" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdOrdenPago"
+      IsPersistent="false"
+      Type="java.lang.String"
+      ColumnType="NUMBER"
+      AliasName="ID_ORDEN_PAGO"
+      Expression="ID_ORDEN_PAGO"
+      SQLType="VARCHAR" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="EstadoOrden"
+      IsPersistent="false"
+      Precision="17"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="ESTADO_ORDEN"
+      Expression="ESTADO_ORDEN"
+      SQLType="VARCHAR" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="RegistroEmpleado"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="REGISTRO_EMPLEADO"
+      Expression="REGISTRO_EMPLEADO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Cui"
+      IsPersistent="false"
+      Precision="13"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="CUI"
+      Expression="CUI"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="13" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

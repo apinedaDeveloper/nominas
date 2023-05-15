@@ -1,0 +1,156 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns="http://www.w3.org/1999/xhtml"
+          xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <f:view>
+    <f:loadBundle basename="propiedades" var="tx"/>
+    <afh:html>
+      <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+      <afh:head title="#{tx['lst_liquidacion.title']}">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+      </afh:head>
+        <jsp:include page="/js/libJQ.js"/>       
+        <jsp:include page="/js/librariesDialog.js"/>
+        <script type="text/javascript" src="/${flujo_usuario.dominioApp}/js/gestiones/scrptAutorizacion.js">
+        </script>
+        <script language="javascript" type="text/javascript"> 
+        gbl_form="form1";
+        gbl_actionId="form1:page1:cmdRefresh";
+       
+        function generaReporte(idDocumento){ 
+            window.open("../verreportepdf?id="+idDocumento+String.fromCharCode(38)+"rep=REPORTE_LIQUIDACION_NOMINA","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable=1"); 
+        }
+        
+        function trasladarLiquida(idDocumento){
+            $("#hdn_Id").val(idDocumento);            
+            return OpenDialogo(1);
+        }
+
+      </script>
+      <afh:body>
+        <af:messages/>
+        <h:form>
+        <af:page value="#{modeloMenu.modeloBD}" var="node"
+                   chromeType="compact">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+           <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelHorizontal halign="center">
+              <af:panelBox width="1000">
+                <af:panelHeader>
+                  <af:panelForm>
+                    <af:panelHorizontal halign="center">
+                      <af:inputText value="#{bindings.idLiqui.inputValue}"
+                                    label="#{tx['lst_liquidacion.tbl_id.texto']}"
+                                    required="#{bindings.idLiqui.mandatory}"
+                                    columns="#{bindings.idLiqui.displayWidth}">
+                        <af:validator binding="#{bindings.idLiqui.validator}"/>
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.idLiqui.format}"/>
+                      </af:inputText>
+                      <af:commandButton actionListener="#{bindings.ExecuteWithParams.execute}"
+                                        text="#{tx['lst_liquidacion.btn_Buscar.texto']}"
+                                        disabled="#{!bindings.ExecuteWithParams.enabled}"/>
+                    </af:panelHorizontal>
+                  </af:panelForm>
+                </af:panelHeader>
+                <f:verbatim>
+                    <input type="hidden" name="hdn_tipo" id="hdn_tipo" value="19"/>
+                    <input type="hidden" name="hdn_Id" id="hdn_Id"
+                       value="${bindings.pIdVar1.inputValue}"/>
+                </f:verbatim>
+                <af:panelHeader text="#{tx['lst_liquidacion.hdr1.texto']}">
+                  <af:objectSpacer width="10" height="25"/>
+                  <af:table value="#{bindings['rpt_liquidacion'].collectionModel}"
+                            var="row" rows="30"
+                            first="#{bindings['rpt_liquidacion'].rangeStart}"
+                            emptyText="#{bindings['rpt_liquidacion'].viewable ? 'Ninguna Fila' : 'Ninguna Fila'}"
+                            selectionState="#{bindings['rpt_liquidacion'].collectionModel.selectedRow}"
+                            selectionListener="#{bindings['rpt_liquidacion'].collectionModel.makeCurrent}"
+                            banding="row" bandingInterval="1">
+                    <af:column sortProperty="IdProceso" sortable="false"
+                               headerText="#{tx['lst_liquidacion.tbl_id.texto']}">
+                      <h:outputLink value="javascript:generaReporte(#{row.IdLiquidacion})">
+                        <af:outputText value="#{row.IdLiquidacion}"/>
+                      </h:outputLink>
+                    </af:column>
+                    <af:column sortable="false" headerText="Estado">
+                      <af:outputText value="#{row.Estado}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="Editar"
+                               rendered="#{roles_usuario.tesorero || roles_usuario.auxiliarTesoreria}">
+                      <af:commandLink text="#{row.col1}"
+                                      disabled="#{row.Estado eq 'AUTORIZADO' || row.Estado eq 'TRASLADADO' || row.Estado eq 'ANULADO'}"
+                                      action="#{liquidacion_nomina.cmd_sel_liquidacion}">
+                        <af:objectImage source="/imagenes/form_edit.png"/>
+                      </af:commandLink>
+                    </af:column>
+                    <af:column sortProperty="Nomina" sortable="false"
+                               headerText="#{tx['lst_liquidacion.tbl_nomina.texto']}">
+                      <af:outputText value="#{row.Nomina}"/>
+                    </af:column>
+                    <af:column sortProperty="Correspondientea" sortable="false"
+                               headerText="#{tx['lst_liquidacion.tbl_corresp.texto']}">
+                      <af:outputText value="#{row.Correspondientea}"/>
+                    </af:column>
+                    <af:column sortProperty="Fecha" sortable="false"
+                               headerText="#{tx['lst_liquidacion.fecha.texto']}">
+                      <af:outputText value="#{row.Fecha}">
+                        <f:convertDateTime pattern="#{bindings['rpt_liquidacion'].formats.Fecha}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortable="false" headerText="CreadoPor">
+                      <af:outputText value="#{row.CreadoPor}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="ModPor">
+                      <af:outputText value="#{row.ModPor}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="FechaMod"
+                               formatType="text">
+                      <af:outputText value="#{row.FechaMod}">
+                        <f:convertDateTime pattern="#{bindings['rpt_liquidacion'].formats.FechaMod}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortable="false" headerText="" formatType="text"
+                               rendered="#{roles_usuario.tesorero || roles_usuario.auxiliarTesoreria || roles_usuario.administrador || roles_usuario.archivoConta}">
+                      <af:commandButton text="Trasladar"
+                                        disabled="#{((roles_usuario.tesorero || roles_usuario.auxiliarTesoreria) &amp;&amp; (row.Estado eq 'AUTORIZADO' || row.Estado eq 'TRASLADADO' || row.Estado eq 'ANULADO')) || ((roles_usuario.administrador || roles_usuario.archivoConta) &amp;&amp; row.Estado eq 'AUTORIZADO')}"
+                                        onclick="return trasladarLiquida(#{row.IdLiquidacion});"/>
+                    </af:column>
+                  </af:table>
+                  <af:objectSpacer width="10" height="30"/>
+                  <af:commandLink id="cmdRefresh"
+                                  action="#{liquidacion_nomina.btn_cancelar_update}"
+                                  disabled="true"/>
+                </af:panelHeader>
+              </af:panelBox>
+            </af:panelHorizontal>
+          </af:page>
+          <f:verbatim>
+          <jsp:include page="../util/dialog_autoriza.txt"/>     
+          </f:verbatim>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+</jsp:root>

@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel"
+                version="10.1.3.41.57" id="gestiones_list_empleadoPageDef"
+                Package="interfaz_usuario.pageDefs"
+                EnableTokenValidation="false">
+  <parameters/>
+  <executables>
+    <iterator id="lista_empleadosIterator"
+              Binds="lista_empleados" DataControl="QUERRYSDataControl"/>
+    <variableIterator id="variables">
+      <variable  Name="lista_empleados_reg_empleado" Type="oracle.jbo.domain.Number"/>
+      <variable  Name="lista_empleados_str_nombre1" Type="java.lang.String"/>
+      <variable  Name="lista_empleados_str_nombre2" Type="java.lang.String"/>
+      <variable  Name="lista_empleados_str_ape1" Type="java.lang.String"/>
+      <variable  Name="lista_empleados_str_ape2" Type="java.lang.String"/>
+      <variable  Name="lista_empleados_reg_cedula" Type="oracle.jbo.domain.Number"/>
+      <variable  Name="RegEmpleado" Type="oracle.jbo.domain.Number"
+                DefaultValue="${bindings.lista_empleados.currentRow['registroEmpleado']}"/>
+      <variable Name="vCui" Type="oracle.jbo.domain.Number"/>
+    </variableIterator>
+    <iterator id="SisEmpleadoVwIterator" RangeSize="10" Binds="SisEmpleadoVw"
+              DataControl="QUERRYSDataControl"/>
+    <iterator id="SisRegPerAsignacionVwIterator" RangeSize="100"
+              Binds="SisRegPerAsignacionVw" DataControl="QUERRYSDataControl">
+      <sortCriteria>
+        <sort attribute="IdAsignacion" ascending="false"/>
+      </sortCriteria>
+    </iterator>
+    <invokeAction id="ExeRegAsig" Binds="filtrarAsignados" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <iterator id="SisRegPerAsignacionVwExIterator" RangeSize="100"
+              Binds="SisRegPerAsignacionVwEx" DataControl="QUERRYSDataControl">
+      <sortCriteria>
+        <sort attribute="IdAsignacion" ascending="false"/>
+      </sortCriteria>
+    </iterator>
+    <invokeAction id="ExeRegPend" Binds="filtrarPendientes"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+  </executables>
+  <bindings>
+    <action id="ExecuteWithParams" IterBinding="lista_empleadosIterator"
+            InstanceName="QUERRYSDataControl.lista_empleados"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="reg_empleado" NDType="oracle.jbo.domain.Number"
+                 NDValue="${bindings.lista_empleados_reg_empleado}"/>
+      <NamedData NDName="str_nombre1" NDType="java.lang.String"
+                 NDValue="${bindings.lista_empleados_str_nombre1}"/>
+      <NamedData NDName="str_nombre2" NDType="java.lang.String"
+                 NDValue="${bindings.lista_empleados_str_nombre2}"/>
+      <NamedData NDName="str_ape1" NDType="java.lang.String"
+                 NDValue="${bindings.lista_empleados_str_ape1}"/>
+      <NamedData NDName="str_ape2" NDType="java.lang.String"
+                 NDValue="${bindings.lista_empleados_str_ape2}"/>
+      <NamedData NDName="reg_cedula" NDType="oracle.jbo.domain.Number"
+                 NDValue="${bindings.lista_empleados_reg_cedula}"/>
+    </action>
+    <attributeValues id="reg_empleado" IterBinding="variables">
+      <AttrNames>
+        <Item Value="lista_empleados_reg_empleado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="str_nombre1" IterBinding="variables">
+      <AttrNames>
+        <Item Value="lista_empleados_str_nombre1"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="str_nombre2" IterBinding="variables">
+      <AttrNames>
+        <Item Value="lista_empleados_str_nombre2"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="str_ape1" IterBinding="variables">
+      <AttrNames>
+        <Item Value="lista_empleados_str_ape1"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="str_ape2" IterBinding="variables">
+      <AttrNames>
+        <Item Value="lista_empleados_str_ape2"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="reg_cedula" IterBinding="variables">
+      <AttrNames>
+        <Item Value="lista_empleados_reg_cedula"/>
+      </AttrNames>
+    </attributeValues>
+    <table id="lista_empleados" IterBinding="lista_empleadosIterator">
+      <AttrNames>
+        <Item Value="RegistroEmpleado"/>
+        <Item Value="Nombre"/>
+        <Item Value="Nombre1"/>
+        <Item Value="Nombre2"/>
+        <Item Value="Apellido1"/>
+        <Item Value="Apellido2"/>
+        <Item Value="Cedula"/>
+        <Item Value="Cui"/>
+        <Item Value="verDetalle"/>
+        <Item Value="regPendiente"/>
+        <Item Value="Estado2"/>
+        <Item Value="TipoOrigen"/>
+      </AttrNames>
+    </table>
+    <action IterBinding="SisEmpleadoVwIterator" id="CrearEmpl"
+            InstanceName="QUERRYSDataControl.SisEmpleadoVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="41"/>
+    <action id="Rollback" InstanceName="QUERRYSDataControl"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="101"/>
+    <methodAction IterBinding="SisEmpleadoVwIterator" id="Resetear"
+                  MethodName="Resetear" RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisEmpleadoVw"/>
+    <attributeValues IterBinding="variables" id="RegEmpleado1">
+      <AttrNames>
+        <Item Value="RegEmpleado"/>
+      </AttrNames>
+    </attributeValues>
+    <action IterBinding="SisEmpleadoVwIterator" id="EjeBusquedaEmpleado"
+            InstanceName="QUERRYSDataControl.SisEmpleadoVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="reg_empleado"
+                 NDValue="${bindings.RegEmpleado1.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <attributeValues IterBinding="SisEmpleadoVwIterator" id="NombreCompleto">
+      <AttrNames>
+        <Item Value="NombreCompleto"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="lista_empleadosIterator"
+                     id="RegistroEmpleado">
+      <AttrNames>
+        <Item Value="RegistroEmpleado"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="lista_empleadosIterator" id="ConsultaEmpleado"
+                  MethodName="ConsultaEmpleado" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.lista_empleados">
+      <NamedData NDName="pRegEmpleado"
+                 NDValue="${bindings.reg_empleado.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pNombre1" NDValue="${bindings.str_nombre1.inputValue}"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="pNombre2" NDValue="${bindings.str_nombre2.inputValue}"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="pApellido1" NDValue="${bindings.str_ape1.inputValue}"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="pApellido2" NDValue="${bindings.str_ape2.inputValue}"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="pRegCedula" NDValue="${bindings.reg_cedula.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pCui" NDValue="${bindings.vCui1.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </methodAction>
+    <attributeValues IterBinding="variables" id="vCui1">
+      <AttrNames>
+        <Item Value="vCui"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="lista_empleadosIterator" id="verDetalle">
+      <AttrNames>
+        <Item Value="verDetalle"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="SisEmpleadoVwIterator" id="crearEmpleado"
+                  MethodName="crearEmpleado" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisEmpleadoVw">
+      <NamedData NDName="vTipoValidacion" NDValue="2"
+                 NDType="java.lang.String"/>
+    </methodAction>
+    <methodAction IterBinding="SisEmpleadoVwIterator" id="cambiarValidacion"
+                  MethodName="cambiarValidacion" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisEmpleadoVw">
+      <NamedData NDName="vTipoValidacion" NDValue="0"
+                 NDType="java.lang.String"/>
+    </methodAction>
+    <action IterBinding="lista_empleadosIterator" id="posListaEmpl"
+            InstanceName="QUERRYSDataControl.lista_empleados"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="96">
+      <NamedData NDName="rowKey" NDValue="${row.rowKeyStr}" NDType="java.lang.String"/>
+    </action>
+    <table id="SisRegPerAsignacionVw"
+           IterBinding="SisRegPerAsignacionVwIterator">
+      <AttrNames>
+        <Item Value="IdAsignacion"/>
+        <Item Value="RegistroTemporal"/>
+        <Item Value="RegistroEmpleado"/>
+        <Item Value="Nombrecompleto"/>
+        <Item Value="Fecha"/>
+        <Item Value="CreadoPor"/>
+        <Item Value="AsignadoPor"/>
+        <Item Value="FechaAsignacion"/>
+        <Item Value="Clv"/>
+        <Item Value="EmailInstitucional"/>
+        <Item Value="Cui"/>
+      </AttrNames>
+    </table>
+    <methodAction IterBinding="SisRegPerAsignacionVwIterator"
+                  id="filtrarAsignados" MethodName="filtrarAsignados"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisRegPerAsignacionVw">
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="pAnio" NDValue="${flujo_usuario.anioActual}"
+                 NDType="java.lang.String"/>
+    </methodAction>
+    <table id="SisRegPerAsignacionVwEx"
+           IterBinding="SisRegPerAsignacionVwExIterator">
+      <AttrNames>
+        <Item Value="IdAsignacion"/>
+        <Item Value="RegistroTemporal"/>
+        <Item Value="Nombrecompleto"/>
+        <Item Value="Fecha"/>
+        <Item Value="AsignadoPor"/>
+        <Item Value="FechaAsignacion"/>
+        <Item Value="Clv"/>
+        <Item Value="Cui"/>
+      </AttrNames>
+    </table>
+    <methodAction IterBinding="SisRegPerAsignacionVwExIterator"
+                  id="filtrarPendientes" MethodName="filtrarPendientes"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisRegPerAsignacionVwEx">
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="pAnio" NDValue="${flujo_usuario.anioActual}"
+                 NDType="java.lang.String"/>
+    </methodAction>
+    <attributeValues IterBinding="lista_empleadosIterator" id="Nomestado">
+      <AttrNames>
+        <Item Value="Nombre"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="lista_empleadosIterator" id="TipoOrigen">
+      <AttrNames>
+        <Item Value="TipoOrigen"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="lista_empleadosIterator" id="asignacionRegPer"
+                  MethodName="asignacionRegPer" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.lista_empleados"/>
+    <attributeValues IterBinding="lista_empleadosIterator" id="CuiList">
+      <AttrNames>
+        <Item Value="Cui"/>
+      </AttrNames>
+    </attributeValues>
+  </bindings>
+</pageDefinition>

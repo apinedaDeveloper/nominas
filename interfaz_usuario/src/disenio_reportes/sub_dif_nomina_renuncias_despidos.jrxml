@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="sub_dif_nomina_renuncias_despidos"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="802"
+		 pageHeight="575"
+		 columnWidth="802"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.zoom" value="1.5" />
+	<property name="ireport.x" value="0" />
+	<property name="ireport.y" value="0" />
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<style 
+		name="Title"
+		isDefault="false"
+		fontName="Arial"
+		fontSize="26"
+		isBold="true"
+		pdfFontName="Helvetica-Bold"
+	>
+	</style>
+	<style 
+		name="SubTitle"
+		isDefault="false"
+		forecolor="#666666"
+		fontName="Arial"
+		fontSize="18"
+	>
+	</style>
+	<style 
+		name="Column header"
+		isDefault="false"
+		forecolor="#FFFFFF"
+		fontName="Arial"
+		fontSize="12"
+		isBold="true"
+	>
+	</style>
+	<style 
+		name="Detail"
+		isDefault="false"
+		fontName="Arial"
+		fontSize="12"
+	>
+	</style>
+
+	<parameter name="fecha" isForPrompting="true" class="java.sql.Timestamp"/>
+	<queryString><![CDATA[Select Case When Extract(year from I.Fecha) < 2017
+        Then 0 Else 1 End AnioActual
+, Case When Extract(year from I.Fecha) < 2017
+  Then To_Char(a.registro_empleado)
+  Else Trim(To_Char(cui,'9999G99999G9999','NLS_NUMERIC_CHARACTERS= '', '''))
+  End Reg_CUI
+,F.Nombrecompleto, Part.Formato partida, J.NOMBRE unidad, G.Numero_plaza,A.Fecha_solicitud,A.Observacion observaciones,A.Fecha_creacion,A.Fecha_solicitud As Fecha_inicio, I.Fecha Fecha_autorizacion
+from sis_solicitud a,sis_tipo_solicitud b,sis_estado_solicitud_vw c,sis_empleado_vw f,sis_contrato g,sep_partida_vw part, sis_autorizacion H, sis_autorizacion_det I, sis_dependencia J
+Where A.Id_tipo_solicitud=B.Id_tipo_solicitud
+and a.registro_empleado=f.registro_empleado
+And C.Id_estado=A.Id_estado
+and g.id_contrato=a.id_contrato
+and g.id_partida=part.id_partida
+And B.Nombre_solicitud In ('RENUNCIA','DESPIDO')
+And A.Id_solicitud = H.Id_solicitud
+And H.Id_autorizacion = I.Id_autorizacion
+And C.Id_estado = I.Id_estado
+And G.Id_partida = Part.Id_partida
+And part.d3d4 = j.id_dependencia
+And C.Nombre = 'AUTORIZADO'
+And I.Fecha > $P{fecha}
+Order by J.id_dependencia asc,Reg_CUI asc]]></queryString>
+
+	<field name="ANIOACTUAL" class="java.math.BigDecimal"/>
+	<field name="REG_CUI" class="java.lang.String"/>
+	<field name="NOMBRECOMPLETO" class="java.lang.String"/>
+	<field name="PARTIDA" class="java.lang.String"/>
+	<field name="UNIDAD" class="java.lang.String"/>
+	<field name="NUMERO_PLAZA" class="java.math.BigDecimal"/>
+	<field name="FECHA_SOLICITUD" class="java.sql.Timestamp"/>
+	<field name="OBSERVACIONES" class="java.lang.String"/>
+	<field name="FECHA_CREACION" class="java.sql.Timestamp"/>
+	<field name="FECHA_INICIO" class="java.sql.Timestamp"/>
+	<field name="FECHA_AUTORIZACION" class="java.sql.Timestamp"/>
+
+
+		<group  name="UNIDAD" >
+			<groupExpression><![CDATA[$F{UNIDAD}]]></groupExpression>
+			<groupHeader>
+			<band height="10"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						style="SubTitle"
+						x="0"
+						y="0"
+						width="800"
+						height="10"
+						forecolor="#000000"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{UNIDAD}]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+			</groupFooter>
+		</group>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="35"  isSplitAllowed="true" >
+				<frame>					<reportElement
+						mode="Opaque"
+						x="0"
+						y="18"
+						width="800"
+						height="16"
+						backcolor="#000000"
+						key="frame"/>
+					<box></box>
+				<staticText>
+					<reportElement
+						style="Column header"
+						x="0"
+						y="0"
+						width="68"
+						height="15"
+						key="staRegistroEmpleado">
+							<printWhenExpression><![CDATA[new Boolean($F{ANIOACTUAL}.compareTo(new BigDecimal(1))<0)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement>
+						<font size="6" isBold="true"/>
+					</textElement>
+				<text><![CDATA[REGISTRO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						style="Column header"
+						x="68"
+						y="0"
+						width="172"
+						height="15"
+						key="staticText"/>
+					<box></box>
+					<textElement>
+						<font size="6" isBold="true"/>
+					</textElement>
+				<text><![CDATA[NOMBRE COMPLETO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						style="Column header"
+						x="240"
+						y="0"
+						width="44"
+						height="15"
+						key="staticText"/>
+					<box></box>
+					<textElement>
+						<font size="6" isBold="true"/>
+					</textElement>
+				<text><![CDATA[PARTIDA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						style="Column header"
+						x="284"
+						y="0"
+						width="36"
+						height="15"
+						key="staticText"/>
+					<box></box>
+					<textElement>
+						<font size="6" isBold="true"/>
+					</textElement>
+				<text><![CDATA[NO. PLAZA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						style="Column header"
+						x="320"
+						y="0"
+						width="52"
+						height="15"
+						key="staticText"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="6" isBold="true"/>
+					</textElement>
+				<text><![CDATA[FECHA SOLICITUD]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						style="Column header"
+						x="372"
+						y="0"
+						width="272"
+						height="15"
+						key="staticText"/>
+					<box></box>
+					<textElement>
+						<font size="6" isBold="true"/>
+					</textElement>
+				<text><![CDATA[OBSERVACIONES]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						style="Column header"
+						x="644"
+						y="0"
+						width="50"
+						height="15"
+						key="staticText"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="6" isBold="true"/>
+					</textElement>
+				<text><![CDATA[FECHA CREACION]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						style="Column header"
+						x="694"
+						y="0"
+						width="40"
+						height="15"
+						key="staticText"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="6" isBold="true"/>
+					</textElement>
+				<text><![CDATA[FECHA INICIO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						style="Column header"
+						x="734"
+						y="0"
+						width="66"
+						height="15"
+						key="staticText"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="6" isBold="true"/>
+					</textElement>
+				<text><![CDATA[FECHA AUTORIZACION]]></text>
+				</staticText>
+				</frame>				<staticText>
+					<reportElement
+						style="Title"
+						x="0"
+						y="0"
+						width="802"
+						height="18"
+						key="staticText"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font pdfFontName="Helvetica" size="14" isBold="false"/>
+					</textElement>
+				<text><![CDATA[RENUNCIAS Y DESPIDOS]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						style="Column header"
+						x="0"
+						y="18"
+						width="68"
+						height="15"
+						key="staCUI">
+							<printWhenExpression><![CDATA[new Boolean($F{ANIOACTUAL}.compareTo(new BigDecimal(1))>=0)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" size="6" isBold="true"/>
+					</textElement>
+				<text><![CDATA[CUI]]></text>
+				</staticText>
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="21"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						style="Detail"
+						x="0"
+						y="2"
+						width="68"
+						height="10"
+						key="txtReg_CUI"/>
+					<box></box>
+					<textElement>
+						<font size="6"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{REG_CUI}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						style="Detail"
+						x="68"
+						y="2"
+						width="172"
+						height="10"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="6"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRECOMPLETO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						style="Detail"
+						x="240"
+						y="2"
+						width="44"
+						height="10"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="6"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PARTIDA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						style="Detail"
+						x="284"
+						y="2"
+						width="36"
+						height="10"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="6"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{NUMERO_PLAZA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						style="Detail"
+						x="320"
+						y="2"
+						width="52"
+						height="10"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="6"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[$F{FECHA_SOLICITUD}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						style="Detail"
+						x="372"
+						y="2"
+						width="272"
+						height="17"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="5"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{OBSERVACIONES}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						style="Detail"
+						x="644"
+						y="2"
+						width="50"
+						height="10"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="6"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[$F{FECHA_CREACION}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						style="Detail"
+						x="694"
+						y="2"
+						width="40"
+						height="10"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="6"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[$F{FECHA_INICIO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						style="Detail"
+						x="734"
+						y="2"
+						width="66"
+						height="10"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="6"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[$F{FECHA_AUTORIZACION}]]></textFieldExpression>
+				</textField>
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="19"
+						width="802"
+						height="1"
+						key="line"
+						positionType="FixRelativeToBottom"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineColor="#999999"/>
+</graphicElement>
+				</line>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

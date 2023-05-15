@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html"
+          xmlns:af="http://xmlns.oracle.com/adf/faces">
+  <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+  <f:view>
+    <f:loadBundle basename="propiedades2" var="tx"/>
+    <afh:html>
+      <afh:head title="#{tx['sb_documento.title']}">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+        <script language="javascript" type="text/javascript"> 
+        
+           function openNewWindow(nomArchivo){ 
+                    window.open("../ver_documento?source="+nomArchivo,"preview","width=640,height=640,scrollbars=YES,resizable =1"); 
+         } 
+        </script>
+      </afh:head>
+      <afh:body>
+        <af:messages/>
+        <h:form>
+          <af:page title="#{tx['sb_documento.title']}" value="#{modeloMenu.modeloBD}" var="node">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+           <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelBox width="800">
+              <af:panelHorizontal halign="center">
+                <af:panelBox background="transparent"
+                             text="#{tx['sb_documento.pnl_upload.texto']}">
+                  <af:panelHorizontal>
+                    <af:commandLink action="#{backing_bean_admin.btn_adjuntar_documento_clasif}">
+                      <af:objectImage source="/imagenes/file_upload.png"/>
+                    </af:commandLink>
+                    <af:commandButton text="#{tx['sb_documento.btn_subir.texto']}"
+                                      useWindow="true" windowHeight="400"
+                                      windowWidth="600"
+                                      action="#{backing_bean_admin.btn_adjuntar_documento_clasif}"
+                                      returnListener="#{backing_bean_admin.returnlistener_documentoClasif}"
+                                      id="btn_subir"
+                                      binding="#{backing_bean_admin.btn_upload_docClasif}"/>
+                  </af:panelHorizontal>
+                </af:panelBox>
+              </af:panelHorizontal>
+              <af:objectSeparator/>
+              <af:table value="#{bindings['Sis_documentos_adjuntos_vw'].collectionModel}"
+                        var="row"
+                        rows="#{bindings['Sis_documentos_adjuntos_vw'].rangeSize}"
+                        first="#{bindings['Sis_documentos_adjuntos_vw'].rangeStart}"
+                        emptyText="#{tx['tbl_empty.texto']}"
+                        selectionState="#{bindings['Sis_documentos_adjuntos_vw'].collectionModel.selectedRow}"
+                        selectionListener="#{bindings['Sis_documentos_adjuntos_vw'].collectionModel.makeCurrent}"
+                        banding="row" bandingInterval="1"
+                        partialTriggers="btn_subir">
+                <f:facet name="actions">
+                  <af:panelHorizontal>
+                    <af:commandLink action="#{bindings.Ejecutar.execute}">
+                      <af:objectImage source="/imagenes/view-refresh.png"/>
+                    </af:commandLink>
+                    <af:commandButton text="#{tx['sb_documento.btn_act.texto']}"
+                                      actionListener="#{bindings.Ejecutar.execute}"
+                                      disabled="#{!bindings.Ejecutar.enabled}"/>
+                  </af:panelHorizontal>
+                </f:facet>
+                <af:column sortProperty="IdArchivoAdjunto" sortable="false"
+                           headerText="#{tx['sb_documento.tbl_arch.texto']}">
+                  <h:outputLink value="javascript:openNewWindow('#{row.nomArchEncript}')">
+                    <h:outputText value="#{row.NomArchivo}"/>
+                  </h:outputLink>
+                </af:column>
+                <af:column sortProperty="Descripcion" sortable="false"
+                           headerText="#{tx['sb_documento.tbl_desc.texto']}">
+                  <af:outputText value="#{row.Descripcion}"/>
+                </af:column>
+                <af:column sortProperty="FechaCreacion" sortable="false"
+                           headerText="#{tx['sb_documento.tbl_fecha.texto']}">
+                  <af:outputText value="#{row.FechaCreacion}">
+                    <f:convertDateTime pattern="#{bindings['Sis_documentos_adjuntos_vw'].formats.FechaCreacion}"/>
+                  </af:outputText>
+                </af:column>
+              </af:table>
+            </af:panelBox>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:backing_bean_admin-->
+</jsp:root>

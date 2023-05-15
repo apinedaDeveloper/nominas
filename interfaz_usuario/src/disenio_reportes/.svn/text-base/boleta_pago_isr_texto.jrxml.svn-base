@@ -1,0 +1,862 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="boleta_pago_isr_texto"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="609"
+		 pageHeight="368"
+		 columnWidth="609"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="ANIO" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pFiltro" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA["and sia.registro_empleado = 20090203"]]></defaultValueExpression>
+	</parameter>
+	<queryString><![CDATA[SELECT 
+SE.NIT,
+CONCAT(SE.APELLIDO1||' '||SE.APELLIDO2||' '||SE.NOMBRE1||' ',SE.NOMBRE2) AS NOMBRE,
+SIA.REGISTRO_EMPLEADO,
+SIA.ANIO, 
+SIA.INGRESO_MENSUAL, 
+SIA.SUELDOS, 
+SIA.BONO_ACUMULADO, 
+SIA.AGUINALDO_PROYECTADO, 
+SIA.BONO14_PROYECTADO, 
+SIA.DIFERIDO1, 
+SIA.DIFERIDO2, 
+SIA.OTRA_REMUNERACION, 
+SIA.RENTA_NETA, 
+SIA.IGSS_PROYECTADO, 
+SIA.PLAN_PROYECTADO, 
+SIA.IGSS_PLAN_PROYECTADO, 
+SIA.DEDUCCIONES_GRABADAS, 
+SIA.RENTA_IMPONIBLE, 
+SIA.ISR_ANUAL, 
+SIA.CREDITO_IVA, 
+SIA.IMPUESTO_ARETENCION, 
+SIA.RETENCION_EFECTUADA, 
+SIA.ISR_MENSUAL, 
+SIA.PERIODO, 
+SIA.ID_PARTIDA, 
+SIA.NUMERO_PLAZA, 
+SIA.DEDUCCION_UNICA, 
+SIA.PENSIONES, 
+SIA.GTOSMEDICOS, 
+(SIA.COLEGIOSYOTROS+SIA.DEDUCCION_OTROPATRONO+SIA.DONACIONES) AS COLEGIOSYOTROS, 
+SIA.PRIMAS_SEGUROS, 
+0 as DONACIONES, 
+SIA.RENTA_NETA_OTROS,
+case when SIA.PLANILLA_IVA>credito_iva*2 then credito_iva*2 else SIA.PLANILLA_IVA end as planilla_iva, 
+SIA.TOTAL_PLANILLA_IVA, 
+SIA.IMPUESTO_A_PAGAR,
+(NVL(SIA.AGUINALDO_PROYECTADO,0)+NVL(SIA.BONO14_PROYECTADO,0)) AS RENTAS_EXENTAS,sia.sueldos+sia.diferido1+sia.diferido2 as sueldos2,
+(NVL(SIA.AGUINALDO_PROYECTADO,0)+NVL(SIA.BONO14_PROYECTADO,0)+igss_plan_proyectado+deduccion_unica+pensiones+gtosmedicos+colegiosyotros+primas_seguros+donaciones+SIA.DEDUCCION_OTROPATRONO) as totalDeducciones,
+case when  isr_anual-planilla_iva<=0 then case  when opcion_retension=1 then retencion_efectuada+retencion_otropatrono else retencion_efectuada  end  else case when impuesto_a_pagar<0 then abs(impuesto_a_pagar) else 0 end end as devolucion,
+SIA.DEDUCCION_OTROPATRONO,
+sia.retencion_otropatrono
+FROM SIS_ISR_RETENCION SIA
+INNER JOIN SIS_EMPLEADO SE ON SE.REGISTRO_EMPLEADO=SIA.REGISTRO_EMPLEADO
+WHERE SIA.ANIO=$P{ANIO}
+$P!{pFiltro}]]></queryString>
+
+	<field name="NIT" class="java.lang.String"/>
+	<field name="NOMBRE" class="java.lang.String"/>
+	<field name="REGISTRO_EMPLEADO" class="java.math.BigDecimal"/>
+	<field name="ANIO" class="java.math.BigDecimal"/>
+	<field name="INGRESO_MENSUAL" class="java.math.BigDecimal"/>
+	<field name="SUELDOS" class="java.math.BigDecimal"/>
+	<field name="BONO_ACUMULADO" class="java.math.BigDecimal"/>
+	<field name="AGUINALDO_PROYECTADO" class="java.math.BigDecimal"/>
+	<field name="BONO14_PROYECTADO" class="java.math.BigDecimal"/>
+	<field name="DIFERIDO1" class="java.math.BigDecimal"/>
+	<field name="DIFERIDO2" class="java.math.BigDecimal"/>
+	<field name="OTRA_REMUNERACION" class="java.math.BigDecimal"/>
+	<field name="RENTA_NETA" class="java.math.BigDecimal"/>
+	<field name="IGSS_PROYECTADO" class="java.math.BigDecimal"/>
+	<field name="PLAN_PROYECTADO" class="java.math.BigDecimal"/>
+	<field name="IGSS_PLAN_PROYECTADO" class="java.math.BigDecimal"/>
+	<field name="DEDUCCIONES_GRABADAS" class="java.math.BigDecimal"/>
+	<field name="RENTA_IMPONIBLE" class="java.math.BigDecimal"/>
+	<field name="ISR_ANUAL" class="java.math.BigDecimal"/>
+	<field name="CREDITO_IVA" class="java.math.BigDecimal"/>
+	<field name="IMPUESTO_ARETENCION" class="java.math.BigDecimal"/>
+	<field name="RETENCION_EFECTUADA" class="java.math.BigDecimal"/>
+	<field name="ISR_MENSUAL" class="java.math.BigDecimal"/>
+	<field name="PERIODO" class="java.math.BigDecimal"/>
+	<field name="ID_PARTIDA" class="java.math.BigDecimal"/>
+	<field name="NUMERO_PLAZA" class="java.math.BigDecimal"/>
+	<field name="DEDUCCION_UNICA" class="java.math.BigDecimal"/>
+	<field name="PENSIONES" class="java.math.BigDecimal"/>
+	<field name="GTOSMEDICOS" class="java.math.BigDecimal"/>
+	<field name="COLEGIOSYOTROS" class="java.math.BigDecimal"/>
+	<field name="PRIMAS_SEGUROS" class="java.math.BigDecimal"/>
+	<field name="DONACIONES" class="java.math.BigDecimal"/>
+	<field name="RENTA_NETA_OTROS" class="java.math.BigDecimal"/>
+	<field name="PLANILLA_IVA" class="java.math.BigDecimal"/>
+	<field name="TOTAL_PLANILLA_IVA" class="java.math.BigDecimal"/>
+	<field name="IMPUESTO_A_PAGAR" class="java.math.BigDecimal"/>
+	<field name="RENTAS_EXENTAS" class="java.math.BigDecimal"/>
+	<field name="SUELDOS2" class="java.math.BigDecimal"/>
+	<field name="TOTALDEDUCCIONES" class="java.math.BigDecimal"/>
+	<field name="DEVOLUCION" class="java.math.BigDecimal"/>
+	<field name="DEDUCCION_OTROPATRONO" class="java.math.BigDecimal"/>
+	<field name="RETENCION_OTROPATRONO" class="java.math.BigDecimal"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="10"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="339"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="70"
+						y="0"
+						width="500"
+						height="12"
+						key="staticText-2"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[DIVISION DE ADMINISTRACION DE RR.HH.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="70"
+						y="10"
+						width="500"
+						height="12"
+						key="staticText-3"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[UNIVERSIDAD DE SAN CARLOS DE GUATEMALA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="70"
+						y="24"
+						width="500"
+						height="12"
+						key="staticText-4"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[La Universidad de San Carlos de Guatemala, NIT 255117-9]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="70"
+						y="36"
+						width="470"
+						height="12"
+						key="textField-1"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Hace Constar que en el Período del 1 de Enero de " +$F{ANIO} + " al 31 de diciembre de "+$F{ANIO}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="380"
+						y="48"
+						width="50"
+						height="12"
+						key="staticText-6"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[con NIT:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="70"
+						y="59"
+						width="500"
+						height="12"
+						key="staticText-7"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[obtuvo el siguiente detalle en su Declaración:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="70"
+						y="135"
+						width="400"
+						height="12"
+						key="staticText-8"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[= RENTA NETA (Sueldos+Aguinaldo+Bono 14+Bono Mensual+Otros Patronos)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="70"
+						y="147"
+						width="400"
+						height="12"
+						key="staticText-9"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[ (-)Deducción Unica ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="70"
+						y="171"
+						width="400"
+						height="12"
+						key="staticText-10"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[ (-)Valor cuotas otros planes previsión social (Plan de Prestaciones USAC)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="70"
+						y="182"
+						width="400"
+						height="12"
+						key="staticText-11"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[ (-)Valor primas de seguros de vida no dotales, de accidentes, personales y gastos medicos]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="70"
+						y="192"
+						width="400"
+						height="12"
+						key="staticText-12"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[ (-)Gastos Medicos, Hospitalarios y de Laboratorio]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="70"
+						y="226"
+						width="400"
+						height="12"
+						key="staticText-13"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[ (-)Rentas Exentas (Aguinaldo y Bono14)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="70"
+						y="251"
+						width="400"
+						height="12"
+						key="staticText-14"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[     Total de Deducciones ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="70"
+						y="238"
+						width="400"
+						height="12"
+						key="staticText-15"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[ (-)Otros Gastos (Fianzas, colegiaturas profesionales y otros)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="70"
+						y="263"
+						width="400"
+						height="12"
+						key="staticText-16"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[     Renta Imponible]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="70"
+						y="275"
+						width="400"
+						height="12"
+						key="staticText-17"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[     Impuesto Determinado]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="70"
+						y="287"
+						width="400"
+						height="12"
+						key="staticText-18"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[(-)Crédito por IVA ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="70"
+						y="299"
+						width="400"
+						height="12"
+						key="staticText-19"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[(-)Retenciones efectuadas]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="70"
+						y="327"
+						width="400"
+						height="12"
+						key="staticText-20">
+							<printWhenExpression><![CDATA[new Boolean($F{DEVOLUCION}.compareTo( new BigDecimal(0) )==0)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[     Impuesto a Pagar ante la SAT con Formulario SAT No-1171]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="70"
+						y="48"
+						width="300"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="430"
+						y="48"
+						width="100"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NIT}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="135"
+						width="100"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{RENTA_NETA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="147"
+						width="100"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DEDUCCION_UNICA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="182"
+						width="100"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{PRIMAS_SEGUROS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="192"
+						width="100"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{GTOSMEDICOS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="226"
+						width="100"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{RENTAS_EXENTAS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="238"
+						width="100"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{COLEGIOSYOTROS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="251"
+						width="100"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTALDEDUCCIONES}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="263"
+						width="100"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{RENTA_IMPONIBLE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="275"
+						width="100"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ISR_ANUAL}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="287"
+						width="100"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{PLANILLA_IVA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="299"
+						width="100"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{RETENCION_EFECTUADA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="327"
+						width="100"
+						height="12"
+						key="textField">
+							<printWhenExpression><![CDATA[new Boolean($F{DEVOLUCION}.compareTo( new BigDecimal(0) )==0)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{IMPUESTO_A_PAGAR}.compareTo( new BigDecimal(0))<=0? new BigDecimal(0):$F{IMPUESTO_A_PAGAR}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="70"
+						y="76"
+						width="400"
+						height="12"
+						key="staticText-21"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Sueldos]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="76"
+						width="100"
+						height="12"
+						key="textField-2"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{SUELDOS2}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="70"
+						y="88"
+						width="400"
+						height="12"
+						key="staticText-22"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[ (+) Aguinaldo]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="70"
+						y="100"
+						width="400"
+						height="12"
+						key="staticText-23"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[ (+) Bono 14]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="70"
+						y="112"
+						width="400"
+						height="12"
+						key="staticText-24"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[ (+) Otras Bonificaciones (Bono Mensual)]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="88"
+						width="100"
+						height="12"
+						key="textField-3"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{AGUINALDO_PROYECTADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="100"
+						width="100"
+						height="12"
+						key="textField-4"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{BONO14_PROYECTADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="112"
+						width="100"
+						height="12"
+						key="textField-5"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{BONO_ACUMULADO}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="70"
+						y="159"
+						width="400"
+						height="12"
+						key="staticText-25"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[ (-)Valor cuotas por contribuciones al seguro social (Cuota IGSS)]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="159"
+						width="100"
+						height="12"
+						key="textField-6"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{IGSS_PROYECTADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="171"
+						width="100"
+						height="12"
+						key="textField-7"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{PLAN_PROYECTADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="203"
+						width="100"
+						height="12"
+						key="textField-8"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{PENSIONES}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="70"
+						y="203"
+						width="400"
+						height="12"
+						key="staticText-26"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[ (-)Valor cuotas por pensiones alimenticias fijadas por tribunales de familia]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="70"
+						y="214"
+						width="400"
+						height="12"
+						key="staticText-27"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[ (-) Donaciones]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="214"
+						width="100"
+						height="12"
+						key="textField-9"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DONACIONES}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="70"
+						y="123"
+						width="400"
+						height="12"
+						key="staticText-28"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[ (+) Otros patronos]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="123"
+						width="100"
+						height="12"
+						key="textField-10"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{RENTA_NETA_OTROS}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="70"
+						y="327"
+						width="400"
+						height="12"
+						key="staticText-29">
+							<printWhenExpression><![CDATA[new Boolean($F{DEVOLUCION}.compareTo( new BigDecimal(0) )>0)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[     Impuesto retenido en exceso sujeto a devolución]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="327"
+						width="100"
+						height="12"
+						key="textField">
+							<printWhenExpression><![CDATA[new Boolean($F{DEVOLUCION}.compareTo( new BigDecimal(0) )>0)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{DEVOLUCION}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="70"
+						y="311"
+						width="400"
+						height="12"
+						key="staticText-30"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[(-)Retenciones efectuadas otros patronos]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="470"
+						y="311"
+						width="100"
+						height="12"
+						key="textField-11"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{RETENCION_OTROPATRONO}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="5"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="5"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

@@ -1,0 +1,254 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="sis_anexo"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   RowClass="enlace_datos.consultas.gestiones.anexo.sis_anexoRowImpl"
+   ComponentClass="enlace_datos.consultas.gestiones.anexo.sis_anexoImpl"
+   MsgBundleClass="enlace_datos.consultas.gestiones.anexo.common.sis_anexoRowImplMsgBundle"
+   ComponentInterface="enlace_datos.consultas.gestiones.anexo.common.sis_anexo"
+   ClientProxyName="enlace_datos.consultas.gestiones.anexo.client.sis_anexoClient"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isCodegen" Value="true" />
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|Msg|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="pUsuario"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <SQLQuery><![CDATA[
+SELECT SisAnexo.ID_ANEXO, 
+       SisAnexo.ESTATUS, 
+       SisAnexo.CREADO_POR, 
+       SisAnexo.ID_TIPO_MOV_PLAZA,
+       SisAnexo.ID_DEPENDENCIA, dependencia1.nombre as nomDependencia,mov_plaza.nom_tipo_mov_alta, SisAnexo.fecha_creacion,estado.tabla, estado.nombre as nomEstado, estado.id_estado,SisAnexo.comentario,SisAnexo.hecho_por,SisAnexo.aprobado_por,SisAnexo.id_aumento_salarial
+FROM SIS_ANEXO SisAnexo, sis_dependencia dependencia1, sis_tipo_mov_plaza mov_plaza, sis_estado estado
+where SisAnexo.id_tipo_mov_plaza = mov_plaza.id_tipo_mov_alta
+and SisAnexo.id_dependencia = dependencia1.id_dependencia and sisAnexo.ESTATUS = estado.ID_ESTADO
+and exists(
+select 1
+from partida a , sis_movimiento_plaza mvpl
+where a.id_partida=mvpl.id_partida
+and sisAnexo.id_anexo=mvpl.id_anexo
+and
+(
+exists(
+select 1 from usuario_unidad b, partida c
+where b.id_partida=c.id_partida
+and b.usuario=:pUsuario
+and b.tipo_usuario='TRABAJADOR'
+and sysdate between b.vigencia_de and nvl(vigencia_a,sysdate)
+and c.aniomanual=a.aniomanual
+and a.d1=c.d1
+and a.d2=c.d2
+and a.d3d4=c.d3d4
+and
+(
+(
+c.d5 is null
+and c.d6 is null
+and c.d7 is null
+)
+or
+(
+c.d5=a.d5
+and c.d6=a.d6
+and c.d7=a.d7
+)
+)
+)
+)
+)
+   ]]></SQLQuery>
+   <EntityUsage
+      Name="SisAnexo"
+      Entity="enlace_datos.entidades.gestiones.anexo.SisAnexo" >
+      <DesignTime>
+         <Attr Name="_queryClause" Value="false" />
+      </DesignTime>
+   </EntityUsage>
+   <ViewAttribute
+      Name="IdAnexo"
+      IsNotNull="true"
+      EntityAttrName="IdAnexo"
+      EntityUsage="SisAnexo"
+      AliasName="ID_ANEXO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Estatus"
+      IsNotNull="true"
+      EntityAttrName="Estatus"
+      EntityUsage="SisAnexo"
+      AliasName="ESTATUS" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="CreadoPor"
+      IsNotNull="true"
+      EntityAttrName="CreadoPor"
+      EntityUsage="SisAnexo"
+      AliasName="CREADO_POR" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdTipoMovPlaza"
+      IsNotNull="true"
+      EntityAttrName="IdTipoMovPlaza"
+      EntityUsage="SisAnexo"
+      AliasName="ID_TIPO_MOV_PLAZA" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdDependencia"
+      EntityAttrName="IdDependencia"
+      EntityUsage="SisAnexo"
+      AliasName="ID_DEPENDENCIA" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomdependencia"
+      IsPersistent="false"
+      Precision="250"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMDEPENDENCIA"
+      Expression="NOMDEPENDENCIA"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="250" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="NomTipoMovAlta"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="30"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOM_TIPO_MOV_ALTA"
+      Expression="NOM_TIPO_MOV_ALTA"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="30" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaCreacion"
+      IsNotNull="true"
+      EntityAttrName="FechaCreacion"
+      EntityUsage="SisAnexo"
+      AliasName="FECHA_CREACION" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Tabla"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="TABLA"
+      Expression="TABLA"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomestado"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMESTADO"
+      Expression="NOMESTADO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdEstado"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="3"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_ESTADO"
+      Expression="ID_ESTADO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="logEstado"
+      IsUpdateable="false"
+      IsSelected="false"
+      IsPersistent="false"
+      Type="java.lang.Boolean"
+      ColumnType="NUMBER"
+      AliasName="VIEW_ATTR"
+      SQLType="BIT" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="estadoEncabezado"
+      IsUpdateable="false"
+      IsSelected="false"
+      IsPersistent="false"
+      Type="java.lang.Boolean"
+      ColumnType="NUMBER"
+      AliasName="VIEW_ATTR"
+      SQLType="BIT" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Comentario"
+      EntityAttrName="Comentario"
+      EntityUsage="SisAnexo"
+      AliasName="COMENTARIO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="tipoConsulta"
+      IsUpdateable="false"
+      IsSelected="false"
+      IsPersistent="false"
+      Type="java.lang.Boolean"
+      ColumnType="NUMBER"
+      AliasName="VIEW_ATTR"
+      SQLType="BIT" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="HechoPor"
+      EntityAttrName="HechoPor"
+      EntityUsage="SisAnexo"
+      AliasName="HECHO_POR" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="AprobadoPor"
+      EntityAttrName="AprobadoPor"
+      EntityUsage="SisAnexo"
+      AliasName="APROBADO_POR" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdAumentoSalarial"
+      EntityAttrName="IdAumentoSalarial"
+      EntityUsage="SisAnexo"
+      AliasName="ID_AUMENTO_SALARIAL" >
+   </ViewAttribute>
+   <ViewLinkAccessor
+      Name="sis_movimiento_plaza"
+      ViewLink="enlace_datos.consultas.gestiones.anexo.sisAnexo_sisMovPlaza_lk"
+      Type="oracle.jbo.RowIterator"
+      IsUpdateable="false" >
+   </ViewLinkAccessor>
+   <ViewLinkAccessor
+      Name="Sis_Arch_adjunto"
+      ViewLink="enlace_datos.consultas.gestiones.anexo.sisAnexo_sisArchivoAdjunto_vlk"
+      Type="oracle.jbo.RowIterator"
+      IsUpdateable="false" >
+   </ViewLinkAccessor>
+</ViewObject>

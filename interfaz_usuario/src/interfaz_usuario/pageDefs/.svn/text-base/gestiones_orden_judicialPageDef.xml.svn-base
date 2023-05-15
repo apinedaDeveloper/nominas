@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel"
+                version="10.1.3.41.57" id="gestiones_orden_judicialPageDef"
+                Package="interfaz_usuario.pageDefs">
+  <parameters/>
+  <executables>
+    <iterator id="view_orden_judicial1Iterator" RangeSize="10"
+              Binds="view_orden_judicial1" DataControl="QUERRYSDataControl"/>
+    <iterator id="consul_tipo_judicial1Iterator" RangeSize="-1"
+              Binds="consul_tipo_judicial1" DataControl="QUERRYSDataControl"/>
+    <iterator id="todos_los_DepartamentosIterator"
+              Binds="todos_los_Departamentos" DataControl="QUERRYSDataControl"
+              RangeSize="-1"/>
+    <invokeAction Binds="ExecuteWithParams" Refresh="renderModel"
+                  id="parametroMunicipio"/>
+    <invokeAction id="param_muni_depto" Binds="ExecuteWithParams1"
+                  Refresh="renderModel"/>
+    <iterator id="SisEmpleadoVwIterator" RangeSize="10" Binds="SisEmpleadoVw"
+              DataControl="QUERRYSDataControl"/>
+    <iterator id="SisArchivoAdjuntoSolIterator" RangeSize="10"
+              Binds="SisArchivoAdjuntoSol" DataControl="QUERRYSDataControl"/>
+    <iterator id="SisSolicitudVwIterator" RangeSize="10" Binds="SisSolicitudVw"
+              DataControl="QUERRYSDataControl"/>
+    <invokeAction Binds="crearSolicitud" id="creaSol" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback &amp;&amp;flujo_usuario.vistaOrdenJudicial==0}"/>
+    <invokeAction Binds="Act_sol" id="Ejec_sol" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback &amp;&amp;flujo_usuario.vistaOrdenJudicial==0 &amp;&amp; flujo_usuario.currentSol eq 'DESCUENTO JUDICIAL'}"/>
+    <iterator id="municipios_dep_by_munIterator" RangeSize="-1"
+              Binds="municipios_dep_by_mun" DataControl="QUERRYSDataControl"/>
+    <invokeAction Binds="MunNoPost" id="EjeMunNoPost" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <invokeAction id="EjeMunPost" Binds="MunPost" Refresh="renderModel"
+                  RefreshCondition="${adfFacesContext.postback}"/>
+  </executables>
+  <bindings>
+    <action id="Create" RequiresUpdateModel="true" Action="41"
+            IterBinding="view_orden_judicial1Iterator"/>
+    <attributeValues id="Monto" IterBinding="view_orden_judicial1Iterator">
+      <AttrNames>
+        <Item Value="Monto"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Porcentaje" IterBinding="view_orden_judicial1Iterator">
+      <AttrNames>
+        <Item Value="Porcentaje"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="FechaDoc" IterBinding="view_orden_judicial1Iterator">
+      <AttrNames>
+        <Item Value="FechaDoc"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="NoReferencia"
+                     IterBinding="view_orden_judicial1Iterator">
+      <AttrNames>
+        <Item Value="NoReferencia"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="NoJuicio" IterBinding="view_orden_judicial1Iterator">
+      <AttrNames>
+        <Item Value="NoJuicio"/>
+      </AttrNames>
+    </attributeValues>
+    <list id="view_orden_judicial1IdTipo"
+          IterBinding="view_orden_judicial1Iterator" StaticList="false"
+          ListOperMode="0" ListIter="consul_tipo_judicial1Iterator">
+      <AttrNames>
+        <Item Value="IdTipo"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdTipo"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Nombre"/>
+      </ListDisplayAttrNames>
+    </list>
+    <attributeValues id="view_orden_judicial1Juzgado"
+                     IterBinding="view_orden_judicial1Iterator">
+      <AttrNames>
+        <Item Value="Juzgado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="view_orden_judicial1Convenio"
+                     IterBinding="view_orden_judicial1Iterator">
+      <AttrNames>
+        <Item Value="Convenio"/>
+      </AttrNames>
+    </attributeValues>
+    <action IterBinding="municipios_by_depIterator" id="ExecuteWithParams"
+            InstanceName="QUERRYSDataControl.municipios_by_dep"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="id_depa"
+                 NDValue="${bindings.todos_los_Departamentos.currentRow['idDepartamento']}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <action id="Rollback" InstanceName="QUERRYSDataControl"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="101"/>
+    <action id="Commit" InstanceName="QUERRYSDataControl"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="100"/>
+    <action IterBinding="consul_depto_porel_municipio1Iterator"
+            id="ExecuteWithParams1"
+            InstanceName="QUERRYSDataControl.consul_depto_porel_municipio1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="varMuni" NDValue="${bindings.IdMunicipio.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <action IterBinding="municipios_dep_by_munIterator" id="MunNoPost"
+            InstanceName="QUERRYSDataControl.municipios_dep_by_mun"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="id_mun"
+                 NDValue="${bindings.IdMunicipio.inputValue==null?1:bindings.IdMunicipio.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="id_dept" NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <action IterBinding="municipios_dep_by_munIterator" id="MunPost"
+            InstanceName="QUERRYSDataControl.municipios_dep_by_mun"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="id_mun" NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="id_dept"
+                 NDValue="${bindings.IdDepartamento.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <action IterBinding="SisArchivoAdjuntoSolIterator" id="Ejecutar"
+            InstanceName="QUERRYSDataControl.SisArchivoAdjuntoSol"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="2"/>
+    <action IterBinding="SisSolicitudVwIterator" id="Act_sol"
+            InstanceName="QUERRYSDataControl.SisSolicitudVw"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="2"/>
+    <attributeValues IterBinding="view_orden_judicial1Iterator"
+                     id="IdMunicipio">
+      <AttrNames>
+        <Item Value="IdMunicipio"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisEmpleadoVwIterator"
+                     id="DatosEmpleadoLista">
+      <AttrNames>
+        <Item Value="DatosEmpleadoLista"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="view_orden_judicial1Iterator"
+                     id="IdSolicitud">
+      <AttrNames>
+        <Item Value="IdSolicitud"/>
+      </AttrNames>
+    </attributeValues>
+    <table IterBinding="SisArchivoAdjuntoSolIterator" id="SisArchivoAdjuntoSol">
+      <AttrNames>
+        <Item Value="IdArchivoAdjunto"/>
+        <Item Value="Descripcion"/>
+        <Item Value="FechaCreacion"/>
+        <Item Value="IdSolicitud"/>
+        <Item Value="nomArchEncript"/>
+        <Item Value="NomArchivo"/>
+      </AttrNames>
+    </table>
+    <attributeValues IterBinding="SisSolicitudVwIterator" id="estContrl">
+      <AttrNames>
+        <Item Value="estContrl"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisSolicitudVwIterator" id="IdEstado">
+      <AttrNames>
+        <Item Value="IdEstado"/>
+      </AttrNames>
+    </attributeValues>
+    <list StaticList="false" ListOperMode="0"
+          IterBinding="view_orden_judicial1Iterator"
+          ListIter="municipios_dep_by_munIterator" id="view_orden_judicial1IdMunicipio">
+      <AttrNames>
+        <Item Value="IdMunicipio"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdMunicipio"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Nombre"/>
+      </ListDisplayAttrNames>
+    </list>
+    <list StaticList="false" ListOperMode="0"
+          IterBinding="municipios_dep_by_munIterator"
+          ListIter="todos_los_DepartamentosIterator" id="todos_los_Departamentos">
+      <AttrNames>
+        <Item Value="IdDepartamento"/>
+      </AttrNames>
+      <ListAttrNames>
+        <Item Value="IdDepartamento"/>
+      </ListAttrNames>
+      <ListDisplayAttrNames>
+        <Item Value="Nombre"/>
+      </ListDisplayAttrNames>
+    </list>
+    <attributeValues IterBinding="municipios_dep_by_munIterator"
+                     id="IdDepartamento">
+      <AttrNames>
+        <Item Value="IdDepartamento"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="view_orden_judicial1Beneficiario"
+                     IterBinding="view_orden_judicial1Iterator">
+      <AttrNames>
+        <Item Value="Beneficiario"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="view_orden_judicial1CedulaNit"
+                     IterBinding="view_orden_judicial1Iterator">
+      <AttrNames>
+        <Item Value="CedulaNit"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="FechaBaja" IterBinding="view_orden_judicial1Iterator">
+      <AttrNames>
+        <Item Value="FechaBaja"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="JuezBaja" IterBinding="view_orden_judicial1Iterator">
+      <AttrNames>
+        <Item Value="JuezBaja"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="JuzgadoBaja"
+                     IterBinding="view_orden_judicial1Iterator">
+      <AttrNames>
+        <Item Value="JuzgadoBaja"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisSolicitudVwIterator" id="logAutorizado">
+      <AttrNames>
+        <Item Value="logAutorizado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="SisSolicitudVwIterator" id="logFinalizado">
+      <AttrNames>
+        <Item Value="logFinalizado"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="SisSolicitudVwIterator" id="crearSolicitud"
+                  MethodName="crearSolicitud2" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisSolicitudVw">
+      <NamedData NDName="vTipo" NDValue="${flujo_usuario.currentSol}"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="vRegistroEmpleado"
+                 NDValue="${flujo_usuario.selRegEmpleado}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="vIdContrato" NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="vCreadoPor"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+      <NamedData NDName="vAnio" NDValue="${flujo_usuario.anioActual}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </methodAction>
+    <attributeValues id="view_orden_judicial1Descontado"
+                     IterBinding="view_orden_judicial1Iterator">
+      <AttrNames>
+        <Item Value="Descontado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="view_orden_judicial1Notificador"
+                     IterBinding="view_orden_judicial1Iterator">
+      <AttrNames>
+        <Item Value="Notificador"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="view_orden_judicial1FechaIngresoUsac"
+                     IterBinding="view_orden_judicial1Iterator">
+      <AttrNames>
+        <Item Value="FechaIngresoUsac"/>
+      </AttrNames>
+    </attributeValues>
+  </bindings>
+</pageDefinition>

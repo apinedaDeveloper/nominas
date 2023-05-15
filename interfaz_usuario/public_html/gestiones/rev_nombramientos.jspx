@@ -1,0 +1,432 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns="http://www.w3.org/1999/xhtml"
+          xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <f:view>
+    <f:loadBundle basename="propiedades" var="tx"/>
+    <afh:html>
+      <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+      <afh:head title="#{tx['rev_nombra.title']}">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+              
+          <script language="javascript" type="text/javascript"> 
+            
+           function generaReporte(pIdContrato,pRegistroEmpl){ 
+                   window.open("../verreportepdf?id="+pIdContrato+String.fromCharCode(38)+"rep=SIS-04"+String.fromCharCode(38)+"id2="+pRegistroEmpl,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable=1"); 
+           return false;
+           } 
+           
+         function generaRepAuxCatedra(pRegistroEmpl){ 
+              window.open("../verreportepdf?id="+pRegistroEmpl+String.fromCharCode(38)+"rep=AUXCATEDRA","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+           } 
+       
+          </script>
+          
+        </afh:head>
+      <afh:body>
+        <af:messages/>
+        <h:form>
+            <af:page value="#{modeloMenu.modeloBD}" var="node"
+                   chromeType="compact">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+         <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelBox>
+              <af:showOneTab position="above">
+                <af:showDetailItem text="#{tx['rev_nombra.tb1_pendientes.texto']}">
+                  <af:panelHeader text="Para filtrar lista">
+                    <af:panelForm labelWidth="100">
+                      <af:inputText value="#{bindings.pIdContrato.inputValue}"
+                                    label="#{tx['rev_nombra.inpt_contrato.texto']}"
+                                    required="#{bindings.pIdContrato.mandatory}"
+                                    columns="15">
+                        <af:validator binding="#{bindings.pIdContrato.validator}"/>
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.pIdContrato.format}"/>
+                      </af:inputText>
+                      <af:inputText value="#{bindings.pRegistroEmpleado.inputValue}"
+                                    label="#{tx['rev_nombra.inpt_regper.texto']}"
+                                    required="#{bindings.pRegistroEmpleado.mandatory}"
+                                    columns="15">
+                        <af:validator binding="#{bindings.pRegistroEmpleado.validator}"/>
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.pRegistroEmpleado.format}"/>
+                      </af:inputText>
+                      <af:inputText value="#{bindings.pCui.inputValue}"
+                                    required="#{bindings.pCui.mandatory}"
+                                    columns="#{bindings.pCui.displayWidth}"
+                                    label="CUI">
+                        <af:validator binding="#{bindings.pCui.validator}"/>
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.pCui.format}"/>
+                      </af:inputText>
+                      <af:objectSeparator/>
+                      <af:panelButtonBar>
+                        <af:commandButton actionListener="#{bindings.filtrarIdcontrato.execute}"
+                                          text="#{tx['rev_nombra.btn_filtrar.texto']}"
+                                          disabled="#{!bindings.filtrarIdcontrato.enabled}"/>
+                        <af:commandButton text="#{tx['rev_nombra.btn_qfiltro.texto']}"
+                                          actionListener="#{bindings.quitarFiltros.execute}"
+                                          disabled="#{!bindings.quitarFiltros.enabled}"/>
+                      </af:panelButtonBar>
+                    </af:panelForm>
+                  </af:panelHeader>
+                  <af:objectSpacer width="10" height="12"/>
+                  <af:table value="#{bindings['SisContratosPendientesRev_vw'].collectionModel}"
+                            var="row"
+                            first="#{bindings['SisContratosPendientesRev_vw'].rangeStart}"
+                            emptyText="#{bindings['SisContratosPendientesRev_vw'].viewable ? 'Ninguna Fila' : 'Ninguna Fila'}"
+                            selectionState="#{bindings['SisContratosPendientesRev_vw'].collectionModel.selectedRow}"
+                            selectionListener="#{bindings['SisContratosPendientesRev_vw'].collectionModel.makeCurrent}"
+                            partialTriggers="btn_actualizar tblSelecone btn_ver_nombramiento btn_actualiza_tablas"
+                            id="tbl_pendientes_rev"
+                            binding="#{rev_nombramientos.tbl_pendientes_rev}"
+                            banding="row" bandingInterval="1"
+                            rows="#{bindings['SisContratosPendientesRev_vw'].rangeSize}">
+                    <f:facet name="selection">
+                      <af:tableSelectOne autoSubmit="true" id="tblSelecone">
+                        <af:commandButton text="#{tx['rev_nombra.btn_refre.texto']}"
+                                          actionListener="#{bindings.actPendientes.execute}"/>
+                      </af:tableSelectOne>
+                    </f:facet>
+                    <af:column sortable="false" headerText="-">
+                      <af:commandButton text="Objetar"
+                                        action="#{rev_nombramientos.btn_autorizar_action}"
+                                        launchListener="#{rev_nombramientos.btn_autorizar_launch}"
+                                        useWindow="true" windowHeight="450"
+                                        windowWidth="600"
+                                        returnListener="#{rev_nombramientos.return_autoriza}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="-">
+                      <af:commandButton text="#{tx['rev_nombra.btn_nombramiento.texto']}"
+                                        action="#{rev_nombramientos.btn_ver_nombramiento}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="">
+                      <af:commandButton text="Ver Declaración"
+                                        onclick="generaReporte('#{row.IdContrato}','#{row.RegistroEmpleado}');"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="-">
+                      <af:commandButton text="Autorizar"
+                                        action="#{rev_nombramientos.autorizar_unPaso}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="-">
+                      <af:commandButton text="Reporte Aux Catedra"
+                                        onclick="generaRepAuxCatedra(#{row.RegistroEmpleado});"
+                                        rendered="#{ (row.IdPuesto=='210315' || row.IdPuesto=='210325' || row.IdPuesto=='210310' || row.IdPuesto=='210320')?true:false}"/>
+                    </af:column>
+                    <af:column sortProperty="Formato1" sortable="true"
+                               headerText="#{tx['rev_nombra.tbla_partida.texto']}">
+                      <af:commandLink text="#{row.Formato1}"
+                                      action="dialog:history_plazas"
+                                      useWindow="true" windowHeight="500"
+                                      windowWidth="550" partialSubmit="true"
+                                      actionListener="#{bindings.filaActual.execute}"
+                                      disabled="#{!bindings.filaActual.enabled}"/>
+                    </af:column>
+                    <af:column sortProperty="NumeroPlaza" sortable="true"
+                               headerText="#{tx['rev_nombra.tbla_numPlaza.texto']}">
+                      <af:outputText value="#{row.NumeroPlaza}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['SisContratosPendientesRev_vw'].formats.NumeroPlaza}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortable="false"
+                               headerText="#{tx['rev_nombra.tbla_puesto.texto']}"
+                               formatType="text" noWrap="true">
+                      <af:outputText value="#{row.IdPuesto} - #{row.Nombrepuesto}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['SisContratosPendientesRev_vw'].formats.IdPuesto}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="RegistroEmpleado" sortable="true"
+                               headerText="#{tx['rev_nombra.tbla_regEmpleado.texto']}">
+                      <af:commandLink text="#{row.RegistroEmpleado}"
+                                      action="#{rev_nombramientos.cmd_lnk_registroEmpleado_action}"
+                                      useWindow="true" windowHeight="500"
+                                      windowWidth="550" partialSubmit="true"
+                                      actionListener="#{bindings.filaActual.execute}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="CUI">
+                      <af:outputText value="#{row.Cui}"/>
+                    </af:column>
+                    <af:column sortable="false"
+                               headerText="#{tx['rev_nombra.tbla_NombreE.texto']}"
+                               headerNoWrap="false" noWrap="true">
+                      <af:outputText value="#{row.Nombrecompleto}"/>
+                    </af:column>
+                    <af:column sortProperty="IdContrato" sortable="false"
+                               headerText="#{tx['rev_nombra.tbla_contrato.texto']}">
+                      <af:commandLink text="#{row.IdContrato}"
+                                      launchListener="#{rev_nombramientos.id_contrato_launch}"
+                                      useWindow="true" windowHeight="400"
+                                      windowWidth="450"
+                                      action="dialog:docs_contrato"
+                                      partialSubmit="true"/>
+                    </af:column>
+                    <af:column sortable="false"
+                               headerText="#{tx['rev_nombra.tbla_hrs.texto']}">
+                      <af:outputText value="#{row.Horascontratadas}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['SisContratosPendientesRev_vw'].formats.Horascontratadas}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortable="false"
+                               headerText="#{tx['rev_nombra.tbla_nominal.texto']}">
+                      <af:outputText value="#{row.Nominal}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['SisContratosPendientesRev_vw'].formats.Sueldobase}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortable="false"
+                               headerText="#{tx['rev_nombra.tbla_vigencia.texto']}"
+                               noWrap="true">
+                      <af:outputText value="#{row.FechaInicio} - #{row.FechaFin}"/>
+                    </af:column>
+                    <af:column sortProperty="Dep" sortable="true"
+                               headerText="#{tx['rev_nombra.tbla_dep.texto']}"
+                               headerNoWrap="false" noWrap="true">
+                      <af:outputText value="#{row.Dep}"/>
+                    </af:column>
+                    <af:column sortProperty="Unidad" sortable="true"
+                               headerText="#{tx['rev_nombra.tbla_unidad.texto']}"
+                               headerNoWrap="false" noWrap="true">
+                      <af:outputText value="#{row.Unidad}"/>
+                    </af:column>
+                    <af:column sortProperty="Nomestado" sortable="false"
+                               headerText="#{tx['rev_nombra.tbla_estado.texto']}">
+                      <af:outputText value="#{row.Nomestado}"/>
+                    </af:column>
+                    <af:column sortable="false"
+                               headerText="#{tx['rev_nombra.tbla_fecha.texto']}"
+                               noWrap="true">
+                      <af:outputText value="#{row.FechaCambioEstado}"/>
+                    </af:column>
+                    <af:column sortable="false"
+                               headerText="#{tx['rev_nombra.tbla_comentario.texto']}">
+                      <af:outputText value="#{row.comentario}"/>
+                    </af:column>
+                  </af:table>
+                  <af:objectSpacer width="10" height="30"/>
+                  <af:panelButtonBar>
+                    <af:commandButton text="#{tx['rev_nombra.btn_nombramiento.texto']}"
+                                      partialSubmit="true"
+                                      action="#{rev_nombramientos.btn_ver_nombramiento}"
+                                      id="btn_ver_nombramiento"
+                                      binding="#{rev_nombramientos.btn_ver_nombramiento}"/>
+                    <af:commandButton text="#{tx['rev_nombra.btn_autorizar.texto']}"
+                                      partialSubmit="true"
+                                      action="#{rev_nombramientos.btn_autorizar_action}"
+                                      id="btn_actualizar"
+                                      launchListener="#{rev_nombramientos.btn_autorizar_launch}"
+                                      useWindow="true" windowHeight="400"
+                                      windowWidth="450"/>
+                    <af:commandButton actionListener="#{bindings.actPendientes.execute}"
+                                      text="#{tx['rev_nombra.btn_refre.texto']}"
+                                      disabled="#{!bindings.actPendientes.enabled}"
+                                      id="btn_actualiza_tablas"
+                                      binding="#{rev_nombramientos.btn_actualizar_tablas}"/>
+                  </af:panelButtonBar>
+                </af:showDetailItem>
+                <af:showDetailItem text="#{tx['rev_nombra.tb1_revisados.texto']}"
+                                   disclosed="false">
+                                   
+                <af:panelHeader text="Para filtrar lista">
+                    <af:panelForm labelWidth="100">
+                      <af:inputText value="#{bindings.pIdContrato.inputValue}"
+                                    label="#{tx['rev_nombra.inpt_contrato.texto']}"
+                                    required="#{bindings.pIdContrato.mandatory}"
+                                    columns="15">
+                        <af:validator binding="#{bindings.pIdContrato.validator}"/>
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.pIdContrato.format}"/>
+                      </af:inputText>
+                      <af:inputText value="#{bindings.pRegistroEmpleado.inputValue}"
+                                    label="#{tx['rev_nombra.inpt_regper.texto']}"
+                                    required="#{bindings.pRegistroEmpleado.mandatory}"
+                                    columns="15">
+                        <af:validator binding="#{bindings.pRegistroEmpleado.validator}"/>
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.pRegistroEmpleado.format}"/>
+                      </af:inputText>
+                      <af:inputText value="#{bindings.pCui1.inputValue}"
+                                    required="#{bindings.pCui1.mandatory}"
+                                    columns="#{bindings.pCui1.displayWidth}"
+                                    label="CUI">
+                        <af:validator binding="#{bindings.pCui1.validator}"/>
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings.pCui1.format}"/>
+                      </af:inputText>
+                      <af:objectSeparator/>
+                      <af:panelButtonBar>
+                        <af:commandButton actionListener="#{bindings.filtrar_ContReg.execute}"
+                                          text="Buscar"
+                                          disabled="false"/>
+                        <af:commandButton text="#{tx['rev_nombra.btn_qfiltro.texto']}"
+                                          actionListener="#{bindings.quitarFiltrosRev.execute}"
+                                          disabled="#{!bindings.quitarFiltrosRev.enabled}"
+                                          rendered="false"/>
+                      </af:panelButtonBar>
+                    </af:panelForm>
+                  </af:panelHeader>
+                  <af:objectSpacer width="10" height="10"/>
+                  <af:table value="#{bindings['SisContratosRevisados_vw'].collectionModel}"
+                            var="row"
+                            rows="#{bindings['SisContratosRevisados_vw'].rangeSize}"
+                            first="#{bindings['SisContratosRevisados_vw'].rangeStart}"
+                            emptyText="#{bindings['SisContratosRevisados_vw'].viewable ? 'Ninguna Fila' : 'Ninguna Fila'}"
+                            selectionState="#{bindings['SisContratosRevisados_vw'].collectionModel.selectedRow}"
+                            selectionListener="#{bindings['SisContratosRevisados_vw'].collectionModel.makeCurrent}"
+                            banding="row" bandingInterval="1"
+                            binding="#{rev_nombramientos.tbl_revisados}"
+                            partialTriggers="btn_actualizar_tabla_rev">
+                    <f:facet name="selection">
+                      <af:tableSelectOne text="">
+                      </af:tableSelectOne>
+                    </f:facet>
+                    <af:column sortable="false" headerText="-">
+                      <af:commandButton text="Objetar"
+                                        action="#{rev_nombramientos.btn_desautorizar_action}"
+                                        launchListener="#{rev_nombramientos.btn_desautorizar_launch}"
+                                        useWindow="true" windowHeight="450"
+                                        windowWidth="600"
+                                        returnListener="#{rev_nombramientos.return_desautoriza}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="Revertir"
+                               rendered="#{roles_usuario.administrador || roles_usuario.coordinadorSueldos}"
+                               noWrap="true">
+                      <af:commandLink action="#{rev_nombramientos.btn_revertir_nombra}"
+                                      rendered="#{row.isRevert}">
+                        <af:objectImage source="/imagenes/document-revert.png"/>
+                        <af:outputText value="Ir a Reversión"/>
+                      </af:commandLink>
+                    </af:column>
+                    <af:column sortable="false" headerText=" -">
+                      <af:commandButton text="Ver Declaración"
+                                        onclick="generaReporte('#{row.IdContrato}','#{row.RegistroEmpleado}');"/>
+                    </af:column>
+                    <af:column sortProperty="IdContrato" sortable="false"
+                               headerText="#{tx['rev_nombra.tbla_contrato.texto']}">
+                      <af:commandLink text="#{row.IdContrato}"
+                                      action="#{rev_nombramientos.cmd_IdContrato}"
+                                      binding="#{rev_nombramientos.cmdIdContrato}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="Estado actual">
+                      <af:outputText value="#{row.Nomestadoactual}"/>
+                    </af:column>
+                    <af:column sortProperty="Formato1" sortable="true"
+                               headerText="#{tx['rev_nombra.tbla_partida.texto']}">
+                      <af:outputText value="#{row.Formato1}"/>
+                    </af:column>
+                    <af:column sortProperty="NumeroPlaza" sortable="true"
+                               headerText="#{tx['rev_nombra.tbla_numPlaza.texto']}">
+                      <af:outputText value="#{row.NumeroPlaza}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['SisContratosRevisados_vw'].formats.NumeroPlaza}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortable="false"
+                               headerText="#{tx['rev_nombra.tbla_puesto.texto']}"
+                               noWrap="true">
+                      <af:outputText value="#{row.IdPuesto} - #{row.Nombrepuesto}"/>
+                    </af:column>
+                    <af:column sortProperty="RegistroEmpleado" sortable="true"
+                               headerText="#{tx['rev_nombra.tbla_regEmpleado.texto']}">
+                      <af:outputText value="#{row.RegistroEmpleado}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['SisContratosRevisados_vw'].formats.RegistroEmpleado}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortable="false" headerText="CUI">
+                      <af:outputText value="#{row.Cui}"/>
+                    </af:column>
+                    <af:column sortable="false"
+                               headerText="#{tx['rev_nombra.tbla_NombreE.texto']}"
+                               headerNoWrap="false" noWrap="true">
+                      <af:outputText value="#{row.Nombrecompleto}"/>
+                    </af:column>
+                    <af:column sortable="false"
+                               headerText="#{tx['rev_nombra.tbla_hrs.texto']}">
+                      <af:outputText value="#{row.Horascontratadas}"/>
+                    </af:column>
+                    <af:column sortable="false"
+                               headerText="#{tx['rev_nombra.tbla_nominal.texto']}">
+                      <af:outputText value="#{row.Nominal}"/>
+                    </af:column>
+                    <af:column sortable="false"
+                               headerText="#{tx['rev_nombra.tbla_vigencia.texto']}"
+                               noWrap="true">
+                      <af:outputText value="#{row.FechaInicio} - #{row.FechaFin}"/>
+                    </af:column>
+                    <af:column sortProperty="Dep" sortable="false"
+                               headerText="#{tx['rev_nombra.tbla_dep.texto']}"
+                               headerNoWrap="false" noWrap="true">
+                      <af:outputText value="#{row.IdDependencia}"/>
+                    </af:column>
+                    <af:column sortProperty="Unidad" sortable="false"
+                               headerText="#{tx['rev_nombra.tbla_unidad.texto']}"
+                               headerNoWrap="false" noWrap="true">
+                      <af:outputText value="#{row.Unidad}"/>
+                    </af:column>
+                    <af:column sortProperty="Nomestado" sortable="false"
+                               headerText="#{tx['rev_nombra.tbla_estado.texto']}">
+                      <af:outputText value="#{row.Nomestado}"/>
+                    </af:column>
+                    <af:column sortProperty="Fecha" sortable="false"
+                               headerText="#{tx['rev_nombra.tbla_fecha.texto']}"
+                               noWrap="true">
+                      <af:outputText value="#{row.Fecha}">
+                        <f:convertDateTime pattern="#{bindings['SisContratosRevisados_vw'].formats.Fecha}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortable="false"
+                               headerText="#{tx['rev_nombra.tbla_comentario.texto']}">
+                      <af:outputText value="#{row.comentario1}"/>
+                    </af:column>
+                    <af:column sortable="false" headerText="Revisado Por">
+                      <af:outputText value="#{row.VistoPor}"/>
+                    </af:column>
+                    <af:column sortProperty="IdProceso" sortable="false"
+                               headerText="Id proceso" noWrap="true">
+                      <af:outputText value="#{row.IdProceso} - #{row.Nombreproceso} - #{row.Periodo} - #{row.Anio}"/>
+                    </af:column>
+                  </af:table>
+                  <af:objectSpacer width="10" height="10"/>
+                  <af:panelButtonBar>
+                    <af:commandButton actionListener="#{bindings.ExeConsultaRev.execute}"
+                                      text="Refrescar lista de revisados"
+                                      disabled="#{!bindings.ExeConsultaRev.enabled}"
+                                      id="btn_actualizar_tabla_rev"
+                                      binding="#{rev_nombramientos.btn_actualizar_tabla_rev}"
+                                      rendered="false"/>
+                  </af:panelButtonBar>
+                </af:showDetailItem>
+              </af:showOneTab>
+            </af:panelBox>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:rev_nombramientos-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:rev_nombramientos-->
+</jsp:root>

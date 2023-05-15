@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="nominas_liquidacion"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="935"
+		 pageHeight="612"
+		 columnWidth="933"
+		 columnSpacing="0"
+		 leftMargin="2"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.zoom" value="1.4641000000000006" />
+	<property name="ireport.x" value="54" />
+	<property name="ireport.y" value="0" />
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="SUBREPORT_DIR" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="pProceso" isForPrompting="true" class="java.math.BigDecimal">
+		<defaultValueExpression ><![CDATA[new BigDecimal(521)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="pUsuario" isForPrompting="true" class="java.lang.String"/>
+	<queryString><![CDATA[select distinct c.id_proceso as id_proceso_nomina
+from  sis_pago b, sis_nomina c
+left outer join partida part2 on c.id_partida_egreso=part2.id_partida,
+partida d1, partida prt
+where  b.id_proceso=$P{pProceso} and b.id_nomina=c.id_nomina 
+and (case when c.id_partida_egreso is not null and (part2.d9d10 in (41,42) or
+ ( part2.d1=4 and part2.d2<>2 and part2.d9d10 = 81) or ( part2.d1=2 and part2.d2=1 and part2.d3d4=16 and part2.d9d10 = 0)  )
+   then c.id_partida_egreso else c.id_partida end) = d1.id_partida
+
+and c.id_partida = prt.id_partida
+and exists(
+  select 1 from usuario_unidad b, partida x
+  where b.id_partida=x.id_partida
+  and usuario= $P{pUsuario}
+  and b.tipo_usuario='TRABAJADOR'
+  and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+  and 
+  ( 
+    ( 1=(case when part2.d9d10 is null or part2.d9d10 not in(41,42) then 1 else 0 end)
+      and prt.aniomanual=x.aniomanual
+      and prt.d1=x.d1
+      and prt.d2=x.d2
+      and prt.d3d4=x.d3d4
+      and 
+      (
+      (prt.d7=x.d7
+      and prt.d6=x.d6
+      and prt.d5=x.d5
+      )
+      or
+      (
+      x.d5 is null
+      and x.d6 is null
+      and x.d7 is null 
+      )
+      )
+    )
+     or
+       (  part2.d9d10 in (41,42)                
+          and part2.aniomanual=x.aniomanual
+          and part2.d1=x.d1
+          and part2.d2=x.d2
+          and part2.d3d4=x.d3d4
+          and 
+          (
+          (part2.d7=x.d7
+          and part2.d6=x.d6
+          and part2.d5=x.d5
+          )
+          or
+          (
+          x.d5 is null
+          and x.d6 is null
+          and x.d7 is null 
+          )
+          )               
+       )
+       or
+       (  part2.d9d10 in (0)  
+          and part2.d1=2 
+          and part2.d3d4=16              
+          and part2.aniomanual=x.aniomanual
+          and to_number(part2.d6||part2.d7)=x.d3d4              
+       )       
+    )
+  )]]></queryString>
+
+	<field name="ID_PROCESO_NOMINA" class="java.math.BigDecimal"/>
+
+
+		<group  name="ProcesoNomina" isStartNewPage="true" >
+			<groupExpression><![CDATA[$F{ID_PROCESO_NOMINA}]]></groupExpression>
+			<groupHeader>
+			<band height="20"  isSplitAllowed="true" >
+				<subreport  isUsingCache="true">
+					<reportElement
+						x="0"
+						y="4"
+						width="925"
+						height="10"
+						key="subreport-13"
+						positionType="Float"/>
+					<subreportParameter  name="pIdProceso">
+						<subreportParameterExpression><![CDATA[$F{ID_PROCESO_NOMINA}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pUsuario">
+						<subreportParameterExpression><![CDATA[$P{pUsuario}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="SUBREPORT_DIR">
+						<subreportParameterExpression><![CDATA[$P{SUBREPORT_DIR}]]></subreportParameterExpression>
+					</subreportParameter>
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<subreportExpression  class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "nominas_liquidacion_subreporte0.jasper"]]></subreportExpression>
+				</subreport>
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+			</groupFooter>
+		</group>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

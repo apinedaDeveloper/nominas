@@ -1,0 +1,981 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <f:view>
+    <afh:html id="html1" binding="#{modificar_nomina.html1}">
+      <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+      <afh:head title="Nómina" id="head1" binding="#{modificar_nomina.head1}">
+            <jsp:include page="/js/libJQ.js"/>       
+            <jsp:include page="/js/librariesDialog.js"/>
+            <afh:script>
+            
+            var contador = 0;
+            var resultadoJSON = false; //valor inicial
+                   
+            //function obtener fila seleccionada
+            function obtenerFilaSeleccionada() {
+                var idNomina =  document.getElementById("page1:valNomina");
+                var contadorAux = 0;
+                var filaSeleccionada = -1;
+                if( idNomina!=null &amp;&amp; idNomina.value!=""){ //Existe una fila seleccionada
+                    while(true) {
+                        var fila = document.getElementById("page1:tbl_listadoNominasModificar:"+contadorAux.toString()+":tableSelectOne1");
+                        if(fila!=null){
+                            if(fila.checked){
+                                var objeto = document.getElementById("page1:tbl_listadoNominasModificar:"+fila.value+":inpSueldoBase");
+                                if(objeto!=null){
+                                    filaSeleccionada = fila.value;
+                                } else {
+                                    alert("Error. No se pudo establacer la fila seleccionada");
+                                }
+                                break;                    
+                            }                                        
+                        } 
+                        contadorAux=contadorAux+1;
+                        if( contadorAux >= 5000) {
+                            break;
+                        }
+                    }
+                } 
+                return filaSeleccionada;
+            }
+            
+            function comprobarCamposTextoFiltrar() {
+                var val =  document.getElementById("page1:slctOneChoiceProcesos");
+                var prosigue = false; //decidirá si se sigue el procedimiento o no
+                if ( val != null ) {
+                    val = val.options[val.selectedIndex].text;
+                    if ( val != null &amp;&amp; val != "" ) {
+                        prosigue = true;
+                    } else {
+                        alert("Seleccione un Proceso de la lista por favor.");
+                    }
+                } else {
+                    alert("Seleccione un Proceso por favor.");
+                }
+                return prosigue;
+            }
+            
+            function mostrarReporte(idProceso){
+                var listaProcesos, indiceLista, idProcesoText;
+                var posicion;
+                if ( idProceso != null &amp;&amp; idProceso !="" ) {
+                    window.open("../verreportepdf?id="+idProceso+String.fromCharCode(38)+"rep=DOCNOMINAT","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable=1"); 
+                } else {
+                    listaProcesos=document.getElementById("page1:slctOneChoiceProcesos");
+                    indiceLista=listaProcesos.selectedIndex;
+                    idProcesoText=listaProcesos.options[indiceLista].text;
+                    if ( idProcesoText !=null &amp;&amp; idProcesoText !="" ) {
+                        posicion = idProcesoText.indexOf(' ');
+                        if ( posicion >= 0 ) {
+                            idProceso = idProcesoText.substring(0, posicion);
+                            if ( idProceso !=null &amp;&amp; idProceso !="" ) {
+                                window.open("../verreportepdf?id="+idProceso+String.fromCharCode(38)+"rep=DOCNOMINAT","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable=1"); 
+                            } else {
+                                alert('Elija primero un Proceso, por favor.');
+                            }
+                        } else {
+                            alert('Elija primero un Proceso, por favor.');
+                        }
+                    } else {
+                        alert('Elija primero un Proceso, por favor.');
+                    }
+                }
+                return false;
+            }
+            
+            function invocarJSON(idNomina, sueldoNominal, index) {
+                var resJson = "";
+                var botonGuardar;
+                var sueldoBase;
+                $.getJSON("/Nomina/faces/consuljson?codop=9"+String.fromCharCode(38)+"var1="+idNomina+String.fromCharCode(38)+"var2=NOMINA"+String.fromCharCode(38)+"var3="+sueldoNominal, function(json){
+                    if (json!=null){  
+                        if (json.length>0){                
+                            resJson = json[0].respuesta;       
+                            if(resJson=='CORRECTO'){
+                                contador = contador +1;
+                                resultadoJSON = true;
+                                document.getElementById("page1:tbl_listadoNominasModificar:"+index+":btn_grabar_cambios").click();
+                            } else{
+                                alert(resJson + ' [Contacte con el Administrador del Sistema o Salir e Intentar de Nuevo, por favor.]' );
+                            }
+                        } else {
+                            alert('Hubo un error, contacte al Administrador del Sistema o Salir e Intentar de Nuevo por favor.');
+                        }
+                    } else {
+                        alert('Hubo un error, contacte al Administrador del Sistema o Salir e Intentar de Nuevo por favor.');
+                    }
+                });
+                return resultadoJSON;
+            }
+            
+            function validaCambios(){
+                var sueldoNominal = 0;
+                var idNomina = 0;
+                var resultado = false; //valor inicial
+                var sueldoBase, escalafon, compSalarial;
+                var index = -1; 
+                if(contador == 0){
+                index = obtenerFilaSeleccionada();
+                if ( index >= 0 ) {
+                    idNomina = document.getElementById("page1:valNomina").value;
+                    if ( idNomina!=null &amp;&amp; idNomina.value!="" ) {
+                        idNomina = idNomina.replace(/,/g,'');
+                        document.getElementById("page1:tbl_listadoNominasModificar:"+index+":inpSueldoBase").value = document.getElementById("page1:tbl_listadoNominasModificar:"+index+":inpSueldoBase").value.trim();
+                        sueldoBase = document.getElementById("page1:tbl_listadoNominasModificar:"+index+":inpSueldoBase").value;
+                        document.getElementById("page1:tbl_listadoNominasModificar:"+index+":inputText9").value = document.getElementById("page1:tbl_listadoNominasModificar:"+index+":inputText9").value.trim();
+                        escalafon = document.getElementById("page1:tbl_listadoNominasModificar:"+index+":inputText9").value;
+                        document.getElementById("page1:tbl_listadoNominasModificar:"+index+":inputText10").value = compSalarial = document.getElementById("page1:tbl_listadoNominasModificar:"+index+":inputText10").value.trim();
+                        compSalarial = document.getElementById("page1:tbl_listadoNominasModificar:"+index+":inputText10").value;
+                        sueldoBase = sueldoBase.replace(/,/g,'');
+                        escalafon = escalafon.replace(/,/g,'');
+                        compSalarial = compSalarial.replace(/,/g,'');  
+                        if(sueldoBase==null || sueldoBase ==""){
+                            sueldoBase=0;
+                        } 
+                        if(escalafon==null || escalafon ==""){
+                            escalafon=0;
+                        } 
+                        if(compSalarial==null || compSalarial ==""){
+                            compSalarial=0;
+                        }
+                        if( isNaN(sueldoBase) ) {
+                            alert('Error: el Sueldo Base debe ser númerico');
+                        } else if ( isNaN(escalafon) ) {
+                            alert('Error: el Escalafón debe ser númerico');
+                        } else if ( isNaN(compSalarial) ) {
+                            alert('Error: el Complemento Salarial debe ser númerico');
+                        } else if ( sueldoBase &lt; 0 ) {
+                            alert('Error: el Sueldo Base debe ser Mayor o Igual a 0');
+                        } else if ( escalafon &lt; 0 ) {
+                            alert('Error: el Escalafón debe ser Mayor o Igual a 0');
+                        } else if ( compSalarial &lt; 0 ) {
+                            alert('Error: el Complemento Salarial debe ser Mayor o Igual a 0');
+                        } else {
+                            document.getElementById("page1:tbl_listadoNominasModificar:"+index+":inpSueldoBase").value = sueldoBase;
+                            document.getElementById("page1:tbl_listadoNominasModificar:"+index+":inputText9").value = escalafon;
+                            document.getElementById("page1:tbl_listadoNominasModificar:"+index+":inputText10").value = compSalarial;
+                            sueldoNominal = parseFloat(sueldoBase) + parseFloat(escalafon) + parseFloat(compSalarial);                        
+                            sueldoNominal = sueldoNominal.toFixed(2);
+                            invocarJSON(idNomina, sueldoNominal, index);
+                            resultado = resultadoJSON; //De la variable global a la variable local
+                        }
+                    } else {
+                        alert("Error en obtener la Fila Seleccionada, Salir e Intentar de nuevo por favor.");
+                    }
+                } else {
+                    alert("Error en obtener la Fila Seleccionada, Clic en Editar la fila correspondiente por favor.");
+                }
+                } else {
+                    contador = 0;
+                    resultado = true;
+                } 
+                return resultado;
+            }
+            
+            //Pregunta si desea Grabar Cambios
+            function confirmarGrabarCambios(empleado){
+                var confirmado = false; //valor inicial
+                var mensaje = "¿Desea Guardar los Cambios de: '"+ empleado+"' (Registro de Empleado)?";
+                if(contador == 0){
+                    if (confirm(mensaje)){
+                        confirmado = true;
+                    }
+                } else {
+                    confirmado = true;
+                }
+                return confirmado;
+            }
+            
+            //Pregunta si desea Eliminar Ajuste (Bono o Descuento)
+            function confirmarEliminarAjuste(nombreAjuste){
+                var confirmado = false; //valor inicial
+                var mensaje = "¿Desea Eliminar el Ajuste '" + nombreAjuste + "'?";
+                if (confirm(mensaje)){
+                    confirmado = true;
+                }
+                return confirmado;
+            }
+        
+        </afh:script>
+      </afh:head>
+      <afh:body id="body1"
+                binding="#{modificar_nomina.body1}">
+        <af:messages binding="#{modificar_nomina.messages1}" id="messages1"/>
+        <af:form id="form1" binding="#{modificar_nomina.form1}">
+          <af:page title="Revisión de Procesos (Opciones para procesar la Nómina)" value="#{modeloMenu.modeloBD}"
+                   var="node" binding="#{modificar_nomina.page1}" id="page1">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  action="#{node.getOutcome}"
+                                  binding="#{modificar_nomina.commandMenuItem1}"
+                                  id="commandMenuItem1"/>
+            </f:facet>
+            <f:facet name="infoUser">
+              <f:subview id="info1" binding="#{modificar_nomina.info1}">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="menuSwitch">
+              <f:subview id="menuSwt" binding="#{modificar_nomina.menuSwt}">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo" binding="#{modificar_nomina.logo}">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelBox id="pnlBoxPrincipal" width="100%">
+              <af:showOneTab>
+                <af:showDetailItem text="Modificar Nómina"
+                                   id="ShowDetailModificarNom"
+                                   binding="#{modificar_nomina.showDetailModificarNom}">
+                  <af:panelForm
+                                id="pnlFormModicarNom"
+                                binding="#{modificar_nomina.pnlFormModicarNom}">
+                    <af:panelHeader text="Parámetros"
+                                    binding="#{modificar_nomina.panelHeader1}"
+                                    id="panelHeader1" messageType="info"
+                                    size="1">
+                      <af:panelForm
+                                    id="pnlFormOpcionesBusq" width="100%"
+                                    binding="#{modificar_nomina.pnlFormOpcionesBusq}">
+                        <af:selectOneChoice value="#{bindings.pIdProceso1.inputValue}"
+                                            label="Procesos"
+                                            binding="#{modificar_nomina.selectOneChoice1}"
+                                            id="slctOneChoiceProcesos"
+                                            autoSubmit="true">
+                          <f:selectItems value="#{bindings.pIdProceso1.items}"
+                                         binding="#{modificar_nomina.selectItems1}"
+                                         id="selectItems1"/>
+                        </af:selectOneChoice>
+                        <af:selectOneChoice id="slctOneChoiceDependencias"
+                                            value="#{bindings.dependencias.inputValue}"
+                                            label="Dependencias"
+                                            binding="#{modificar_nomina.navList1}"
+                                            autoSubmit="true">
+                          <f:selectItems value="#{bindings.dependencias.items}"
+                                         binding="#{modificar_nomina.selectItems2}"
+                                         id="selectItems2"/>
+                        </af:selectOneChoice>
+                        <af:inputText value="#{bindings.pRegPer.inputValue}"
+                                      label="Registro Empleado"
+                                      required="false"
+                                      columns="8"
+                                      id="inptTxtRegistroEmpl"
+                                      maximumLength="8"
+                                      converter="oracle.adf.Number"
+                                      binding="#{modificar_nomina.inptTxtRegistroEmpl}">
+                          <f:convertNumber groupingUsed="false"
+                                           integerOnly="true"
+                                           pattern="########"/>
+                        </af:inputText>
+                        <f:facet name="footer">
+                          <af:panelGroup id="panelGroup1">
+                            <af:panelButtonBar binding="#{modificar_nomina.panelButtonBar1}"
+                                               id="panelButtonBar1">
+                              <af:commandButton
+                                                text="Filtrar"
+                                                disabled="false"
+                                                id="btnFiltrar"
+                                                inlineStyle="font-size:medium; font-weight:bold;"
+                                                binding="#{modificar_nomina.btnFiltrar}"
+                                                onclick="return comprobarCamposTextoFiltrar();"
+                                                action="#{modificar_nomina.btnFiltrar_action}"/>
+                              <af:commandLink
+                                              id="cmdLinkImprimir"
+                                              onclick="return mostrarReporte('#{bindings.pIdProceso.inputValue}');"
+                                              binding="#{modificar_nomina.cmdLinkImprimir}">
+                              <af:objectImage source="/imagenes/print.png"
+                                              binding="#{modificar_nomina.objectImage3}"
+                                              id="objectImage3"/>
+                              </af:commandLink>
+                              <af:commandButton text="Cancelar"
+                                                id="btnCancelarPrincipal"
+                                                actionListener="#{bindings.Rollback.execute}"
+                                                binding="#{modificar_nomina.btnCancelarPrincipal}"
+                                                immediate="true"
+                                                inlineStyle="font-size:medium; font-weight:bold;"
+                                                action="#{modificar_nomina.btnCancelarPrincipal_action}">
+                                <af:resetActionListener/>
+                              </af:commandButton>
+                            </af:panelButtonBar>
+                          </af:panelGroup>
+                        </f:facet>
+                        <af:objectSpacer width="10" height="10"
+                                         binding="#{modificar_nomina.objectSpacer1}"
+                                         id="objectSpacer1"/>
+                      </af:panelForm>
+                    </af:panelHeader>
+                    <af:panelHeader text="Resultado de la Búsqueda"
+                                    binding="#{modificar_nomina.panelHeader2}"
+                                    id="panelHeader2" messageType="info"
+                                    size="1"/>
+                    <af:table value="#{bindings['modificar_nominavo'].collectionModel}"
+                              var="row"
+                              rows="50"
+                              first="0"
+                              emptyText="Ninguna Fila"
+                              selectionState="#{bindings['modificar_nominavo'].collectionModel.selectedRow}"
+                              binding="#{modificar_nomina.tbl_listadoNominasModificar}"
+                              id="tbl_listadoNominasModificar"
+                              banding="row" bandingInterval="1"
+                              rangeChangeListener="#{modificar_nomina.tbl_listadoNominasModificar_rangeChangeListener}"
+                              selectionListener="#{bindings['modificar_nominavo'].collectionModel.makeCurrent}"
+                              width="100%">
+                      <f:facet name="selection">
+                        <af:tableSelectOne text="Seleccionado"
+                                           binding="#{modificar_nomina.tableSelectOne1}"
+                                           id="tableSelectOne1"
+                                           autoSubmit="true" disabled="true"/>
+                      </f:facet>
+                      <af:column sortable="false" headerText="Seleccionar"
+                                 binding="#{modificar_nomina.column21}"
+                                 id="column21">
+                        <af:commandLink id="cmdLinkEditarFila"
+                                        action="#{modificar_nomina.btn_editar_fila}"
+                                        disabled=" #{!(row.Sis24==null)}"
+                                        binding="#{modificar_nomina.cmdLinkEditarFila}">
+                          <af:objectImage source="/imagenes/form_edit.png"
+                                          binding="#{modificar_nomina.objectImage1}"
+                                          id="objectImage1"/>
+                        </af:commandLink>
+                      </af:column>
+                      <af:column sortProperty="Formato2" sortable="true"
+                                 headerText="Partida"
+                                 binding="#{modificar_nomina.column16}"
+                                 id="column16" formatType="text">
+                        <af:outputText value="#{row.Formato2}"
+                                       binding="#{modificar_nomina.outputText2}"
+                                       id="outputText2"/>
+                      </af:column>
+                      <af:column sortProperty="NumeroPlaza" sortable="true"
+                                 headerText="No. Plaza" formatType="number"
+                                 binding="#{modificar_nomina.column17}"
+                                 id="column17">
+                        <af:outputText value="#{row.NumeroPlaza}"
+                                       binding="#{modificar_nomina.outputText3}"
+                                       id="outputText3"/>
+                      </af:column>
+                      <af:column sortProperty="IdPuesto" sortable="true"
+                                 headerText="ID Puesto" formatType="number"
+                                 binding="#{modificar_nomina.column18}"
+                                 id="column18">
+                        <af:outputText value="#{row.IdPuesto}"
+                                       binding="#{modificar_nomina.outputText4}"
+                                       id="outputText4"/>
+                      </af:column>
+                      <af:column sortProperty="RegistroEmpleado" sortable="true"
+                                 headerText="Registro Empl."
+                                 binding="#{modificar_nomina.column3}"
+                                 id="column3" formatType="number">
+                        <af:outputText value="#{row.RegistroEmpleado}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['modificar_nominavo'].formats.RegistroEmpleado}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortable="true" headerText="CUI"
+                                 binding="#{modificar_nomina.column63}"
+                                 id="column63" sortProperty="Cui"
+                                 formatType="number">
+                        <af:outputText value="#{row.Cui}"
+                                       binding="#{modificar_nomina.outputText48}"
+                                       id="outputText48"/>
+                      </af:column>
+                      <af:column sortProperty="Empleado" sortable="true"
+                                 headerText="Nombre Empleado"
+                                 binding="#{modificar_nomina.column4}"
+                                 id="column4">
+                        <af:inputText value="#{row.Empleado}" simple="true"
+                                      required="#{bindings['modificar_nominavo'].attrDefs.Empleado.mandatory}"
+                                      columns="#{bindings['modificar_nominavo'].attrHints.Empleado.displayWidth}"
+                                      binding="#{modificar_nomina.inputText7}"
+                                      id="inputText7" readOnly="true"/>
+                      </af:column>
+                      <af:column sortable="true" headerText="Cod. Nómina"
+                                 binding="#{modificar_nomina.column22}"
+                                 id="column22" sortProperty="Codnomina"
+                                 formatType="number">
+                        <af:outputText value="#{row.Codnomina}"
+                                       binding="#{modificar_nomina.outputText8}"
+                                       id="outputText8"/>
+                      </af:column>
+                      <af:column sortProperty="SueldoBase" sortable="true"
+                                 headerText="Sueldo Base"
+                                 binding="#{modificar_nomina.column5}"
+                                 id="column5" formatType="number">
+                        <af:inputText value="#{row.SueldoBase}"
+                                      required="#{bindings['modificar_nominavo'].attrDefs.SueldoBase.mandatory}"
+                                      columns="#{bindings['modificar_nominavo'].attrHints.SueldoBase.displayWidth}"
+                                      binding="#{modificar_nomina.inpSueldoBase}"
+                                      id="inpSueldoBase" readOnly="false"
+                                      rendered="#{row.Seleccionado}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['modificar_nominavo'].formats.SueldoBase}"/>
+                        </af:inputText>
+                        <af:outputText value="#{row.SueldoBase}"
+                                       binding="#{modificar_nomina.outputText5}"
+                                       id="outputText5"
+                                       rendered="#{!row.Seleccionado}">
+                          <f:convertNumber type="currency"
+                                           pattern="#{bindings['modificar_nominavo'].formats.SueldoBase}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Escalafon" sortable="true"
+                                 headerText="Escalafón"
+                                 binding="#{modificar_nomina.column6}"
+                                 id="column6" formatType="number">
+                        <af:inputText value="#{row.Escalafon}"
+                                      required="#{bindings['modificar_nominavo'].attrDefs.Escalafon.mandatory}"
+                                      columns="#{bindings['modificar_nominavo'].attrHints.Escalafon.displayWidth}"
+                                      binding="#{modificar_nomina.inputText9}"
+                                      id="inputText9" readOnly="false"
+                                      rendered="#{row.Seleccionado}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['modificar_nominavo'].formats.Escalafon}"/>
+                        </af:inputText>
+                        <af:outputText value="#{row.Escalafon}"
+                                       rendered="#{!row.Seleccionado}">
+                          <f:convertNumber type="currency"
+                                           pattern="#{bindings['modificar_nominavo'].formats.Escalafon}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="ComplSalarial" sortable="true"
+                                 headerText="Complemento"
+                                 binding="#{modificar_nomina.column7}"
+                                 id="column7" formatType="number">
+                        <af:inputText value="#{row.ComplSalarial}"
+                                      required="#{bindings['modificar_nominavo'].attrDefs.ComplSalarial.mandatory}"
+                                      columns="#{bindings['modificar_nominavo'].attrHints.ComplSalarial.displayWidth}"
+                                      binding="#{modificar_nomina.inputText10}"
+                                      id="inputText10" readOnly="false"
+                                      rendered="#{row.Seleccionado}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['modificar_nominavo'].formats.ComplSalarial}"/>
+                        </af:inputText>
+                        <af:outputText value="#{row.ComplSalarial}"
+                                       binding="#{modificar_nomina.outputText7}"
+                                       id="outputText7"
+                                       rendered="#{!row.Seleccionado}">
+                          <f:convertNumber type="currency"
+                                           pattern="#{bindings['modificar_nominavo'].formats.ComplSalarial}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Nominal" sortable="true"
+                                 headerText="Nominal"
+                                 binding="#{modificar_nomina.column8}"
+                                 id="column8" formatType="number">
+                        <af:inputText value="#{row.Nominal}"
+                                      required="#{bindings['modificar_nominavo'].attrDefs.Nominal.mandatory}"
+                                      columns="#{bindings['modificar_nominavo'].attrHints.Nominal.displayWidth}"
+                                      binding="#{modificar_nomina.inpNominal}"
+                                      id="inpNominal" readOnly="true">
+                          <f:convertNumber pattern="#{bindings['modificar_nominavo'].formats.Nominal}"
+                                           type="currency"/>
+                        </af:inputText>
+                      </af:column>
+                      <af:column sortProperty="TotalBono" sortable="true"
+                                 headerText="Total Bono"
+                                 binding="#{modificar_nomina.column9}"
+                                 id="column9" formatType="number">
+                        <af:inputText value="#{row.TotalBono}"
+                                      required="#{bindings['modificar_nominavo'].attrDefs.TotalBono.mandatory}"
+                                      columns="#{bindings['modificar_nominavo'].attrHints.TotalBono.displayWidth}"
+                                      binding="#{modificar_nomina.inputText12}"
+                                      id="inputText12" readOnly="true"
+                                      partialTriggers="tbl_det_desc">
+                          <f:convertNumber pattern="#{bindings['modificar_nominavo'].formats.TotalBono}"
+                                           type="currency"/>
+                        </af:inputText>
+                      </af:column>
+                      <af:column sortProperty="TotalDescuento" sortable="true"
+                                 headerText="Total Descuento"
+                                 binding="#{modificar_nomina.column10}"
+                                 id="column10" formatType="number">
+                        <af:outputText value="#{row.TotalDescuento}"
+                                       id="outputTxtTotalDesc"
+                                       partialTriggers="tbl_det_desc">
+                          <f:convertNumber pattern="#{bindings['modificar_nominavo'].formats.TotalDescuento}"
+                                           type="currency"/>
+                        </af:outputText>
+                        <af:table value="#{bindings['modificar_nominavoSisDetCalculoAjusteVw2'].collectionModel}"
+                                  var="row"
+                                  rows="#{bindings['modificar_nominavoSisDetCalculoAjusteVw2'].rangeSize}"
+                                  first="#{bindings['modificar_nominavoSisDetCalculoAjusteVw2'].rangeStart}"
+                                  emptyText="#{bindings['modificar_nominavoSisDetCalculoAjusteVw2'].viewable ? 'Ninguna Fila Aún.' : 'Acceso Denegado.'}"
+                                  binding="#{modificar_nomina.table2}"
+                                  id="tbl_det_desc" banding="row"
+                                  bandingInterval="1"
+                                  rendered="#{row.Seleccionado}"
+                                  selectionListener="#{bindings['modificar_nominavoSisDetCalculoAjusteVw2'].collectionModel.makeCurrent}"
+                                  selectionState="#{bindings['modificar_nominavoSisDetCalculoAjusteVw2'].collectionModel.selectedRow}"
+                                  partialTriggers="tbl_det_desc:cmd_eliminar_desc">
+                          <af:column sortable="false" headerText="Eliminar"
+                                     binding="#{modificar_nomina.column19}"
+                                     id="column19">
+                            <af:commandLink id="cmd_eliminar_desc"
+                                            action="#{modificar_nomina.btn_eliminarDesc}"
+                                            partialSubmit="true"
+                                            onclick="return confirmarEliminarAjuste('#{row.Nombre}');">
+                              <af:objectImage source="/imagenes/borrar.png"
+                                              binding="#{modificar_nomina.objectImage2}"
+                                              id="objectImage2"/>
+                            </af:commandLink>
+                          </af:column>
+                          <af:column sortProperty="CodNomina" sortable="false"
+                                     headerText="Código"
+                                     binding="#{modificar_nomina.column29}"
+                                     id="column29">
+                            <af:outputText value="#{row.CodNomina}"
+                                           binding="#{modificar_nomina.outputText15}"
+                                           id="outputText15"/>
+                          </af:column>
+                          <af:column sortProperty="Nombre" sortable="false"
+                                     headerText="#{bindings['modificar_nominavoSisDetCalculoAjusteVw2'].labels.Nombre}"
+                                     binding="#{modificar_nomina.column25}"
+                                     id="column25">
+                            <af:outputText value="#{row.Nombre}"
+                                           binding="#{modificar_nomina.outputText11}"
+                                           id="outputText11"/>
+                          </af:column>
+                          <af:column sortProperty="ValorAplicado"
+                                     sortable="false"
+                                     headerText="#{bindings['modificar_nominavoSisDetCalculoAjusteVw2'].labels.ValorAplicado}"
+                                     binding="#{modificar_nomina.column20}"
+                                     id="column20">
+                            <af:inputText value="#{row.MontoAjuste}"
+                                          binding="#{modificar_nomina.outputText6}"
+                                          id="outputText6" label="Label 1"
+                                          columns="10"
+                                          disabled="#{row.IdAjuste.value == 2 ? true : row.IdAjuste.value == 10 ? true : row.IdAjuste.value == 13 ? true : row.IdAjuste.value == 20 ? true : row.IdAjuste.value == 21 ? true : row.IdAjuste.value == 23 ? true : row.IdAjuste.value == 24 ? true : false}">
+                              <f:convertNumber groupingUsed="false"
+                                               pattern="#{bindings['modificar_nominavoSisDetCalculoAjusteVw2'].formats.ValorAplicado}"/>
+                            </af:inputText>
+                          </af:column>
+                        </af:table>
+                      </af:column>
+                      <af:column sortProperty="Liquido" sortable="true"
+                                 headerText="Líquido"
+                                 binding="#{modificar_nomina.column12}"
+                                 id="column12" formatType="number">
+                        <af:inputText value="#{row.Liquido}"
+                                      required="#{bindings['modificar_nominavo'].attrDefs.Liquido.mandatory}"
+                                      columns="#{bindings['modificar_nominavo'].attrHints.Liquido.displayWidth}"
+                                      binding="#{modificar_nomina.inpLiquido}"
+                                      id="inpLiquido" readOnly="true"
+                                      partialTriggers="tbl_det_desc">
+                          <f:convertNumber pattern="#{bindings['modificar_nominavo'].formats.Liquido}"
+                                           type="currency"/>
+                        </af:inputText>
+                      </af:column>
+                      <af:column sortable="false" headerText="Grabar Cambios">
+                        <af:commandButton id="btn_grabar_cambios"
+                                          inlineStyle="font-size:medium; font-weight:bold;"
+                                          onclick="if ( confirmarGrabarCambios('#{row.RegistroEmpleado}') ) { return validaCambios(); } return false;"
+                                          disabled="#{!row.Seleccionado}"
+                                          text="Grabar cambios"
+                                          action="#{modificar_nomina.btn_grabar_cambios_action}"/>
+                      </af:column>
+                      <af:column sortable="false" headerText="Cancelar Fila">
+                        <af:commandButton text="Cancelar fila"
+                                          id="btn_cancelar_fila"
+                                          disabled="#{!row.Seleccionado}"
+                                          inlineStyle="font-size:medium; font-weight:bold;"
+                                          immediate="true"
+                                          action="#{modificar_nomina.btn_cancelar_fila_action}"
+                                          actionListener="#{bindings.Rollback.execute}"/>
+                      </af:column>
+                    </af:table>
+                    <af:inputHidden binding="#{modificar_nomina.valNomina}"
+                                    id="valNomina"
+                                    value="#{bindings.IdNomina.inputValue}"/>
+                  </af:panelForm>
+                </af:showDetailItem>
+                <af:showDetailItem text="Agregar Nómina"
+                                   id="ShowDetailAgregarNom"
+                                   binding="#{modificar_nomina.showDetailAgregarNom}">
+                  <af:panelBox binding="#{modificar_nomina.panelBox11}"
+                               id="panelBox11">
+                    <af:panelHeader text="Parámetros"
+                                    binding="#{modificar_nomina.panelHeader11}"
+                                    id="panelHeader11">
+                      <af:panelForm binding="#{modificar_nomina.panelForm11}"
+                                    id="panelForm11">
+                        <af:panelHorizontal binding="#{modificar_nomina.panelHorizontal1}"
+                                            id="panelHorizontal1" halign="left">
+                          <af:inputText value="#{bindings.pRegPer.inputValue}"
+                                        label="Registro Empleado"
+                                        required="#{bindings.pRegPer.mandatory}"
+                                        columns="#{bindings.pRegPer.displayWidth}"
+                                        binding="#{modificar_nomina.inputText311}"
+                                        id="inputText311">
+                            <af:validator binding="#{bindings.pRegPer.validator}"/>
+                          </af:inputText>
+                          <af:commandButton text="Buscar"
+                                            action="#{modificar_nomina.btn_buscar}"
+                                            binding="#{modificar_nomina.commandButton3}"
+                                            id="commandButton3"/>
+                          <f:facet name="separator">
+                            <af:objectSpacer width="10" height="10"
+                                             binding="#{modificar_nomina.objectSpacer2}"
+                                             id="objectSpacer2"/>
+                          </f:facet>
+                        </af:panelHorizontal>
+                        <af:objectSpacer width="10" height="15"
+                                         binding="#{modificar_nomina.objectSpacer11}"
+                                         id="objectSpacer11"/>
+                      </af:panelForm>
+                    </af:panelHeader>
+                    <af:outputText value="#{bindings.NombreCompleto.inputValue}"
+                                   inlineStyle="color:rgb(0,49,148); font-size:large;"
+                                   binding="#{modificar_nomina.outputText23}"
+                                   id="outputText23"/>
+                    <af:table value="#{bindings.SisPlazasEmpleadoComplVw.collectionModel}"
+                              var="row"
+                              rows="#{bindings.SisPlazasEmpleadoComplVw.rangeSize}"
+                              first="#{bindings.SisPlazasEmpleadoComplVw.rangeStart}"
+                              emptyText="#{bindings.SisPlazasEmpleadoComplVw.viewable ? 'No rows yet.' : 'Access Denied.'}"
+                              binding="#{modificar_nomina.table4}" id="table4">
+                      <af:column sortProperty="Seleccionado" sortable="false"
+                                 headerText="#{bindings.SisPlazasEmpleadoComplVw.labels.Seleccionado}"
+                                 binding="#{modificar_nomina.column38}"
+                                 id="column38">
+                        <af:selectBooleanRadio label="Label 1"
+                                               binding="#{modificar_nomina.selectBooleanRadio2}"
+                                               id="selectBooleanRadio2"
+                                               group="Grupo"
+                                               value="#{row.Seleccionado}"
+                                               selected="#{row.Seleccionado}"/>
+                      </af:column>
+                      <af:column sortProperty="IdContrato" sortable="false"
+                                 headerText="#{bindings.SisPlazasEmpleadoComplVw.labels.IdContrato}"
+                                 binding="#{modificar_nomina.column39}"
+                                 id="column39">
+                        <af:outputText value="#{row.IdContrato}"
+                                       binding="#{modificar_nomina.outputText25}"
+                                       id="outputText25">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisPlazasEmpleadoComplVw.formats.IdContrato}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Partida" sortable="false"
+                                 headerText="#{bindings.SisPlazasEmpleadoComplVw.labels.Partida}"
+                                 binding="#{modificar_nomina.column40}"
+                                 id="column40">
+                        <af:outputText value="#{row.Partida}"
+                                       binding="#{modificar_nomina.outputText26}"
+                                       id="outputText26"/>
+                      </af:column>
+                      <af:column sortProperty="IdPuesto" sortable="false"
+                                 headerText="#{bindings.SisPlazasEmpleadoComplVw.labels.IdPuesto}"
+                                 binding="#{modificar_nomina.column41}"
+                                 id="column41">
+                        <af:outputText value="#{row.IdPuesto}"
+                                       binding="#{modificar_nomina.outputText27}"
+                                       id="outputText27">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisPlazasEmpleadoComplVw.formats.IdPuesto}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="NumeroPlaza" sortable="false"
+                                 headerText="#{bindings.SisPlazasEmpleadoComplVw.labels.NumeroPlaza}"
+                                 binding="#{modificar_nomina.column42}"
+                                 id="column42">
+                        <af:outputText value="#{row.NumeroPlaza}"
+                                       binding="#{modificar_nomina.outputText28}"
+                                       id="outputText28">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisPlazasEmpleadoComplVw.formats.NumeroPlaza}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="NomPuesto" sortable="false"
+                                 headerText="#{bindings.SisPlazasEmpleadoComplVw.labels.NomPuesto}"
+                                 binding="#{modificar_nomina.column43}"
+                                 id="column43">
+                        <af:outputText value="#{row.NomPuesto}"
+                                       binding="#{modificar_nomina.outputText29}"
+                                       id="outputText29"/>
+                      </af:column>
+                      <af:column sortProperty="Nomdependencia" sortable="false"
+                                 headerText="#{bindings.SisPlazasEmpleadoComplVw.labels.Nomdependencia}"
+                                 binding="#{modificar_nomina.column44}"
+                                 id="column44">
+                        <af:outputText value="#{row.Nomdependencia}"
+                                       binding="#{modificar_nomina.outputText30}"
+                                       id="outputText30"/>
+                      </af:column>
+                      <af:column sortProperty="Horascontratadas"
+                                 sortable="false"
+                                 headerText="#{bindings.SisPlazasEmpleadoComplVw.labels.Horascontratadas}"
+                                 binding="#{modificar_nomina.column45}"
+                                 id="column45">
+                        <af:outputText value="#{row.Horascontratadas}"
+                                       binding="#{modificar_nomina.outputText31}"
+                                       id="outputText31">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisPlazasEmpleadoComplVw.formats.Horascontratadas}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="FechaInicio" sortable="false"
+                                 headerText="#{bindings.SisPlazasEmpleadoComplVw.labels.FechaInicio}"
+                                 binding="#{modificar_nomina.column46}"
+                                 id="column46">
+                        <af:outputText value="#{row.FechaInicio}"
+                                       binding="#{modificar_nomina.outputText32}"
+                                       id="outputText32">
+                          <f:convertDateTime pattern="#{bindings.SisPlazasEmpleadoComplVw.formats.FechaInicio}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="FechaFin" sortable="false"
+                                 headerText="#{bindings.SisPlazasEmpleadoComplVw.labels.FechaFin}"
+                                 binding="#{modificar_nomina.column47}"
+                                 id="column47">
+                        <af:outputText value="#{row.FechaFin}"
+                                       binding="#{modificar_nomina.outputText33}"
+                                       id="outputText33">
+                          <f:convertDateTime pattern="#{bindings.SisPlazasEmpleadoComplVw.formats.FechaFin}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Estado" sortable="false"
+                                 headerText="#{bindings.SisPlazasEmpleadoComplVw.labels.Estado}"
+                                 binding="#{modificar_nomina.column48}"
+                                 id="column48">
+                        <af:outputText value="#{row.Estado}"
+                                       binding="#{modificar_nomina.outputText34}"
+                                       id="outputText34"/>
+                      </af:column>
+                      <af:column sortProperty="Partida" sortable="false"
+                                 headerText="Partida"
+                                 binding="#{modificar_nomina.column49}"
+                                 id="column49">
+                        <af:outputText value="#{row.Partida}"
+                                       binding="#{modificar_nomina.outputText35}"
+                                       id="outputText35">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings.SisPlazasEmpleadoComplVw.formats.IdPartida}"/>
+                        </af:outputText>
+                      </af:column>
+                    </af:table>
+                    <af:panelBox binding="#{modificar_nomina.panelBox2}"
+                                 id="panelBox2" rendered="false">
+                      <af:panelHorizontal binding="#{modificar_nomina.panelHorizontal3}"
+                                          id="panelHorizontal3">
+                        <af:selectOneChoice value="#{bindings.pIdProceso1.inputValue}"
+                                            label="Proceso"
+                                            binding="#{modificar_nomina.cbProceso}"
+                                            id="cbProceso" required="false">
+                          <f:selectItems value="#{bindings.pIdProceso1.items}"
+                                         binding="#{modificar_nomina.selectItems4}"
+                                         id="selectItems4"/>
+                        </af:selectOneChoice>
+                        <af:inputText label="Sueldo Base"
+                                      binding="#{modificar_nomina.txtSueldoBase}"
+                                      id="txtSueldoBase" columns="10"
+                                      required="false">
+                          <af:convertNumber/>
+                        </af:inputText>
+                        <af:inputText label="Comp. Salarial"
+                                      binding="#{modificar_nomina.txtComplSal}"
+                                      id="txtComplSal" columns="10">
+                          <af:convertNumber/>
+                        </af:inputText>
+                        <af:inputText label="Escalafón"
+                                      binding="#{modificar_nomina.txtEscalafon}"
+                                      id="txtEscalafon" columns="10">
+                          <af:convertNumber/>
+                        </af:inputText>
+                        <af:inputText label="Días Laborados"
+                                      binding="#{modificar_nomina.txtDiasLab}"
+                                      id="txtDiasLab" columns="2">
+                          <af:convertNumber/>
+                        </af:inputText>
+                      </af:panelHorizontal>
+                      <af:panelHorizontal binding="#{modificar_nomina.panelHorizontal4}"
+                                          id="panelHorizontal4" rendered="true">
+                        <af:inputText label="Bono Mensual"
+                                      binding="#{modificar_nomina.txtBonoMensual}"
+                                      id="txtBonoMensual" columns="4"
+                                      required="false">
+                          <af:convertNumber/>
+                        </af:inputText>
+                        <af:inputText label="Observaciones"
+                                      binding="#{modificar_nomina.txtObserva}"
+                                      id="txtObserva" columns="50" rows="5"/>
+                        <af:commandButton text="Agregar"
+                                          action="#{modificar_nomina.btn_agregarNomina}"
+                                          binding="#{modificar_nomina.btnAgregarNomina}"
+                                          id="btnAgregarNomina"
+                                          partialTriggers="table5"/>
+                      </af:panelHorizontal>
+                    </af:panelBox>
+                    <af:table value="#{bindings['sis_mod_nomina_vw1'].collectionModel}"
+                              var="row"
+                              rows="#{bindings['sis_mod_nomina_vw1'].rangeSize}"
+                              first="#{bindings['sis_mod_nomina_vw1'].rangeStart}"
+                              emptyText="#{bindings['sis_mod_nomina_vw1'].viewable ? 'No rows yet.' : 'Access Denied.'}"
+                              binding="#{modificar_nomina.table5}" id="table5">
+                      <af:column sortProperty="RegistroEmpleado"
+                                 sortable="false"
+                                 headerText="#{bindings['sis_mod_nomina_vw1'].labels.RegistroEmpleado}"
+                                 binding="#{modificar_nomina.column50}"
+                                 id="column50">
+                        <af:outputText value="#{row.RegistroEmpleado}"
+                                       binding="#{modificar_nomina.outputText24}"
+                                       id="outputText24">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['sis_mod_nomina_vw1'].formats.RegistroEmpleado}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortable="false"
+                                 headerText="#{bindings['sis_mod_nomina_vw1'].labels.Cui}"
+                                 binding="#{modificar_nomina.column64}"
+                                 id="column64">
+                        <af:outputText value="#{row.Cui}"
+                                       binding="#{modificar_nomina.outputText49}"
+                                       id="outputText49"/>
+                      </af:column>
+                      <af:column sortProperty="IdContrato" sortable="false"
+                                 headerText="#{bindings['sis_mod_nomina_vw1'].labels.IdContrato}"
+                                 binding="#{modificar_nomina.column51}"
+                                 id="column51">
+                        <af:outputText value="#{row.IdContrato}"
+                                       binding="#{modificar_nomina.outputText36}"
+                                       id="outputText36">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['sis_mod_nomina_vw1'].formats.IdContrato}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="NumeroPlaza" sortable="false"
+                                 headerText="#{bindings['sis_mod_nomina_vw1'].labels.NumeroPlaza}"
+                                 binding="#{modificar_nomina.column52}"
+                                 id="column52">
+                        <af:outputText value="#{row.NumeroPlaza}"
+                                       binding="#{modificar_nomina.outputText37}"
+                                       id="outputText37">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['sis_mod_nomina_vw1'].formats.NumeroPlaza}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Partida" sortable="false"
+                                 headerText="#{bindings['sis_mod_nomina_vw1'].labels.Partida}"
+                                 binding="#{modificar_nomina.column53}"
+                                 id="column53">
+                        <af:outputText value="#{row.Partida}"
+                                       binding="#{modificar_nomina.outputText38}"
+                                       id="outputText38"/>
+                      </af:column>
+                      <af:column sortProperty="SueldoBase" sortable="false"
+                                 headerText="#{bindings['sis_mod_nomina_vw1'].labels.SueldoBase}"
+                                 binding="#{modificar_nomina.column54}"
+                                 id="column54">
+                        <af:outputText value="#{row.SueldoBase}"
+                                       binding="#{modificar_nomina.outputText39}"
+                                       id="outputText39">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['sis_mod_nomina_vw1'].formats.SueldoBase}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="ComplSalarial" sortable="false"
+                                 headerText="#{bindings['sis_mod_nomina_vw1'].labels.ComplSalarial}"
+                                 binding="#{modificar_nomina.column55}"
+                                 id="column55">
+                        <af:outputText value="#{row.ComplSalarial}"
+                                       binding="#{modificar_nomina.outputText40}"
+                                       id="outputText40">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['sis_mod_nomina_vw1'].formats.ComplSalarial}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Escalafon" sortable="false"
+                                 headerText="#{bindings['sis_mod_nomina_vw1'].labels.Escalafon}"
+                                 binding="#{modificar_nomina.column56}"
+                                 id="column56">
+                        <af:outputText value="#{row.Escalafon}"
+                                       binding="#{modificar_nomina.outputText41}"
+                                       id="outputText41">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['sis_mod_nomina_vw1'].formats.Escalafon}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="CantidadHoras" sortable="false"
+                                 headerText="#{bindings['sis_mod_nomina_vw1'].labels.CantidadHoras}"
+                                 binding="#{modificar_nomina.column57}"
+                                 id="column57">
+                        <af:outputText value="#{row.CantidadHoras}"
+                                       binding="#{modificar_nomina.outputText42}"
+                                       id="outputText42">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['sis_mod_nomina_vw1'].formats.CantidadHoras}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Diaslaborados" sortable="false"
+                                 headerText="#{bindings['sis_mod_nomina_vw1'].labels.Diaslaborados}"
+                                 binding="#{modificar_nomina.column58}"
+                                 id="column58">
+                        <af:outputText value="#{row.Diaslaborados}"
+                                       binding="#{modificar_nomina.outputText43}"
+                                       id="outputText43">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['sis_mod_nomina_vw1'].formats.Diaslaborados}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="BonoMensual" sortable="false"
+                                 headerText="#{bindings['sis_mod_nomina_vw1'].labels.BonoMensual}"
+                                 binding="#{modificar_nomina.column59}"
+                                 id="column59">
+                        <af:outputText value="#{row.BonoMensual}"
+                                       binding="#{modificar_nomina.outputText44}"
+                                       id="outputText44">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['sis_mod_nomina_vw1'].formats.BonoMensual}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="IdProceso" sortable="false"
+                                 headerText="#{bindings['sis_mod_nomina_vw1'].labels.IdProceso}"
+                                 binding="#{modificar_nomina.column60}"
+                                 id="column60">
+                        <af:outputText value="#{row.IdProceso}"
+                                       binding="#{modificar_nomina.outputText45}"
+                                       id="outputText45">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['sis_mod_nomina_vw1'].formats.IdProceso}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Periodo" sortable="false"
+                                 headerText="#{bindings['sis_mod_nomina_vw1'].labels.Periodo}"
+                                 binding="#{modificar_nomina.column61}"
+                                 id="column61">
+                        <af:outputText value="#{row.Periodo}"
+                                       binding="#{modificar_nomina.outputText46}"
+                                       id="outputText46">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['sis_mod_nomina_vw1'].formats.Periodo}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Tiponomina" sortable="false"
+                                 headerText="#{bindings['sis_mod_nomina_vw1'].labels.Tiponomina}"
+                                 binding="#{modificar_nomina.column62}"
+                                 id="column62">
+                        <af:outputText value="#{row.Tiponomina}"
+                                       binding="#{modificar_nomina.outputText47}"
+                                       id="outputText47">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['sis_mod_nomina_vw1'].formats.IdTipoNomina}"/>
+                        </af:outputText>
+                      </af:column>
+                    </af:table>
+                  </af:panelBox>
+                </af:showDetailItem>
+              </af:showOneTab>
+            </af:panelBox>
+          </af:page>
+        </af:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:modificar_nomina-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:modificar_nomina-->
+</jsp:root>

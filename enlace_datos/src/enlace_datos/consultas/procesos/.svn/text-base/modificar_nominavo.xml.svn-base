@@ -1,0 +1,354 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="modificar_nominavo"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   RowClass="enlace_datos.consultas.procesos.modificar_nominavoRowImpl"
+   ComponentClass="enlace_datos.consultas.procesos.modificar_nominavoImpl"
+   MsgBundleClass="enlace_datos.consultas.procesos.common.modificar_nominavoRowImplMsgBundle"
+   ComponentInterface="enlace_datos.consultas.procesos.common.modificar_nominavo"
+   ClientProxyName="enlace_datos.consultas.procesos.client.modificar_nominavoClient"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isCodegen" Value="true" />
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|Msg|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="pIdProceso"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="pRegPer"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <Variable
+      Name="pDependencia"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <SQLQuery><![CDATA[
+Select 
+p.id_proceso, 
+SisNomina.id_nomina, 
+pp.formato2, 
+SisNomina.numero_plaza, 
+p.id_puesto, 
+p.Nombre Puesto, 
+SisNomina.registro_empleado
+, e.cui,(e.nombre1||' '||e.apellido1||' '||e.apellido2) Empleado, SisNomina.sueldo_base, 
+SisNomina.escalafon, 
+SisNomina.compl_salarial
+, SisNomina.nominal, 
+SisNomina.total_bono, 
+SisNomina.total_descuento,
+ SisNomina.total_plus_salarial, 
+SisNomina.liquido
+, SisNomina.cantidad_horas,
+ SisNomina.diaslaborados,
+SisNomina.periodo,
+SisNOmina.anio,
+(
+select codigo 
+ from sis_tiponomina_periodo tip
+ where sisnomina.id_tipo_nomina=tip.id_tipo_nomina
+and sisnomina.periodo=tip.id_periodo
+and rownum<=1
+) as codNomina,
+(
+ select fr.id_form_sis24
+ from sis_form_sis24 fr,
+ sis_det_sis24 dt,
+ partida part
+ where fr.id_form_sis24=dt.id_form_sis24
+ and fr.id_proceso=sisnomina.id_proceso
+ and fr.id_estado=182
+ and part.id_partida=dt.id_partida
+ and part.d1=pp.d1
+ and part.d2=pp.d2
+ and part.d3d4=pp.d3d4
+ and part.d5=pp.d5
+ and part.d6=pp.d6
+ and part.d7=pp.d7
+ and rownum<=1
+) as  sis24
+from sis_nomina SisNomina, sis_proceso p, sis_tipo_nomina tn, sis_empleado e, sis_puesto p, sep_partida_vw pp
+where p.id_proceso=:pIdProceso
+and SisNomina.id_estado<>23
+and decode(:pRegPer,null,0,SisNomina.registro_empleado) = decode(:pRegPer,null,0,:pRegPer)
+and pp.d3d4=:pDependencia
+and p.id_proceso = SisNomina.id_proceso
+and SisNomina.registro_empleado = e.registro_empleado
+and SisNomina.id_tipo_nomina = tn.id_tipo_nomina
+and SisNomina.id_puesto = p.id_puesto
+and SisNomina.id_partida = pp.id_partida
+order by pp.formato2, SisNomina.numero_plaza asc
+   ]]></SQLQuery>
+   <EntityUsage
+      Name="SisNomina"
+      Entity="enlace_datos.entidades.nomina.SisNomina" >
+      <DesignTime>
+         <Attr Name="_queryClause" Value="false" />
+      </DesignTime>
+   </EntityUsage>
+   <ViewAttribute
+      Name="IdProceso"
+      IsPersistent="false"
+      IsNotNull="true"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_PROCESO"
+      Expression="ID_PROCESO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdNomina"
+      EntityAttrName="IdNomina"
+      EntityUsage="SisNomina"
+      AliasName="ID_NOMINA" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Formato2"
+      IsPersistent="false"
+      Precision="246"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="FORMATO2"
+      Expression="FORMATO2"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="246" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="NumeroPlaza"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="5"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="NUMERO_PLAZA"
+      Expression="NUMERO_PLAZA"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdPuesto"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_PUESTO"
+      Expression="ID_PUESTO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Puesto"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="200"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="PUESTO"
+      Expression="PUESTO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="200" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="RegistroEmpleado"
+      EntityAttrName="RegistroEmpleado"
+      EntityUsage="SisNomina"
+      AliasName="REGISTRO_EMPLEADO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Cui"
+      IsPersistent="false"
+      Precision="13"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="CUI"
+      Expression="CUI"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="13" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Empleado"
+      IsPersistent="false"
+      Precision="152"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="EMPLEADO"
+      Expression="EMPLEADO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="152" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="SueldoBase"
+      EntityAttrName="SueldoBase"
+      EntityUsage="SisNomina"
+      AliasName="SUELDO_BASE" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Escalafon"
+      EntityAttrName="Escalafon"
+      EntityUsage="SisNomina"
+      AliasName="ESCALAFON" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="ComplSalarial"
+      EntityAttrName="ComplSalarial"
+      EntityUsage="SisNomina"
+      AliasName="COMPL_SALARIAL" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nominal"
+      EntityAttrName="Nominal"
+      EntityUsage="SisNomina"
+      AliasName="NOMINAL" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="TotalBono"
+      EntityAttrName="TotalBono"
+      EntityUsage="SisNomina"
+      AliasName="TOTAL_BONO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="TotalDescuento"
+      EntityAttrName="TotalDescuento"
+      EntityUsage="SisNomina"
+      AliasName="TOTAL_DESCUENTO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="TotalPlusSalarial"
+      EntityAttrName="TotalPlusSalarial"
+      EntityUsage="SisNomina"
+      AliasName="TOTAL_PLUS_SALARIAL" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Liquido"
+      EntityAttrName="Liquido"
+      EntityUsage="SisNomina"
+      AliasName="LIQUIDO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="CantidadHoras"
+      IsPersistent="false"
+      Precision="5"
+      Scale="2"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="CANTIDAD_HORAS"
+      Expression="CANTIDAD_HORAS"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Diaslaborados"
+      IsPersistent="false"
+      Precision="5"
+      Scale="2"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="DIASLABORADOS"
+      Expression="DIASLABORADOS"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Periodo"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="2"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="PERIODO"
+      Expression="PERIODO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Anio"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="4"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ANIO"
+      Expression="ANIO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Codnomina"
+      IsPersistent="false"
+      Precision="4"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="CODNOMINA"
+      Expression="CODNOMINA"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="4" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Sis24"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="SIS24"
+      Expression="SIS24"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Seleccionado"
+      IsSelected="false"
+      IsPersistent="false"
+      Type="java.lang.Boolean"
+      ColumnType="NUMBER"
+      AliasName="VIEW_ATTR"
+      SQLType="BIT" >
+   </ViewAttribute>
+   <ViewLinkAccessor
+      Name="SisDetCalculoAjusteVw1"
+      ViewLink="enlace_datos.consultas.procesos.SisModNominavo_desc_lnk"
+      Type="oracle.jbo.RowIterator"
+      IsUpdateable="false" >
+   </ViewLinkAccessor>
+</ViewObject>

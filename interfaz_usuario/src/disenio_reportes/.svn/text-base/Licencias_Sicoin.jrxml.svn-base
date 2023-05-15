@@ -1,0 +1,2934 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="Licencias_Sicoin"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="612"
+		 pageHeight="935"
+		 columnWidth="552"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="true">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pIdSolicitud" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="SUBREPORT_DIR" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="pMostrarD" isForPrompting="false" class="java.lang.String">
+		<defaultValueExpression ><![CDATA[new String ("1")]]></defaultValueExpression>
+	</parameter>
+	<queryString><![CDATA[select Extract (year from fecha_creacion) AnioActual, 
+datos.*,
+case when meseslic<>0 then 
+ case when (mesesLic=1 ) then meseslic || ' mes' else meseslic||' meses' end else null end as mesesDura,
+ case when diaslic<>0 then 
+ case when (diasLic=1 ) then diaslic || ' día' else diaslic||' días' end else null end as diasDura,
+ sis_pkg_util.GETCADENA(jefeinmediato,'|',1) as jefe,
+ sis_pkg_util.GETCADENA(jefeinmediato,'|',2) as cargo,
+SIS_UTIL_REPORT_PKG.GETPRORROGALICENCIA(datos.id_det_licencia)
+as fechaPeriodoProg,
+(
+SELECT mtlic.nombre
+   FROM sis_det_licencia prog,sis_motivo_det_licencia mtlic
+where prog.id_det_licencia <>datos.id_det_licencia
+and prog.id_motivo_det_licencia=mtlic.id_motivo_det_licencia
+and rownum<=1
+START WITH prog.id_det_licencia = datos.id_det_licencia
+CONNECT BY prior prog.id_det_lic_prorroga=prog.id_det_licencia 
+) as motivoLicProg,
+(
+select case when Extract (year from fecha_creacion) < 2017
+        Then empl.nombrecompleto|| ' con regper '|| empl.registro_Empleado
+        Else empl.nombrecompleto|| ' con CUI '|| empl.cui
+        End Reg_CUI
+from
+sis_detplaza_cubre_lic lic, sis_empleado_vw empl
+where lic.registro_Empleado=empl.registro_Empleado
+and lic.id_det_licencia=datos.id_det_licencia
+and rownum<=1
+) as info_fin
+from (
+select lic.id_det_licencia, lic.id_solicitud,
+sol.fecha_creacion, muni.nombre as lugarlic,
+muni.nombre||', '||trim(to_char(sol.fecha_creacion,'dd Month','NLS_DATE_LANGUAGE = SPANISH'))||' de ' ||to_char(sol.fecha_creacion,'yyyy') as lugarFecha,
+empl.registro_empleado, empl.nombrecompleto,
+empl.orden_cedula, empl.registro_cedula,
+Trim(To_Char(cui,'9999G99999G9999','NLS_NUMERIC_CHARACTERS= '', ''')) cui,
+lic.prorroga, lic.tipo_licencia, lic.ayuda_becaria, 
+lic.fecha_inicio, lic.fecha_fin,
+(lic.fecha_fin+1-lic.fecha_inicio) - (add_months(lic.fecha_inicio+1,months_between(lic.fecha_fin+1,lic.fecha_inicio))-lic.fecha_inicio)+1 as diasLic,
+trunc(months_between(lic.fecha_fin+1,lic.fecha_inicio)) as mesesLic,
+mtlic.nombre as motLicencia, lic.desc_motivo_licencia,
+dep.nombre as nomDep, unie.nombre as nomUni,
+part.formato2, cont.numero_plaza, pst.id_puesto,
+upper(pst.nombre) as nomPuesto, lic.procede,
+lic.fecha_resolucion, lic.observ_resolucion,
+lic.JEFEINMEDIATO, lic.autoridad_resolucion,
+to_char(lic.no_exceda_de,'dd/mm/yyyy') as no_exceda_de,
+lic.obsrv_no_exceda, sol.ANIO ||'.'||sicoin.partida sicoin, pl.PLAZA_SICOIN
+from sis_solicitud sol, sis_det_licencia lic, 
+    sis_empleado_vw empl, sis_contrato cont, 
+    sis_partida_vw part, sis_puesto pst, 
+    sis_dependencia dep, sis_unidad_ejecutora unie,
+    sis_municipio muni, sis_motivo_det_licencia mtlic, 
+    sis_plaza pl, sicoin_partida_egresos_view sicoin
+ where sol.id_solicitud=lic.id_solicitud
+ and mtlic.id_motivo_det_licencia=lic.id_motivo_det_licencia
+ and empl.registro_empleado=sol.registro_empleado
+ and cont.id_contrato=sol.id_contrato
+ and part.id_partida=cont.id_partida
+ and part.id_dependencia=dep.id_dependencia
+ and part.id_programa=unie.id_programa
+ and part.id_dependencia=unie.id_dependencia
+ and part.id_unidad=unie.id_unidad
+ and pst.id_puesto=cont.id_puesto
+ and unie.id_municipio=muni.id_municipio
+ and pl.ID_PARTIDA = cont.ID_PARTIDA
+ and pl.ID_PUESTO  = cont.ID_PUESTO
+ and pl.CORRELATIVO = cont.CORRELATIVO
+ and pl.NUMERO_PLAZA = cont.NUMERO_PLAZA
+ and pl.ID_PARTIDA_SICOIN = sicoin.ID_PARTIDA_EGRESOS
+ and sol.id_solicitud= $P{pIdSolicitud}
+  ) datos]]></queryString>
+
+	<field name="ANIOACTUAL" class="java.math.BigDecimal"/>
+	<field name="ID_DET_LICENCIA" class="java.math.BigDecimal"/>
+	<field name="ID_SOLICITUD" class="java.math.BigDecimal"/>
+	<field name="FECHA_CREACION" class="java.sql.Timestamp"/>
+	<field name="LUGARLIC" class="java.lang.String"/>
+	<field name="LUGARFECHA" class="java.lang.String"/>
+	<field name="REGISTRO_EMPLEADO" class="java.math.BigDecimal"/>
+	<field name="NOMBRECOMPLETO" class="java.lang.String"/>
+	<field name="ORDEN_CEDULA" class="java.lang.String"/>
+	<field name="REGISTRO_CEDULA" class="java.math.BigDecimal"/>
+	<field name="CUI" class="java.lang.String"/>
+	<field name="PRORROGA" class="java.lang.String"/>
+	<field name="TIPO_LICENCIA" class="java.lang.String"/>
+	<field name="AYUDA_BECARIA" class="java.lang.String"/>
+	<field name="FECHA_INICIO" class="java.sql.Timestamp"/>
+	<field name="FECHA_FIN" class="java.sql.Timestamp"/>
+	<field name="DIASLIC" class="java.math.BigDecimal"/>
+	<field name="MESESLIC" class="java.math.BigDecimal"/>
+	<field name="MOTLICENCIA" class="java.lang.String"/>
+	<field name="DESC_MOTIVO_LICENCIA" class="java.lang.String"/>
+	<field name="NOMDEP" class="java.lang.String"/>
+	<field name="NOMUNI" class="java.lang.String"/>
+	<field name="FORMATO2" class="java.lang.String"/>
+	<field name="NUMERO_PLAZA" class="java.math.BigDecimal"/>
+	<field name="ID_PUESTO" class="java.math.BigDecimal"/>
+	<field name="NOMPUESTO" class="java.lang.String"/>
+	<field name="PROCEDE" class="java.lang.String"/>
+	<field name="FECHA_RESOLUCION" class="java.sql.Timestamp"/>
+	<field name="OBSERV_RESOLUCION" class="java.lang.String"/>
+	<field name="JEFEINMEDIATO" class="java.lang.String"/>
+	<field name="AUTORIDAD_RESOLUCION" class="java.lang.String"/>
+	<field name="NO_EXCEDA_DE" class="java.lang.String"/>
+	<field name="OBSRV_NO_EXCEDA" class="java.lang.String"/>
+	<field name="SICOIN" class="java.lang.String"/>
+	<field name="PLAZA_SICOIN" class="java.math.BigDecimal"/>
+	<field name="MESESDURA" class="java.lang.String"/>
+	<field name="DIASDURA" class="java.lang.String"/>
+	<field name="JEFE" class="java.lang.String"/>
+	<field name="CARGO" class="java.lang.String"/>
+	<field name="FECHAPERIODOPROG" class="java.lang.String"/>
+	<field name="MOTIVOLICPROG" class="java.lang.String"/>
+	<field name="INFO_FIN" class="java.lang.String"/>
+
+		<background>
+			<band height="888"  isSplitAllowed="true" >
+				<printWhenExpression><![CDATA[new Boolean($P{pMostrarD}.compareTo("1")==0 && $V{PAGE_NUMBER}.compareTo(new Integer(1) )==0)]]></printWhenExpression>
+				<staticText>
+					<reportElement
+						x="10"
+						y="315"
+						width="531"
+						height="37"
+						key="staticText-11"/>
+					<box></box>
+					<textElement textAlignment="Left" lineSpacing="1_1_2">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[De conformidad con lo aprobado en el punto QUINTO del acta 9-94 de la sesión celebrada por el Consejo Superior Universitario, el 9 de marzo de 1994 me sea concedida licencia]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="275"
+						y="141"
+						width="267"
+						height="0"
+						key="line-1"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="11"
+						y="186"
+						width="346"
+						height="0"
+						key="line-2"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="11"
+						y="211"
+						width="346"
+						height="0"
+						key="line-3"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="11"
+						y="242"
+						width="346"
+						height="0"
+						key="line-4"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="42"
+						y="278"
+						width="47"
+						height="0"
+						key="line-5"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="147"
+						y="277"
+						width="128"
+						height="0"
+						key="line-6"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="401"
+						y="275"
+						width="140"
+						height="0"
+						key="line-7"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<rectangle>
+					<reportElement
+						x="310"
+						y="334"
+						width="20"
+						height="20"
+						key="rectangle-2"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<rectangle>
+					<reportElement
+						x="353"
+						y="334"
+						width="20"
+						height="20"
+						key="rectangle-3"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<rectangle>
+					<reportElement
+						x="492"
+						y="334"
+						width="20"
+						height="20"
+						key="rectangle-4"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<line direction="BottomUp">
+					<reportElement
+						x="194"
+						y="382"
+						width="275"
+						height="1"
+						key="line-8"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="19"
+						y="419"
+						width="189"
+						height="0"
+						key="line-9"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="342"
+						y="419"
+						width="182"
+						height="0"
+						key="line-10"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="140"
+						y="454"
+						width="384"
+						height="0"
+						key="line-11"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="23"
+						y="491"
+						width="501"
+						height="0"
+						key="line-12"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="157"
+						y="525"
+						width="211"
+						height="0"
+						key="line-13"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="436"
+						y="525"
+						width="87"
+						height="0"
+						key="line-14"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="277"
+						y="604"
+						width="51"
+						height="0"
+						key="line-15"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="108"
+						y="630"
+						width="170"
+						height="0"
+						key="line-16"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="307"
+						y="630"
+						width="150"
+						height="0"
+						key="line-17"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="97"
+						y="656"
+						width="430"
+						height="0"
+						key="line-18"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<rectangle>
+					<reportElement
+						x="187"
+						y="672"
+						width="20"
+						height="20"
+						key="rectangle-5"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<rectangle>
+					<reportElement
+						x="232"
+						y="672"
+						width="20"
+						height="20"
+						key="rectangle-6"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="349"
+						y="143"
+						width="85"
+						height="14"
+						key="staticText-1"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="9" isBold="false"/>
+					</textElement>
+				<text><![CDATA[(Lugar y Fecha)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="130"
+						y="213"
+						width="117"
+						height="14"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="9" isBold="false"/>
+					</textElement>
+				<text><![CDATA[(Jefe inmediato superior)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="100"
+						y="244"
+						width="150"
+						height="14"
+						key="staticText-3"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="9" isBold="false"/>
+					</textElement>
+				<text><![CDATA[(Nombre completo del solicitante)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="197"
+						y="88"
+						width="159"
+						height="18"
+						key="staticText-4"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" size="12" isBold="true"/>
+					</textElement>
+				<text><![CDATA[SOLICITUD DE LICENCIA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="12"
+						y="151"
+						width="85"
+						height="16"
+						key="staticText-5"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[Destinatario:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="12"
+						y="265"
+						width="45"
+						height="14"
+						key="staticText-6"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[orden]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="94"
+						y="265"
+						width="51"
+						height="14"
+						key="staticText-7"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[y registro]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="280"
+						y="265"
+						width="115"
+						height="14"
+						key="staRegistroEmpleado">
+							<printWhenExpression><![CDATA[new Boolean($F{ANIOACTUAL}.compareTo(new BigDecimal(2000)) >= 0 )]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[;  Registro de personal]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="362"
+						y="232"
+						width="180"
+						height="14"
+						key="staticText-9"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[, con cédula de vecindad número de]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="251"
+						y="293"
+						width="62"
+						height="18"
+						key="staticText-10"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" size="12" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Solicito:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="305"
+						y="355"
+						width="32"
+						height="14"
+						key="staticText-12"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="9" isBold="false"/>
+					</textElement>
+				<text><![CDATA[(Con)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="351"
+						y="355"
+						width="32"
+						height="14"
+						key="staticText-13"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="9" isBold="false"/>
+					</textElement>
+				<text><![CDATA[(Sin)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="390"
+						y="337"
+						width="89"
+						height="14"
+						key="staticText-14"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[goce de sueldo,]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="275"
+						y="384"
+						width="120"
+						height="14"
+						key="staticText-15"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="9" isBold="false"/>
+					</textElement>
+				<text><![CDATA[(Años, meses y/o días)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="10"
+						y="370"
+						width="198"
+						height="14"
+						key="staticText-16"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[con ayuda becaria(*) por el período de]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="479"
+						y="370"
+						width="64"
+						height="14"
+						key="staticText-17"/>
+					<box></box>
+					<textElement textAlignment="Justified">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[a partir de]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="57"
+						y="421"
+						width="114"
+						height="14"
+						key="staticText-18"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="9" isBold="false"/>
+					</textElement>
+				<text><![CDATA[(Fecha en que principia)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="373"
+						y="421"
+						width="114"
+						height="14"
+						key="staticText-19"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="9" isBold="false"/>
+					</textElement>
+				<text><![CDATA[(Fecha en que termina)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="10"
+						y="442"
+						width="180"
+						height="14"
+						key="staticText-20"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[del puesto que ocupo como]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="191"
+						y="493"
+						width="153"
+						height="14"
+						key="staticText-21"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="9" isBold="false"/>
+					</textElement>
+				<text><![CDATA[(Dependencia en donde trabaja)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="191"
+						y="457"
+						width="194"
+						height="14"
+						key="staticText-22"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="9" isBold="false"/>
+					</textElement>
+				<text><![CDATA[(Titulo del puesto en donde esta nombrado)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="10"
+						y="478"
+						width="20"
+						height="14"
+						key="staticText-23"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[en]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="10"
+						y="513"
+						width="147"
+						height="14"
+						key="staticText-24"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[Con partida presupuestal No.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="385"
+						y="513"
+						width="53"
+						height="14"
+						key="staticText-25"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[Plaza No.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="10"
+						y="590"
+						width="287"
+						height="14"
+						key="staticText-26"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[Manifiesto además que Si he gozado de licencia durante]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="337"
+						y="590"
+						width="204"
+						height="14"
+						key="staticText-27"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[meses anteriores a la presente solicitud,]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="10"
+						y="617"
+						width="111"
+						height="14"
+						key="staticText-28"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[comprendidos del]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="288"
+						y="617"
+						width="18"
+						height="14"
+						key="staticText-29"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[al]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="462"
+						y="617"
+						width="79"
+						height="14"
+						key="staticText-30"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[por los motivos]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="10"
+						y="644"
+						width="79"
+						height="14"
+						key="staticText-31"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[siguientes:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="10"
+						y="675"
+						width="174"
+						height="14"
+						key="staticText-32"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[Informo también que esta solicitud]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="276"
+						y="676"
+						width="263"
+						height="14"
+						key="staticText-33"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[es PRORROGA de licencia solicitada anteriormente.]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="317"
+						y="739"
+						width="217"
+						height="0"
+						key="line-19"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<staticText>
+					<reportElement
+						x="350"
+						y="743"
+						width="167"
+						height="14"
+						key="staticText-34"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[(FIRMA DEL SOLICITANTE)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="301"
+						y="723"
+						width="14"
+						height="14"
+						key="staticText-35"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[f)]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="3"
+						y="785"
+						width="542"
+						height="0"
+						key="line-20"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="1.3" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<staticText>
+					<reportElement
+						x="3"
+						y="804"
+						width="545"
+						height="20"
+						key="staticText-36"/>
+					<box></box>
+					<textElement textAlignment="Justified">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[NORMA 11a. Las ayudas becarias no podrán exceder en tiempo al del ejercicio presupuestal en que se otorga.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3"
+						y="829"
+						width="545"
+						height="30"
+						key="staticText-37"/>
+					<box></box>
+					<textElement textAlignment="Justified">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[NORMA 12a. Si el período de la beca excediera del ejercicio presupuestal en el que se otorga, se hará del conocimiento al momento de solicitar la ayuda becaria y deberá solicitarse al Consejo Superior Universitario ampliación al tiempo dentro del ejercicio presupuestal siguiente.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="5"
+						y="785"
+						width="19"
+						height="14"
+						key="staticText-38"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[(*)]]></text>
+				</staticText>
+				<image  evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="39"
+						y="34"
+						width="56"
+						height="56"
+						key="image-1"/>
+					<box></box>
+					<graphicElement stretchType="NoStretch"/>
+					<imageExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR}+"escudo_blanco.jpg"]]></imageExpression>
+				</image>
+				<staticText>
+					<reportElement
+						x="12"
+						y="8"
+						width="112"
+						height="30"
+						key="staticText-105"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Universidad de San Carlos
+de Guatemala]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="10"
+						y="90"
+						width="120"
+						height="36"
+						key="staticText-106"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Ciudad Universitaria, Zona 12
+Guatemala, Centroamérica]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="139"
+						y="551"
+						width="385"
+						height="0"
+						key="line-34"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<staticText>
+					<reportElement
+						x="10"
+						y="538"
+						width="147"
+						height="14"
+						key="staticText-107"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[Por los motivos siguientes:]]></text>
+				</staticText>
+				<line direction="BottomUp">
+					<reportElement
+						x="9"
+						y="572"
+						width="515"
+						height="1"
+						key="line-35"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<staticText>
+					<reportElement
+						x="190"
+						y="698"
+						width="21"
+						height="14"
+						key="staticText-108"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="9" isBold="false"/>
+					</textElement>
+				<text><![CDATA[SI]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="234"
+						y="698"
+						width="21"
+						height="14"
+						key="staticText-109"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="9" isBold="false"/>
+					</textElement>
+				<text><![CDATA[NO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="430"
+						y="865"
+						width="114"
+						height="14"
+						key="staticText-110"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[(SIGUE AL REVERSO)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="286"
+						y="265"
+						width="112"
+						height="14"
+						key="staCUI">
+							<printWhenExpression><![CDATA[new Boolean($F{ANIOACTUAL}.compareTo(new BigDecimal(2000))< 0 )]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[;  CUI   ]]></text>
+				</staticText>
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="50"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="##0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="197"
+						y="4"
+						width="145"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["ID: "+ $F{ID_SOLICITUD}]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="697"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="275"
+						y="78"
+						width="267"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font isPdfEmbedded ="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{LUGARFECHA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="10"
+						y="177"
+						width="325"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRECOMPLETO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="420"
+						y="213"
+						width="100"
+						height="18"
+						key="txtRegistroEmpleado">
+							<printWhenExpression><![CDATA[new Boolean($F{ANIOACTUAL}.compareTo(new BigDecimal(2000))>= 0 )]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{REGISTRO_EMPLEADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="313"
+						y="289"
+						width="29"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{TIPO_LICENCIA}.equals("CS")?"X":""]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="356"
+						y="289"
+						width="29"
+						height="18"
+						key="textField-1"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{TIPO_LICENCIA}.equals("SS")?"X":""]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="495"
+						y="289"
+						width="29"
+						height="18"
+						key="textField-2"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{AYUDA_BECARIA}.equals("SI")?"X":""]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="49"
+						y="355"
+						width="100"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.sql.Timestamp"><![CDATA[$F{FECHA_INICIO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="362"
+						y="355"
+						width="100"
+						height="18"
+						key="textField">
+							<printWhenExpression><![CDATA[new Boolean($F{NO_EXCEDA_DE}==null)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.sql.Timestamp"><![CDATA[$F{FECHA_FIN}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="140"
+						y="390"
+						width="384"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMPUESTO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="30"
+						y="427"
+						width="494"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMDEP}+ ", "+$F{NOMUNI}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="140"
+						y="460"
+						width="270"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{SICOIN}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="445"
+						y="460"
+						width="80"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{PLAZA_SICOIN}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="55"
+						y="213"
+						width="47"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{ORDEN_CEDULA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="157"
+						y="213"
+						width="100"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{REGISTRO_CEDULA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="12"
+						y="240"
+						width="166"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{CUI}!=null?"DPI(CUI): " + $F{CUI}:" "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="12"
+						y="122"
+						width="457"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{JEFE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="190"
+						y="627"
+						width="35"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PRORROGA}.equals("SI")?"X":" "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="236"
+						y="627"
+						width="35"
+						height="18"
+						key="textField-3"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PRORROGA}.equals("NO")?"X":" "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="9"
+						y="485"
+						width="515"
+						height="42"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["                                                "+$F{MOTLICENCIA}.trim()+", "+($F{DESC_MOTIVO_LICENCIA}!=null?$F{DESC_MOTIVO_LICENCIA}:"")]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="221"
+						y="319"
+						width="247"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[($F{MESESDURA}!=null?$F{MESESDURA}:"")+($F{DIASDURA}!=null?"  "+$F{DIASDURA}:"")]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="12"
+						y="146"
+						width="457"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{CARGO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="130"
+						y="566"
+						width="143"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{FECHAPERIODOPROG}.length()>2?$F{FECHAPERIODOPROG}.substring(0,10):""]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="315"
+						y="566"
+						width="147"
+						height="18"
+						key="textField-5"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{FECHAPERIODOPROG}.length()>2?$F{FECHAPERIODOPROG}.substring(11,21):""]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="291"
+						y="540"
+						width="51"
+						height="18"
+						key="textField-6"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{FECHAPERIODOPROG}.length()>2?$F{FECHAPERIODOPROG}.split("\\|")[2]:""]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="102"
+						y="591"
+						width="417"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{FECHAPERIODOPROG}.length()>2?$F{FECHAPERIODOPROG}.split("\\|")[3]:""]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="270"
+						y="353"
+						width="279"
+						height="20"
+						key="textField">
+							<printWhenExpression><![CDATA[new Boolean($F{FECHA_FIN}==null)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Al regreso de "+$F{INFO_FIN}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="270"
+						y="353"
+						width="279"
+						height="20"
+						key="textField-7">
+							<printWhenExpression><![CDATA[new Boolean($F{NO_EXCEDA_DE}!=null)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NO_EXCEDA_DE}!=null?"No exceda de "+$F{NO_EXCEDA_DE}+ " "+($F{OBSRV_NO_EXCEDA}!=null?$F{OBSRV_NO_EXCEDA}:""):""]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="420"
+						y="213"
+						width="114"
+						height="18"
+						key="txtCUI">
+							<printWhenExpression><![CDATA[new Boolean($F{ANIOACTUAL}.compareTo(new BigDecimal(2000))< 0 )]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{CUI}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="895"  isSplitAllowed="true" >
+				<rectangle>
+					<reportElement
+						x="109"
+						y="115"
+						width="10"
+						height="10"
+						key="rectangle-43">
+							<printWhenExpression><![CDATA[new Boolean($P{pMostrarD}.compareTo("1")==0)]]></printWhenExpression>
+						</reportElement>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<rectangle>
+					<reportElement
+						x="50"
+						y="115"
+						width="10"
+						height="10"
+						key="rectangle-42">
+							<printWhenExpression><![CDATA[new Boolean($P{pMostrarD}.compareTo("1")==0)]]></printWhenExpression>
+						</reportElement>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<rectangle>
+					<reportElement
+						x="9"
+						y="732"
+						width="530"
+						height="92"
+						key="rectangle-41"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+</graphicElement>
+				</rectangle>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="42"
+						y="57"
+						width="320"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{AUTORIDAD_RESOLUCION}==null?$F{JEFE}:$F{AUTORIDAD_RESOLUCION}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="200"
+						y="89"
+						width="319"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRECOMPLETO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="50"
+						y="113"
+						width="25"
+						height="14"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PROCEDE}.equals("SI")?"x":""]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="109"
+						y="113"
+						width="25"
+						height="14"
+						key="textField-4"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PROCEDE}.equals("NO")?"x":""]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="30"
+						y="113"
+						width="504"
+						height="73"
+						key="textField"/>
+					<box></box>
+					<textElement lineSpacing="Double">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["                                                                                         "+($F{OBSERV_RESOLUCION}!=null?$F{OBSERV_RESOLUCION}:" ")]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd 'de' MMMMM 'de' yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="397"
+						y="287"
+						width="133"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.sql.Timestamp"><![CDATA[$F{FECHA_RESOLUCION}]]></textFieldExpression>
+				</textField>
+				<rectangle>
+					<reportElement
+						x="19"
+						y="371"
+						width="519"
+						height="192"
+						key="rectangle-1"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.25" lineStyle="Double"/>
+</graphicElement>
+				</rectangle>
+				<line direction="TopDown">
+					<reportElement
+						x="49"
+						y="238"
+						width="198"
+						height="0"
+						key="line-21">
+							<printWhenExpression><![CDATA[new Boolean($P{pMostrarD}.compareTo("1")==0)]]></printWhenExpression>
+						</reportElement>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="320"
+						y="238"
+						width="198"
+						height="0"
+						key="line-22">
+							<printWhenExpression><![CDATA[new Boolean($P{pMostrarD}.compareTo("1")==0)]]></printWhenExpression>
+						</reportElement>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<staticText>
+					<reportElement
+						x="33"
+						y="225"
+						width="20"
+						height="14"
+						key="staticText-39">
+							<printWhenExpression><![CDATA[new Boolean($P{pMostrarD}.compareTo("1")==0)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[f)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="297"
+						y="225"
+						width="20"
+						height="14"
+						key="staticText-40">
+							<printWhenExpression><![CDATA[new Boolean($P{pMostrarD}.compareTo("1")==0)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[f)]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="26"
+						y="270"
+						width="510"
+						height="0"
+						key="line-23">
+							<printWhenExpression><![CDATA[new Boolean($P{pMostrarD}.compareTo("1")==0)]]></printWhenExpression>
+						</reportElement>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="1.3" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<staticText>
+					<reportElement
+						x="331"
+						y="287"
+						width="65"
+						height="14"
+						key="staticText-41"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[Guatemala, ]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="394"
+						y="301"
+						width="150"
+						height="0"
+						key="line-24">
+							<printWhenExpression><![CDATA[new Boolean($P{pMostrarD}.compareTo("1")==0)]]></printWhenExpression>
+						</reportElement>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<staticText>
+					<reportElement
+						x="19"
+						y="304"
+						width="100"
+						height="18"
+						key="staticText-42"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" size="12" isBold="true"/>
+					</textElement>
+				<text><![CDATA[RESOLUCION]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="19"
+						y="330"
+						width="516"
+						height="34"
+						key="staticText-43"/>
+					<box></box>
+					<textElement textAlignment="Justified">
+						<font/>
+					</textElement>
+				<text><![CDATA[NORMAS Y PROCEDIMIENTOS PARA LA CONCESION DE LICENCIAS (Punto QUINTO, Acta No. 9-94 de la sesión celebrada por el Concejo Superior Universitario el 9 de marzo de 1,994).]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="216"
+						y="376"
+						width="121"
+						height="21"
+						key="staticText-44"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[FUNDAMENTO LEGAL]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="27"
+						y="402"
+						width="20"
+						height="14"
+						key="staticText-45"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[1a.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="27"
+						y="418"
+						width="20"
+						height="14"
+						key="staticText-46"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[2a.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="27"
+						y="434"
+						width="20"
+						height="14"
+						key="staticText-47"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[3a.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="27"
+						y="450"
+						width="20"
+						height="14"
+						key="staticText-48"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[4a.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="27"
+						y="466"
+						width="20"
+						height="14"
+						key="staticText-49"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[5a.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="27"
+						y="482"
+						width="20"
+						height="14"
+						key="staticText-50"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[6a.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="27"
+						y="498"
+						width="20"
+						height="14"
+						key="staticText-51"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[7a.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="27"
+						y="514"
+						width="20"
+						height="14"
+						key="staticText-52"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[8a.]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="54"
+						y="402"
+						width="10"
+						height="10"
+						key="rectangle-7"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<rectangle>
+					<reportElement
+						x="54"
+						y="418"
+						width="10"
+						height="10"
+						key="rectangle-8"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<rectangle>
+					<reportElement
+						x="54"
+						y="434"
+						width="10"
+						height="10"
+						key="rectangle-9"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<rectangle>
+					<reportElement
+						x="54"
+						y="450"
+						width="10"
+						height="10"
+						key="rectangle-10"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<rectangle>
+					<reportElement
+						x="54"
+						y="466"
+						width="10"
+						height="10"
+						key="rectangle-11"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<rectangle>
+					<reportElement
+						x="54"
+						y="482"
+						width="10"
+						height="10"
+						key="rectangle-12"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<rectangle>
+					<reportElement
+						x="54"
+						y="498"
+						width="10"
+						height="10"
+						key="rectangle-13"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<rectangle>
+					<reportElement
+						x="54"
+						y="514"
+						width="10"
+						height="10"
+						key="rectangle-14"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="73"
+						y="402"
+						width="67"
+						height="14"
+						key="staticText-53"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[Literal     a)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="174"
+						y="402"
+						width="20"
+						height="14"
+						key="staticText-54"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[b)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="248"
+						y="402"
+						width="87"
+						height="14"
+						key="staticText-55"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[Extemporánea]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="144"
+						y="402"
+						width="10"
+						height="10"
+						key="rectangle-15"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<rectangle>
+					<reportElement
+						x="216"
+						y="402"
+						width="10"
+						height="10"
+						key="rectangle-16"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<rectangle>
+					<reportElement
+						x="353"
+						y="402"
+						width="10"
+						height="10"
+						key="rectangle-17"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="73"
+						y="466"
+						width="76"
+						height="14"
+						key="staticText-56"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[Numeral   5.1]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="158"
+						y="466"
+						width="10"
+						height="10"
+						key="rectangle-18"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="182"
+						y="466"
+						width="20"
+						height="14"
+						key="staticText-57"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[5.2]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="215"
+						y="466"
+						width="10"
+						height="10"
+						key="rectangle-19"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="73"
+						y="482"
+						width="76"
+						height="14"
+						key="staticText-58"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[Párrafo        1o.]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="158"
+						y="482"
+						width="10"
+						height="10"
+						key="rectangle-20"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="182"
+						y="482"
+						width="20"
+						height="14"
+						key="staticText-59"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[2o.]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="215"
+						y="482"
+						width="10"
+						height="10"
+						key="rectangle-21"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="231"
+						y="482"
+						width="20"
+						height="14"
+						key="staticText-60"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[3o.]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="255"
+						y="482"
+						width="10"
+						height="10"
+						key="rectangle-22"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="275"
+						y="482"
+						width="20"
+						height="14"
+						key="staticText-61"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[4o.]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="302"
+						y="482"
+						width="10"
+						height="10"
+						key="rectangle-23"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="323"
+						y="482"
+						width="20"
+						height="14"
+						key="staticText-62"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[5o.]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="351"
+						y="482"
+						width="10"
+						height="10"
+						key="rectangle-24"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="73"
+						y="498"
+						width="55"
+						height="14"
+						key="staticText-63"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[Literal a)]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="125"
+						y="498"
+						width="10"
+						height="10"
+						key="rectangle-25"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="146"
+						y="498"
+						width="20"
+						height="14"
+						key="staticText-64"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[b)]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="172"
+						y="498"
+						width="10"
+						height="10"
+						key="rectangle-26"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="191"
+						y="498"
+						width="20"
+						height="14"
+						key="staticText-65"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[c)]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="215"
+						y="498"
+						width="10"
+						height="10"
+						key="rectangle-27"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="230"
+						y="498"
+						width="20"
+						height="14"
+						key="staticText-66"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[d)]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="255"
+						y="498"
+						width="10"
+						height="10"
+						key="rectangle-28"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="274"
+						y="498"
+						width="20"
+						height="14"
+						key="staticText-67"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[e)]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="302"
+						y="498"
+						width="10"
+						height="10"
+						key="rectangle-29"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="324"
+						y="498"
+						width="20"
+						height="14"
+						key="staticText-68"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[f)]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="351"
+						y="498"
+						width="10"
+						height="10"
+						key="rectangle-30"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="374"
+						y="498"
+						width="20"
+						height="14"
+						key="staticText-69"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[g)]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="404"
+						y="498"
+						width="10"
+						height="10"
+						key="rectangle-31"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="425"
+						y="498"
+						width="20"
+						height="14"
+						key="staticText-70"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[h)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="475"
+						y="499"
+						width="20"
+						height="14"
+						key="staticText-71"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[i)]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="454"
+						y="499"
+						width="10"
+						height="10"
+						key="rectangle-32"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<rectangle>
+					<reportElement
+						x="504"
+						y="499"
+						width="10"
+						height="10"
+						key="rectangle-33"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="73"
+						y="514"
+						width="55"
+						height="14"
+						key="staticText-72"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[Literal a)]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="125"
+						y="514"
+						width="10"
+						height="10"
+						key="rectangle-34"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="147"
+						y="514"
+						width="20"
+						height="14"
+						key="staticText-73"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[b)]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="172"
+						y="514"
+						width="10"
+						height="10"
+						key="rectangle-35"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="191"
+						y="514"
+						width="20"
+						height="14"
+						key="staticText-74"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[c)]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="215"
+						y="514"
+						width="10"
+						height="10"
+						key="rectangle-36"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="28"
+						y="535"
+						width="48"
+						height="14"
+						key="staticText-75"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[OTROS:]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="72"
+						y="547"
+						width="446"
+						height="0"
+						key="line-25"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<staticText>
+					<reportElement
+						x="18"
+						y="576"
+						width="54"
+						height="14"
+						key="staticText-76"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[OPINION:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="76"
+						y="576"
+						width="92"
+						height="14"
+						key="staticText-77"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[PROCEDENTE]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="208"
+						y="576"
+						width="92"
+						height="14"
+						key="staticText-78"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[NO PROCEDENTE]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="166"
+						y="578"
+						width="10"
+						height="10"
+						key="rectangle-37"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<rectangle>
+					<reportElement
+						x="311"
+						y="578"
+						width="10"
+						height="10"
+						key="rectangle-38"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<line direction="TopDown">
+					<reportElement
+						x="312"
+						y="619"
+						width="225"
+						height="0"
+						key="line-26"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<staticText>
+					<reportElement
+						x="292"
+						y="604"
+						width="18"
+						height="14"
+						key="staticText-79"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[f)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="341"
+						y="622"
+						width="168"
+						height="14"
+						key="staticText-80"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="9" isBold="false"/>
+					</textElement>
+				<text><![CDATA[(Nombre y cargo de quién calificó)]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="18"
+						y="650"
+						width="510"
+						height="0"
+						key="line-27"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="1.3" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<staticText>
+					<reportElement
+						x="18"
+						y="655"
+						width="279"
+						height="14"
+						key="staticText-81"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[Con base en lo anterior, la autoridad Nominadora procedió a ]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="300"
+						y="657"
+						width="10"
+						height="10"
+						key="rectangle-39"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="478"
+						y="655"
+						width="57"
+						height="14"
+						key="staticText-82"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[la licencia]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="395"
+						y="657"
+						width="10"
+						height="10"
+						key="rectangle-40"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="321"
+						y="656"
+						width="69"
+						height="14"
+						key="staticText-83"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[CONCEDER]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="414"
+						y="656"
+						width="61"
+						height="14"
+						key="staticText-84"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[DENEGAR]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="18"
+						y="669"
+						width="54"
+						height="14"
+						key="staticText-85"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[solicitada.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="292"
+						y="692"
+						width="18"
+						height="14"
+						key="staticText-86"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[f)]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="312"
+						y="707"
+						width="225"
+						height="0"
+						key="line-28"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="341"
+						y="710"
+						width="108"
+						height="14"
+						key="staticText-87"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="8" isBold="false"/>
+					</textElement>
+				<text><![CDATA[AUTORIDAD NOMINADORA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="15"
+						y="735"
+						width="519"
+						height="87"
+						key="staticText-88"/>
+					<box></box>
+					<textElement textAlignment="Justified">
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Norma 6a.: 1) Las licencias sin goce de sueldo hasta por sesenta (60) días, serán concedidas o denegadas por los Decanos, Directores de Escuelas, Directores de Centros Regionales y Directores Generales. 2) Las licencias sin goce de sueldo por períodos mayores de sesenta (60) días y hasta por un año, serán concedidas o denegadas por los órganos de Dirección correspondientes. 3) El rector tendrá potestad para conceder o denegar licencias sin goce de sueldo hasta por un año en las unidades que no dependan de las Facultades, Escuelas ni Centros Regionales. 4) Para períodos mayores de un año, requerirá autorización del Consejo Superior Universitario. 5) En aquellos casos en que se solicite la licencia para servir en otro puesto o cargo dentro de la misma Universidad, se concederá por la Junta Directiva o Consejo Directivo o el Rector en su caso, mientras dure en el ejercicio del puesto o cargo, hasta por cuatro años, de continuar la misma situación, se requerirá la autorización del Consejo Superior Universitario.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="9"
+						y="837"
+						width="108"
+						height="12"
+						key="staticText-89"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="8" isBold="false"/>
+					</textElement>
+				<text><![CDATA[Original: Interesado]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="9"
+						y="849"
+						width="190"
+						height="12"
+						key="staticText-90"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="8" isBold="false"/>
+					</textElement>
+				<text><![CDATA[Duplicado: Div. Admón. Personal]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="9"
+						y="861"
+						width="108"
+						height="12"
+						key="staticText-91"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="8" isBold="false"/>
+					</textElement>
+				<text><![CDATA[Triplicado: Auditoría (amarillo).]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="9"
+						y="873"
+						width="193"
+						height="12"
+						key="staticText-92"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="8" isBold="false"/>
+					</textElement>
+				<text><![CDATA[Cuadruplicado: Archivo Unidad Ejecutora]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="226"
+						y="20"
+						width="100"
+						height="18"
+						key="staticText-93">
+							<printWhenExpression><![CDATA[new Boolean($P{pMostrarD}.compareTo("1")==0)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" size="12" isBold="true"/>
+					</textElement>
+				<text><![CDATA[RESOLUCION]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="42"
+						y="73"
+						width="340"
+						height="0"
+						key="line-29">
+							<printWhenExpression><![CDATA[new Boolean($P{pMostrarD}.compareTo("1")==0)]]></printWhenExpression>
+						</reportElement>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<staticText>
+					<reportElement
+						x="383"
+						y="61"
+						width="169"
+						height="14"
+						key="staticText-94"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[hace constar que se consideró]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="19"
+						y="60"
+						width="15"
+						height="14"
+						key="staticText-95"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[El]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="170"
+						y="74"
+						width="104"
+						height="13"
+						key="staticText-96">
+							<printWhenExpression><![CDATA[new Boolean($P{pMostrarD}.compareTo("1")==0)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="9" isBold="false"/>
+					</textElement>
+				<text><![CDATA[(Jefe inmediato superior)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="18"
+						y="91"
+						width="171"
+						height="14"
+						key="staticText-97"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[el caso del trabajador universitario]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="195"
+						y="105"
+						width="342"
+						height="0"
+						key="line-30">
+							<printWhenExpression><![CDATA[new Boolean($P{pMostrarD}.compareTo("1")==0)]]></printWhenExpression>
+						</reportElement>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<staticText>
+					<reportElement
+						x="38"
+						y="126"
+						width="55"
+						height="13"
+						key="staticText-98">
+							<printWhenExpression><![CDATA[new Boolean($P{pMostrarD}.compareTo("1")==0)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="9" isBold="false"/>
+					</textElement>
+				<text><![CDATA[(Se accedió)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="96"
+						y="126"
+						width="55"
+						height="13"
+						key="staticText-99">
+							<printWhenExpression><![CDATA[new Boolean($P{pMostrarD}.compareTo("1")==0)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="9" isBold="false"/>
+					</textElement>
+				<text><![CDATA[(Se denegó)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="155"
+						y="124"
+						width="122"
+						height="14"
+						key="staticText-100"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[lo solicitado debido a que]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="276"
+						y="137"
+						width="262"
+						height="0"
+						key="line-31">
+							<printWhenExpression><![CDATA[new Boolean($P{pMostrarD}.compareTo("1")==0)]]></printWhenExpression>
+						</reportElement>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="23"
+						y="159"
+						width="515"
+						height="0"
+						key="line-32">
+							<printWhenExpression><![CDATA[new Boolean($P{pMostrarD}.compareTo("1")==0)]]></printWhenExpression>
+						</reportElement>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<staticText>
+					<reportElement
+						x="76"
+						y="239"
+						width="149"
+						height="14"
+						key="staticText-101">
+							<printWhenExpression><![CDATA[new Boolean($P{pMostrarD}.compareTo("1")==0)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="9" isBold="false"/>
+					</textElement>
+				<text><![CDATA[JEFE INMEDIATO SUPERIOR]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="352"
+						y="239"
+						width="127"
+						height="14"
+						key="staticText-102">
+							<printWhenExpression><![CDATA[new Boolean($P{pMostrarD}.compareTo("1")==0)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica" size="9" isBold="false"/>
+					</textElement>
+				<text><![CDATA[AUTORIDAD NOMINADORA]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="22"
+						y="186"
+						width="515"
+						height="0"
+						key="line-33">
+							<printWhenExpression><![CDATA[new Boolean($P{pMostrarD}.compareTo("1")==0)]]></printWhenExpression>
+						</reportElement>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<staticText>
+					<reportElement
+						x="22"
+						y="186"
+						width="511"
+						height="20"
+						key="staticText-103">
+							<printWhenExpression><![CDATA[new Boolean($P{pMostrarD}.compareTo("1")==0)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Justified">
+						<font size="7"/>
+					</textElement>
+				<text><![CDATA[(Indicar el motivo de la concesión de la licencia o denegación en su caso. Si se concede el permiso, hagase constar que se han tomado las medidas del caso para no interrumpir la labor que realiza la persona a quien se concede la misma).]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="19"
+						y="124"
+						width="9"
+						height="14"
+						key="staticText-104">
+							<printWhenExpression><![CDATA[new Boolean($P{pMostrarD}.compareTo("1")==0)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="10" isBold="false"/>
+					</textElement>
+				<text><![CDATA[y]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="4"
+						y="305"
+						width="545"
+						height="584"
+						forecolor="#FFFFFF"
+						key="rectangle-44">
+							<printWhenExpression><![CDATA[new Boolean($P{pMostrarD}.compareTo("0")==0)]]></printWhenExpression>
+						</reportElement>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+			</band>
+		</summary>
+</jasperReport>

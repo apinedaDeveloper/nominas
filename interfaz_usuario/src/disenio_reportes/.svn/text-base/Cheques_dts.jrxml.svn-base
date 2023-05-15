@@ -1,0 +1,510 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="Cheques_dts"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="548"
+		 pageHeight="539"
+		 columnWidth="548"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 scriptletClass="interfaz_usuario.backing.reportes.scriplets.codigoSeguridad"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="2" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="SUBREPORT_DIR" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA["C:\\checkout24_2092008_mod\\interfaz_usuario\\public_html\\reportes\\def_reportes\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="IdProceso" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pIdProceso" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[select unique a.id_documento_banco,
+a.num_doc_fisico,
+valor,
+sis_pkg_util.getNumero_to_letras(valor,2) as valTexto,
+fecha_emision,
+nvl(g.nom_beneficiario,g.nomcompletocheq) as nomcompletocheq,
+g.registro_empleado,
+j.nombre as nomDependencia,i.ID_PROGRAMA||trim(to_char(i.ID_DEPENDENCIA,'00'))||i.ID_UNIDAD as partidaUnidad,
+sis_pkg_util.getNominaChequeCodAnt(a.id_documento_banco,$P{IdProceso}) as nomina ,
+k.fecha_Ref
+,
+(
+select sum(nominal) 
+from sis_documento_banco a1,
+sis_pago b1,
+sis_nomina c1
+where  b1.id_proceso=$P{IdProceso}
+and a1.id_documento_banco=b1.id_documento_banco
+and b1.id_nomina=c1.id_nomina
+and a1.id_documento_banco=a.id_documento_banco
+) as total_nominal,
+(
+select sum(total_bono) 
+from sis_documento_banco a1,
+sis_pago b1,
+sis_nomina c1
+where  b1.id_proceso=$P{IdProceso}
+and a1.id_documento_banco=b1.id_documento_banco
+and b1.id_nomina=c1.id_nomina
+and a1.id_documento_banco=a.id_documento_banco
+) as total_bono,
+(
+select sum(total_descuento) 
+from sis_documento_banco a1,
+sis_pago b1,
+sis_nomina c1
+where  b1.id_proceso=$P{IdProceso}
+and a1.id_documento_banco=b1.id_documento_banco
+and b1.id_nomina=c1.id_nomina
+and a1.id_documento_banco=a.id_documento_banco
+) as total_desc,
+g.clv,
+a.num_inventario,
+to_number(to_char(fecha_emision,'yyyy'))-1 as anioISR,
+(
+select count(0)
+from sis_nomina nom,
+sis_pago pg
+where nom.id_nomina=pg.id_nomina
+and pg.id_documento_banco=a.id_documento_banco
+and nom.id_tipo_nomina=20
+and pg.id_proceso=$P{IdProceso}
+and rownum<=1
+) asChequeISR
+from sis_documento_banco a, 
+sis_tipo_documento b, 
+sis_nomina d,
+sis_empleado g,
+sis_partida i,
+sis_dependencia j, 
+sis_proceso k
+where a.id_tipo_documento=b.id_tipo_documento
+and b.nombre='CHEQUE'
+and exists(
+select 1 from sis_estado_docbanco_vw e
+where e.id_estado=a.id_estado
+and e.nombre in('GENERADO','CIRCULACION')
+)
+and d.registro_empleado=g.registro_empleado
+and i.id_partida=d.id_partida
+and i.id_dependencia=j.id_dependencia
+and k.id_proceso=a.id_proceso
+and k.id_proceso=$P{IdProceso}
+and exists(
+select 1 from sis_pago f
+where f.id_proceso=$P{IdProceso}
+and f.id_nomina=d.id_nomina
+and f.id_documento_banco=a.id_documento_banco
+)
+order by num_doc_fisico asc]]></queryString>
+
+	<field name="ID_DOCUMENTO_BANCO" class="java.math.BigDecimal"/>
+	<field name="NUM_DOC_FISICO" class="java.math.BigDecimal"/>
+	<field name="VALOR" class="java.math.BigDecimal"/>
+	<field name="VALTEXTO" class="java.lang.String"/>
+	<field name="FECHA_EMISION" class="java.sql.Timestamp"/>
+	<field name="NOMCOMPLETOCHEQ" class="java.lang.String"/>
+	<field name="REGISTRO_EMPLEADO" class="java.math.BigDecimal"/>
+	<field name="NOMDEPENDENCIA" class="java.lang.String"/>
+	<field name="PARTIDAUNIDAD" class="java.lang.String"/>
+	<field name="NOMINA" class="java.lang.String"/>
+	<field name="FECHA_REF" class="java.sql.Timestamp"/>
+	<field name="TOTAL_NOMINAL" class="java.math.BigDecimal"/>
+	<field name="TOTAL_BONO" class="java.math.BigDecimal"/>
+	<field name="TOTAL_DESC" class="java.math.BigDecimal"/>
+	<field name="CLV" class="java.lang.String"/>
+	<field name="NUM_INVENTARIO" class="java.math.BigDecimal"/>
+	<field name="ANIOISR" class="java.math.BigDecimal"/>
+	<field name="ASCHEQUEISR" class="java.math.BigDecimal"/>
+	<field name="plazasDS" class="java.lang.Object"/>
+	<field name="descDS" class="java.lang.Object"/>
+
+	<variable name="SumaNominal" class="java.math.BigDecimal" resetType="Report" calculation="Nothing">
+	</variable>
+	<variable name="SumaDeduccionesCheque" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+	</variable>
+	<variable name="vConteo" class="java.lang.Integer" resetType="Report" calculation="Count">
+		<variableExpression><![CDATA[$F{ID_DOCUMENTO_BANCO}]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
+	</variable>
+	<variable name="vCantidadCheque" class="java.lang.Integer" resetType="Report" calculation="Count">
+		<variableExpression><![CDATA[$F{NUM_DOC_FISICO}]]></variableExpression>
+	</variable>
+	<variable name="bandera" class="java.lang.Integer" resetType="Report" calculation="Count">
+		<variableExpression><![CDATA[$F{NUM_DOC_FISICO}]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
+	</variable>
+
+		<group  name="numeroCheque" >
+			<groupExpression><![CDATA[$F{NUM_DOC_FISICO}]]></groupExpression>
+			<groupHeader>
+			<band height="539"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="383"
+						y="209"
+						width="98"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Courier New" pdfFontName="cour.ttf" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{NUM_DOC_FISICO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="'Guatemala' dd MMMMM 'de' yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="103"
+						y="44"
+						width="244"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="cour.ttf" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.sql.Timestamp"><![CDATA[$F{FECHA_REF}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="*##,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="398"
+						y="44"
+						width="129"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="cour.ttf" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{VALOR}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="103"
+						y="66"
+						width="444"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="cour.ttf" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMCOMPLETOCHEQ}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="103"
+						y="77"
+						width="444"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="cour.ttf" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["*"+$F{VALTEXTO}+"*"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="380"
+						y="22"
+						width="133"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="cour.ttf"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMINA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="271"
+						y="33"
+						width="129"
+						height="12"
+						key="textField-7"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="cour.ttf"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_SCRIPTLET}.getCodigoSeg($F{NUM_DOC_FISICO}.toString(),$F{NUM_INVENTARIO}.toString(),$F{VALOR})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="0"
+						width="140"
+						height="12"
+						key="textField-10">
+							<printWhenExpression><![CDATA[new Boolean($V{vCantidadCheque}.compareTo( new Integer(1)) >=0)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="cour.ttf"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[new String(new char[]{27,80,18,27,50,27,77})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="164"
+						y="220"
+						width="100"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="cour.ttf" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{REGISTRO_EMPLEADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="277"
+						y="220"
+						width="265"
+						height="12"
+						key="textField-2"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="cour.ttf" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMCOMPLETOCHEQ}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="56"
+						y="231"
+						width="352"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="cour.ttf"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PARTIDAUNIDAD} + " - " + $F{NOMDEPENDENCIA}]]></textFieldExpression>
+				</textField>
+				<subreport  isUsingCache="true">
+					<reportElement
+						mode="Opaque"
+						x="438"
+						y="254"
+						width="108"
+						height="165"
+						key="subreport-1"/>
+					<subreportParameter  name="Id_documento_banco">
+						<subreportParameterExpression><![CDATA[$F{ID_DOCUMENTO_BANCO}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pIdProceso">
+						<subreportParameterExpression><![CDATA[$P{IdProceso}]]></subreportParameterExpression>
+					</subreportParameter>
+					<dataSourceExpression><![CDATA[$F{descDS}]]></dataSourceExpression>
+					<returnValue subreportVariable="SUMA_DEDUCCIONES" toVariable="SumaDeduccionesCheque"/>
+					<subreportExpression  class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "deducciones_cheque.jasper"]]></subreportExpression>
+				</subreport>
+				<subreport  isUsingCache="true">
+					<reportElement
+						x="31"
+						y="254"
+						width="399"
+						height="165"
+						key="subreport-2"
+						isRemoveLineWhenBlank="true"/>
+					<subreportParameter  name="Id_documento">
+						<subreportParameterExpression><![CDATA[$F{ID_DOCUMENTO_BANCO}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pIdProceso">
+						<subreportParameterExpression><![CDATA[$P{IdProceso}]]></subreportParameterExpression>
+					</subreportParameter>
+					<dataSourceExpression><![CDATA[$F{plazasDS}]]></dataSourceExpression>
+					<returnValue subreportVariable="sumaNominalDet" toVariable="SumaNominal"/>
+					<subreportExpression  class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "cheque_detalle.jasper"]]></subreportExpression>
+				</subreport>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="466"
+						y="231"
+						width="80"
+						height="12"
+						key="textField-3"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="cour.ttf"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMINA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="56"
+						y="220"
+						width="109"
+						height="12"
+						key="textField-4"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="cour.ttf" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.sql.Timestamp"><![CDATA[$F{FECHA_EMISION}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="*#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="411"
+						y="517"
+						width="129"
+						height="12"
+						key="textField-16"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Courier New" pdfFontName="cour.ttf" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{VALOR}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="*#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="333"
+						y="506"
+						width="104"
+						height="12"
+						key="textField-17"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="cour.ttf"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_NOMINAL}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="*#,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="411"
+						y="495"
+						width="129"
+						height="12"
+						key="textField-18"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="cour.ttf"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_DESC}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="'ESTE CHEQUE INCLUYE BONO MENSUAL POR Q. '##0.00" isBlankWhenNull="false" evaluationTime="Group" evaluationGroup="numeroCheque"  hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="30"
+						y="462"
+						width="350"
+						height="12"
+						key="textField-19">
+							<printWhenExpression><![CDATA[new Boolean($F{TOTAL_BONO}.compareTo( new BigDecimal(0))>0)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Courier New" pdfFontName="cour.ttf"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_BONO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="30"
+						y="495"
+						width="170"
+						height="12"
+						key="textField-20"/>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Courier New" pdfFontName="cour.ttf"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["CLV: " + $F{CLV}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="518"
+						y="527"
+						width="30"
+						height="12"
+						key="textField-21"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="cour.ttf" isBold="false"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[new String(new char[]{12,10})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Group" evaluationGroup="numeroCheque"  hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="30"
+						y="440"
+						width="350"
+						height="12"
+						key="textField-22">
+							<printWhenExpression><![CDATA[new Boolean($F{ASCHEQUEISR}.compareTo(new BigDecimal("1"))==0)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Courier New" pdfFontName="cour.ttf"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Devolución del ISR retenido en exceso correspondiente al"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Group" evaluationGroup="numeroCheque"  hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="30"
+						y="451"
+						width="350"
+						height="12"
+						key="textField-23">
+							<printWhenExpression><![CDATA[new Boolean($F{ASCHEQUEISR}.compareTo(new BigDecimal("1"))==0)]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Left">
+						<font fontName="Courier New" pdfFontName="cour.ttf"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Ejercicio Fiscal de Enero a Diciembre "+$F{ANIOISR}.toString()]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+			</groupFooter>
+		</group>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

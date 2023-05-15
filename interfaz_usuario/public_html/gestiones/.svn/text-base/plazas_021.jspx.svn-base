@@ -1,0 +1,411 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <jsp:output omit-xml-declaration="true" doctype-root-element="HTML"
+              doctype-system="http://www.w3.org/TR/html4/loose.dtd"
+              doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN"/>
+  <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+  <f:view>
+    <afh:html>
+      <f:loadBundle basename="propiedades" var="txt"/>
+      <afh:head title="Plazas 021 y 023">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+        <style type="text/css">
+      body {
+background-color: #ffffff; 
+}
+    </style>
+      </afh:head>
+      <afh:body>
+        <af:messages/>
+        <h:form>
+          <af:page value="#{modeloMenu.modeloBD}" var="node"
+                   chromeType="compact" title="PLAZAS 021">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                 actionListener="#{modeloMenu.listener_menu}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+             <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelHorizontal halign="center">
+              <af:panelBox>
+                <af:selectOneChoice value="#{bindings.dependenciasIdDependencia.inputValue}"
+                                    label="#{txt['anexo.cmb_dependencia.texto']}"
+                                    autoSubmit="true" id="dependencia"
+                                    valueChangeListener="#{plaza_021.seleccionarDependencia}"
+                                    binding="#{plaza_021.cmbDependencia}">
+                  <f:selectItems value="#{bindings.dependenciasIdDependencia.items}"/>
+                </af:selectOneChoice>
+                <af:panelGroup>
+                  <af:selectOneChoice id="unidad" autoSubmit="true"
+                                      value="#{bindings['unidades_ejec'].inputValue}"
+                                      label="#{txt['anexo.cmb_unidad.texto']}"
+                                      partialTriggers="dependencia"
+                                      binding="#{plaza_021.cmbUnidad}"
+                                      valueChangeListener="#{plaza_021.cmb_subprograma_value}">
+                    <f:selectItems value="#{bindings['unidades_ejec'].items}"/>
+                  </af:selectOneChoice>
+                </af:panelGroup>
+                <af:panelButtonBar>
+                  <af:commandButton text="#{txt['plazas_021.btn_crear']}"
+                                    disabled="#{!bindings.Crear.enabled}"
+                                    action="#{plaza_021.commandCrear_Plaza}"
+                                    id="crear" binding="#{plaza_021.btnCrear}"/>
+                  <af:objectSpacer width="15" height="10"/>
+                  <af:commandButton text="#{txt['plazas_021.btn_listPlaza']}"
+                                    action="#{plaza_021.plazas_Guardadas}"
+                                    binding="#{plaza_021.btnListPlazas}"/>
+                </af:panelButtonBar>
+                <af:panelGroup>
+                  <af:selectOneChoice id="navList1" autoSubmit="true"
+                                      value="#{bindings['consul_sispartida021_1'].inputValue}"
+                                      label="#{txt['anexo.cmb_partida.texto']}"
+                                      partialTriggers="unidad"
+                                      binding="#{plaza_021.cmbPartida2}">
+                    <f:selectItems value="#{bindings['consul_sispartida021_1'].items}"/>
+                  </af:selectOneChoice>
+                </af:panelGroup>
+                <af:panelForm partialTriggers="tabla"
+                              binding="#{plaza_021.formulario}">
+                  <af:selectOneChoice value="#{bindings['sis_plaza1IdPartida'].inputValue}"
+                                      label="#{txt['anexo.cmb_partida.texto']}"
+                                      partialTriggers="crear" id="listPartida"
+                                      autoSubmit="true"
+                                      binding="#{plaza_021.cmbPartida}"
+                                      valueChangeListener="#{plaza_021.cmbPartida}">
+                    <f:selectItems value="#{bindings['sis_plaza1IdPartida'].items}"/>
+                  </af:selectOneChoice>
+                  <af:selectOneChoice value="#{bindings['sis_plaza1IdPuesto'].inputValue}"
+                                      label="#{txt['anexo.cmb_puesto.texto']}"
+                                      id="puesto" autoSubmit="true"
+                                      valueChangeListener="#{plaza_021.calculoNumPlaza}"
+                                      binding="#{plaza_021.cmbPuesto}">
+                    <f:selectItems value="#{bindings['sis_plaza1IdPuesto'].items}"/>
+                  </af:selectOneChoice>
+                  <af:selectOneChoice value="#{bindings.PeriodoPlaza.inputValue}"
+                                      label="#{txt['anexo.cmb_PeriodoPlaza.texto']}"
+                                      required="#{bindings.PeriodoPlaza.mandatory}"
+                                      binding="#{plaza_021.cmbPeriodoPlaza}">
+                    <af:validator binding="#{bindings.PeriodoPlaza.validator}"/>
+                    <af:selectItem label="ANUAL" value="A"/>
+                    <af:selectItem label="SEMESTRAL" value="S"/>
+                  </af:selectOneChoice>
+                  <af:inputText value="#{bindings['sis_plaza1IdPartida1'].inputValue}"
+                                label="#{bindings['sis_plaza1IdPartida1'].label}"
+                                required="#{bindings['sis_plaza1IdPartida1'].mandatory}"
+                                columns="#{bindings['sis_plaza1IdPartida1'].displayWidth}"
+                                binding="#{plaza_021.numPartida}"
+                                partialTriggers="listPartida" rendered="false">
+                    <af:validator binding="#{bindings['sis_plaza1IdPartida1'].validator}"/>
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings['sis_plaza1IdPartida1'].format}"/>
+                  </af:inputText>
+                  <af:inputText value="#{bindings.NumeroPlaza.inputValue}"
+                                label="#{txt['anexo.cmb_NumPlaza.texto']}"
+                                required="#{bindings.NumeroPlaza.mandatory}"
+                                columns="#{bindings.NumeroPlaza.displayWidth}"
+                                binding="#{plaza_021.numPlaza}"
+                                partialTriggers="puesto" autoSubmit="true">
+                    <af:validator binding="#{bindings.NumeroPlaza.validator}"/>
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.NumeroPlaza.format}"/>
+                  </af:inputText>
+                  <af:inputText value="#{bindings.Nomplaza.inputValue}"
+                                label="#{txt['anexo.inpt_nomPlaza.texto']}"
+                                required="#{bindings.Nomplaza.mandatory}"
+                                columns="50" binding="#{plaza_021.nomPlaza}"
+                                tip="Ingrese el nombre unicamente si la operación es una alta y el puesto elegido es Fuera de Carrera, Fuera de Clasificación, Personal Extraordinario">
+                    <af:validator binding="#{bindings.Nomplaza.validator}"/>
+                  </af:inputText>
+                  <af:inputText value="#{bindings.Dictamen.inputValue}"
+                                label="#{txt['anexo.inpt_Dictamen.texto']}"
+                                required="#{bindings.Dictamen.mandatory}"
+                                columns="#{bindings.Dictamen.displayWidth}"
+                                binding="#{plaza_021.dictamen}">
+                    <af:validator binding="#{bindings.Dictamen.validator}"/>
+                  </af:inputText>
+                  <af:inputText value="#{bindings['sis_plaza1Correlativo'].inputValue}"
+                                label="#{txt['anexo.inpt_correlativo.texto']}"
+                                required="#{bindings['sis_plaza1Correlativo'].mandatory}"
+                                columns="#{bindings['sis_plaza1Correlativo'].displayWidth}"
+                                binding="#{plaza_021.correlativo}"
+                                autoSubmit="true" partialTriggers="puesto"
+                                disabled="true">
+                    <af:validator binding="#{bindings['sis_plaza1Correlativo'].validator}"/>
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings['sis_plaza1Correlativo'].format}"/>
+                  </af:inputText>
+                  <af:inputText value="#{bindings.CantidadHoras.inputValue}"
+                                label="#{txt['anexo.inpt_horas.texto']}"
+                                required="#{bindings.CantidadHoras.mandatory}"
+                                columns="#{bindings.CantidadHoras.displayWidth}"
+                                binding="#{plaza_021.cantHoras}">
+                    <af:validator binding="#{bindings.CantidadHoras.validator}"/>
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.CantidadHoras.format}"/>
+                  </af:inputText>
+                  <af:inputText value="#{bindings['sis_plaza1Escalamin'].inputValue}"
+                                label="#{bindings['sis_plaza1Escalamin'].label}"
+                                required="#{bindings['sis_plaza1Escalamin'].mandatory}"
+                                columns="#{bindings['sis_plaza1Escalamin'].displayWidth}"
+                                binding="#{plaza_021.varMinimo}"
+                                partialTriggers="puesto" rendered="false">
+                    <af:validator binding="#{bindings['sis_plaza1Escalamin'].validator}"/>
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings['sis_plaza1Escalamin'].format}"/>
+                  </af:inputText>
+                  <af:inputText value="#{bindings.SalarioBase.inputValue}"
+                                label="#{txt['anexo.inpt_sueldoBase.texto']}"
+                                required="#{bindings.SalarioBase.mandatory}"
+                                columns="#{bindings.SalarioBase.displayWidth}"
+                                binding="#{plaza_021.sueldo}">
+                    <af:validator binding="#{bindings.SalarioBase.validator}"/>
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.SalarioBase.format}"/>
+                  </af:inputText>
+                  <af:inputText value="#{bindings.Escalafon.inputValue}"
+                                label="#{txt['anexo.inpt_Escalafon.texto']}"
+                                required="#{bindings.Escalafon.mandatory}"
+                                columns="#{bindings.Escalafon.displayWidth}"
+                                binding="#{plaza_021.escalafon}"
+                                partialTriggers="puesto">
+                    <af:validator binding="#{bindings.Escalafon.validator}"/>
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.Escalafon.format}"/>
+                  </af:inputText>
+                  <af:inputText value="#{bindings.ComplementoSal.inputValue}"
+                                label="#{txt['anexo.inpt_complSalarial.texto']}"
+                                required="#{bindings.ComplementoSal.mandatory}"
+                                columns="#{bindings.ComplementoSal.displayWidth}"
+                                binding="#{plaza_021.complSalarial}"
+                                partialTriggers="puesto">
+                    <af:validator binding="#{bindings.ComplementoSal.validator}"/>
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings.ComplementoSal.format}"/>
+                  </af:inputText>
+                  <af:selectInputDate value="#{bindings.FechaInicio.inputValue}"
+                                      label="#{txt['anexo.inpt_fechaInicio.texto']}"
+                                      required="#{bindings.FechaInicio.mandatory}"
+                                      binding="#{plaza_021.fechainicio}">
+                    <af:validator binding="#{bindings.FechaInicio.validator}"/>
+                    <f:convertDateTime pattern="#{bindings.FechaInicio.format}"/>
+                  </af:selectInputDate>
+                  <af:inputText value="#{bindings['sis_plaza1ampliacion'].inputValue}"
+                                label="#{bindings['sis_plaza1ampliacion'].label}"
+                                required="#{bindings['sis_plaza1ampliacion'].mandatory}"
+                                columns="#{bindings['sis_plaza1ampliacion'].displayWidth}"
+                                binding="#{plaza_021.ampliacion}"
+                                disabled="true" rendered="false">
+                    <af:validator binding="#{bindings['sis_plaza1ampliacion'].validator}"/>
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings['sis_plaza1ampliacion'].format}"/>
+                  </af:inputText>
+                  <af:selectInputDate value="#{bindings.FechaFin.inputValue}"
+                                      label="#{txt['anexo.inpt_fechaFin.texto']}"
+                                      required="#{bindings.FechaFin.mandatory}"
+                                      binding="#{plaza_021.fechaFin}">
+                    <af:validator binding="#{bindings.FechaFin.validator}"/>
+                    <f:convertDateTime pattern="#{bindings.FechaFin.format}"/>
+                  </af:selectInputDate>
+                  <af:objectSpacer width="15" height="15"/>
+                  <af:outputFormatted/>
+                  <af:selectBooleanCheckbox value="#{bindings['sis_plaza1PagoUnico'].inputValue}"
+                                            label="#{txt['plazas_021.chk_pagoUnico']}"
+                                            text="Pago unico  por el valor del sueldo base ( No genera prestaciones,por defecto dejar en blanco, aplica solo casos especiales)"
+                                            inlineStyle="color:rgb(115,0,0); font-weight:bolder;"
+                                            rendered="false"
+                                            binding="#{plaza_021.chkPagoUnico}"/>
+                  <af:selectBooleanCheckbox
+                                            label="¿Incluye vacaciones?"
+                                            value="#{bindings.PagaMesVaca.inputValue}"
+                                            selected="#{bindings.PagaMesVaca.inputValue}"
+                                            disabled="#{bindings.PlazaCvacacion.inputValue eq '0' &amp;&amp; bindings.pHabilitaPrest1.inputValue}"/>
+                  <af:selectOneChoice value="#{bindings['sis_plaza1IdRenglon'].inputValue}"
+                                      label="#{txt['anexo.cmb_PartidaSicoin.texto']}"
+                                      partialTriggers="listPartida"
+                                      binding="#{plaza_021.cmbPartidaSicoin}"
+                                      rendered="false">
+                    <f:selectItems value="#{bindings['sis_plaza1IdRenglon'].items}"/>
+                  </af:selectOneChoice>
+                  <af:selectInputDate value="#{bindings['sis_plaza1FechaCreacion'].inputValue}"
+                                      label="#{bindings['sis_plaza1FechaCreacion'].label}"
+                                      required="#{bindings['sis_plaza1FechaCreacion'].mandatory}"
+                                      disabled="true"
+                                      binding="#{plaza_021.fechaCreacion}"
+                                      rendered="false">
+                    <af:validator binding="#{bindings['sis_plaza1FechaCreacion'].validator}"/>
+                    <f:convertDateTime pattern="#{bindings['sis_plaza1FechaCreacion'].format}"/>
+                  </af:selectInputDate>
+                  <af:inputText value="#{bindings['sis_plaza1IdPuesto1'].inputValue}"
+                                label="#{bindings['sis_plaza1IdPuesto1'].label}"
+                                required="#{bindings['sis_plaza1IdPuesto1'].mandatory}"
+                                columns="#{bindings['sis_plaza1IdPuesto1'].displayWidth}"
+                                partialTriggers="puesto" disabled="true"
+                                binding="#{plaza_021.puesto}" rendered="false">
+                    <af:validator binding="#{bindings['sis_plaza1IdPuesto1'].validator}"/>
+                    <f:convertNumber groupingUsed="false"
+                                     pattern="#{bindings['sis_plaza1IdPuesto1'].format}"/>
+                  </af:inputText>
+                </af:panelForm>
+                <af:commandButton
+                                  text="#{txt['anexo.btn_execute.texto']}"
+                                  action="#{plaza_021.boton_Actualizar}"
+                                  id="btn_actualizar"
+                                  binding="#{plaza_021.btnExecute}"/>
+                <af:objectSpacer width="15" height="20"/>
+                <af:table value="#{bindings['sis_plaza1'].collectionModel}"
+                          var="row" rows="#{bindings['sis_plaza1'].rangeSize}"
+                          first="#{bindings['sis_plaza1'].rangeStart}"
+                          emptyText="#{txt['tbl_empty.texto']}"
+                          selectionState="#{bindings['sis_plaza1'].collectionModel.selectedRow}"
+                          selectionListener="#{bindings['sis_plaza1'].collectionModel.makeCurrent}"
+                          partialTriggers="btn_actualizar btn_modifica"
+                          id="tabla" banding="row" bandingInterval="1">
+                  <f:facet name="selection">
+                    <af:tableSelectOne autoSubmit="true"
+                                       id="selecTabla"
+                                       binding="#{plaza_021.selecPlaza}">
+                      <af:commandButton text="#{txt['plazas_021.btn_guardar']}"
+                                        action="#{plaza_021.botonGuardar}"
+                                        binding="#{plaza_021.btnGuardar2}"/>
+                      <af:objectSpacer width="15" height="10"/>
+                      <af:commandButton text="#{txt['anexo.btn_modifica.texto']}"
+                                        binding="#{plaza_021.btnActualizar}"
+                                        action="#{plaza_021.botonModificar}"
+                                        id="btn_modifica" rendered="true"/>
+                      <af:objectSpacer width="15" height="10"/>
+                      <af:commandButton
+                                        text="#{txt['plazas_021.btn_borrar']}"
+                                        action="#{plaza_021.botonBorrar}"
+                                        binding="#{plaza_021.btnBorrar}"/>
+                      <af:objectSpacer width="15" height="10"/>
+                      <af:commandButton text="#{txt['plazas_021.btn_ampliarPlaza']}"
+                                        action="#{plaza_021.botonAmpliar}"
+                                        binding="#{plaza_021.btnAmpliar}"/>
+                    </af:tableSelectOne>
+                  </f:facet>
+                  <af:column sortProperty="Formato2" sortable="false"
+                             headerText="#{txt['plazas_021.tbl_formatopartida']}">
+                    <af:outputText value="#{row.Formato2}"/>
+                  </af:column>
+                  <af:column sortProperty="IdPuesto" sortable="false"
+                             headerText="#{txt['anexo.tbl_col_idPuesto.texto']}">
+                    <af:outputText value="#{row.IdPuesto}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings['sis_plaza1'].formats.IdPuesto}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="Nombre" sortable="false"
+                             headerText="#{txt['anexo.tbl_col_nomPuesto.texto']}">
+                    <af:outputText value="#{row.Nombre}"/>
+                  </af:column>
+                  <af:column sortProperty="NumeroPlaza" sortable="false"
+                             headerText="#{txt['anexo.tbl_col_numPLaza']}">
+                    <af:outputText value="#{row.NumeroPlaza}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings['sis_plaza1'].formats.NumeroPlaza}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="Nomplaza" sortable="false"
+                             headerText="#{txt['plazas_021.tbl_col_nomPlaza']}">
+                    <af:outputText value="#{row.Nomplaza}"/>
+                  </af:column>
+                  <af:column sortProperty="PeriodoPlaza" sortable="false"
+                             headerText="#{txt['plazas_021.tbl_col_periodoPlaza']}">
+                    <af:outputText value="#{row.PeriodoPlaza}"/>
+                  </af:column>
+                  <af:column sortProperty="Dictamen" sortable="false"
+                             headerText="#{txt['plazas_021.tbl_col_dictamen']}">
+                    <af:outputText value="#{row.Dictamen}"/>
+                  </af:column>
+                  <af:column sortProperty="CantidadHoras" sortable="false"
+                             headerText="#{txt['anexo.tbl_col_cantHoras.texto']}">
+                    <af:outputText value="#{row.CantidadHoras}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings['sis_plaza1'].formats.CantidadHoras}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="SalarioBase" sortable="false"
+                             headerText="#{txt['anexo.tbl_col_sueldoBase.texto']}"
+                             formatType="number" noWrap="true">
+                    <af:outputText value="#{row.SalarioBase}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings['sis_plaza1'].formats.SalarioBase}"
+                                       type="currency" currencySymbol="Q  "/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="ComplementoSal" sortable="false"
+                             headerText="#{txt['anexo.tbl_col_complenSalarial.texto']}"
+                             formatType="number" noWrap="true">
+                    <af:outputText value="#{row.ComplementoSal}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings['sis_plaza1'].formats.ComplementoSal}"
+                                       currencySymbol="Q  " type="currency"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="Escalafon" sortable="false"
+                             headerText="#{txt['anexo.tbl_col_escalafon.texto']}"
+                             formatType="number" noWrap="true">
+                    <af:outputText value="#{row.Escalafon}">
+                      <f:convertNumber groupingUsed="false"
+                                       pattern="#{bindings['sis_plaza1'].formats.Escalafon}"
+                                       currencySymbol="Q  " type="currency"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="FechaInicio" sortable="false"
+                             headerText="#{txt['anexo.tbl_col_fechInicio']}">
+                    <af:outputText value="#{row.FechaInicio}">
+                      <f:convertDateTime pattern="#{bindings['sis_plaza1'].formats.FechaInicio}"/>
+                    </af:outputText>
+                  </af:column>
+                  <af:column sortProperty="FechaFin" sortable="false"
+                             headerText="#{txt['anexo.tbl_col_FechFin']}">
+                    <af:outputText value="#{row.FechaFin}">
+                      <f:convertDateTime pattern="#{bindings['sis_plaza1'].formats.FechaFin}"/>
+                    </af:outputText>
+                  </af:column>
+                </af:table>
+                <af:panelButtonBar>
+                  <af:commandButton
+                                    text="#{txt['plazas_021.btn_guardar']}"
+                                    disabled="#{''}"
+                                    binding="#{plaza_021.btnGuardar}"
+                                    action="#{plaza_021.botonGuardar}"/>
+                  <af:commandButton
+                                    text="#{txt['anexo.btn_cancelar.texto']}"
+                                    disabled="#{''}"
+                                    immediate="true"
+                                    action="#{plaza_021.botonCancelar}">
+                    <af:resetActionListener/>
+                  </af:commandButton>
+                </af:panelButtonBar>
+              </af:panelBox>
+            </af:panelHorizontal>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:plaza_021-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:plaza_021-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:plaza_021-->
+  <!--oracle-jdev-comment:preferred-managed-bean-name:plaza_021-->
+</jsp:root>

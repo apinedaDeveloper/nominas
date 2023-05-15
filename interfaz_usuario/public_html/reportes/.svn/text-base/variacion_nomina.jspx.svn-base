@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <jsp:output omit-xml-declaration="true" doctype-root-element="HTML"
+              doctype-system="http://www.w3.org/TR/html4/loose.dtd"
+              doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN"/>
+  <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+  <f:view>
+    <afh:html>
+      <f:loadBundle basename="propiedades" var="txt"/>
+      <afh:head title="Variaciones">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+        <style type="text/css">
+      body {
+background-color: #ffffff; 
+}
+    </style>
+      </afh:head>
+       <script language="javascript" type="text/javascript"> 
+       
+        function generaReporte(idDependencia,idUnidad,periodo){ 
+                         
+             var lista=document.getElementById('form1:pag:valAnio');
+             var anio=lista.value; 
+             if (anio == ""){
+                alert("Tiene que ingresar el año"); 
+             }else {
+                window.open("../verreportepdf?id="+idDependencia+String.fromCharCode(38)+"rep=VARIACION_NOMINA"+String.fromCharCode(38)+"inicio="+idUnidad+String.fromCharCode(38)+"final="+periodo+String.fromCharCode(38)+"id2="+anio,"preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1");     
+             }      
+        }                        
+      </script> 
+      <afh:body>
+        <af:messages/>
+        <h:form id="form1">
+          <af:page value="#{modeloMenu.modeloBD}" title="#{txt['variaciones_nomina.title']}" id="pag" var="node">
+           <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                 actionListener="#{modeloMenu.listener_menu}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+             <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet> 
+            <af:panelHorizontal halign="center">
+              <af:panelBox>
+                <af:panelGroup>
+                  <af:selectOneChoice id="dependencia" autoSubmit="true"
+                                      value="#{bindings.dependencias.inputValue}"
+                                      label="#{txt['variaciones_nomina.cmb_dependencia.texto']}"
+                                      valueChangeListener="#{variacion_nomina.selecDependencia}"
+                                      partialTriggers="btn_reporte">
+                    <f:selectItems value="#{bindings.dependencias.items}"/>
+                  </af:selectOneChoice>
+                </af:panelGroup>
+                <af:panelGroup>
+                  <af:selectOneChoice id="navList2" autoSubmit="true"
+                                      value="#{bindings['unidades_ejec'].inputValue}"
+                                      label="#{txt['variaciones_nomina.cmb_unidad.texto']}"
+                                      partialTriggers="dependencia btn_reporte">
+                    <f:selectItems value="#{bindings['unidades_ejec'].items}"/>
+                  </af:selectOneChoice>
+                </af:panelGroup>
+                <af:panelGroup>
+                  <af:selectOneChoice id="navList3" autoSubmit="true"
+                                      value="#{bindings.periodo1.inputValue}"
+                                      label="#{txt['variaciones_nomina.cmb_periodo.texto']}"
+                                      partialTriggers="btn_reporte">
+                    <f:selectItems value="#{bindings.periodo1.items}"/>
+                  </af:selectOneChoice>
+                </af:panelGroup>
+                <af:inputText label="#{txt['variaciones_nomina.inpt_anio.texto']}"
+                              value="#{bindings.anio1.inputValue}"
+                              id="valAnio" converter="javax.faces.Integer">
+                  <af:validator binding="#{bindings.anio1.validator}"/>
+                  <f:convertNumber groupingUsed="false"
+                                   pattern="#{bindings.anio1.format}"/>
+                </af:inputText>
+                <af:commandButton text="#{txt['variaciones_nomina.btn_reporte.texto']}"
+                                  onclick="javascript:generaReporte(#{bindings.IdDependencia.inputValue},#{bindings.IdUnidad.inputValue},#{bindings.IdPeriodo.inputValue});"
+                                  id="btn_reporte"
+                                  partialTriggers="dependencia navList2 navList3"/>
+              </af:panelBox>
+            </af:panelHorizontal>
+          </af:page>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:variacion_nomina-->
+</jsp:root>

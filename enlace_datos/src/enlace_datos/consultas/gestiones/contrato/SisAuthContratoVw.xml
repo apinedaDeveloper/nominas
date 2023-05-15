@@ -1,0 +1,254 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="SisAuthContratoVw"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   RowClass="enlace_datos.consultas.gestiones.contrato.SisAuthContratoVwRowImpl"
+   ComponentClass="enlace_datos.consultas.gestiones.contrato.SisAuthContratoVwImpl"
+   MsgBundleClass="enlace_datos.consultas.gestiones.contrato.common.SisAuthContratoVwRowImplMsgBundle"
+   ComponentInterface="enlace_datos.consultas.gestiones.contrato.common.SisAuthContratoVw"
+   ClientProxyName="enlace_datos.consultas.gestiones.contrato.client.SisAuthContratoVwClient"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isCodegen" Value="true" />
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|Msg|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="usuario"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <SQLQuery><![CDATA[
+SELECT SisAuthContrato.ID_AUTH_CONTRATO, 
+       SisAuthContrato.ID_AUTH_CONTRATO_SUP, 
+       SisAuthContrato.ID_DEPENDENCIA, 
+       SisAuthContrato.ID_UNIDAD_PROG, 
+       SisAuthContrato.ID_UNIDAD_DEPEN, 
+       SisAuthContrato.ID_UNIDAD, 
+       SisAuthContrato.REGISTRO_EMPLEADO,
+       sis_empl.CUI, 
+       SisAuthContrato.CARGO, 
+       SisAuthContrato.FECHA_INICIO, 
+       SisAuthContrato.FECHA_BAJA, 
+       SisAuthContrato.CREADOPOR, 
+       SisAuthContrato.FECHA_CREACION, 
+       SisAuthContrato.MODPOR, 
+       SisAuthContrato.FECHAMODIFICACION, 
+       SisAuthContrato.NIVEL,
+       sis_empl.NOMBRECOMPLETO,
+       decode(nivel,1,'Nombramiento',2,'Acta posesión',3,'Tramite de sueldo') as nivel2,
+       sis_dep.nombre as nomDependencia,
+  sisauthcontrato.id_unidad_prog||trim(to_char(sisauthcontrato.id_unidad_depen,'00'))||sisauthcontrato.id_unidad|| '-' ||sis_un.nombre as nomUnidad,
+SisAuthContrato.titulo
+from sis_auth_contrato sisauthcontrato
+left outer join sis_dependencia sis_dep on (sisauthcontrato.id_dependencia=sis_dep.id_dependencia or sisauthcontrato.id_unidad_depen=sis_dep.id_dependencia)
+left outer join sis_unidad_ejecutora sis_un on (sisauthcontrato.id_unidad_prog=sis_un.id_programa and sisauthcontrato.id_unidad_depen=sis_un.id_dependencia and sisauthcontrato.id_unidad = sis_un.id_unidad )
+, sis_empleado_vw sis_empl
+where sisauthcontrato.registro_empleado=sis_empl.registro_empleado
+and 
+(exists
+(
+select 1 from sis_acceso_dependencia b
+where 
+(sisauthcontrato.id_dependencia=b.id_dependencia
+or sisauthcontrato.id_unidad_depen=b.id_dependencia)
+and usuario=:usuario
+)
+or exists
+(
+select 1 from sis_acceso_unidad c
+where
+sisauthcontrato.id_unidad_prog=c.id_programa
+and sisauthcontrato.id_unidad_depen=c.id_dependencia
+and sisauthcontrato.id_unidad=c.id_unidad
+and usuario=:usuario
+)
+or exists
+(
+select 1 from sis_acceso_unidad f
+where
+sisauthcontrato.id_dependencia=f.id_dependencia
+and usuario=:usuario
+)
+)order by fecha_inicio desc
+   ]]></SQLQuery>
+   <EntityUsage
+      Name="SisAuthContrato"
+      Entity="enlace_datos.entidades.gestiones.contrato.SisAuthContrato" >
+      <DesignTime>
+         <Attr Name="_queryClause" Value="false" />
+      </DesignTime>
+   </EntityUsage>
+   <ViewAttribute
+      Name="IdAuthContrato"
+      IsNotNull="true"
+      EntityAttrName="IdAuthContrato"
+      EntityUsage="SisAuthContrato"
+      AliasName="ID_AUTH_CONTRATO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdAuthContratoSup"
+      EntityAttrName="IdAuthContratoSup"
+      EntityUsage="SisAuthContrato"
+      AliasName="ID_AUTH_CONTRATO_SUP" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdDependencia"
+      EntityAttrName="IdDependencia"
+      EntityUsage="SisAuthContrato"
+      AliasName="ID_DEPENDENCIA" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdUnidadProg"
+      EntityAttrName="IdUnidadProg"
+      EntityUsage="SisAuthContrato"
+      AliasName="ID_UNIDAD_PROG" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdUnidadDepen"
+      EntityAttrName="IdUnidadDepen"
+      EntityUsage="SisAuthContrato"
+      AliasName="ID_UNIDAD_DEPEN" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdUnidad"
+      EntityAttrName="IdUnidad"
+      EntityUsage="SisAuthContrato"
+      AliasName="ID_UNIDAD" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="RegistroEmpleado"
+      IsNotNull="true"
+      EntityAttrName="RegistroEmpleado"
+      EntityUsage="SisAuthContrato"
+      AliasName="REGISTRO_EMPLEADO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Cui"
+      IsPersistent="false"
+      Precision="13"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="CUI"
+      Expression="CUI"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="13" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Cargo"
+      IsNotNull="true"
+      EntityAttrName="Cargo"
+      EntityUsage="SisAuthContrato"
+      AliasName="CARGO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaInicio"
+      IsNotNull="true"
+      EntityAttrName="FechaInicio"
+      EntityUsage="SisAuthContrato"
+      AliasName="FECHA_INICIO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaBaja"
+      EntityAttrName="FechaBaja"
+      EntityUsage="SisAuthContrato"
+      AliasName="FECHA_BAJA" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Creadopor"
+      EntityAttrName="Creadopor"
+      EntityUsage="SisAuthContrato"
+      AliasName="CREADOPOR" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaCreacion"
+      IsNotNull="true"
+      EntityAttrName="FechaCreacion"
+      EntityUsage="SisAuthContrato"
+      AliasName="FECHA_CREACION" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Modpor"
+      EntityAttrName="Modpor"
+      EntityUsage="SisAuthContrato"
+      AliasName="MODPOR" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Fechamodificacion"
+      EntityAttrName="Fechamodificacion"
+      EntityUsage="SisAuthContrato"
+      AliasName="FECHAMODIFICACION" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nivel"
+      IsNotNull="true"
+      EntityAttrName="Nivel"
+      EntityUsage="SisAuthContrato"
+      AliasName="NIVEL" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nombrecompleto"
+      IsPersistent="false"
+      Precision="305"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBRECOMPLETO"
+      Expression="NOMBRECOMPLETO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="305" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nivel2"
+      IsPersistent="false"
+      Precision="17"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NIVEL2"
+      Expression="NIVEL2"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="17" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomdependencia"
+      IsPersistent="false"
+      Precision="250"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMDEPENDENCIA"
+      Expression="NOMDEPENDENCIA"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="250" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomunidad"
+      IsPersistent="false"
+      Precision="250"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMUNIDAD"
+      Expression="NOMUNIDAD"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="6" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Titulo"
+      EntityAttrName="Titulo"
+      EntityUsage="SisAuthContrato"
+      AliasName="TITULO" >
+   </ViewAttribute>
+</ViewObject>

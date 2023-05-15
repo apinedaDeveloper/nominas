@@ -1,0 +1,324 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <jsp:output omit-xml-declaration="true" doctype-root-element="HTML"
+              doctype-system="http://www.w3.org/TR/html4/loose.dtd"
+              doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN"/>
+  <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+  <f:loadBundle basename="propiedades" var="tx"/>
+  <f:view>
+    <afh:html>
+      <afh:head title="#{tx['hist_salEmpl.title']}">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+         <script language="javascript" type="text/javascript">     
+         function verDocumento(pIdDoc){  
+            window.open("/${flujo_usuario.dominioApp}/faces/verreportepdf?id="+pIdDoc+String.fromCharCode(38)+"rep=SIS20BOL","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+         } 
+         </script>
+      </afh:head>
+      <afh:body>
+        <af:messages/>
+        <af:form>
+          <af:page value="#{modeloMenu.modeloBD}" var="node"
+                   title="Historial Laboral">
+            <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+            <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+            <af:panelBox id="pnlBoxPrincipal" width="100%">
+              <af:panelHeader>
+                <af:panelHorizontal>
+                  <af:selectOneChoice label="#{tx['histSal.tblRsl_anio.texto']}"
+                                      value="#{bindings.pAnio1.inputValue}">
+                    <f:selectItems value="#{backing_bean_comun.listaComboAniosTrabajo}"/>
+                  </af:selectOneChoice>
+                  <af:commandButton text="#{tx['histSal.btn_buscar.texto']}"
+                                    disabled="#{!bindings.consultaEmpl.enabled}"
+                                    action="#{historial_salarial.buscar_opEmpl}"
+                                    inlineStyle="font-size:medium; font-weight:bold;"/>
+                  <f:facet name="separator">
+                    <af:objectSpacer width="20" height="10"/>
+                  </f:facet>
+                </af:panelHorizontal>
+                <af:panelList inlineStyle="color:rgb(0,49,82); font-size:small; font-weight:bold;">
+                  <af:outputText value="#{tx['histSal.tip1.texto']}"/>
+                </af:panelList>
+              </af:panelHeader>
+              <af:showOneTab>
+                <af:showDetailItem text="#{tx['histSal.tab1.texto']}">
+                  <af:objectSpacer width="10" height="20"/>
+                  <af:table value="#{bindings['Sis_historial_salarial'].collectionModel}"
+                            var="row"
+                            rows="#{bindings['Sis_historial_salarial'].rangeSize}"
+                            first="0"
+                            emptyText="#{tx['tbl_empty.texto']}" banding="row"
+                            bandingInterval="1" id="tbl_historial_salarial"
+                            selectionState="#{bindings['Sis_historial_salarial'].collectionModel.selectedRow}"
+                            width="80%">
+                    <f:facet name="footer">
+                      <af:outputText value="Total"/>
+                    </f:facet>
+                    <af:column sortProperty="Partida1" sortable="true"
+                               headerText="#{tx['histSal.tblRsl_partida.texto']}">
+                      <af:outputText value="#{row.Partida1}"/>
+                    </af:column>
+                    <af:column sortProperty="NumeroPlaza" sortable="true"
+                               headerText="#{tx['histSal.tblRsl_plaza.texto']}">
+                      <af:outputText value="#{row.NumeroPlaza}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_historial_salarial'].formats.NumeroPlaza}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Tiponomina" sortable="true"
+                               headerText="#{tx['histSal.tblRsl_nomina.texto']}"
+                               noWrap="true">
+                      <af:outputText value="#{row.Tiponomina}"/>
+                    </af:column>
+                    <af:column sortProperty="Periodo" sortable="true"
+                               headerText="Período">
+                      <af:outputText value="#{row.Periodo}"/>
+                    </af:column>
+                    <af:column sortProperty="Correlativo" sortable="true"
+                               headerText="#{tx['histSal.tblRsl_anio.texto']}">
+                      <af:outputText value="#{row.Correlativo}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_historial_salarial'].formats.Anio}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Nominal" sortable="true"
+                               headerText="#{bindings['Sis_historial_salarial'].labels.Nominal}"
+                               formatType="number" noWrap="true">
+                      <af:outputText value="Q.#{row.Nominal}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_historial_salarial'].formats.Nominal}"/>
+                      </af:outputText>
+                      <f:facet name="footer">
+                        <af:outputText value="Q.#{bindings.getTotalNominal1.inputValue}"/>
+                      </f:facet>
+                    </af:column>
+                    <af:column sortProperty="TotalBono" sortable="true"
+                               headerText="#{tx['histSal.tblRsl_bono.texto']}"
+                               formatType="number" noWrap="true">
+                      <af:outputText value="Q.#{row.TotalBono}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_historial_salarial'].formats.TotalBono}"/>
+                      </af:outputText>
+                      <f:facet name="footer">
+                        <af:outputText value="Q.#{bindings.getTotalBono1.inputValue}"/>
+                      </f:facet>
+                    </af:column>
+                    <af:column sortable="true" headerText="Tipo Documento"
+                               sortProperty="Nomtipodoc">
+                      <af:outputText value="#{row.Nomtipodoc eq 'ACR' ? 'ACREDITAMIENTO' : 'CHEQUE'}"/>
+                    </af:column>
+                    <af:column sortProperty="NumDocFisico" sortable="true"
+                               headerText="#{tx['histSal.tblRsl_nodoc.texto']}">
+                      <af:commandLink text="#{row.NumDocFisico}"
+                                      disabled="#{!bindings.setCurrentRowWithKey.enabled}"
+                                      action="#{historial_salarial.cmd_num_pago_tabla1}"/>
+                    </af:column>
+                    <af:column sortable="true" headerText="Fecha Emisión"
+                               sortProperty="FechaEmision">
+                      <af:outputText value="#{row.FechaEmision}">
+                        <f:convertDateTime pattern="dd/MM/yyyy"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="FechaAnulacion" sortable="true"
+                               headerText="Fecha Anulación" rendered="false">
+                      <af:outputText value="#{row.FechaAnulacion}">
+                        <f:convertDateTime pattern="dd/MM/yyyy"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortable="false" headerText="Ver Documento">
+                      <af:commandLink rendered="#{row.Nomtipodoc eq 'ACR'}"
+                                      onclick="verDocumento('#{row.IdDocumentoBanco}'); return false;">
+                        <af:objectImage source="/imagenes/print2.png"/>
+                      </af:commandLink>
+                    </af:column>
+                  </af:table>
+                </af:showDetailItem>
+                <af:showDetailItem text="#{tx['histSal.tab2.texto']}">
+                  <af:objectSpacer width="10" height="30"/>
+                  <af:panelGroup>
+                    <af:panelHorizontal>
+                      <af:selectOneChoice id="navList1" autoSubmit="false"
+                                          value="#{bindings['Sis_list_dest_empleado_vw'].inputValue}"
+                                          label="#{tx['histSal.cmb_listDesc.texto']}">
+                        <f:selectItems value="#{bindings['Sis_list_dest_empleado_vw'].items}"/>
+                      </af:selectOneChoice>
+                      <af:commandButton text="#{tx['histSal.btn_buscar.texto']}"
+                                        disabled="#{!bindings.ListadoDesc.enabled}"
+                                        actionListener="#{bindings.ListadoDesc.execute}"/>
+                      <f:facet name="separator">
+                        <af:objectSpacer width="30" height="10"/>
+                      </f:facet>
+                    </af:panelHorizontal>
+                  </af:panelGroup>
+                  <af:objectSeparator/>
+                  <af:table value="#{bindings['Sis_list_detPagoDesc_vw'].collectionModel}"
+                            var="row"
+                            rows="#{bindings['Sis_list_detPagoDesc_vw'].rangeSize}"
+                            first="#{bindings['Sis_list_detPagoDesc_vw'].rangeStart}"
+                            emptyText="#{tx['tbl_empty.texto']}" banding="row"
+                            bandingInterval="1">
+                    <f:facet name="header">
+                      <af:outputText value="#{bindings.Nomdesc.inputValue}"
+                                     inlineStyle="font-size:large;"/>
+                    </f:facet>
+                    <f:facet name="footer">
+                      <af:outputText value="Total"/>
+                    </f:facet>
+                    <af:column sortProperty="Numpartida" sortable="false"
+                               headerText="#{tx['histSal.tblRsl_partida.texto']}">
+                      <af:outputText value="#{row.Numpartida}"/>
+                    </af:column>
+                    <af:column sortProperty="NumeroPlaza" sortable="false"
+                               headerText="#{tx['histSal.tblRsl_plaza.texto']}">
+                      <af:outputText value="#{row.NumeroPlaza}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_list_detPagoDesc_vw'].formats.NumeroPlaza}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Tiponomina" sortable="false"
+                               headerText="#{tx['histSal.tblRsl_nomina.texto']}"
+                               noWrap="true">
+                      <af:outputText value="#{row.Tiponomina}"/>
+                    </af:column>
+                    <af:column sortProperty="Nomperiodo" sortable="false"
+                               headerText="#{bindings['Sis_historial_salarial'].labels.Periodo}">
+                      <af:outputText value="#{row.Nomperiodo}"/>
+                    </af:column>
+                    <af:column sortProperty="Anio" sortable="false"
+                               headerText="#{tx['histSal.tblRsl_anio.texto']}">
+                      <af:outputText value="#{row.Anio}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_list_detPagoDesc_vw'].formats.Anio}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="ValorAplicado" sortable="false"
+                               headerText="#{bindings['Sis_list_detPagoDesc_vw'].labels.ValorAplicado}"
+                               formatType="number">
+                      <af:outputText value="Q. #{row.ValorAplicado}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_list_detPagoDesc_vw'].formats.ValorAplicado}"/>
+                      </af:outputText>
+                      <f:facet name="footer">
+                        <af:outputText value="Q.#{bindings.TotalAplicado.inputValue}"/>
+                      </f:facet>
+                    </af:column>
+                    <af:column sortProperty="Tipopago" sortable="false"
+                               headerText="#{bindings['Sis_list_detPagoDesc_vw'].labels.Tipopago}">
+                      <af:outputText value="#{row.Tipopago}"/>
+                    </af:column>
+                    <af:column sortProperty="Banco" sortable="false"
+                               headerText="#{bindings['Sis_list_detPagoDesc_vw'].labels.Banco}">
+                      <af:outputText value="#{row.Banco}"/>
+                    </af:column>
+                    <af:column sortProperty="NumDocFisico" sortable="false"
+                               headerText="#{tx['histSal.tblRsl_nodoc.texto']}">
+                      <af:commandLink text="#{row.NumDocFisico}"
+                                      action="#{historial_salarial.cmd_link_descuento}"/>
+                    </af:column>
+                  </af:table>
+                </af:showDetailItem>
+                <af:showDetailItem text="Devolución de ISR" disclosed="false">
+                  <af:table value="#{bindings['Sis_historial_salarial_Isr'].collectionModel}"
+                            var="row"
+                            rows="#{bindings['Sis_historial_salarial_Isr'].rangeSize}"
+                            first="#{bindings['Sis_historial_salarial_Isr'].rangeStart}"
+                            emptyText="#{tx['tbl_empty.texto']}" banding="row"
+                            bandingInterval="1" id="tbl_devISR">
+                    <f:facet name="footer">
+                      <af:outputText value="Total"/>
+                    </f:facet>
+                    <af:column sortProperty="Partida1" sortable="true"
+                               headerText="#{tx['histSal.tblRsl_partida.texto']}">
+                      <af:outputText value="#{row.Partida1}"/>
+                    </af:column>
+                    <af:column sortProperty="NumeroPlaza" sortable="true"
+                               headerText="#{tx['histSal.tblRsl_plaza.texto']}">
+                      <af:outputText value="#{row.NumeroPlaza}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_historial_salarial'].formats.NumeroPlaza}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Tiponomina" sortable="true"
+                               headerText="#{tx['histSal.tblRsl_nomina.texto']}"
+                               noWrap="true">
+                      <af:outputText value="#{row.Tiponomina}"/>
+                    </af:column>
+                    <af:column sortProperty="Periodo" sortable="true"
+                               headerText="#{bindings['Sis_historial_salarial'].labels.Periodo}">
+                      <af:outputText value="#{row.Periodo}"/>
+                    </af:column>
+                    <af:column sortProperty="Anio" sortable="true"
+                               headerText="#{tx['histSal.tblRsl_anio.texto']}">
+                      <af:outputText value="#{row.Correlativo}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_historial_salarial'].formats.Anio}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="Nominal" sortable="true"
+                               headerText="#{bindings['Sis_historial_salarial'].labels.Nominal}"
+                               formatType="number" noWrap="true">
+                      <af:outputText value="Q.#{row.Nominal}">
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['Sis_historial_salarial'].formats.Nominal}"/>
+                      </af:outputText>
+                      <f:facet name="footer">
+                        <h:panelGroup>
+                          <af:outputText value="Q.#{bindings.getTotalNominal4.inputValue}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings.getTotalNominal4.format}"/>
+                          </af:outputText>
+                        </h:panelGroup>
+                      </f:facet>
+                    </af:column>
+                    <af:column sortProperty="NumDocFisico" sortable="true"
+                               headerText="#{tx['histSal.tblRsl_nodoc.texto']}">
+                      <af:commandLink text="#{row.NumDocFisico}" disabled="true"
+                                      action="#{historial_salarial.cmd_num_pago_tabla1}"/>
+                    </af:column>
+                    <af:column sortable="true" headerText="Fecha Emisión"
+                               sortProperty="FechaEmision">
+                      <af:outputText value="#{row.FechaEmision}"/>
+                    </af:column>
+                    <af:column sortProperty="FechaAnulacion" sortable="true"
+                               headerText="#{bindings['Sis_historial_salarial'].labels.FechaAnulacion}">
+                      <af:outputText value="#{row.FechaAnulacion}">
+                        <f:convertDateTime pattern="#{bindings['Sis_historial_salarial'].formats.FechaAnulacion}"/>
+                      </af:outputText>
+                    </af:column>
+                  </af:table>
+                </af:showDetailItem>
+              </af:showOneTab>
+            </af:panelBox>
+          </af:page>
+        </af:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:historial_salarial-->
+</jsp:root>

@@ -1,0 +1,497 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces"
+          xmlns:afh="http://xmlns.oracle.com/adf/faces/html">
+  <jsp:output omit-xml-declaration="true" doctype-root-element="HTML"
+              doctype-system="http://www.w3.org/TR/html4/loose.dtd"
+              doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN"/>
+  <jsp:directive.page contentType="text/html;charset=windows-1252"/>
+  <f:view>
+    <afh:html>
+        <jsp:include page="/js/libJQ.js"/>       
+       <jsp:include page="/js/librariesDialog.js"/>           
+      <script type="text/javascript" src="/${flujo_usuario.dominioApp}/js/gestiones/scrptAutorizacion.js">
+      var xy=new Date().getMilliseconds();      
+      </script>
+      <afh:head title="Reintegros">
+        <meta http-equiv="Content-Type"
+              content="text/html; charset=windows-1252"/>
+
+        <script language="javascript" type="text/javascript"> 
+            gbl_form="form1";
+            gbl_actionId="form1:page1:cmdRefresh";
+       
+            function newCompl(){    
+                submitForm('form1',1,{source:'form1:page1:btn_nuevo'});
+                return false;
+            }
+            
+            function verRepo(pIdReintegro){
+                window.open("../verreportepdf?id="+pIdReintegro+String.fromCharCode(38)+"rep=REP_REINTEGRO","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+                return false;
+            }
+            
+            function verOrden(pIdReintegro){
+                window.open("../verreportepdf?id="+pIdReintegro+String.fromCharCode(38)+"rep=REP_ORDENPAGO","preview","width=640,height=640,scrollbars=YES,location=NO,directories=NO,resizable =1"); 
+                return false;
+            }
+                 
+                 
+        </script>      
+              
+      </afh:head>
+       
+      
+      <f:loadBundle basename="propiedades" var="tx"/>
+      <afh:body>
+        <af:messages/>
+        <h:form id="form1">
+        <af:page value="#{modeloMenu.modeloBD}" var="node" id="page1">
+           <f:facet name="nodeStamp">
+              <af:commandMenuItem text="#{node.label}"
+                                  actionListener="#{modeloMenu.listener_menu}"
+                                  disabled="#{node.readOnly}"
+                                  rendered="#{node.shown}"
+                                  action="#{node.getOutcome}"/>
+            </f:facet>
+            <f:facet name="infoUser">
+              <f:subview id="info1">
+                <jsp:include page="/global/facet_infoUser.jspx"/>
+              </f:subview>
+            </f:facet>
+             <f:facet name="menuSwitch">
+              <f:subview id="menuSwt">
+                <jsp:include page="/global/facet_menuSwitch.jspx"/>
+              </f:subview>
+            </f:facet>
+            <f:facet name="branding">
+              <f:subview id="logo">
+                <jsp:include page="/global/facet_branding.jspx"/>
+              </f:subview>
+            </f:facet>
+           
+              <af:panelHorizontal halign="center">
+              <af:panelBox>
+                <f:verbatim>
+                <input type="hidden" name="hdn_tipo" id="hdn_tipo" value="20"/>
+                <input type="hidden" name="hdn_Id" id="hdn_Id"
+                       value="${bindings.IdReintegro.inputValue}"/>
+              </f:verbatim>
+                <af:showOneTab>
+                  <af:showDetailItem text="Historico"
+                                     binding="#{backing_bean_gestiones_reintegro.tab_hist}">
+                    <af:commandLink id="btn_nuevo"
+                                  action="#{backing_bean_gestiones_reintegro.btn_nuevo_action}"
+                                  disabled="true"/>
+                    <af:panelForm>
+                      <af:selectInputDate value="#{bindings.pFechaInicio.inputValue}"
+                                          label="Fecha Inicio"
+                                          required="#{bindings.pFechaInicio.mandatory}">
+                        <af:validator binding="#{bindings.pFechaInicio.validator}"/>
+                        <f:convertDateTime pattern="#{bindings.pFechaInicio.format}"/>
+                      </af:selectInputDate>
+                      <af:selectInputDate value="#{bindings.pFechaFin.inputValue}"
+                                          label="Fecha Fin"
+                                          required="#{bindings.pFechaFin.mandatory}">
+                        <af:validator binding="#{bindings.pFechaFin.validator}"/>
+                        <f:convertDateTime pattern="#{bindings.pFechaFin.format}"/>
+                      </af:selectInputDate>
+                      <af:commandButton actionListener="#{bindings.BuscarReintporFechas.execute}"
+                                        text="Buscar"/>
+                    </af:panelForm>
+                    <af:table value="#{bindings['sis_reintegro_vw1'].collectionModel}"
+                              var="row"
+                              rows="#{bindings['sis_reintegro_vw1'].rangeSize}"
+                              first="#{bindings['sis_reintegro_vw1'].rangeStart}"
+                              emptyText="#{bindings['sis_reintegro_vw1'].viewable ? 'No rows yet.' : 'Access Denied.'}"
+                              width="1000px">
+                      <af:column sortProperty="IdReintegro" sortable="false"
+                                 headerText="#{bindings['sis_reintegro_vw1'].labels.IdReintegro}">
+                        <af:commandLink text="#{row.IdReintegro}"
+                                        action="#{backing_bean_gestiones_reintegro.verReintegro}"/>
+                      </af:column>
+                      <af:column sortProperty="NumDocFisico" sortable="false"
+                                 headerText="Numero Documento">
+                        <af:outputText value="#{row.NumDocFisico}">
+                          <f:convertNumber groupingUsed="false"
+                                           pattern="#{bindings['sis_reintegro_vw1'].formats.NumDocFisico}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortable="false" headerText="Tipo Documento">
+                        <af:outputText value="#{row.TipoDoc}  "/>
+                      </af:column>
+                      <af:column sortable="false" headerText="Observaciones">
+                        <af:outputText value="#{row.Observaciones}"/>
+                      </af:column>
+                      <af:column sortProperty="CreadoPor" sortable="false"
+                                 headerText="#{bindings['sis_reintegro_vw1'].labels.CreadoPor}">
+                        <af:outputText value="#{row.CreadoPor}"/>
+                      </af:column>
+                      <af:column sortProperty="FechaCreacion" sortable="false"
+                                 headerText="#{bindings['sis_reintegro_vw1'].labels.FechaCreacion}">
+                        <af:outputText value="#{row.FechaCreacion}">
+                          <f:convertDateTime pattern="#{bindings['sis_reintegro_vw1'].formats.FechaCreacion}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortable="false" headerText="Estado">
+                        <af:outputText value="#{row.Estado}"/>
+                      </af:column>
+                      <af:column sortable="false" headerText="Orden de Pago">
+                        <af:outputText value="#{row.EstadoOrden}"/>
+                      </af:column>
+                    </af:table>
+                  </af:showDetailItem>
+                  <af:showDetailItem text="Nuevo Reintegro"
+                                     binding="#{backing_bean_gestiones_reintegro.tab_det_reint}"
+                                     disclosed="false"
+                                     onclick="return newCompl();">
+                    <af:panelHeader text="Id: [ #{bindings.pNuevo1.inputValue == '0' ? bindings.IdReintegro.inputValue : '' }  ]"
+                                    size="0"/>
+                    <af:panelForm>
+                      <af:inputText value="#{bindings['var_NumCheque1'].inputValue}"
+                                    label="#{tx['buscar_cheq_anular.inpt_numPago.label']}"
+                                    required="#{bindings['var_NumCheque1'].mandatory}"
+                                    columns="#{bindings['var_NumCheque1'].displayWidth}"
+                                    binding="#{backing_bean_gestiones_reintegro.txtNumDoc}"
+                                    disabled="#{bindings.pNuevo1.inputValue == '0' ? true : false}">
+                        <af:validator binding="#{bindings['var_NumCheque1'].validator}"/>
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['var_NumCheque1'].format}"/>
+                      </af:inputText>
+                      <af:selectOneChoice value="#{bindings['var_tipoDoc1'].inputValue}"
+                                          label="#{tx['buscar_cheq_anular.cmb_tipoDoc.label']}"
+                                          required="#{bindings['var_tipoDoc1'].mandatory}"
+                                          binding="#{backing_bean_gestiones_reintegro.cmbTipoDoc}"
+                                          disabled="#{bindings.pNuevo1.inputValue == '0' ? true : false}">
+                        <af:validator binding="#{bindings['var_tipoDoc1'].validator}"/>
+                        <f:convertNumber groupingUsed="false"
+                                         pattern="#{bindings['var_tipoDoc1'].format}"/>
+                        <af:selectItem label="CHEQUE" value="1"/>
+                        <af:selectItem label="ACREDITACION" value="2"/>
+                      </af:selectOneChoice>
+                      <af:commandButton text="Buscar"
+                                        actionListener="#{bindings.ExecuteWithParams.execute}"/>
+                      <af:objectSpacer width="10" height="30"/>
+                      <af:table value="#{bindings['consul_buscheque_anular1'].collectionModel}"
+                                var="row"
+                                rows="#{bindings['consul_buscheque_anular1'].rangeSize}"
+                                first="#{bindings['consul_buscheque_anular1'].rangeStart}"
+                                emptyText="#{bindings['consul_buscheque_anular1'].viewable ? 'Ninguna fila' : 'Ninguna fila'}"
+                                width="1000" banding="row" bandingInterval="1"
+                                id="tb_pagos_cheque"
+                                selectionListener="#{bindings['consul_buscheque_anular1'].collectionModel.makeCurrent}"
+                                selectionState="#{bindings['consul_buscheque_anular1'].collectionModel.selectedRow}">
+                        <f:facet name="header">
+                          <af:outputText value="#{tx['buscar_cheq_anular.tbl1_header.texto']}"/>
+                        </f:facet>
+                        <f:facet name="selection">
+                          <af:tableSelectOne text="Select items and ..."
+                                             autoSubmit="true"
+                                             id="sel_tb_pago_cheq"/>
+                        </f:facet>
+                        <af:column sortProperty="NumDocFisico" sortable="false"
+                                   headerText="#{tx['buscar_cheq_anular.tb11_numdoc.texto']}">
+                          <af:outputText value="#{row.NumDocFisico}"/>
+                        </af:column>
+                        <af:column sortable="false"
+                                   headerText="#{tx['buscar_cheq_anular.tbl1_nomina.texto']}">
+                          <af:outputText value="#{row.Tiponom}"/>
+                        </af:column>
+                        <af:column sortProperty="Mes" sortable="false"
+                                   headerText="#{tx['buscar_cheq_anular.tb11_mes.texto']}">
+                          <af:outputText value="#{row.Mes}"/>
+                        </af:column>
+                        <af:column sortable="false"
+                                   headerText="#{tx['buscar_cheq_anular.tbl1_partida.texto']}">
+                          <af:outputText value="#{row.Formato}"/>
+                        </af:column>
+                        <af:column sortable="false"
+                                   headerText="#{tx['buscar_cheq_anular.tbl1_numPlaza.texto']}">
+                          <af:outputText value="#{row.NumeroPlaza}"/>
+                        </af:column>
+                        <af:column sortable="false"
+                                   headerText="#{tx['buscar_cheq_anular.tbl1_regEmpleado.texto']}">
+                          <af:outputText value="#{row.RegistroEmpleado}"
+                                         converter="javax.faces.Character"/>
+                        </af:column>
+                        <af:column sortable="false" headerText="CUI">
+                          <af:outputText value="#{row.Cui}"/>
+                        </af:column>
+                        <af:column sortProperty="Nombre1" sortable="false"
+                                   headerText="#{tx['buscar_cheq_anular.tb11_nomEmpl.texto']}"
+                                   noWrap="true">
+                          <af:outputText value="#{row.Nombrecompleto}"/>
+                        </af:column>
+                        <af:column sortable="false"
+                                   headerText="#{tx['buscar_cheq_anular.tb11_anio.texto']}">
+                          <af:outputText value="#{row.Correlativo}"/>
+                        </af:column>
+                        <af:column sortProperty="Valor" sortable="false"
+                                   headerText="#{tx['buscar_cheq_anular.tb11_monto.texto']}">
+                          <af:outputText value="#{row.Liquido}">
+                            <f:convertNumber groupingUsed="false"
+                                             pattern="#{bindings['consul_buscheque_anular1'].formats.Valor}"/>
+                          </af:outputText>
+                        </af:column>
+                        <af:column sortable="false"
+                                   headerText="#{tx['buscar_cheq_anular.tbl1_estado.texto']}">
+                          <af:outputText value="#{row.Nomestado}"/>
+                        </af:column>
+                      </af:table>
+                      <af:outputText value="#{bindings.IdNomina.inputValue}"
+                                     partialTriggers="tb_pagos_cheque"
+                                     rendered="false"/>
+                      <af:panelHorizontal halign="left">
+                        <af:selectBooleanCheckbox text="Generar todos los pagos"
+                                                  selected="true"
+                                                  valueChangeListener="#{backing_bean_gestiones_reintegro.selBolChbox}"
+                                                  autoSubmit="true"
+                                                  binding="#{backing_bean_gestiones_reintegro.checkGenTodos}"/>
+                        <af:objectSpacer width="20" height="10"/>
+                        <af:inputText label="Observaciones"                                      
+                                      columns="50" rows="5"
+                                      binding="#{backing_bean_gestiones_reintegro.txtObservaciones}">
+                          
+                        </af:inputText>
+                      </af:panelHorizontal>
+                      <af:panelButtonBar>
+                        <af:commandButton text="Generar Reintegro"
+                                          action="#{backing_bean_gestiones_reintegro.btn_generar_reintegro}"
+                                          partialSubmit="false"
+                                          id="btnGenReintegro"/>
+                        <af:commandLink onclick="verRepo('#{bindings.IdReintegro.inputValue}');">
+                          <af:objectImage source="/imagenes/printer_1.png"/>
+                        </af:commandLink>
+                        <af:commandLink onclick="return validaReintegro();">
+                          <af:objectImage source="/imagenes/btn_trasladar.png"/>
+                        </af:commandLink>
+                        <af:commandLink onclick="return OpenDialogo(2);">
+                          <af:objectImage source="/imagenes/btn_anular.png"/>
+                        </af:commandLink>
+                        <af:commandButton text="Ver Orden de Pago" disabled="#{bindings.IsFormaActiva.inputValue}" onclick="verOrden('#{bindings.IdReintegro.inputValue}');"/>
+                        <af:commandLink id="cmdRefresh"
+                                      action="#{backing_bean_gestiones_reintegro.cmd_refresh}"
+                                      disabled="true"/>
+                      </af:panelButtonBar>
+                      <af:objectSpacer width="10" height="25"/>
+                      <af:table value="#{bindings.SisDetalleReintegroVw1.collectionModel}"
+                                var="row"
+                                rows="#{bindings.SisDetalleReintegroVw1.rangeSize}"
+                                first="#{bindings.SisDetalleReintegroVw1.rangeStart}"
+                                emptyText="#{bindings.SisDetalleReintegroVw1.viewable ? 'No rows yet.' : 'Access Denied.'}">
+                        <f:facet name="selection">
+                          <af:tableSelectOne text="Select items and ..." disabled="#{!bindings.IsFormaActiva.inputValue}"/>
+                        </f:facet>
+                        <f:facet name="actions">
+                          <h:panelGroup>
+                            <af:panelButtonBar>
+                              <af:commandButton text="Guardar" id="btn_guardarEdicion" disabled="#{!bindings.IsFormaActiva.inputValue}"
+                                                action="#{backing_bean_gestiones_reintegro.btn_guardar_reintegro}"/>
+                              <af:commandButton text="Cancelar" disabled="false"
+                                                action="#{backing_bean_gestiones_reintegro.btn_cancelar}"/>
+                            </af:panelButtonBar>
+                          </h:panelGroup>
+                        </f:facet>
+                        <af:column sortable="false" headerText="Eliminar">
+                          <af:commandLink disabled="#{!bindings.IsFormaActiva.inputValue}"
+                                          action="#{backing_bean_gestiones_reintegro.cmd_eliminar_det}">
+                            <af:objectImage source="/imagenes/borrar.png"/>
+                          </af:commandLink>
+                        </af:column>
+                        <af:column sortable="false" headerText="Editar">
+                          <af:commandLink disabled="#{!bindings.IsFormaActiva.inputValue}"
+                                          action="#{backing_bean_gestiones_reintegro.cmd_editar_detReint}">
+                            <af:objectImage source="/imagenes/form_edit.png"/>
+                          </af:commandLink>
+                        </af:column>
+                        <af:column sortProperty="Tiponom" sortable="false"
+                                   headerText="#{bindings.SisDetalleReintegroVw1.labels.Tiponom}">
+                          <h:outputText value="#{row.Tiponom}"/>
+                        </af:column>
+                        <af:column sortProperty="Mes" sortable="false"
+                                   headerText="#{bindings.SisDetalleReintegroVw1.labels.Mes}">
+                          <h:outputText value="#{row.Mes}"/>
+                        </af:column>
+                        <af:column sortProperty="Formato" sortable="false"
+                                   headerText="#{bindings.SisDetalleReintegroVw1.labels.Formato}">
+                          <h:outputText value="#{row.Formato}"/>
+                        </af:column>
+                        <af:column sortProperty="NumeroPlaza" sortable="false"
+                                   headerText="#{bindings.SisDetalleReintegroVw1.labels.NumeroPlaza}">
+                          <h:outputText value="#{row.NumeroPlaza}"/>
+                        </af:column>
+                        <af:column sortProperty="SueldoBase" sortable="false"
+                                   headerText="#{bindings.SisDetalleReintegroVw1.labels.SueldoBase}">
+                          <af:outputText value="#{row.SueldoBase}"
+                                         rendered="#{!row.isSel}"/>
+                          <af:inputText columns="8" value="#{row.SueldoBase}"
+                                        rendered="#{row.isSel}"/>
+                        </af:column>
+                        <af:column sortProperty="Escalafon" sortable="false"
+                                   headerText="#{bindings.SisDetalleReintegroVw1.labels.Escalafon}">
+                          <af:outputText value="#{row.Escalafon}"
+                                         rendered="#{!row.isSel}"/>
+                          <af:inputText columns="8" value="#{row.Escalafon}"
+                                        rendered="#{row.isSel}"/>
+                        </af:column>
+                        <af:column sortProperty="ComplSalarial" sortable="false"
+                                   headerText="#{bindings.SisDetalleReintegroVw1.labels.ComplSalarial}">
+                          <af:outputText value="#{row.ComplSalarial}"
+                                         rendered="#{!row.isSel}"/>
+                          <af:inputText columns="8" value="#{row.ComplSalarial}"
+                                        rendered="#{row.isSel}"/>
+                        </af:column>
+                        <af:column sortable="false" headerText="Nominal">
+                          <af:outputText value="#{row.Nominal}"/>
+                        </af:column>
+                        <af:column sortable="false" headerText="Dias Laborados">
+                          <af:outputText value="#{row.Diaslaborados}"
+                                         rendered="#{!row.isSel}"/>
+                          <af:inputText columns="8" value="#{row.Diaslaborados}"
+                                        rendered="#{row.isSel}"/>
+                        </af:column>
+                        <af:column sortable="false" headerText="Total Bono">
+                          <af:outputText value="#{row.TotalBono}"
+                                         partialTriggers="tbl_det_desc"/>
+                        </af:column>
+                        <af:column sortable="false"
+                                   headerText="Total Descuentos">
+                          <af:outputText value="#{row.TotalDescuentos}"
+                                         partialTriggers="tbl_det_desc"/>
+                          <af:table value="#{bindings.SisDescuentoReintegroVw1.collectionModel}"
+                                    rendered="#{row.isSel}" var="row"
+                                    rows="#{bindings.SisDescuentoReintegroVw1.rangeSize}"
+                                    first="#{bindings.SisDescuentoReintegroVw1.rangeStart}"
+                                    emptyText="#{bindings.SisDescuentoReintegroVw1.viewable ? 'No rows yet.' : 'Access Denied.'}"
+                                    id="tbl_det_desc"
+                                    partialTriggers="tbl_det_desc:btn_agregar_desc tbl_det_desc:cmd_eliminar_Desc"
+                                    selectionListener="#{bindings.SisDescuentoReintegroVw1.collectionModel.makeCurrent}"
+                                    selectionState="#{bindings.SisDescuentoReintegroVw1.collectionModel.selectedRow}">
+                            <f:facet name="actions">
+                              <af:panelForm>
+                                <af:selectOneChoice value="#{bindings.pIdAjuste.inputValue}"
+                                                    label="Descuento/Bono"
+                                                    required="#{bindings.pIdAjuste.mandatory}">
+                                  <af:validator binding="#{bindings.pIdAjuste.validator}"/>
+                                  <f:convertNumber groupingUsed="false"
+                                                   pattern="#{bindings.pIdAjuste.format}"/>
+                                  <af:selectItem label="- BONO MENSUAL"
+                                                 value="27"/>
+                                  <af:selectItem label="01 ISR" value="1"/>
+                                  <af:selectItem label="02 TIMBRE COL ECONOMISTAS"
+                                                 value="2"/>
+                                  <af:selectItem label="03 PRESTAMO BANTRAB"
+                                                 value="3"/>
+                                  <af:selectItem label="04 POR DEUDA"
+                                                 value="30"/>
+                                  <af:selectItem label="04 POR ALIMENTOS"
+                                                 value="4"/>
+                                  <af:selectItem label="05 PRESTACIONES PAGADAS DE MAS"
+                                                 value="5"/>
+                                  <af:selectItem label="06 SUSPE TRAB SIN GOCE DE SUELDO"
+                                                 value="6"/>
+                                  <af:selectItem label="07 PAGO DEUDORES"
+                                                 value="7"/>
+                                  <af:selectItem label="08 FIDEICOMISO"
+                                                 value="8"/>
+                                  <af:selectItem label="09 PRESTAMO PLAN PRESTACIONES"
+                                                 value="9"/>
+                                  <af:selectItem label="10 CUOTA SEGURO DE CREDITO"
+                                                 value="10"/>
+                                  <af:selectItem label="105 BONO MENSUAL PAGADO DE MAS"
+                                                 value="40"/>
+                                  <af:selectItem label="11 CUOTA COOPERATIVA DE VIVIENDA"
+                                                 value="11"/>
+                                  <af:selectItem label="12 PRESTAMO BANRURAL"
+                                                 value="12"/>
+                                  <af:selectItem label="13 SINDICATO DOCENTE"
+                                                 value="13"/>
+                                  <af:selectItem label="14 CUOTA PENDIENTE PLAN PREST"
+                                                 value="14"/>
+                                  <af:selectItem label="15 SUELDOS PAGADOS DE MAS"
+                                                 value="15"/>
+                                  <af:selectItem label="16 FALTAS AL TRABAJO"
+                                                 value="16"/>
+                                  <af:selectItem label="17 DESCUENTOS A TERCEROS"
+                                                 value="17"/>
+                                  <af:selectItem label="18 VARIOS" value="18"/>
+                                  <af:selectItem label="19 PRESTAMO MORA BANCO BANTRAB"
+                                                 value="19"/>
+                                  <af:selectItem label="20 TIMBRE ARQUITECTOS"
+                                                 value="32"/>
+                                  <af:selectItem label="21 IGSS 3%" value="25"/>
+                                  <af:selectItem label="21 IGSS 4.83"
+                                                 value="21"/>
+                                  <af:selectItem label="23 SINDICATO ADMINISTRATIVO"
+                                                 value="23"/>
+                                  <af:selectItem label="24 CUOTA PLAN DE PRESTACIONES"
+                                                 value="24"/>
+                                  <af:selectItem label="25 SIPT" value="41"/>
+                                  <af:selectItem label="35 FIANZA DE FIDELIDAD"
+                                                   value="52"/>
+                                </af:selectOneChoice>
+                                <af:inputText value="#{bindings.pValorDesc.inputValue}"
+                                              label="Monto"
+                                              required="#{bindings.pValorDesc.mandatory}"
+                                              columns="6"
+                                              tip="Dejar en blanco para calculo automatico">
+                                  <af:validator binding="#{bindings.pValorDesc.validator}"/>
+                                  <f:convertNumber groupingUsed="false"
+                                                   pattern="#{bindings.pValorDesc.format}"/>
+                                </af:inputText>
+                                <af:commandButton text="Agregar"
+                                                  action="#{backing_bean_gestiones_reintegro.btn_agregar_descuento}"
+                                                  id="btn_agregar_desc"
+                                                  partialSubmit="true"/>
+                              </af:panelForm>
+                            </f:facet>
+                            <af:column sortProperty="IdAjuste" sortable="false"
+                                       headerText="Bono/Desc">
+                              <af:outputText value="#{row.CodNomina} - #{row.Nomajusteabre}">
+                                <f:convertNumber groupingUsed="false"
+                                                 pattern="#{bindings.SisDescuentoReintegroVw1.formats.IdAjuste}"/>
+                              </af:outputText>
+                            </af:column>
+                            <af:column sortProperty="ValorAplicado"
+                                       sortable="false"
+                                       headerText="#{bindings.SisDescuentoReintegroVw1.labels.ValorAplicado}">
+                              <af:outputText value="#{row.ValorAplicado}">
+                                <f:convertNumber groupingUsed="false"
+                                                 pattern="#{bindings.SisDescuentoReintegroVw1.formats.ValorAplicado}"/>
+                              </af:outputText>
+                            </af:column>
+                            <af:column sortable="false" headerText=" -">
+                              <af:commandLink action="#{backing_bean_gestiones_reintegro.cmd_eliminar_desc}"
+                                              id="cmd_eliminar_Desc"
+                                              partialSubmit="true">
+                                <af:objectImage source="/imagenes/borrar.png"/>
+                              </af:commandLink>
+                            </af:column>
+                          </af:table>
+                        </af:column>
+                        <af:column sortable="false" headerText="Liquido">
+                          <af:outputText value="#{row.Liquido}"
+                                         partialTriggers="tbl_det_desc"/>
+                        </af:column>
+                        <af:column sortProperty="FechaCreacion" sortable="false"
+                                   headerText="#{bindings.SisDetalleReintegroVw1.labels.FechaCreacion}">
+                          <h:outputText value="#{row.FechaCreacion}"/>
+                        </af:column>
+                      </af:table>
+                    </af:panelForm>
+                  </af:showDetailItem>
+                </af:showOneTab>
+              </af:panelBox>
+            </af:panelHorizontal>
+          </af:page>
+          <f:verbatim>
+          <jsp:include page="../util/dialog_autoriza.txt"/>     
+          </f:verbatim>
+        </h:form>
+      </afh:body>
+    </afh:html>
+  </f:view>
+  <!--oracle-jdev-comment:preferred-managed-bean-name:backing_bean_comun-->
+</jsp:root>

@@ -1,0 +1,347 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="SisComplementoVw"
+   OrderBy="fecha_creacion desc"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   RowClass="enlace_datos.consultas.complementos.SisComplementoVwRowImpl"
+   ComponentClass="enlace_datos.consultas.complementos.SisComplementoVwImpl"
+   MsgBundleClass="enlace_datos.consultas.complementos.common.SisComplementoVwRowImplMsgBundle"
+   ComponentInterface="enlace_datos.consultas.complementos.common.SisComplementoVw"
+   ClientProxyName="enlace_datos.consultas.complementos.client.SisComplementoVwClient"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isCodegen" Value="true" />
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|Msg|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="pUsuario"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <Variable
+      Name="pTipoCompl"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="fechaI"
+      Kind="where"
+      Type="oracle.jbo.domain.Date" >
+   </Variable>
+   <Variable
+      Name="fechaF"
+      Kind="where"
+      Type="oracle.jbo.domain.Date" >
+   </Variable>
+   <Variable
+      Name="pOpcion"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select * from (
+SELECT SisComplemento.ID_COMPLEMENTO,  
+       SisComplemento.ID_ESTADO, 
+       SisComplemento.ID_TIPO, 
+       SisComplemento.ID_SUBPROGRAMA, 
+       SisComplemento.PERIODO, 
+       SisComplemento.ANIO, 
+       SisComplemento.FECHA_PRESENTACION, 
+       SisComplemento.CREADO_POR, 
+       SisComplemento.FECHA_CREACION, 
+       SisComplemento.MOD_POR, 
+       SisComplemento.FECHA_MOD, 
+       SisComplemento.FIRMA_TESO, 
+       SisComplemento.FIRMA_JEFE,
+       per.nombre as nomPeriodo,
+       prt1.FORMATO2,
+       prt1.nombre as nomSubProg,
+       prt2.d3d4 as codUnidad,
+       prt2.nombre as nomUnidad,
+       est.nombre as nomEstado,
+       usr.nombres|| ' '||usr.apellidos as nomUsuario,
+       SisComplemento.ID_SOLICITUD,
+       SisComplemento.ISAUTOFINANCIABLE
+FROM SIS_COMPLEMENTO SisComplemento,
+partida prt,
+sis_tipo_complemento tcompl, 
+sis_periodo per,
+sep_partida_vw prt1,
+partida prt2,
+sis_estado est,
+usuario usr
+where SisComplemento.id_subprograma=prt.id_partida
+and SisComplemento.id_tipo=tcompl.id_tipo_complemento            
+and per.id_periodo=SisComplemento.periodo
+and prt1.id_partida=SisComplemento.id_subprograma
+and trunc(SisComplemento.fecha_creacion) between nvl(:fechaI,sysdate-365) and nvl(:fechaF,sysdate+1)
+and prt2.d1=prt1.d1
+and prt2.d2=prt1.d2
+and prt2.d3d4=prt1.d3d4
+and prt2.d5 is null
+and prt2.d6 is null
+and prt2.d7 is null
+and prt2.d8 is null
+and prt2.d9d10 is null
+and est.id_estado=SisComplemento.id_estado
+and usr.usuario=SisComplemento.creado_por
+and usr.tipo_usuario='TRABAJADOR'
+and
+(
+nvl(:pOpcion,1)=0
+or
+exists(
+select 1 from usuario_unidad b, partida c
+where b.id_partida=c.id_partida
+and usuario=:pUsuario
+and b.tipo_usuario='TRABAJADOR'
+and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+and prt.aniomanual=c.aniomanual
+and prt.d1=c.d1
+and prt.d2=c.d2
+and prt.d3d4=c.d3d4
+and 
+(
+(
+prt.d7=c.d7
+and prt.d6=c.d6
+and prt.d5=c.d5
+)
+or
+(
+c.d5 is null
+and c.d6 is null
+and c.d7 is null 
+)
+)
+)
+)
+and SisComplemento.id_tipo=:pTipoCompl
+order by SisComplemento.fecha_creacion desc
+)
+where rownum<=(case when nvl(:fechaF,sysdate) is null and nvl(:fechaI,sysdate-180) is null then 100 else case when nvl(:fechaF,sysdate) is not null then 9999 else case when nvl(:fechaI,sysdate-180) is not  null then 9999 else 100 end end end)
+   ]]></SQLQuery>
+   <EntityUsage
+      Name="SisComplemento"
+      Entity="enlace_datos.entidades.complementos.SisComplemento" >
+      <DesignTime>
+         <Attr Name="_queryClause" Value="false" />
+      </DesignTime>
+   </EntityUsage>
+   <ViewAttribute
+      Name="IdComplemento"
+      IsNotNull="true"
+      EntityAttrName="IdComplemento"
+      EntityUsage="SisComplemento"
+      AliasName="ID_COMPLEMENTO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdEstado"
+      EntityAttrName="IdEstado"
+      EntityUsage="SisComplemento"
+      AliasName="ID_ESTADO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdTipo"
+      EntityAttrName="IdTipo"
+      EntityUsage="SisComplemento"
+      AliasName="ID_TIPO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdSubprograma"
+      EntityAttrName="IdSubprograma"
+      EntityUsage="SisComplemento"
+      AliasName="ID_SUBPROGRAMA" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Periodo"
+      EntityAttrName="Periodo"
+      EntityUsage="SisComplemento"
+      AliasName="PERIODO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Anio"
+      EntityAttrName="Anio"
+      EntityUsage="SisComplemento"
+      AliasName="ANIO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaPresentacion"
+      EntityAttrName="FechaPresentacion"
+      EntityUsage="SisComplemento"
+      AliasName="FECHA_PRESENTACION" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="CreadoPor"
+      EntityAttrName="CreadoPor"
+      EntityUsage="SisComplemento"
+      AliasName="CREADO_POR" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaCreacion"
+      IsNotNull="true"
+      EntityAttrName="FechaCreacion"
+      EntityUsage="SisComplemento"
+      AliasName="FECHA_CREACION" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="ModPor"
+      EntityAttrName="ModPor"
+      EntityUsage="SisComplemento"
+      AliasName="MOD_POR" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaMod"
+      EntityAttrName="FechaMod"
+      EntityUsage="SisComplemento"
+      AliasName="FECHA_MOD" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FirmaTeso"
+      EntityAttrName="FirmaTeso"
+      EntityUsage="SisComplemento"
+      AliasName="FIRMA_TESO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FirmaJefe"
+      EntityAttrName="FirmaJefe"
+      EntityUsage="SisComplemento"
+      AliasName="FIRMA_JEFE" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomperiodo"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="50"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMPERIODO"
+      Expression="NOMPERIODO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="50" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Formato2"
+      IsPersistent="false"
+      Precision="246"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="FORMATO2"
+      Expression="FORMATO2"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="246" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomsubprog"
+      IsPersistent="false"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMSUBPROG"
+      Expression="NOMSUBPROG"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Codunidad"
+      IsPersistent="false"
+      Precision="2"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="CODUNIDAD"
+      Expression="CODUNIDAD"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomunidad"
+      IsPersistent="false"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMUNIDAD"
+      Expression="NOMUNIDAD"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomestado"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMESTADO"
+      Expression="NOMESTADO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomusuario"
+      IsPersistent="false"
+      Precision="201"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMUSUARIO"
+      Expression="NOMUSUARIO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="201" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdSolicitud"
+      EntityAttrName="IdSolicitud"
+      EntityUsage="SisComplemento"
+      AliasName="ID_SOLICITUD" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IsFormaActiva"
+      IsUpdateable="false"
+      IsSelected="false"
+      IsQueriable="false"
+      IsPersistent="false"
+      Type="java.lang.Boolean"
+      ColumnType="NUMBER"
+      AliasName="VIEW_ATTR"
+      SQLType="BIT" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Isautofinanciable"
+      DefaultValue="NO"
+      EntityAttrName="Isautofinanciable"
+      EntityUsage="SisComplemento"
+      AliasName="ISAUTOFINANCIABLE" >
+   </ViewAttribute>
+   <ViewLinkAccessor
+      Name="SisComplementoDetVw"
+      ViewLink="enlace_datos.consultas.complementos.vkSisComplementoSisComplDet"
+      Type="oracle.jbo.RowIterator"
+      IsUpdateable="false" >
+   </ViewLinkAccessor>
+   <ViewLinkAccessor
+      Name="SisComplementoIgssVw"
+      ViewLink="enlace_datos.consultas.complementos.SisComplementoSisComplIgss_Vw"
+      Type="oracle.jbo.RowIterator"
+      IsUpdateable="false" >
+   </ViewLinkAccessor>
+</ViewObject>

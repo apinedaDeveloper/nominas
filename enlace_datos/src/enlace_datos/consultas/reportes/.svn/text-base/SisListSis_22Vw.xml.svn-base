@@ -1,0 +1,142 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="SisListSis_22Vw"
+   OrderBy="id_form22 desc"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   ComponentClass="enlace_datos.consultas.reportes.SisListSis_22VwImpl"
+   MsgBundleClass="enlace_datos.consultas.reportes.common.SisListSis_22VwRowImplMsgBundle"
+   ComponentInterface="enlace_datos.consultas.reportes.common.SisListSis_22Vw"
+   ClientProxyName="enlace_datos.consultas.reportes.client.SisListSis_22VwClient"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|Msg|Prog|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="pUsuario"
+      Kind="where"
+      Type="java.lang.String" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select a.id_form22, a.fecha, a.creado_por, b.nombres||' '||b.apellidos as nomUsuario
+, ( select count(0) from sis_doc_pago_anulado
+where id_form22=a.id_form22
+)as Cant_Anulados,
+ nvl(a.fecha_documento,a.fecha) as fecha_documento
+from sis_form22_docpago_anulado a, usuario b
+where a.creado_por=b.usuario
+and exists
+(
+    select 1 from sis_doc_pago_anulado c,sis_pago d, sis_nomina e,partida prtd
+     where c.id_doc_pago=d.id_documento_banco and e.id_nomina=d.id_nomina
+     and e.id_partida=prtd.id_partida and a.id_form22=c.id_form22
+     and (exists(
+        select 1 from usuario_unidad usUn, partida prtd2
+        where usUn.id_partida=prtd2.id_partida and usUn.usuario=:pUsuario
+        and usUn.tipo_usuario='TRABAJADOR'
+        and sysdate between usUn.vigencia_de and nvl(usUn.vigencia_a,sysdate)
+        and prtd2.d9d10 is null and prtd2.d8 is null and prtd2.d7 is null
+        and prtd2.d6 is null and prtd2.d5 is null and prtd.d3d4=prtd2.d3d4
+        and prtd.d2=prtd2.d2 and prtd.d1=prtd2.d1 and prtd.aniomanual=prtd2.aniomanual
+        )
+        or exists(
+        select 1 from usuario_unidad usUn3, partida prtd3
+        where usUn3.id_partida=prtd3.id_partida and usUn3.usuario=:pUsuario
+        and usUn3.tipo_usuario='TRABAJADOR'
+        and sysdate between usUn3.vigencia_de and nvl(usUn3.vigencia_a,sysdate)
+        and prtd.aniomanual=prtd3.aniomanual and prtd3.d9d10 is null
+        and prtd3.d8 is null and prtd.d7=prtd3.d7 and prtd.d6=prtd3.d6
+        and prtd.d5=prtd3.D5 and prtd.d3d4=prtd3.d3d4
+        and prtd.d2=prtd3.d2 and prtd.d1=prtd3.d1
+        )
+    )
+)
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="IdForm22"
+      IsUpdateable="false"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_FORM22"
+      Expression="ID_FORM22"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Fecha"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA"
+      Expression="FECHA"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="CreadoPor"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="20"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="CREADO_POR"
+      Expression="CREADO_POR"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="20" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nomusuario"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Precision="200"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMUSUARIO"
+      Expression="NOMUSUARIO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="200" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="CantAnulados"
+      IsUpdateable="false"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="CANT_ANULADOS"
+      Expression="CANT_ANULADOS"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaDocumento"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_DOCUMENTO"
+      Expression="FECHA_DOCUMENTO"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

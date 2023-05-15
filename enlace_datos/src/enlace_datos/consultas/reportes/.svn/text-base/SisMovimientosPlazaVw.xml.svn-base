@@ -1,0 +1,262 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="SisMovimientosPlazaVw"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   ComponentClass="enlace_datos.consultas.reportes.SisMovimientosPlazaVwImpl"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="pIdPartida"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="pIdpuesto"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="pNumeroplaza"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="pcorrelativo"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select t.*
+from
+(
+select id_contrato as id_gestion,'CONTRATO' as tipo, cont.registro_empleado,e.nombre1||' '||e.nombre2||' '||e.apellido1||' '||e.apellido2 as nombre_empleado,case when to_char(cont.fecha_inicio,'yyyy')<>to_char(plz.fecha_inicio,'yyyy') then plz.fecha_inicio else cont.fecha_inicio  end as fecha_inicio
+,nvl(cont.fecha_fin,plz.fecha_fin)as fecha_fin,cont.fecha_creacion, (case when cont.tipo_validez='I' then 'INDEFINIDO' else 'A TERMINO' end) validez,
+(select x.nombre from sis_estado x where x.id_estado=cont.estatus) estado
+from sis_contrato cont,sis_plaza plz, siif.SIS_EMPLEADO e
+where cont.id_partida=:pIdPartida
+and cont.id_puesto=:pIdpuesto
+and cont.numero_plaza=:pNumeroplaza
+and cont.correlativo=:pcorrelativo
+and plz.id_partida=cont.id_partida
+and plz.id_puesto=cont.id_puesto
+and plz.numero_plaza=cont.numero_plaza
+and plz.correlativo=cont.correlativo
+and e.registro_empleado = cont.REGISTRO_EMPLEADO
+and estatus not in
+            (
+            select id_estado
+            from sis_estado_contrato_vw
+            where nombre in ('ANULADO','OBJETADO')
+            )
+union
+select a.id_solicitud,tsol.nombre_solicitud,c.registro_empleado,e.nombre1||' '||e.nombre2||' '||e.apellido1||' '||e.apellido2,b.fecha_inicio,b.fecha_fin,a.fecha_creacion, null,
+(select x.nombre from sis_estado x where x.id_estado=a.id_estado) estado
+from sis_solicitud a, sis_det_licencia b,sis_contrato c, siif.SIS_TIPO_SOLICITUD tsol, siif.SIS_EMPLEADO e
+where a.id_solicitud=b.id_solicitud
+and a.id_tipo_solicitud=1
+and b.tipo_licencia='SS'
+and a.id_contrato=c.id_contrato
+and c.id_partida=:pIdPartida
+and c.id_puesto=:pIdpuesto
+and c.numero_plaza=:pNumeroplaza
+and c.correlativo=:pcorrelativo
+and a.anio=:pcorrelativo
+and a.id_tipo_solicitud = tsol.id_tipo_solicitud
+and e.REGISTRO_EMPLEADO =  c.registro_empleado
+and a.id_estado in (
+select id_estado from sis_estado_solicitud_vw
+where nombre in ('AUTORIZADO'))
+union
+select a.id_solicitud,tsol.nombre_solicitud,c.registro_empleado, e.nombre1||' '||e.nombre2||' '||e.apellido1||' '||e.apellido2,a.fecha_solicitud,null,a.fecha_creacion, null,
+(select x.nombre from sis_estado x where x.id_estado=a.id_estado) estado
+from sis_solicitud a,sis_contrato c, siif.SIS_TIPO_SOLICITUD tsol, siif.SIS_EMPLEADO e
+where a.id_tipo_solicitud in (5,6,13)
+and a.id_contrato=c.id_contrato
+and c.id_partida=:pIdPartida
+and c.id_puesto=:pIdpuesto
+and c.numero_plaza=:pNumeroplaza
+and c.correlativo=:pcorrelativo
+and tsol.id_tipo_solicitud = a.id_tipo_solicitud
+and e.REGISTRO_EMPLEADO = c.registro_empleado
+and a.id_estado in (
+select id_estado from sis_estado_solicitud_vw
+where nombre in ('AUTORIZADO')
+)
+union
+select a.id_solicitud,tsol.nombre_solicitud,c.registro_empleado,e.nombre1||' '||e.nombre2||' '||e.apellido1||' '||e.apellido2,a.fecha_solicitud,null,a.fecha_creacion, null,
+(select x.nombre from sis_estado x where x.id_estado=a.id_estado) estado
+from sis_solicitud a,sis_contrato c, siif.SIS_TIPO_SOLICITUD tsol, siif.SIS_EMPLEADO e
+where a.id_tipo_solicitud in (9,11)
+and c.id_partida=:pIdPartida
+and c.id_puesto=:pIdpuesto
+and c.numero_plaza=:pNumeroplaza
+and c.correlativo=:pcorrelativo
+and a.registro_empleado=c.registro_empleado
+and tsol.id_tipo_solicitud = a.id_tipo_solicitud
+and e.REGISTRO_EMPLEADO = c.registro_empleado
+and a.id_estado in (
+select id_estado from sis_estado_solicitud_vw
+where nombre in ('AUTORIZADO')
+)
+union
+select distinct a.id_solicitud,tsol.nombre_solicitud,a.registro_empleado,e.nombre1||' '||e.nombre2||' '||e.apellido1||' '||e.apellido2,fecha_inicio_susp_igss , fecha_alta_susp_igss,a.FECHA_CREACION, null,
+(select x.nombre from sis_estado x where x.id_estado=a.id_estado) estado
+from sis_solicitud a, sis_suspencion_igss b,sis_contrato c, siif.SIS_TIPO_SOLICITUD tsol, siif.SIS_EMPLEADO e
+where a.id_solicitud=b.id_solicitud
+and a.id_tipo_solicitud=2
+and b.id_tipo_suspencion_igss<>4
+and c.id_partida=:pIdPartida
+and c.id_puesto=:pIdpuesto
+and c.numero_plaza=:pNumeroplaza
+and c.correlativo=:pcorrelativo
+and a.registro_empleado=c.registro_empleado
+and e.REGISTRO_EMPLEADO = c.registro_empleado
+and tsol.id_tipo_solicitud = a.id_tipo_solicitud
+and to_char(nvl(b.fecha_alta_susp_igss,sysdate),'yyyy')=:pcorrelativo
+and a.id_estado in (
+select id_estado from sis_estado_solicitud_vw
+ where nombre in ('AUTORIZADO')
+ )
+union
+select ane.id_anexo,decode(mvp.operacion,'B','BAJA ANEXO','ALTA ANEXO'),mvp.registro_empleado,e.nombre1||' '||e.nombre2||' '||e.apellido1||' '||e.apellido2,mvp.fecha_inicio,mvp.fecha_fin,decode(mvp.operacion,'B',ane.fecha_creacion-0.0001,ane.fecha_creacion) as fecha_creacion, null,
+(select x.nombre from sis_estado x where x.id_estado=ane.estatus) estado
+     from sis_movimiento_plaza mvp, sis_anexo ane, siif.SIS_EMPLEADO e
+     where mvp.id_anexo=ane.id_anexo
+     and mvp.operacion in ('B','A')
+     and e.REGISTRO_EMPLEADO(+) = mvp.registro_empleado
+     and ane.estatus not in(
+        select id_estado from sis_estado
+        where tabla='SIS_ANEXO'
+        AND NOMBRE IN ('ANULADO','RECHAZADO')
+    )
+    and mvp.id_partida=:pIdPartida
+    and mvp.id_puesto=:pIdpuesto
+    and mvp.numero_plaza=:pNumeroplaza
+    and mvp.correlativo=:pcorrelativo
+    and ane.id_aumento_salarial is null
+) t
+order by fecha_creacion
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="IdGestion"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_GESTION"
+      Expression="ID_GESTION"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Tipo"
+      IsPersistent="false"
+      Precision="50"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="TIPO"
+      Expression="TIPO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="50" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="RegistroEmpleado"
+      IsPersistent="false"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="REGISTRO_EMPLEADO"
+      Expression="REGISTRO_EMPLEADO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="NombreEmpleado"
+      IsPersistent="false"
+      Precision="203"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBRE_EMPLEADO"
+      Expression="NOMBRE_EMPLEADO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="203" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaInicio"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_INICIO"
+      Expression="FECHA_INICIO"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaFin"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_FIN"
+      Expression="FECHA_FIN"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaCreacion"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_CREACION"
+      Expression="FECHA_CREACION"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Validez"
+      IsPersistent="false"
+      Precision="10"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="VALIDEZ"
+      Expression="VALIDEZ"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="10" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Estado"
+      IsPersistent="false"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="ESTADO"
+      Expression="ESTADO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

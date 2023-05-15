@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel"
+                version="10.1.3.41.57" id="reportes_reporte_nominaPageDef"
+                Package="interfaz_usuario.pageDefs">
+  <parameters/>
+  <executables>
+    <variableIterator id="variables">
+      <variable Type="int" Name="preparar_nomina_anio" IsQueriable="false"/>
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="SisProcesoSfltro.variablesMap.fechaI"
+                     Name="SisProcesoSfltro_fechaI" IsQueriable="false"/>
+      <variableUsage DataControl="QUERRYSDataControl"
+                     Binds="SisProcesoSfltro.variablesMap.fechaF"
+                     Name="SisProcesoSfltro_fechaF" IsQueriable="false"/>
+    </variableIterator>
+    <iterator id="SisProcesoSfltroIterator" RangeSize="30"
+              Binds="SisProcesoSfltro" DataControl="QUERRYSDataControl"/>
+    <invokeAction Binds="PorEstados" id="FiltroAutorizados"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <invokeAction id="ExeListaProcesos" Binds="ListaProcesos"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+  </executables>
+  <bindings>
+    <methodAction id="preparar_nomina"
+                  InstanceName="preparar_reporteDataControl.dataProvider"
+                  DataControl="preparar_reporteDataControl"
+                  MethodName="preparar_nomina" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="false"
+                  ReturnName="preparar_reporteDataControl.methodResults.preparar_reporteDataControl_dataProvider_preparar_nomina_result">
+      <NamedData NDName="pIdProceso"
+                 NDValue="${bindings.SisProcesoSfltro.currentRow['idProceso']}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="nombre_tipo"
+                 NDValue="${bindings.SisProcesoSfltro.currentRow['nomtipoproceso']}"
+                 NDType="java.lang.String"/>
+    </methodAction>
+    <table id="SisProcesoSfltro" IterBinding="SisProcesoSfltroIterator">
+      <AttrNames>
+        <Item Value="IdProceso"/>
+        <Item Value="ProcesoPadre"/>
+        <Item Value="Tipoproceso"/>
+        <Item Value="FechaInicio"/>
+        <Item Value="FechaFin"/>
+        <Item Value="Anio"/>
+        <Item Value="Periodo"/>
+        <Item Value="IdEstado"/>
+        <Item Value="Observaciones"/>
+        <Item Value="Nomtipoproceso"/>
+        <Item Value="Nomperiodo"/>
+        <Item Value="Nomestado"/>
+        <Item Value="FechaRef"/>
+        <Item Value="Creadopor"/>
+      </AttrNames>
+    </table>
+    <action id="ListaProcesos" IterBinding="SisProcesoSfltroIterator"
+            InstanceName="QUERRYSDataControl.SisProcesoSfltro"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="fechaI" NDType="oracle.jbo.domain.Date"
+                 NDValue="${bindings.SisProcesoSfltro_fechaI}"/>
+      <NamedData NDName="fechaF" NDType="oracle.jbo.domain.Date"
+                 NDValue="${bindings.SisProcesoSfltro_fechaF}"/>
+    </action>
+    <attributeValues id="fechaI" IterBinding="variables">
+      <AttrNames>
+        <Item Value="SisProcesoSfltro_fechaI"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="fechaF" IterBinding="variables">
+      <AttrNames>
+        <Item Value="SisProcesoSfltro_fechaF"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="SisProcesoSfltroIterator" id="SoloAutorizados"
+                  MethodName="SoloAutorizados" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisProcesoSfltro"/>
+    <methodAction IterBinding="SisProcesoSfltroIterator" id="PorEstados"
+                  MethodName="PorEstados" RequiresUpdateModel="true"
+                  Action="999" IsViewObjectMethod="true"
+                  DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.SisProcesoSfltro">
+      <NamedData NDName="pEstados" NDValue="PROCESADO','APROBADO','GRABACION"
+                 NDType="java.lang.String"/>
+    </methodAction>
+  </bindings>
+</pageDefinition>

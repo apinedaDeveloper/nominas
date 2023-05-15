@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel"
+                version="10.1.3.42.70"
+                id="gestiones_cheque_anulado_recibidoPageDef"
+                Package="interfaz_usuario.pageDefs">
+  <parameters/>
+  <executables>
+    <iterator id="dependenciasIterator" RangeSize="-1" Binds="dependencias"
+              DataControl="QUERRYSDataControl">
+      <sortCriteria>
+        <sort attribute="IdDependencia" ascending="true"/>
+      </sortCriteria>
+    </iterator>
+    <iterator id="consul_cheqAnuladoXRecibir_vw1Iterator" RangeSize="-1"
+              Binds="consul_cheqAnuladoXRecibir_vw1"
+              DataControl="QUERRYSDataControl"/>
+    <invokeAction id="filtraDependencia" Binds="Dependencias"
+                  Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <iterator id="unidades_ejecIterator" RangeSize="-1" Binds="unidades_ejec"
+              DataControl="QUERRYSDataControl">
+      <sortCriteria>
+        <sort attribute="IdPrograma" ascending="true"/>
+        <sort attribute="IdDependencia" ascending="true"/>
+        <sort attribute="IdUnidad" ascending="true"/>
+      </sortCriteria>
+    </iterator>
+    <invokeAction id="ejecUnidades" Binds="Unidades" Refresh="renderModel"
+                  RefreshCondition="${(adfFacesContext.postback &amp;&amp;cheqAnuladoRecibido.selecDependencia !=false) ||(!adfFacesContext.postback)}"/>
+    <variableIterator id="variables">
+      <variable Name="fechaInicio" Type="oracle.jbo.domain.Date"/>
+      <variable Name="fechaFinal" Type="oracle.jbo.domain.Date"/>
+      <variable Name="vSelecUnidad" Type="java.lang.Boolean"/>
+      <variable Name="vSelecFecha" Type="java.lang.Boolean"/>
+      <variable Name="vIdDocRecibido" Type="oracle.jbo.domain.Number"/>
+    </variableIterator>
+    <iterator id="sis_docPago_recibido_vw1Iterator1" RangeSize="75"
+              Binds="sis_docPago_recibido_vw1"
+              DataControl="QUERRYSDataControl">
+      <sortCriteria>
+        <sort attribute="IdDocpagoRecibido" ascending="false"/>
+      </sortCriteria>
+    </iterator>
+    <invokeAction id="ejeCheqRecibido" Binds="Ejecutar" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <invokeAction id="EjecDocRecibido" Binds="ejecConsulta" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <invokeAction Binds="limpiarwhere" id="ExeLimpiaWhere" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+    <invokeAction Binds="filtraCheques" id="ExeUnidad" Refresh="renderModel"
+                  RefreshCondition="${!adfFacesContext.postback}"/>
+  </executables>
+  <bindings>
+    <list StaticList="false" ListOperMode="1" id="dependencias"
+          IterBinding="dependenciasIterator">
+      <AttrNames>
+        <Item Value="IdDependencia"/>
+        <Item Value="Nombre"/>
+      </AttrNames>
+    </list>
+    <table id="consul_cheqAnuladoXRecibir_vw1"
+           IterBinding="consul_cheqAnuladoXRecibir_vw1Iterator">
+      <AttrNames>
+        <Item Value="IdDocPagoAnulado"/>
+        <Item Value="IdMotivoAnulacion"/>
+        <Item Value="IdDocPago"/>
+        <Item Value="NoDocFisico"/>
+        <Item Value="IdDocPagoReposicion"/>
+        <Item Value="IdActaFacsimil"/>
+        <Item Value="SolicitadoPor"/>
+        <Item Value="CreadoPor"/>
+        <Item Value="FechaCreacion"/>
+        <Item Value="IdEstado"/>
+        <Item Value="Reposicion"/>
+        <Item Value="IdProceso"/>
+        <Item Value="ModificadoPor"/>
+        <Item Value="FechaModificacion"/>
+        <Item Value="Anio"/>
+        <Item Value="IdDocpagoRecibido"/>
+        <Item Value="RegistroEmpleado"/>
+        <Item Value="Nombrecompleto"/>
+        <Item Value="Valor"/>
+        <Item Value="FechaEmision"/>
+        <Item Value="ConRecalculo"/>
+        <Item Value="Aprobar"/>
+        <Item Value="Recibido"/>
+      </AttrNames>
+    </table>
+    <action IterBinding="dependenciasIterator" id="Dependencias"
+            InstanceName="QUERRYSDataControl.dependencias"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="usuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+    </action>
+    <action IterBinding="consul_cheqAnuladoXRecibir_vw1Iterator"
+            id="filtraCheques"
+            InstanceName="QUERRYSDataControl.consul_cheqAnuladoXRecibir_vw1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="varDependencia"
+                 NDValue="${bindings.IdDependencia.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <attributeValues IterBinding="dependenciasIterator" id="IdDependencia">
+      <AttrNames>
+        <Item Value="IdDependencia"/>
+      </AttrNames>
+    </attributeValues>
+    <action id="Commit" InstanceName="QUERRYSDataControl"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="100"/>
+    <list StaticList="false" ListOperMode="1" id="unidades_ejec"
+          IterBinding="unidades_ejecIterator">
+      <AttrNames>
+        <Item Value="Nombre"/>
+        <Item Value="IdPrograma"/>
+        <Item Value="IdDependencia"/>
+        <Item Value="IdUnidad"/>
+      </AttrNames>
+    </list>
+    <action IterBinding="unidades_ejecIterator" id="Unidades"
+            InstanceName="QUERRYSDataControl.unidades_ejec"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="95">
+      <NamedData NDName="id_depe" NDValue="${bindings.IdDependencia.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="pUsuario"
+                 NDValue="${flujo_usuario.selRegEmpleado_login}"
+                 NDType="java.lang.String"/>
+    </action>
+    <attributeValues IterBinding="variables" id="fechaInicio1">
+      <AttrNames>
+        <Item Value="fechaInicio"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="fechaFinal2">
+      <AttrNames>
+        <Item Value="fechaFinal"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="consul_cheqAnuladoXRecibir_vw1Iterator"
+                  id="filtrarUnidad" MethodName="filtrarUnidad"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.consul_cheqAnuladoXRecibir_vw1">
+      <NamedData NDName="pUnidad" NDValue="${bindings.IdUnidad.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="varDependencia"
+                 NDValue="${bindings.IdDependencia.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </methodAction>
+    <methodAction IterBinding="consul_cheqAnuladoXRecibir_vw1Iterator"
+                  id="filtrarXfechas" MethodName="filtrarXfechas"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.consul_cheqAnuladoXRecibir_vw1">
+      <NamedData NDName="pFechaInicio"
+                 NDValue="${bindings.fechaInicio1.inputValue}"
+                 NDType="oracle.jbo.domain.Date"/>
+      <NamedData NDName="pFechaFin" NDValue="${bindings.fechaFinal2.inputValue}"
+                 NDType="oracle.jbo.domain.Date"/>
+      <NamedData NDName="varDependencia"
+                 NDValue="${bindings.IdDependencia.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </methodAction>
+    <methodAction IterBinding="consul_cheqAnuladoXRecibir_vw1Iterator"
+                  id="unidadFechas" MethodName="unidadFechas"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.consul_cheqAnuladoXRecibir_vw1">
+      <NamedData NDName="pFechaInicio"
+                 NDValue="${bindings.fechaInicio1.inputValue}"
+                 NDType="oracle.jbo.domain.Date"/>
+      <NamedData NDName="pFechaFin" NDValue="${bindings.fechaFinal2.inputValue}"
+                 NDType="oracle.jbo.domain.Date"/>
+      <NamedData NDName="pUnidad" NDValue="${bindings.IdUnidad.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+      <NamedData NDName="varDependencia"
+                 NDValue="${bindings.IdDependencia.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </methodAction>
+    <attributeValues IterBinding="unidades_ejecIterator" id="IdUnidad">
+      <AttrNames>
+        <Item Value="IdUnidad"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="vSelecFecha1">
+      <AttrNames>
+        <Item Value="vSelecFecha"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="variables" id="vSelecUnidad1">
+      <AttrNames>
+        <Item Value="vSelecUnidad"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="consul_cheqAnuladoXRecibir_vw1Iterator"
+                  id="limpiarwhere" MethodName="limpiarwhere"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.consul_cheqAnuladoXRecibir_vw1"/>
+    <action id="Rollback" InstanceName="QUERRYSDataControl"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="101"/>
+    <methodAction IterBinding="consul_cheqAnuladoXRecibir_vw1Iterator"
+                  id="agregarIdRecibido" MethodName="agregarIdRecibido"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.consul_cheqAnuladoXRecibir_vw1">
+      <NamedData NDName="pIdRecibido"
+                 NDValue="${bindings.vIdDocRecibido1.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </methodAction>
+    <action id="Create" RequiresUpdateModel="true" Action="41"
+            IterBinding="sis_docPago_recibido_vw1Iterator1"/>
+    <table id="sis_docPago_recibido_vw11"
+           IterBinding="sis_docPago_recibido_vw1Iterator1">
+      <AttrNames>
+        <Item Value="IdDocpagoRecibido"/>
+        <Item Value="CreadoPor"/>
+        <Item Value="FechaCreacion"/>
+        <Item Value="Nomusuario"/>
+      </AttrNames>
+    </table>
+    <action IterBinding="sis_docPago_recibido_vw1Iterator1" id="Ejecutar"
+            InstanceName="QUERRYSDataControl.sis_docPago_recibido_vw1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="2"/>
+    <attributeValues IterBinding="variables" id="vIdDocRecibido1">
+      <AttrNames>
+        <Item Value="vIdDocRecibido"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction IterBinding="sis_docPago_recibido_vw1Iterator1"
+                  id="crearIdDoc" MethodName="crearIdDoc"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.sis_docPago_recibido_vw1">
+      <NamedData NDName="pIdDocRecibido"
+                 NDValue="${bindings.vIdDocRecibido1.inputValue}"
+                 NDType="oracle.jbo.domain.Number"/>
+    </methodAction>
+    <action IterBinding="sis_docPago_recibido_vw1Iterator1"
+            id="setCurrentRowWithKey"
+            InstanceName="QUERRYSDataControl.sis_docPago_recibido_vw1"
+            DataControl="QUERRYSDataControl" RequiresUpdateModel="false"
+            Action="96">
+      <NamedData NDName="rowKey" NDValue="#{row.rowKeyStr}"
+                 NDType="java.lang.String"/>
+    </action>
+    <methodAction IterBinding="sis_docPago_recibido_vw1Iterator1"
+                  id="ejecConsulta" MethodName="ejecConsulta"
+                  RequiresUpdateModel="true" Action="999"
+                  IsViewObjectMethod="true" DataControl="QUERRYSDataControl"
+                  InstanceName="QUERRYSDataControl.sis_docPago_recibido_vw1"/>
+    <attributeValues IterBinding="sis_docPago_recibido_vw1Iterator1"
+                     id="IdDocpagoRecibido">
+      <AttrNames>
+        <Item Value="IdDocpagoRecibido"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="sis_docPago_recibido_vw1Iterator1"
+                     id="IdDocRecibidoAux">
+      <AttrNames>
+        <Item Value="IdDocRecibidoAux"/>
+      </AttrNames>
+    </attributeValues>
+  </bindings>
+</pageDefinition>
