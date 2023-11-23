@@ -20,6 +20,7 @@ public class SisTipoIndemnizacionImpl extends EntityImpl {
     public static final int FECHACREADO = 4;
     public static final int USUARIOULTIMAMOD = 5;
     public static final int FECHAULTIMAMOD = 6;
+    public static final int SISINDEMNIZACION = 7;
     private static EntityDefImpl mDefinitionObject;
 
     /**This is the default constructor (do not remove)
@@ -140,6 +141,8 @@ public class SisTipoIndemnizacionImpl extends EntityImpl {
             return getUsuarioUltimaMod();
         case FECHAULTIMAMOD:
             return getFechaUltimaMod();
+        case SISINDEMNIZACION:
+            return getSisIndemnizacion();
         default:
             return super.getAttrInvokeAccessor(index, attrDef);
         }
@@ -177,6 +180,12 @@ public class SisTipoIndemnizacionImpl extends EntityImpl {
         }
     }
 
+
+    /**Gets the associated entity oracle.jbo.RowIterator
+     */
+    public RowIterator getSisIndemnizacion() {
+        return (RowIterator)getAttributeInternal(SISINDEMNIZACION);
+    }
 
     /**Creates a Key object based on given key constituents
      */

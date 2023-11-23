@@ -1,5 +1,6 @@
 package enlace_datos.consultas.gestiones.indemnizaciones;
 
+
 import enlace_datos.consultas.gestiones.indemnizaciones.common.SisIndemnizacion_vw;
 
 import enlace_datos.util.utils;
@@ -22,45 +23,61 @@ public class SisIndemnizacion_vwImpl extends ViewObjectImpl implements SisIndemn
      */
     public SisIndemnizacion_vwImpl() {
     }
-    //Recupera una Expediente a través de su ID
+    //Recupera una solicitud a atrevés de su llave primaria
 
-    public void RecuperarExpediente(Number pIdIndemnizacion) {
+    public void RecuperarSolicitud(Number pIdTipoPrestacion, Number pAnio, 
+                                   Number pCorrelativoAnio) {
         String str_querry = "";
-        if (pIdIndemnizacion != null && pIdIndemnizacion.intValue() > 0) {
-            str_querry = " ID_INDEMNIZACION = " + pIdIndemnizacion;
+        if (pIdTipoPrestacion != null && pIdTipoPrestacion.intValue() > 0 && 
+            pAnio != null && pAnio.intValue() > 0 && 
+            pCorrelativoAnio != null && pCorrelativoAnio.intValue() > 0) {
+            str_querry = 
+                    " ID_TIPO_PRESTACION = " + pIdTipoPrestacion + " AND ANIO = " + 
+                    pAnio + " AND CORRELATIVO_ANIO = " + pCorrelativoAnio;
             this.setWhereClause(str_querry);
         }
         this.executeQuery();
     }
 
-    //Recupera las solicitudes de indemnización por retiro de los últimos 30 dias
+    //Función que obtiene las solicitudes de Pago de Indemnización por Retiro de los últimos 30 dias
 
-    public void RecuperarSolicitudesIndemnizacion() {
-        this.setWhereClause("( TO_DATE(SYSDATE, 'dd/mm/yyyy' ) - TO_DATE(FECHA_CREACION, 'dd/mm/yyyy')) <= 30 AND ID_TIPO_INDEMNIZACION=1");
+    public void ObtenerSolicitudesIndemnizacion() {
+        this.setWhereClause("( TO_DATE(SYSDATE, 'dd/mm/yyyy' ) - TO_DATE(FECHA_CREACION, 'dd/mm/yyyy')) <= 30 AND ID_TIPO_PRESTACION=1");
         this.executeQuery();
     }
-    
+
     //Función que obtiene el número de contratos dados de baja o finalizados del trabajdor fallecido
 
-    public String ObtenerNumeroContratosFinalizadosTrabajador(Number pRegistroEmpleado, Date pFechaFallecimiento) {
+    public String ObtenerNumeroContratosFinalizadosTrabajador(Number pRegistroEmpleado, 
+                                                              Date pFechaFallecimiento) {
         Object vResultado;
         String strConsulta;
-        strConsulta = "select count(*) as cantidad from sis_contrato where registro_empleado=" + pRegistroEmpleado; 
-        strConsulta += " and ( to_Date('" + utils.getFechaFormato("dd/MM/yyyy", pFechaFallecimiento);
-        strConsulta += "','dd/MM/yyyy') between FECHA_INICIO and FECHA_FIN) and estatus in (15,43)";
-        vResultado = utils_DB.getEjecutarQuerry(this.getDBTransaction(), strConsulta);
+        strConsulta = 
+                "select count(*) as cantidad from sis_contrato where registro_empleado=" + 
+                pRegistroEmpleado;
+        strConsulta += 
+                " and ( to_Date('" + utils.getFechaFormato("dd/MM/yyyy", pFechaFallecimiento);
+        strConsulta += 
+                "','dd/MM/yyyy') between FECHA_INICIO and FECHA_FIN) and estatus in (15,43)";
+        vResultado = 
+                utils_DB.getEjecutarQuerry(this.getDBTransaction(), strConsulta);
         return vResultado != null ? vResultado.toString() : "-1";
     }
 
     //Obtiene los contratos finalizados o dados de bajo del trabajador fallecido al momento del fallecimiento.
-    public String ObtenerContratosTrabajadorFallecido(Number pRegistroEmpleado, Date pFechaFallecimiento) {
+
+    public String ObtenerContratosTrabajadorFallecido(Number pRegistroEmpleado, 
+                                                      Date pFechaFallecimiento) {
         String vQuerry;
         String vDetalleResultado = "";
         int contador = 0;
         vQuerry = 
                 "select ID_CONTRATO, fecha_inicio, fecha_fin, sis_estado.nombre, fecha_creacion from sis_contrato\n" + 
                 "inner join sis_estado on sis_contrato.ESTATUS = sis_estado.ID_ESTADO\n" + 
-                "where registro_empleado = " + pRegistroEmpleado + " and (To_Date ('"+ utils.getFechaFormato("dd/MM/yyyy", pFechaFallecimiento) + "', 'DD-MM-YYYY') between FECHA_INICIO and FECHA_FIN) and estatus in (15,43)\n" +
+                "where registro_empleado = " + pRegistroEmpleado + 
+                " and (To_Date ('" + 
+                utils.getFechaFormato("dd/MM/yyyy", pFechaFallecimiento) + 
+                "', 'DD-MM-YYYY') between FECHA_INICIO and FECHA_FIN) and estatus in (15,43)\n" + 
                 "order by fecha_creacion desc";
         ResultSet vResultado;
         try {

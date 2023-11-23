@@ -28,7 +28,6 @@ public class Listado_indemnizaciones {
     private CoreForm form1;
     private CorePage page1;
     private CoreTable tbl_indemnizaciones;
-    private CoreCommandLink cmdLinkIdIndemnizacion;
     private CoreCommandButton cmdButton_refrescar;
     private CoreCommandButton cmdButton_nuevaSolicitud;
     private CoreCommandButton cmdButton_refrescar_above;
@@ -88,14 +87,6 @@ public class Listado_indemnizaciones {
 
     public CoreTable getTbl_indemnizaciones() {
         return tbl_indemnizaciones;
-    }
-
-    public void setCmdLinkIdIndemnizacion(CoreCommandLink cmdLinkIdIndemnizacion) {
-        this.cmdLinkIdIndemnizacion = cmdLinkIdIndemnizacion;
-    }
-
-    public CoreCommandLink getCmdLinkIdIndemnizacion() {
-        return cmdLinkIdIndemnizacion;
     }
 
     public void setCmdButton_refrescar(CoreCommandButton cmdButton_refrescar) {
@@ -163,7 +154,8 @@ public class Listado_indemnizaciones {
         return Invocar_Solicitud_Nueva();
     }
 
-    public String cmdLinkIdIndemnizacion_action() {
+    public String cmdLinkRegistroPersonal_action() {
+        // Add event code here..
         usuario.set_opciones(usuario.VISTA_OPERACION, utils.getInteger("2"));
         return "ir_a_detalle_indemnizacion";
     }

@@ -47,13 +47,6 @@ import oracle.jbo.domain.Number;
 import pkg_util_base_datos.interfaz_DB;
 
 
-//import java.util.Iterator;
-
-
-//import oracle.jbo.Row;
-//import oracle.jbo.uicli.binding.JUCtrlValueBindingRef;
-
-
 public class Indemnizacion_detalle {
     private HtmlHtml html1;
     private HtmlHead head1;
@@ -195,10 +188,14 @@ public class Indemnizacion_detalle {
 
     private void obtener_expediente_retiro(String regEmpleado, 
                                            interfaz_DB inter) {
-        String consulta = "select s.id_solicitud, s.fecha_solicitud, s.observacion, ts.nombre_solicitud ";
-        consulta += " from sis_solicitud s inner join sis_tipo_solicitud ts  on ts.id_tipo_solicitud = s.id_tipo_solicitud ";
-        consulta += " where s.id_tipo_solicitud in(5,6, 11) and s.id_estado = 39 and ";
-        consulta += " s.registro_empleado = " + regEmpleado + " order by s.id_solicitud desc";
+        String consulta = 
+            "select s.id_solicitud, s.fecha_solicitud, s.observacion, ts.nombre_solicitud ";
+        consulta += 
+                " from sis_solicitud s inner join sis_tipo_solicitud ts  on ts.id_tipo_solicitud = s.id_tipo_solicitud ";
+        consulta += 
+                " where s.id_tipo_solicitud in(5,6, 11) and s.id_estado = 39 and ";
+        consulta += 
+                " s.registro_empleado = " + regEmpleado + " order by s.id_solicitud desc";
         Object idSol = inter.getValorConsultaSimple("id_solicitud", consulta);
         Object fecha = 
             inter.getValorConsultaSimple("fecha_solicitud", consulta);
@@ -235,9 +232,9 @@ public class Indemnizacion_detalle {
                 this.getInptText_nombreCompleto().setValue(nombreCompleto);
                 this.getInptText_cuiTrabajador().setSubmittedValue(null);
                 this.getInptText_cuiTrabajador().setValue(cuiTrabajador);
-                this.getInptText_nombreEstadoTrabajador().setSubmittedValue(null);
+                /*this.getInptText_nombreEstadoTrabajador().setSubmittedValue(null);
                 this.getInptText_nombreEstadoTrabajador().setValue(estadoTrabajador);
-                obtener_expediente_retiro(registroEmpleado, interfaz);
+                obtener_expediente_retiro(registroEmpleado, interfaz);*/
             } else {
                 mensaje("No se pudieron recuperar los datos del trabajador. Intente de nuevo por favor!!", 
                         3);
@@ -491,13 +488,13 @@ public class Indemnizacion_detalle {
 
     //Función que obtiene el último correlativo de SIS_INDEMNIZACIÓN del año actual para Indemnización por Retiro Definitivo
 
-    private long obtenerUltimoCorrelativo_solicitud(String anioActual) {
+    private long obtenerUltimoCorrelativo_solicitud(Number anioActual) {
         long correlativo = 0;
         interfaz_DB interfaz = new interfaz_DB();
         String consulta = "Select max(CORRELATIVO_ANIO) as valor ";
         consulta += "from siif.SIS_INDEMNIZACION ";
-        consulta += "where ANIO_ACTUAL = " + anioActual + " ";
-        consulta += "AND ID_TIPO_INDEMNIZACION = 1";
+        consulta += "where ANIO = " + anioActual.toString() + " ";
+        consulta += "AND ID_TIPO_PRESTACION = 1";
         Object varId = interfaz.getValorConsultaSimple("valor", consulta);
         interfaz.cn_Cerrar_coneccion();
         if (varId != null) {
@@ -519,7 +516,7 @@ public class Indemnizacion_detalle {
                 //No hubo errores y el resultado se guardó en una variable auxiliar
                 Object aux = JSFUtils.resolveExpression(f, b1);
                 if (aux != null && Integer.parseInt(aux.toString()) > 0) {
-                    /*JSFUtils.setExpressionValue(f, b2, 
+                    /*JSFUtils.setExpressionValue(f, b2,
                                                 utils.getNumberOracle(aux));*/
                     correcto = true;
                 } else {
@@ -542,10 +539,10 @@ public class Indemnizacion_detalle {
 
     private boolean rellenarCamposPend_expNuevo(FacesContext f) {
         boolean correcto = false;
-        String b1 = "#{bindings.AnioActual.inputValue}";
+        String b1 = "#{bindings.Anio.inputValue}";
         String b2 = "#{bindings.CorrelativoAnio.inputValue}";
         String b3 = "#{bindings.IdEstado.inputValue}";
-        //String b4 = "#{bindings.IdTipoIndemnizacion.inputValue}";
+        String b4 = "#{bindings.IdTipoPrestacion.inputValue}";
         //String b5 = "#{bindings.IdSolicitudAutorizadaRetiro.inputValue}";
         //String b6 = "#{bindings.IdSolicitudAutorizadaFallec.inputValue}";
         //String b7 = "#{bindings.IdSolicitudRetiro.inputValue}";
@@ -555,11 +552,13 @@ public class Indemnizacion_detalle {
             Number anioActual = utils.getNumberOracle(utils.getAnioActual());
             //System.out.println("El año actual es: " + anioActual);
             //obtenemos el correlativo de la solicitud dependiendo del año actual
-            long corr = 
-                obtenerUltimoCorrelativo_solicitud(utils.getAnioActual()) + 1;
+            long correlativo = 
+                obtenerUltimoCorrelativo_solicitud(anioActual) + 1;
             JSFUtils.setExpressionValue(f, b1, anioActual);
-            JSFUtils.setExpressionValue(f, b2, utils.getNumberOracle(corr));
+            JSFUtils.setExpressionValue(f, b2, 
+                                        utils.getNumberOracle(correlativo));
             JSFUtils.setExpressionValue(f, b3, utils.getNumberOracle("250"));
+            JSFUtils.setExpressionValue(f, b4, utils.getNumberOracle("1"));
             /*Object tipo = JSFUtils.resolveExpression(f, b4); //Tipo de Gestión
             if (tipo != null) {
                 if (Integer.parseInt(tipo.toString()) == 1) {
@@ -572,7 +571,8 @@ public class Indemnizacion_detalle {
                 mensaje("No se pudo obtener el tipo de gestión, intente de nuevo por favor!!",
                         3);
             }*/
-            correcto = obtenerId_solicitudRetiro(f);
+            //correcto = obtenerId_solicitudRetiro(f);
+            correcto = true;
         } catch (Exception e) {
             e.printStackTrace();
             mensaje("Ha ocurrido el siguiente error: " + e.getMessage(), 3);
@@ -626,48 +626,57 @@ public class Indemnizacion_detalle {
 
     private boolean validarInformacionIngresada(FacesContext f) {
         boolean valido = false;
-        Object registroPersonal, tipoCarreraLaboral;
-        Object diasServicio, mesesServicio, aniosServicio;
-        registroPersonal = this.getInptText_registroEmpleado().getValue();
-        tipoCarreraLaboral = this.getSlctOneChoice_tipoCarreraLab().getValue();
+        Object registroPersonal = 
+            this.getInptText_registroEmpleado().getValue();
+        //, tipoCarreraLaboral;
+        Object fechaSolicitud = 
+            this.getSlctInputDate_fechaSolicitud().getValue();
+        Object aniosServicio, mesesServicio, diasServicio;
+        //tipoCarreraLaboral = this.getSlctOneChoice_tipoCarreraLab().getValue();
         aniosServicio = this.getInptText_AniosServicio().getValue();
         mesesServicio = this.getInptText_MesesServicio().getValue();
         diasServicio = this.getInptText_DiasServicio().getValue();
         if (registroPersonal == null || 
             registroPersonal.toString().compareTo("") == 0) {
             mensaje("¡¡Ingrese trabajador para continuar por favor!!", 3);
-        } else if (aniosServicio == null) {
-            mensaje("!!Ingrese los Años de Servicio para continuar por favor!!", 
+        } else if (fechaSolicitud == null || 
+                   fechaSolicitud.toString().compareTo("") == 0) {
+            mensaje("!!Ingrese Fecha de Solicitud para continuar por favor!!", 
                     3);
-        } else if (mesesServicio == null) {
-            mensaje("!!Ingrese los Meses de Servicio para continuar por favor!!", 
+        } else if (aniosServicio != null && 
+                   (Integer.parseInt(aniosServicio.toString().trim()) > 99 || 
+                    Integer.parseInt(aniosServicio.toString().trim()) <= 0)) {
+            mensaje("!!Los Años de Servicio debe ser mayor de 0 y menor de 99", 
                     3);
-        } else if (diasServicio == null) {
-            mensaje("!!Ingrese los Días de Servicio para continuar por favor!!", 
+        } else if (mesesServicio != null && 
+                   (Integer.parseInt(mesesServicio.toString().trim()) > 11 || 
+                    Integer.parseInt(mesesServicio.toString().trim()) < 0)) {
+            mensaje("!!Los Meses de Servicio debe ser menor o igual de 11 y mayor o igual a 0", 
                     3);
-        } else if (Integer.parseInt(aniosServicio.toString().trim()) > 99) {
-            mensaje("!!Los Años de Servicio debe ser menor o igual de 99", 3);
-        } else if (Integer.parseInt(mesesServicio.toString().trim()) > 11) {
-            mensaje("!!Los Meses de Servicio debe ser menor o igual de 11", 3);
-        } else if (Integer.parseInt(diasServicio.toString().trim()) > 30) {
-            mensaje("!!Los Días de Servicio debe ser menor o igual de 30", 3);
-        } else if (Integer.parseInt(aniosServicio.toString().trim()) <= 0 && 
-                   Integer.parseInt(mesesServicio.toString().trim()) <= 0 && 
+        } else if (diasServicio != null && 
+                   (Integer.parseInt(diasServicio.toString().trim()) > 30 || 
+                    Integer.parseInt(diasServicio.toString().trim()) < 0)) {
+            mensaje("!!Los Días de Servicio debe ser menor o igual de 30 y mayor o igual a 0", 
+                    3);
+        } /*else if (Integer.parseInt(aniosServicio.toString().trim()) <= 0 &&
+                   Integer.parseInt(mesesServicio.toString().trim()) <= 0 &&
                    Integer.parseInt(diasServicio.toString().trim()) <= 0) {
             mensaje("!!El tiempo de servicio debe ser mayor de 0!!", 3);
         } else if (tipoCarreraLaboral == null) {
-            mensaje("!!Seleccione un tipo de carrera laboral para continuar por favor!!", 
+            mensaje("!!Seleccione un tipo de carrera laboral para continuar por favor!!",
                     3);
         } else if (verificarRetiroTrabajador(f)) {
             //El trabajador está retirado de la institución
+            valido = true;
+        }*/ else {
             valido = true;
         }
         return valido;
     }
 
-    //Procedimiento que procesa el expediente ingresado y lo guarda
+    //Procedimiento que procesa el botón guardar solicitud
 
-    private boolean procesar_guardar(String bind, FacesContext f) {
+    private boolean procesar_guardar(FacesContext f, String bind) {
         boolean exito = false;
         if (validarInformacionIngresada(f)) {
             Object esNuevoObj = JSFUtils.resolveExpression(f, bind);
@@ -681,9 +690,9 @@ public class Indemnizacion_detalle {
                     /*if (rellenarCamposPendientes_solicitudExistente(f)) {
                         exito = commit(f);
                     }*/
-                    if (obtenerId_solicitudRetiro(f)) {
-                        exito = commit(f);
-                    }
+                    //if (obtenerId_solicitudRetiro(f)) {
+                    exito = commit(f);
+                    //}
                 }
             } else {
                 mensaje("Error al determinar si la solicitud es nueva o no, intente de nuevo por favor!!", 
@@ -694,15 +703,14 @@ public class Indemnizacion_detalle {
     }
 
     public String cmdBtn_guardar_action() {
-        String binding = "#{bindings.EsSolicitudNueva.inputValue}";
         FacesContext f = FacesContext.getCurrentInstance();
-        if (procesar_guardar(binding, f)) {
-            mensaje("Solicitud Grabada Correctamente.", 1);
-            habilitar_componentes_paso1(false);
-            JSFUtils.setExpressionValue(f, binding, 
+        String binding = "#{bindings.EsSolicitudNueva.inputValue}";
+        if (procesar_guardar(f, binding)) {
+            mensaje("Solicitud Guardada Correctamente.", 1);
+            /*habilitar_componentes_paso1(false);
+            JSFUtils.setExpressionValue(f, binding,
                                         Boolean.parseBoolean("false"));
-            JSFUtils.EjecutarAcccion(f, "RefrescarIndemnizacion");
-            return "ir_a_listado_indemnizaciones";
+            JSFUtils.EjecutarAcccion(f, "RefrescarIndemnizacion");*/
         }
         return null;
     }
@@ -722,7 +730,7 @@ public class Indemnizacion_detalle {
         habilitar_componentes_solicitud(false);
         mensaje("Procedimiento cancelado correctamente.", 1);
         return null;*/
-        mensaje("Procedimiento cancelado correctamente.", 1);
+        mensaje("Operación Cancelado Correctamente", 1);
         return null;
     }
 

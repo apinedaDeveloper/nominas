@@ -12,72 +12,42 @@ import oracle.jbo.server.ViewRowImpl;
 // ---    Warning: Do not modify method signatures of generated methods.
 // ---------------------------------------------------------------------
 public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
-    public static final int IDINDEMNIZACION = 0;
-    public static final int IDTIPOINDEMNIZACION = 1;
-    public static final int ANIOACTUAL = 2;
-    public static final int CORRELATIVOANIO = 3;
-    public static final int REGISTROEMPLEADO = 4;
-    public static final int TIPOCARRERALABORAL = 5;
-    public static final int IDSOLICITUDAUTORIZADO = 6;
-    public static final int ANIOSTIEMPOSERVICIO = 7;
-    public static final int MESESTIEMPOSERVICIO = 8;
-    public static final int DIASTIEMPOSERVICIO = 9;
-    public static final int NOMBRESOLICITANTE = 10;
-    public static final int CUISOLICITANTE = 11;
-    public static final int DIRECCIONSOLICITANTE = 12;
-    public static final int MUNICIPIOSOLICITANTE = 13;
-    public static final int TELEFONOSSOLICITA = 14;
-    public static final int CORREOSOLICITANTE = 15;
-    public static final int IDPARENTESCOSOL = 16;
-    public static final int OTROPARENTESCOSOL = 17;
-    public static final int OBSERVACIONES = 18;
-    public static final int IDESTADO = 19;
-    public static final int DIASPRORROGADO = 20;
-    public static final int PROMEDIOSUELDOS = 21;
-    public static final int GASTOFUNERARIO = 22;
-    public static final int POSTMORTEM = 23;
-    public static final int TOTALPRESTACION = 24;
-    public static final int NUMEROFACTURAPOST = 25;
-    public static final int SERIEFACTURAPOST = 26;
-    public static final int FECHAFACTURAPOST = 27;
-    public static final int NOMBREFUNERARIAPOST = 28;
-    public static final int MONTOFACTURAPOST = 29;
-    public static final int OBSERVACIONESCALCULO = 30;
-    public static final int USUARIOCREACION = 31;
-    public static final int FECHACREACION = 32;
-    public static final int USUARIOULTIMAMOD = 33;
-    public static final int FECHAULTIMAMOD = 34;
-    public static final int FECHASOLICITUD = 35;
-    public static final int MOTIVORENUNCIA = 36;
-    public static final int PAGOPENDBANTRAB = 37;
-    public static final int PAGOPENDJUDICIAL = 38;
-    public static final int PAGOPENDCARGOCONT = 39;
-    public static final int PAGOPENDOTROS = 40;
-    public static final int NOMBRECOMPLETO = 41;
-    public static final int CUI = 42;
-    public static final int IDESTADOTRABAJADOR = 43;
-    public static final int NOMBREESTADOINDEMNIZACION = 44;
-    public static final int NOMBRETIPOINDEMNIZACION = 45;
-    public static final int NOMBREESTADOTRABAJADOR = 46;
-    public static final int FECHAEXPEDIENTERETIRO = 47;
-    public static final int OBSERVACIONEXPRETIRO = 48;
+
+    public static final int IDTIPOPRESTACION = 0;
+    public static final int ANIO = 1;
+    public static final int CORRELATIVOANIO = 2;
+    public static final int REGISTROEMPLEADO = 3;
+    public static final int IDSOLICITUD = 4;
+    public static final int ANIOSTIEMPOSERVICIO = 5;
+    public static final int MESESTIEMPOSERVICIO = 6;
+    public static final int DIASTIEMPOSERVICIO = 7;
+    public static final int IDBENEFICIARIOSOL = 8;
+    public static final int IDESTADO = 9;
+    public static final int TOTALSUELDOS = 10;
+    public static final int DIFERIDOCALC = 11;
+    public static final int DIFERIDO12CALC = 12;
+    public static final int AGUINALDOCALC = 13;
+    public static final int BONO14CALC = 14;
+    public static final int SUELDOPROMEDIO = 15;
+    public static final int TOTALPRESTACION = 16;
+    public static final int GASTOFUNERARIO = 17;
+    public static final int FECHASOLICITUD = 18;
+    public static final int CREADOPOR = 19;
+    public static final int FECHACREACION = 20;
+    public static final int MODIFICADOPOR = 21;
+    public static final int FECHAMOD = 22;
+    public static final int NOMBRECOMPLETO = 23;
+    public static final int CUI = 24;
+    public static final int IDESTADOTRABAJADOR = 25;
+    public static final int NOMBREESTADOINDEMNIZACION = 26;
+    public static final int NOMBRETIPOINDEMNIZACION = 27;
+    public static final int NOMBREESTADOTRABAJADOR = 28;
+    public static final int FECHAEXPEDIENTERETIRO = 29;
+    public static final int OBSERVACIONEXPRETIRO = 30;
 
     /**This is the default constructor (do not remove)
      */
     public SisIndemnizacion_vwRowImpl() {
-    }
-
-
-    /**Gets the attribute value for the calculated attribute RegistroEmpleado
-     */
-    public Number getRegistroEmpleado() {
-        return (Number) getAttributeInternal(REGISTROEMPLEADO);
-    }
-
-    /**Sets <code>value</code> as the attribute value for the calculated attribute RegistroEmpleado
-     */
-    public void setRegistroEmpleado(Number value) {
-        setAttributeInternal(REGISTROEMPLEADO, value);
     }
 
 
@@ -98,88 +68,52 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
     protected Object getAttrInvokeAccessor(int index, 
                                            AttributeDefImpl attrDef) throws Exception {
         switch (index) {
-        case IDINDEMNIZACION:
-            return getIdIndemnizacion();
-        case IDTIPOINDEMNIZACION:
-            return getIdTipoIndemnizacion();
-        case ANIOACTUAL:
-            return getAnioActual();
+        case IDTIPOPRESTACION:
+            return getIdTipoPrestacion();
+        case ANIO:
+            return getAnio();
         case CORRELATIVOANIO:
             return getCorrelativoAnio();
         case REGISTROEMPLEADO:
             return getRegistroEmpleado();
-        case TIPOCARRERALABORAL:
-            return getTipoCarreraLaboral();
-        case IDSOLICITUDAUTORIZADO:
-            return getIdSolicitudAutorizado();
+        case IDSOLICITUD:
+            return getIdSolicitud();
         case ANIOSTIEMPOSERVICIO:
             return getAniosTiempoServicio();
         case MESESTIEMPOSERVICIO:
             return getMesesTiempoServicio();
         case DIASTIEMPOSERVICIO:
             return getDiasTiempoServicio();
-        case NOMBRESOLICITANTE:
-            return getNombreSolicitante();
-        case CUISOLICITANTE:
-            return getCuiSolicitante();
-        case DIRECCIONSOLICITANTE:
-            return getDireccionSolicitante();
-        case MUNICIPIOSOLICITANTE:
-            return getMunicipioSolicitante();
-        case TELEFONOSSOLICITA:
-            return getTelefonosSolicita();
-        case CORREOSOLICITANTE:
-            return getCorreoSolicitante();
-        case IDPARENTESCOSOL:
-            return getIdParentescoSol();
-        case OTROPARENTESCOSOL:
-            return getOtroParentescoSol();
-        case OBSERVACIONES:
-            return getObservaciones();
+        case IDBENEFICIARIOSOL:
+            return getIdBeneficiarioSol();
         case IDESTADO:
             return getIdEstado();
-        case DIASPRORROGADO:
-            return getDiasProrrogado();
-        case PROMEDIOSUELDOS:
-            return getPromedioSueldos();
-        case GASTOFUNERARIO:
-            return getGastoFunerario();
-        case POSTMORTEM:
-            return getPostMortem();
+        case TOTALSUELDOS:
+            return getTotalSueldos();
+        case DIFERIDOCALC:
+            return getDiferidoCalc();
+        case DIFERIDO12CALC:
+            return getDiferido12Calc();
+        case AGUINALDOCALC:
+            return getAguinaldoCalc();
+        case BONO14CALC:
+            return getBono14Calc();
+        case SUELDOPROMEDIO:
+            return getSueldoPromedio();
         case TOTALPRESTACION:
             return getTotalPrestacion();
-        case NUMEROFACTURAPOST:
-            return getNumeroFacturaPost();
-        case SERIEFACTURAPOST:
-            return getSerieFacturaPost();
-        case FECHAFACTURAPOST:
-            return getFechaFacturaPost();
-        case NOMBREFUNERARIAPOST:
-            return getNombreFunerariaPost();
-        case MONTOFACTURAPOST:
-            return getMontoFacturaPost();
-        case OBSERVACIONESCALCULO:
-            return getObservacionesCalculo();
-        case USUARIOCREACION:
-            return getUsuarioCreacion();
-        case FECHACREACION:
-            return getFechaCreacion();
-        case USUARIOULTIMAMOD:
-            return getUsuarioUltimaMod();
-        case FECHAULTIMAMOD:
-            return getFechaUltimaMod();
+        case GASTOFUNERARIO:
+            return getGastoFunerario();
         case FECHASOLICITUD:
             return getFechaSolicitud();
-        case MOTIVORENUNCIA:
-            return getMotivoRenuncia();
-        case PAGOPENDBANTRAB:
-            return getPagoPendBantrab();
-        case PAGOPENDJUDICIAL:
-            return getPagoPendJudicial();
-        case PAGOPENDCARGOCONT:
-            return getPagoPendCargoCont();
-        case PAGOPENDOTROS:
-            return getPagoPendOtros();
+        case CREADOPOR:
+            return getCreadoPor();
+        case FECHACREACION:
+            return getFechaCreacion();
+        case MODIFICADOPOR:
+            return getModificadoPor();
+        case FECHAMOD:
+            return getFechaMod();
         case NOMBRECOMPLETO:
             return getNombrecompleto();
         case CUI:
@@ -206,14 +140,11 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
     protected void setAttrInvokeAccessor(int index, Object value, 
                                          AttributeDefImpl attrDef) throws Exception {
         switch (index) {
-        case IDINDEMNIZACION:
-            setIdIndemnizacion((Number)value);
+        case IDTIPOPRESTACION:
+            setIdTipoPrestacion((Number)value);
             return;
-        case IDTIPOINDEMNIZACION:
-            setIdTipoIndemnizacion((Number)value);
-            return;
-        case ANIOACTUAL:
-            setAnioActual((Number)value);
+        case ANIO:
+            setAnio((Number)value);
             return;
         case CORRELATIVOANIO:
             setCorrelativoAnio((Number)value);
@@ -221,11 +152,8 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
         case REGISTROEMPLEADO:
             setRegistroEmpleado((Number)value);
             return;
-        case TIPOCARRERALABORAL:
-            setTipoCarreraLaboral((Number)value);
-            return;
-        case IDSOLICITUDAUTORIZADO:
-            setIdSolicitudAutorizado((Number)value);
+        case IDSOLICITUD:
+            setIdSolicitud((Number)value);
             return;
         case ANIOSTIEMPOSERVICIO:
             setAniosTiempoServicio((Number)value);
@@ -236,98 +164,50 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
         case DIASTIEMPOSERVICIO:
             setDiasTiempoServicio((Number)value);
             return;
-        case NOMBRESOLICITANTE:
-            setNombreSolicitante((String)value);
-            return;
-        case CUISOLICITANTE:
-            setCuiSolicitante((String)value);
-            return;
-        case DIRECCIONSOLICITANTE:
-            setDireccionSolicitante((String)value);
-            return;
-        case MUNICIPIOSOLICITANTE:
-            setMunicipioSolicitante((Number)value);
-            return;
-        case TELEFONOSSOLICITA:
-            setTelefonosSolicita((String)value);
-            return;
-        case CORREOSOLICITANTE:
-            setCorreoSolicitante((String)value);
-            return;
-        case IDPARENTESCOSOL:
-            setIdParentescoSol((Number)value);
-            return;
-        case OTROPARENTESCOSOL:
-            setOtroParentescoSol((String)value);
-            return;
-        case OBSERVACIONES:
-            setObservaciones((String)value);
+        case IDBENEFICIARIOSOL:
+            setIdBeneficiarioSol((Number)value);
             return;
         case IDESTADO:
             setIdEstado((Number)value);
             return;
-        case DIASPRORROGADO:
-            setDiasProrrogado((Number)value);
+        case TOTALSUELDOS:
+            setTotalSueldos((Number)value);
             return;
-        case PROMEDIOSUELDOS:
-            setPromedioSueldos((Number)value);
+        case DIFERIDOCALC:
+            setDiferidoCalc((Number)value);
             return;
-        case GASTOFUNERARIO:
-            setGastoFunerario((Number)value);
+        case DIFERIDO12CALC:
+            setDiferido12Calc((Number)value);
             return;
-        case POSTMORTEM:
-            setPostMortem((Number)value);
+        case AGUINALDOCALC:
+            setAguinaldoCalc((Number)value);
+            return;
+        case BONO14CALC:
+            setBono14Calc((Number)value);
+            return;
+        case SUELDOPROMEDIO:
+            setSueldoPromedio((Number)value);
             return;
         case TOTALPRESTACION:
             setTotalPrestacion((Number)value);
             return;
-        case NUMEROFACTURAPOST:
-            setNumeroFacturaPost((Number)value);
-            return;
-        case SERIEFACTURAPOST:
-            setSerieFacturaPost((String)value);
-            return;
-        case FECHAFACTURAPOST:
-            setFechaFacturaPost((Date)value);
-            return;
-        case NOMBREFUNERARIAPOST:
-            setNombreFunerariaPost((String)value);
-            return;
-        case MONTOFACTURAPOST:
-            setMontoFacturaPost((Number)value);
-            return;
-        case OBSERVACIONESCALCULO:
-            setObservacionesCalculo((String)value);
-            return;
-        case USUARIOCREACION:
-            setUsuarioCreacion((String)value);
-            return;
-        case FECHACREACION:
-            setFechaCreacion((Date)value);
-            return;
-        case USUARIOULTIMAMOD:
-            setUsuarioUltimaMod((String)value);
-            return;
-        case FECHAULTIMAMOD:
-            setFechaUltimaMod((Date)value);
+        case GASTOFUNERARIO:
+            setGastoFunerario((Number)value);
             return;
         case FECHASOLICITUD:
             setFechaSolicitud((Date)value);
             return;
-        case MOTIVORENUNCIA:
-            setMotivoRenuncia((String)value);
+        case CREADOPOR:
+            setCreadoPor((String)value);
             return;
-        case PAGOPENDBANTRAB:
-            setPagoPendBantrab((String)value);
+        case FECHACREACION:
+            setFechaCreacion((Date)value);
             return;
-        case PAGOPENDJUDICIAL:
-            setPagoPendJudicial((String)value);
+        case MODIFICADOPOR:
+            setModificadoPor((String)value);
             return;
-        case PAGOPENDCARGOCONT:
-            setPagoPendCargoCont((String)value);
-            return;
-        case PAGOPENDOTROS:
-            setPagoPendOtros((String)value);
+        case FECHAMOD:
+            setFechaMod((Date)value);
             return;
         case NOMBRECOMPLETO:
             setNombrecompleto((String)value);
@@ -360,493 +240,288 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
     }
 
 
-    /**Gets the attribute value for the calculated attribute CorrelativoAnio
-     */
-    public Number getCorrelativoAnio() {
-        return (Number) getAttributeInternal(CORRELATIVOANIO);
-    }
-
-    /**Sets <code>value</code> as the attribute value for the calculated attribute CorrelativoAnio
-     */
-    public void setCorrelativoAnio(Number value) {
-        setAttributeInternal(CORRELATIVOANIO, value);
-    }
-
-    /**Gets the attribute value for the calculated attribute IdSolicitudAutorizado
-     */
-    public Number getIdSolicitudAutorizado() {
-        return (Number) getAttributeInternal(IDSOLICITUDAUTORIZADO);
-    }
-
-    /**Sets <code>value</code> as the attribute value for the calculated attribute IdSolicitudAutorizado
-     */
-    public void setIdSolicitudAutorizado(Number value) {
-        setAttributeInternal(IDSOLICITUDAUTORIZADO, value);
-    }
-
-    /**Gets the attribute value for the calculated attribute DireccionSolicitante
-     */
-    public String getDireccionSolicitante() {
-        return (String) getAttributeInternal(DIRECCIONSOLICITANTE);
-    }
-
-    /**Sets <code>value</code> as the attribute value for the calculated attribute DireccionSolicitante
-     */
-    public void setDireccionSolicitante(String value) {
-        setAttributeInternal(DIRECCIONSOLICITANTE, value);
-    }
-
-    /**Gets the attribute value for the calculated attribute MunicipioSolicitante
-     */
-    public Number getMunicipioSolicitante() {
-        return (Number) getAttributeInternal(MUNICIPIOSOLICITANTE);
-    }
-
-    /**Sets <code>value</code> as the attribute value for the calculated attribute MunicipioSolicitante
-     */
-    public void setMunicipioSolicitante(Number value) {
-        setAttributeInternal(MUNICIPIOSOLICITANTE, value);
-    }
-
-    /**Gets the attribute value for the calculated attribute CorreoSolicitante
-     */
-    public String getCorreoSolicitante() {
-        return (String) getAttributeInternal(CORREOSOLICITANTE);
-    }
-
-    /**Sets <code>value</code> as the attribute value for the calculated attribute CorreoSolicitante
-     */
-    public void setCorreoSolicitante(String value) {
-        setAttributeInternal(CORREOSOLICITANTE, value);
-    }
-
-    /**Gets the attribute value for the calculated attribute OtroParentescoSol
-     */
-    public String getOtroParentescoSol() {
-        return (String) getAttributeInternal(OTROPARENTESCOSOL);
-    }
-
-    /**Sets <code>value</code> as the attribute value for the calculated attribute OtroParentescoSol
-     */
-    public void setOtroParentescoSol(String value) {
-        setAttributeInternal(OTROPARENTESCOSOL, value);
-    }
-
-
-    /**Gets the attribute value for the calculated attribute PromedioSueldos
-     */
-    public Number getPromedioSueldos() {
-        return (Number) getAttributeInternal(PROMEDIOSUELDOS);
-    }
-
-    /**Sets <code>value</code> as the attribute value for the calculated attribute PromedioSueldos
-     */
-    public void setPromedioSueldos(Number value) {
-        setAttributeInternal(PROMEDIOSUELDOS, value);
-    }
-
-    /**Gets the attribute value for the calculated attribute GastoFunerario
-     */
-    public Number getGastoFunerario() {
-        return (Number) getAttributeInternal(GASTOFUNERARIO);
-    }
-
-    /**Sets <code>value</code> as the attribute value for the calculated attribute GastoFunerario
-     */
-    public void setGastoFunerario(Number value) {
-        setAttributeInternal(GASTOFUNERARIO, value);
-    }
-
-    /**Gets the attribute value for the calculated attribute PostMortem
-     */
-    public Number getPostMortem() {
-        return (Number) getAttributeInternal(POSTMORTEM);
-    }
-
-    /**Sets <code>value</code> as the attribute value for the calculated attribute PostMortem
-     */
-    public void setPostMortem(Number value) {
-        setAttributeInternal(POSTMORTEM, value);
-    }
-
-    /**Gets the attribute value for the calculated attribute TotalPrestacion
-     */
-    public Number getTotalPrestacion() {
-        return (Number) getAttributeInternal(TOTALPRESTACION);
-    }
-
-    /**Sets <code>value</code> as the attribute value for the calculated attribute TotalPrestacion
-     */
-    public void setTotalPrestacion(Number value) {
-        setAttributeInternal(TOTALPRESTACION, value);
-    }
-
-    /**Gets the attribute value for the calculated attribute ObservacionesCalculo
-     */
-    public String getObservacionesCalculo() {
-        return (String) getAttributeInternal(OBSERVACIONESCALCULO);
-    }
-
-    /**Sets <code>value</code> as the attribute value for the calculated attribute ObservacionesCalculo
-     */
-    public void setObservacionesCalculo(String value) {
-        setAttributeInternal(OBSERVACIONESCALCULO, value);
-    }
-
     /**Gets SisIndemnizacion entity object.
      */
     public SisIndemnizacionImpl getSisIndemnizacion() {
         return (SisIndemnizacionImpl)getEntity(0);
     }
 
-    /**Gets the attribute value for the calculated attribute IdIndemnizacion
+    /**Gets the attribute value for ID_TIPO_PRESTACION using the alias name IdTipoPrestacion
      */
-    public Number getIdIndemnizacion() {
-        return (Number) getAttributeInternal(IDINDEMNIZACION);
+    public Number getIdTipoPrestacion() {
+        return (Number) getAttributeInternal(IDTIPOPRESTACION);
     }
 
-    /**Sets <code>value</code> as the attribute value for the calculated attribute IdIndemnizacion
+    /**Sets <code>value</code> as attribute value for ID_TIPO_PRESTACION using the alias name IdTipoPrestacion
      */
-    public void setIdIndemnizacion(Number value) {
-        setAttributeInternal(IDINDEMNIZACION, value);
+    public void setIdTipoPrestacion(Number value) {
+        setAttributeInternal(IDTIPOPRESTACION, value);
     }
 
-    /**Gets the attribute value for the calculated attribute IdTipoIndemnizacion
+    /**Gets the attribute value for ANIO using the alias name Anio
      */
-    public Number getIdTipoIndemnizacion() {
-        return (Number) getAttributeInternal(IDTIPOINDEMNIZACION);
+    public Number getAnio() {
+        return (Number) getAttributeInternal(ANIO);
     }
 
-    /**Sets <code>value</code> as the attribute value for the calculated attribute IdTipoIndemnizacion
+    /**Sets <code>value</code> as attribute value for ANIO using the alias name Anio
      */
-    public void setIdTipoIndemnizacion(Number value) {
-        setAttributeInternal(IDTIPOINDEMNIZACION, value);
+    public void setAnio(Number value) {
+        setAttributeInternal(ANIO, value);
     }
 
-    /**Gets the attribute value for the calculated attribute AnioActual
+    /**Gets the attribute value for CORRELATIVO_ANIO using the alias name CorrelativoAnio
      */
-    public Number getAnioActual() {
-        return (Number) getAttributeInternal(ANIOACTUAL);
+    public Number getCorrelativoAnio() {
+        return (Number) getAttributeInternal(CORRELATIVOANIO);
     }
 
-    /**Sets <code>value</code> as the attribute value for the calculated attribute AnioActual
+    /**Sets <code>value</code> as attribute value for CORRELATIVO_ANIO using the alias name CorrelativoAnio
      */
-    public void setAnioActual(Number value) {
-        setAttributeInternal(ANIOACTUAL, value);
+    public void setCorrelativoAnio(Number value) {
+        setAttributeInternal(CORRELATIVOANIO, value);
     }
 
-    /**Gets the attribute value for the calculated attribute TipoCarreraLaboral
+    /**Gets the attribute value for REGISTRO_EMPLEADO using the alias name RegistroEmpleado
      */
-    public Number getTipoCarreraLaboral() {
-        return (Number) getAttributeInternal(TIPOCARRERALABORAL);
+    public Number getRegistroEmpleado() {
+        return (Number) getAttributeInternal(REGISTROEMPLEADO);
     }
 
-    /**Sets <code>value</code> as the attribute value for the calculated attribute TipoCarreraLaboral
+    /**Sets <code>value</code> as attribute value for REGISTRO_EMPLEADO using the alias name RegistroEmpleado
      */
-    public void setTipoCarreraLaboral(Number value) {
-        setAttributeInternal(TIPOCARRERALABORAL, value);
+    public void setRegistroEmpleado(Number value) {
+        setAttributeInternal(REGISTROEMPLEADO, value);
     }
 
-    /**Gets the attribute value for the calculated attribute AniosTiempoServicio
+    /**Gets the attribute value for ID_SOLICITUD using the alias name IdSolicitud
+     */
+    public Number getIdSolicitud() {
+        return (Number) getAttributeInternal(IDSOLICITUD);
+    }
+
+    /**Sets <code>value</code> as attribute value for ID_SOLICITUD using the alias name IdSolicitud
+     */
+    public void setIdSolicitud(Number value) {
+        setAttributeInternal(IDSOLICITUD, value);
+    }
+
+    /**Gets the attribute value for ANIOS_TIEMPO_SERVICIO using the alias name AniosTiempoServicio
      */
     public Number getAniosTiempoServicio() {
         return (Number) getAttributeInternal(ANIOSTIEMPOSERVICIO);
     }
 
-    /**Sets <code>value</code> as the attribute value for the calculated attribute AniosTiempoServicio
+    /**Sets <code>value</code> as attribute value for ANIOS_TIEMPO_SERVICIO using the alias name AniosTiempoServicio
      */
     public void setAniosTiempoServicio(Number value) {
         setAttributeInternal(ANIOSTIEMPOSERVICIO, value);
     }
 
-    /**Gets the attribute value for the calculated attribute MesesTiempoServicio
+    /**Gets the attribute value for MESES_TIEMPO_SERVICIO using the alias name MesesTiempoServicio
      */
     public Number getMesesTiempoServicio() {
         return (Number) getAttributeInternal(MESESTIEMPOSERVICIO);
     }
 
-    /**Sets <code>value</code> as the attribute value for the calculated attribute MesesTiempoServicio
+    /**Sets <code>value</code> as attribute value for MESES_TIEMPO_SERVICIO using the alias name MesesTiempoServicio
      */
     public void setMesesTiempoServicio(Number value) {
         setAttributeInternal(MESESTIEMPOSERVICIO, value);
     }
 
-    /**Gets the attribute value for the calculated attribute DiasTiempoServicio
+    /**Gets the attribute value for DIAS_TIEMPO_SERVICIO using the alias name DiasTiempoServicio
      */
     public Number getDiasTiempoServicio() {
         return (Number) getAttributeInternal(DIASTIEMPOSERVICIO);
     }
 
-    /**Sets <code>value</code> as the attribute value for the calculated attribute DiasTiempoServicio
+    /**Sets <code>value</code> as attribute value for DIAS_TIEMPO_SERVICIO using the alias name DiasTiempoServicio
      */
     public void setDiasTiempoServicio(Number value) {
         setAttributeInternal(DIASTIEMPOSERVICIO, value);
     }
 
-    /**Gets the attribute value for the calculated attribute NombreSolicitante
+    /**Gets the attribute value for ID_BENEFICIARIO_SOL using the alias name IdBeneficiarioSol
      */
-    public String getNombreSolicitante() {
-        return (String) getAttributeInternal(NOMBRESOLICITANTE);
+    public Number getIdBeneficiarioSol() {
+        return (Number) getAttributeInternal(IDBENEFICIARIOSOL);
     }
 
-    /**Sets <code>value</code> as the attribute value for the calculated attribute NombreSolicitante
+    /**Sets <code>value</code> as attribute value for ID_BENEFICIARIO_SOL using the alias name IdBeneficiarioSol
      */
-    public void setNombreSolicitante(String value) {
-        setAttributeInternal(NOMBRESOLICITANTE, value);
+    public void setIdBeneficiarioSol(Number value) {
+        setAttributeInternal(IDBENEFICIARIOSOL, value);
     }
 
-    /**Gets the attribute value for the calculated attribute CuiSolicitante
-     */
-    public String getCuiSolicitante() {
-        return (String) getAttributeInternal(CUISOLICITANTE);
-    }
-
-    /**Sets <code>value</code> as the attribute value for the calculated attribute CuiSolicitante
-     */
-    public void setCuiSolicitante(String value) {
-        setAttributeInternal(CUISOLICITANTE, value);
-    }
-
-    /**Gets the attribute value for the calculated attribute TelefonosSolicita
-     */
-    public String getTelefonosSolicita() {
-        return (String) getAttributeInternal(TELEFONOSSOLICITA);
-    }
-
-    /**Sets <code>value</code> as the attribute value for the calculated attribute TelefonosSolicita
-     */
-    public void setTelefonosSolicita(String value) {
-        setAttributeInternal(TELEFONOSSOLICITA, value);
-    }
-
-    /**Gets the attribute value for the calculated attribute IdParentescoSol
-     */
-    public Number getIdParentescoSol() {
-        return (Number) getAttributeInternal(IDPARENTESCOSOL);
-    }
-
-    /**Sets <code>value</code> as the attribute value for the calculated attribute IdParentescoSol
-     */
-    public void setIdParentescoSol(Number value) {
-        setAttributeInternal(IDPARENTESCOSOL, value);
-    }
-
-    /**Gets the attribute value for the calculated attribute Observaciones
-     */
-    public String getObservaciones() {
-        return (String) getAttributeInternal(OBSERVACIONES);
-    }
-
-    /**Sets <code>value</code> as the attribute value for the calculated attribute Observaciones
-     */
-    public void setObservaciones(String value) {
-        setAttributeInternal(OBSERVACIONES, value);
-    }
-
-    /**Gets the attribute value for the calculated attribute IdEstado
+    /**Gets the attribute value for ID_ESTADO using the alias name IdEstado
      */
     public Number getIdEstado() {
         return (Number) getAttributeInternal(IDESTADO);
     }
 
-    /**Sets <code>value</code> as the attribute value for the calculated attribute IdEstado
+    /**Sets <code>value</code> as attribute value for ID_ESTADO using the alias name IdEstado
      */
     public void setIdEstado(Number value) {
         setAttributeInternal(IDESTADO, value);
     }
 
-    /**Gets the attribute value for the calculated attribute DiasProrrogado
+    /**Gets the attribute value for TOTAL_SUELDOS using the alias name TotalSueldos
      */
-    public Number getDiasProrrogado() {
-        return (Number) getAttributeInternal(DIASPRORROGADO);
+    public Number getTotalSueldos() {
+        return (Number) getAttributeInternal(TOTALSUELDOS);
     }
 
-    /**Sets <code>value</code> as the attribute value for the calculated attribute DiasProrrogado
+    /**Sets <code>value</code> as attribute value for TOTAL_SUELDOS using the alias name TotalSueldos
      */
-    public void setDiasProrrogado(Number value) {
-        setAttributeInternal(DIASPRORROGADO, value);
+    public void setTotalSueldos(Number value) {
+        setAttributeInternal(TOTALSUELDOS, value);
     }
 
-    /**Gets the attribute value for the calculated attribute UsuarioCreacion
+    /**Gets the attribute value for DIFERIDO_CALC using the alias name DiferidoCalc
      */
-    public String getUsuarioCreacion() {
-        return (String) getAttributeInternal(USUARIOCREACION);
+    public Number getDiferidoCalc() {
+        return (Number) getAttributeInternal(DIFERIDOCALC);
     }
 
-    /**Sets <code>value</code> as the attribute value for the calculated attribute UsuarioCreacion
+    /**Sets <code>value</code> as attribute value for DIFERIDO_CALC using the alias name DiferidoCalc
      */
-    public void setUsuarioCreacion(String value) {
-        setAttributeInternal(USUARIOCREACION, value);
+    public void setDiferidoCalc(Number value) {
+        setAttributeInternal(DIFERIDOCALC, value);
     }
 
-    /**Gets the attribute value for the calculated attribute FechaCreacion
+    /**Gets the attribute value for DIFERIDO_12_CALC using the alias name Diferido12Calc
      */
-    public Date getFechaCreacion() {
-        return (Date) getAttributeInternal(FECHACREACION);
+    public Number getDiferido12Calc() {
+        return (Number) getAttributeInternal(DIFERIDO12CALC);
     }
 
-    /**Sets <code>value</code> as the attribute value for the calculated attribute FechaCreacion
+    /**Sets <code>value</code> as attribute value for DIFERIDO_12_CALC using the alias name Diferido12Calc
      */
-    public void setFechaCreacion(Date value) {
-        setAttributeInternal(FECHACREACION, value);
+    public void setDiferido12Calc(Number value) {
+        setAttributeInternal(DIFERIDO12CALC, value);
     }
 
-    /**Gets the attribute value for the calculated attribute UsuarioUltimaMod
+    /**Gets the attribute value for AGUINALDO_CALC using the alias name AguinaldoCalc
      */
-    public String getUsuarioUltimaMod() {
-        return (String) getAttributeInternal(USUARIOULTIMAMOD);
+    public Number getAguinaldoCalc() {
+        return (Number) getAttributeInternal(AGUINALDOCALC);
     }
 
-    /**Sets <code>value</code> as the attribute value for the calculated attribute UsuarioUltimaMod
+    /**Sets <code>value</code> as attribute value for AGUINALDO_CALC using the alias name AguinaldoCalc
      */
-    public void setUsuarioUltimaMod(String value) {
-        setAttributeInternal(USUARIOULTIMAMOD, value);
+    public void setAguinaldoCalc(Number value) {
+        setAttributeInternal(AGUINALDOCALC, value);
     }
 
-
-    /**Gets the attribute value for the calculated attribute NumeroFacturaPost
+    /**Gets the attribute value for BONO14_CALC using the alias name Bono14Calc
      */
-    public Number getNumeroFacturaPost() {
-        return (Number) getAttributeInternal(NUMEROFACTURAPOST);
+    public Number getBono14Calc() {
+        return (Number) getAttributeInternal(BONO14CALC);
     }
 
-    /**Sets <code>value</code> as the attribute value for the calculated attribute NumeroFacturaPost
+    /**Sets <code>value</code> as attribute value for BONO14_CALC using the alias name Bono14Calc
      */
-    public void setNumeroFacturaPost(Number value) {
-        setAttributeInternal(NUMEROFACTURAPOST, value);
+    public void setBono14Calc(Number value) {
+        setAttributeInternal(BONO14CALC, value);
     }
 
-    /**Gets the attribute value for the calculated attribute SerieFacturaPost
+    /**Gets the attribute value for SUELDO_PROMEDIO using the alias name SueldoPromedio
      */
-    public String getSerieFacturaPost() {
-        return (String) getAttributeInternal(SERIEFACTURAPOST);
+    public Number getSueldoPromedio() {
+        return (Number) getAttributeInternal(SUELDOPROMEDIO);
     }
 
-    /**Sets <code>value</code> as the attribute value for the calculated attribute SerieFacturaPost
+    /**Sets <code>value</code> as attribute value for SUELDO_PROMEDIO using the alias name SueldoPromedio
      */
-    public void setSerieFacturaPost(String value) {
-        setAttributeInternal(SERIEFACTURAPOST, value);
+    public void setSueldoPromedio(Number value) {
+        setAttributeInternal(SUELDOPROMEDIO, value);
     }
 
-    /**Gets the attribute value for the calculated attribute FechaFacturaPost
+    /**Gets the attribute value for TOTAL_PRESTACION using the alias name TotalPrestacion
      */
-    public Date getFechaFacturaPost() {
-        return (Date) getAttributeInternal(FECHAFACTURAPOST);
+    public Number getTotalPrestacion() {
+        return (Number) getAttributeInternal(TOTALPRESTACION);
     }
 
-    /**Sets <code>value</code> as the attribute value for the calculated attribute FechaFacturaPost
+    /**Sets <code>value</code> as attribute value for TOTAL_PRESTACION using the alias name TotalPrestacion
      */
-    public void setFechaFacturaPost(Date value) {
-        setAttributeInternal(FECHAFACTURAPOST, value);
+    public void setTotalPrestacion(Number value) {
+        setAttributeInternal(TOTALPRESTACION, value);
     }
 
-    /**Gets the attribute value for the calculated attribute NombreFunerariaPost
+    /**Gets the attribute value for GASTO_FUNERARIO using the alias name GastoFunerario
      */
-    public String getNombreFunerariaPost() {
-        return (String) getAttributeInternal(NOMBREFUNERARIAPOST);
+    public Number getGastoFunerario() {
+        return (Number) getAttributeInternal(GASTOFUNERARIO);
     }
 
-    /**Sets <code>value</code> as the attribute value for the calculated attribute NombreFunerariaPost
+    /**Sets <code>value</code> as attribute value for GASTO_FUNERARIO using the alias name GastoFunerario
      */
-    public void setNombreFunerariaPost(String value) {
-        setAttributeInternal(NOMBREFUNERARIAPOST, value);
+    public void setGastoFunerario(Number value) {
+        setAttributeInternal(GASTOFUNERARIO, value);
     }
 
-
-    /**Gets the attribute value for the calculated attribute MontoFacturaPost
-     */
-    public Number getMontoFacturaPost() {
-        return (Number) getAttributeInternal(MONTOFACTURAPOST);
-    }
-
-    /**Sets <code>value</code> as the attribute value for the calculated attribute MontoFacturaPost
-     */
-    public void setMontoFacturaPost(Number value) {
-        setAttributeInternal(MONTOFACTURAPOST, value);
-    }
-
-    /**Gets the attribute value for the calculated attribute FechaSolicitud
+    /**Gets the attribute value for FECHA_SOLICITUD using the alias name FechaSolicitud
      */
     public Date getFechaSolicitud() {
-        return (Date) getAttributeInternal(FECHASOLICITUD);
+        Date fechaSolicitud = (Date)getAttributeInternal(FECHASOLICITUD);
+        return (fechaSolicitud == null) ? (Date)Date.getCurrentDate() : fechaSolicitud;
+        //return (Date) getAttributeInternal(FECHASOLICITUD);
     }
 
-    /**Sets <code>value</code> as the attribute value for the calculated attribute FechaSolicitud
+    /**Sets <code>value</code> as attribute value for FECHA_SOLICITUD using the alias name FechaSolicitud
      */
     public void setFechaSolicitud(Date value) {
         setAttributeInternal(FECHASOLICITUD, value);
     }
 
-    /**Gets the attribute value for the calculated attribute MotivoRenuncia
+    /**Gets the attribute value for CREADO_POR using the alias name CreadoPor
      */
-    public String getMotivoRenuncia() {
-        return (String) getAttributeInternal(MOTIVORENUNCIA);
+    public String getCreadoPor() {
+        return (String) getAttributeInternal(CREADOPOR);
     }
 
-    /**Sets <code>value</code> as the attribute value for the calculated attribute MotivoRenuncia
+    /**Sets <code>value</code> as attribute value for CREADO_POR using the alias name CreadoPor
      */
-    public void setMotivoRenuncia(String value) {
-        setAttributeInternal(MOTIVORENUNCIA, value);
+    public void setCreadoPor(String value) {
+        setAttributeInternal(CREADOPOR, value);
     }
 
-    /**Gets the attribute value for the calculated attribute PagoPendBantrab
+    /**Gets the attribute value for FECHA_CREACION using the alias name FechaCreacion
      */
-    public String getPagoPendBantrab() {
-        return (String) getAttributeInternal(PAGOPENDBANTRAB);
+    public Date getFechaCreacion() {
+        return (Date) getAttributeInternal(FECHACREACION);
     }
 
-    /**Sets <code>value</code> as the attribute value for the calculated attribute PagoPendBantrab
+    /**Sets <code>value</code> as attribute value for FECHA_CREACION using the alias name FechaCreacion
      */
-    public void setPagoPendBantrab(String value) {
-        setAttributeInternal(PAGOPENDBANTRAB, value);
+    public void setFechaCreacion(Date value) {
+        setAttributeInternal(FECHACREACION, value);
     }
 
-    /**Gets the attribute value for the calculated attribute PagoPendJudicial
+    /**Gets the attribute value for MODIFICADO_POR using the alias name ModificadoPor
      */
-    public String getPagoPendJudicial() {
-        return (String) getAttributeInternal(PAGOPENDJUDICIAL);
+    public String getModificadoPor() {
+        return (String) getAttributeInternal(MODIFICADOPOR);
     }
 
-    /**Sets <code>value</code> as the attribute value for the calculated attribute PagoPendJudicial
+    /**Sets <code>value</code> as attribute value for MODIFICADO_POR using the alias name ModificadoPor
      */
-    public void setPagoPendJudicial(String value) {
-        setAttributeInternal(PAGOPENDJUDICIAL, value);
+    public void setModificadoPor(String value) {
+        setAttributeInternal(MODIFICADOPOR, value);
     }
 
-    /**Gets the attribute value for the calculated attribute PagoPendCargoCont
+    /**Gets the attribute value for FECHA_MOD using the alias name FechaMod
      */
-    public String getPagoPendCargoCont() {
-        return (String) getAttributeInternal(PAGOPENDCARGOCONT);
+    public Date getFechaMod() {
+        return (Date) getAttributeInternal(FECHAMOD);
     }
 
-    /**Sets <code>value</code> as the attribute value for the calculated attribute PagoPendCargoCont
+    /**Sets <code>value</code> as attribute value for FECHA_MOD using the alias name FechaMod
      */
-    public void setPagoPendCargoCont(String value) {
-        setAttributeInternal(PAGOPENDCARGOCONT, value);
-    }
-
-    /**Gets the attribute value for the calculated attribute PagoPendOtros
-     */
-    public String getPagoPendOtros() {
-        return (String) getAttributeInternal(PAGOPENDOTROS);
-    }
-
-    /**Sets <code>value</code> as the attribute value for the calculated attribute PagoPendOtros
-     */
-    public void setPagoPendOtros(String value) {
-        setAttributeInternal(PAGOPENDOTROS, value);
-    }
-
-    /**Gets the attribute value for the calculated attribute FechaUltimaMod
-     */
-    public Date getFechaUltimaMod() {
-        return (Date) getAttributeInternal(FECHAULTIMAMOD);
-    }
-
-    /**Sets <code>value</code> as the attribute value for the calculated attribute FechaUltimaMod
-     */
-    public void setFechaUltimaMod(Date value) {
-        setAttributeInternal(FECHAULTIMAMOD, value);
+    public void setFechaMod(Date value) {
+        setAttributeInternal(FECHAMOD, value);
     }
 
     /**Gets the attribute value for the calculated attribute Nombrecompleto
@@ -920,7 +595,6 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
     public void setNombreEstadoTrabajador(String value) {
         setAttributeInternal(NOMBREESTADOTRABAJADOR, value);
     }
-
 
     /**Gets the attribute value for the calculated attribute FechaExpedienteRetiro
      */

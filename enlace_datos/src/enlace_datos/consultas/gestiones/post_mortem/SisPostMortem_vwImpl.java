@@ -1,6 +1,5 @@
 package enlace_datos.consultas.gestiones.post_mortem;
 
-import enlace_datos.consultas.gestiones.post_mortem.common.SisPostMortem_vw;
 
 import oracle.jbo.domain.Number;
 import oracle.jbo.server.ViewObjectImpl;
@@ -9,7 +8,7 @@ import oracle.jbo.server.ViewObjectImpl;
 // ---    Custom code may be added to this class.
 // ---    Warning: Do not modify method signatures of generated methods.
 // ---------------------------------------------------------------------
-public class SisPostMortem_vwImpl extends ViewObjectImpl implements SisPostMortem_vw {
+public class SisPostMortem_vwImpl extends ViewObjectImpl {
     /**This is the default constructor (do not remove)
      */
     public SisPostMortem_vwImpl() {
