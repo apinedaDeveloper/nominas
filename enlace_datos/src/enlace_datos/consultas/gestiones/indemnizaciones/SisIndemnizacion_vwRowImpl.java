@@ -32,18 +32,19 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
     public static final int TOTALPRESTACION = 16;
     public static final int GASTOFUNERARIO = 17;
     public static final int FECHASOLICITUD = 18;
-    public static final int CREADOPOR = 19;
-    public static final int FECHACREACION = 20;
-    public static final int MODIFICADOPOR = 21;
-    public static final int FECHAMOD = 22;
-    public static final int NOMBRECOMPLETO = 23;
-    public static final int CUI = 24;
-    public static final int IDESTADOTRABAJADOR = 25;
-    public static final int NOMBREESTADOINDEMNIZACION = 26;
-    public static final int NOMBRETIPOINDEMNIZACION = 27;
-    public static final int NOMBREESTADOTRABAJADOR = 28;
-    public static final int FECHAEXPEDIENTERETIRO = 29;
-    public static final int OBSERVACIONEXPRETIRO = 30;
+    public static final int TIPORETIRO = 19;
+    public static final int CREADOPOR = 20;
+    public static final int FECHACREACION = 21;
+    public static final int MODIFICADOPOR = 22;
+    public static final int FECHAMOD = 23;
+    public static final int NOMBRECOMPLETO = 24;
+    public static final int CUI = 25;
+    public static final int IDESTADOTRABAJADOR = 26;
+    public static final int NOMBREESTADOINDEMNIZACION = 27;
+    public static final int NOMBRETIPOINDEMNIZACION = 28;
+    public static final int NOMBREESTADOTRABAJADOR = 29;
+    public static final int FECHAEXPEDIENTERETIRO = 30;
+    public static final int OBSERVACIONEXPRETIRO = 31;
 
     /**This is the default constructor (do not remove)
      */
@@ -106,6 +107,8 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
             return getGastoFunerario();
         case FECHASOLICITUD:
             return getFechaSolicitud();
+        case TIPORETIRO:
+            return getTipoRetiro();
         case CREADOPOR:
             return getCreadoPor();
         case FECHACREACION:
@@ -196,6 +199,9 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
             return;
         case FECHASOLICITUD:
             setFechaSolicitud((Date)value);
+            return;
+        case TIPORETIRO:
+            setTipoRetiro((Number)value);
             return;
         case CREADOPOR:
             setCreadoPor((String)value);
@@ -619,4 +625,18 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
     public void setObservacionExpRetiro(String value) {
         setAttributeInternal(OBSERVACIONEXPRETIRO, value);
     }
+
+    /**Gets the attribute value for the calculated attribute TipoRetiro
+     */
+    public Number getTipoRetiro() {
+        return (Number) getAttributeInternal(TIPORETIRO);
+    }
+
+    /**Sets <code>value</code> as the attribute value for the calculated attribute TipoRetiro
+     */
+    public void setTipoRetiro(Number value) {
+        setAttributeInternal(TIPORETIRO, value);
+    }
+
+
 }

@@ -112,6 +112,7 @@ public class Indemnizacion_detalle {
     private CoreInputText inptText_numeroExpRetiro;
     private CoreInputText inptText_fechaExpRetiro;
     private CoreInputText inptText_descripcionExpRetiro;
+    private CoreSelectOneChoice slctOneChoice_tipoRetiro;
 
     public void setHtml1(HtmlHtml html1) {
         this.html1 = html1;
@@ -628,14 +629,13 @@ public class Indemnizacion_detalle {
         boolean valido = false;
         Object registroPersonal = 
             this.getInptText_registroEmpleado().getValue();
-        //, tipoCarreraLaboral;
         Object fechaSolicitud = 
             this.getSlctInputDate_fechaSolicitud().getValue();
-        Object aniosServicio, mesesServicio, diasServicio;
-        //tipoCarreraLaboral = this.getSlctOneChoice_tipoCarreraLab().getValue();
-        aniosServicio = this.getInptText_AniosServicio().getValue();
-        mesesServicio = this.getInptText_MesesServicio().getValue();
-        diasServicio = this.getInptText_DiasServicio().getValue();
+        //Object tipoCarreraLaboral = this.getSlctOneChoice_tipoCarreraLab().getValue();
+        Object aniosServicio = this.getInptText_AniosServicio().getValue();
+        Object mesesServicio = this.getInptText_MesesServicio().getValue();
+        Object diasServicio = this.getInptText_DiasServicio().getValue();
+        Object tipoRetiro = this.getSlctOneChoice_tipoRetiro().getValue();
         if (registroPersonal == null || 
             registroPersonal.toString().compareTo("") == 0) {
             mensaje("¡¡Ingrese trabajador para continuar por favor!!", 3);
@@ -646,17 +646,20 @@ public class Indemnizacion_detalle {
         } else if (aniosServicio != null && 
                    (Integer.parseInt(aniosServicio.toString().trim()) > 99 || 
                     Integer.parseInt(aniosServicio.toString().trim()) <= 0)) {
-            mensaje("!!Los Años de Servicio debe ser mayor de 0 y menor de 99", 
+            mensaje("!!Los Años de Servicio debe ser mayor de 0 y menor de 99!!", 
                     3);
         } else if (mesesServicio != null && 
                    (Integer.parseInt(mesesServicio.toString().trim()) > 11 || 
                     Integer.parseInt(mesesServicio.toString().trim()) < 0)) {
-            mensaje("!!Los Meses de Servicio debe ser menor o igual de 11 y mayor o igual a 0", 
+            mensaje("!!Los Meses de Servicio debe ser menor o igual de 11 y mayor o igual a 0!!", 
                     3);
         } else if (diasServicio != null && 
                    (Integer.parseInt(diasServicio.toString().trim()) > 30 || 
                     Integer.parseInt(diasServicio.toString().trim()) < 0)) {
-            mensaje("!!Los Días de Servicio debe ser menor o igual de 30 y mayor o igual a 0", 
+            mensaje("!!Los Días de Servicio debe ser menor o igual de 30 y mayor o igual a 0!!", 
+                    3);
+        } else if (tipoRetiro == null) {
+            mensaje("!!Seleccione un Tipo de Retiro para continuar por favor!!", 
                     3);
         } /*else if (Integer.parseInt(aniosServicio.toString().trim()) <= 0 &&
                    Integer.parseInt(mesesServicio.toString().trim()) <= 0 &&
@@ -707,10 +710,10 @@ public class Indemnizacion_detalle {
         String binding = "#{bindings.EsSolicitudNueva.inputValue}";
         if (procesar_guardar(f, binding)) {
             mensaje("Solicitud Guardada Correctamente.", 1);
-            /*habilitar_componentes_paso1(false);
-            JSFUtils.setExpressionValue(f, binding,
+            //habilitar_componentes_paso1(false);
+            JSFUtils.setExpressionValue(f, binding, 
                                         Boolean.parseBoolean("false"));
-            JSFUtils.EjecutarAcccion(f, "RefrescarIndemnizacion");*/
+            JSFUtils.EjecutarAcccion(f, "RefrescarIndemnizacion");
         }
         return null;
     }
@@ -730,7 +733,7 @@ public class Indemnizacion_detalle {
         habilitar_componentes_solicitud(false);
         mensaje("Procedimiento cancelado correctamente.", 1);
         return null;*/
-        mensaje("Operación Cancelado Correctamente", 1);
+        mensaje("Operación Cancelada Correctamente", 1);
         return null;
     }
 
@@ -1505,5 +1508,13 @@ public class Indemnizacion_detalle {
         }
         //System.out.println("B");
         return null;
+    }
+
+    public void setSlctOneChoice_tipoRetiro(CoreSelectOneChoice slctOneChoice_tipoRetiro) {
+        this.slctOneChoice_tipoRetiro = slctOneChoice_tipoRetiro;
+    }
+
+    public CoreSelectOneChoice getSlctOneChoice_tipoRetiro() {
+        return slctOneChoice_tipoRetiro;
     }
 }
