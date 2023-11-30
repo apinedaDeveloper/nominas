@@ -10,6 +10,7 @@
     </iterator>-->
     <!--<iterator id="SisRelacionLaboral_vw1Iterator" Binds="SisRelacionLaboral_vw1" RangeSize="-1" DataControl="QUERRYSDataControl" StateValidation="false"/>-->
     <!--<iterator id="SisSolicitud_vwIterator" Binds="SisSolicitudVw" RangeSize="10" DataControl="QUERRYSDataControl" StateValidation="false"/>-->
+    <iterator id="SisSolicitudesDespidoIndem_vw1Iterator" Binds="SisSolicitudesDespidoIndem_vw1" RangeSize="10" DataControl="QUERRYSDataControl" StateValidation="false"/>
     <iterator id="SisSolicitudesRenunciaIndem_vw1Iterator" RangeSize="10" Binds="SisSolicitudesRenunciaIndem_vw1" DataControl="QUERRYSDataControl" StateValidation="false"/>
     <variableIterator id="variables">
       <variable Name="vIDSolicitudAutorizadaFallecimiento" Type="oracle.jbo.domain.Number" DefaultValue="${bindings.ObtenerIDSolicitudAutorizadaFallecimiento.result}" IsQueriable="false"
@@ -21,8 +22,8 @@
     <invokeAction id="Invoke_RollBackInicio" Binds="Rollback" Refresh="renderModel" RefreshCondition="${!adfFacesContext.postback}"/>
     <invokeAction Binds="CrearSolicitud" id="Invoke_CrearSolicitud" Refresh="renderModel" RefreshCondition="${!adfFacesContext.postback &amp;&amp; flujo_usuario.operacion==1}"/>
     <invokeAction Binds="RecuperarSolicitud" id="Invoke_RecuperarSolicitud" RefreshCondition="${!adfFacesContext.postback &amp;&amp; flujo_usuario.operacion==2}" Refresh="renderModel"/>
-    <invokeAction id="Invoke_RecuperarSolicitudesRenuncia" Binds="RecuperarSolicitudesRenuncia" Refresh="renderModel"
-                  RefreshCondition="${!adfFacesContext.postback &amp;&amp; bindings.RegistroEmpleado.inputValue!=null}"/>
+    <invokeAction id="Invoke_RecuperarSolicitudesRenuncia" Binds="RecuperarSolicitudesRenuncia" Refresh="renderModel" RefreshCondition="${bindings.RegistroEmpleado.inputValue!=null}"/>
+    <invokeAction id="Invoke_RecuperarSolicitudesDespido" Binds="RecuperarSolicitudesDespido" RefreshCondition="${bindings.RegistroEmpleado.inputValue!=null}" Refresh="renderModel"/>
     <!--<invokeAction Binds="ObtenerRelacionLaboral" id="Invoke_ObtenerRelacionLaboral" Refresh="always"/>-->
     <!--<invokeAction id="Invoke_ObtenerUltimosSueldos" Binds="ObtenerHistorialSalarial" Refresh="always"/>-->
     <!--<invokeAction id="Invoke_RecuperarMunicipio" Binds="RecuperarMunicipio" Refresh="renderModel" RefreshCondition="${!adfFacesContext.postback}"/>
@@ -255,6 +256,22 @@
         <Item Value="TotalDescuento"/>
       </AttrNames>
     </table>-->
+    <table IterBinding="SisSolicitudesDespidoIndem_vw1Iterator" id="Tble_Solicitudes_Despido">
+      <AttrNames>
+        <Item Value="IdSolicitud"/>
+        <Item Value="RegistroEmpleado"/>
+        <Item Value="FechaSolicitud"/>
+        <Item Value="Cui"/>
+        <Item Value="Nombrecompleto"/>
+        <Item Value="IdContrato"/>
+        <Item Value="Observacion"/>
+        <Item Value="CreadoPor"/>
+        <Item Value="FechaCreacion"/>
+        <Item Value="IdPartida"/>
+        <Item Value="IdPuesto"/>
+        <Item Value="NumeroPlaza"/>
+      </AttrNames>
+    </table>
     <table id="Tble_Solicitudes_Renuncia" IterBinding="SisSolicitudesRenunciaIndem_vw1Iterator">
       <AttrNames>
         <Item Value="IdSolicitud"/>
@@ -291,7 +308,12 @@
       </AttrNames>
     </table>-->
     <action id="Confirmar" InstanceName="QUERRYSDataControl" DataControl="QUERRYSDataControl" RequiresUpdateModel="true" Action="100"/>
-    <action IterBinding="SisIndemnizacion_vwIterator" id="CrearSolicitud" InstanceName="QUERRYSDataControl.SisIndemnizacion_vw" DataControl="QUERRYSDataControl" RequiresUpdateModel="true" Action="41"/>
+    <action IterBinding="SisIndemnizacion_vwIterator" id="CrearSolicitud" InstanceName="QUERRYSDataControl.SisIndemnizacion_vw" DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+            Action="41"/>
+    <action IterBinding="SisSolicitudesDespidoIndem_vw1Iterator" id="RecuperarSolicitudesDespido" InstanceName="QUERRYSDataControl.SisSolicitudesDespidoIndem_vw1" DataControl="QUERRYSDataControl"
+            RequiresUpdateModel="true" Action="95">
+      <NamedData NDName="vRegistroPersonal" NDValue="${bindings.RegistroEmpleado.inputValue}" NDType="java.lang.String"/>
+    </action>
     <action IterBinding="SisSolicitudesRenunciaIndem_vw1Iterator" id="RecuperarSolicitudesRenuncia" InstanceName="QUERRYSDataControl.SisSolicitudesRenunciaIndem_vw1" DataControl="QUERRYSDataControl"
             RequiresUpdateModel="true" Action="95">
       <NamedData NDName="vRegistroPersonal" NDValue="${bindings.RegistroEmpleado.inputValue}" NDType="java.lang.String"/>
@@ -309,7 +331,7 @@
       <NamedData NDName="id_mun" NDType="oracle.jbo.domain.Number" NDValue="${bindings.MunicipioSolicitante.inputValue==null?1:bindings.MunicipioSolicitante.inputValue}"/>
       <NamedData NDName="id_dept" NDType="oracle.jbo.domain.Number"/>
     </action>-->
-   <!-- <action IterBinding="SisMunicipiosDirec_vwIterator" id="RecuperarMunicipiosDep" InstanceName="QUERRYSDataControl.municipios_dep_by_mun" DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
+    <!-- <action IterBinding="SisMunicipiosDirec_vwIterator" id="RecuperarMunicipiosDep" InstanceName="QUERRYSDataControl.municipios_dep_by_mun" DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
             Action="95">
       <NamedData NDName="id_mun" NDValue="" NDType="oracle.jbo.domain.Number"/>
       <NamedData NDName="id_dept" NDValue="${bindings.List_DepartamentosDirecSol.currentRow['idDepartamento']==null?1:bindings.List_DepartamentosDirecSol.currentRow['idDepartamento']}"

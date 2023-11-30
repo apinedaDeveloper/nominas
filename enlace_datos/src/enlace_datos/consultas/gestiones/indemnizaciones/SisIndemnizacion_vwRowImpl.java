@@ -37,14 +37,15 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
     public static final int FECHACREACION = 21;
     public static final int MODIFICADOPOR = 22;
     public static final int FECHAMOD = 23;
-    public static final int NOMBRECOMPLETO = 24;
-    public static final int CUI = 25;
-    public static final int IDESTADOTRABAJADOR = 26;
-    public static final int NOMBREESTADOINDEMNIZACION = 27;
-    public static final int NOMBRETIPOINDEMNIZACION = 28;
-    public static final int NOMBREESTADOTRABAJADOR = 29;
-    public static final int FECHAEXPEDIENTERETIRO = 30;
-    public static final int OBSERVACIONEXPRETIRO = 31;
+    public static final int TIPORETIRONOMBRE = 24;
+    public static final int NOMBRECOMPLETO = 25;
+    public static final int CUI = 26;
+    public static final int IDESTADOTRABAJADOR = 27;
+    public static final int NOMBREESTADOINDEMNIZACION = 28;
+    public static final int NOMBRETIPOINDEMNIZACION = 29;
+    public static final int NOMBREESTADOTRABAJADOR = 30;
+    public static final int FECHAEXPEDIENTERETIRO = 31;
+    public static final int OBSERVACIONEXPRETIRO = 32;
 
     /**This is the default constructor (do not remove)
      */
@@ -117,6 +118,8 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
             return getModificadoPor();
         case FECHAMOD:
             return getFechaMod();
+        case TIPORETIRONOMBRE:
+            return getTipoRetiroNombre();
         case NOMBRECOMPLETO:
             return getNombrecompleto();
         case CUI:
@@ -214,6 +217,9 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
             return;
         case FECHAMOD:
             setFechaMod((Date)value);
+            return;
+        case TIPORETIRONOMBRE:
+            setTipoRetiroNombre((String)value);
             return;
         case NOMBRECOMPLETO:
             setNombrecompleto((String)value);
@@ -639,4 +645,15 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
     }
 
 
+    /**Gets the attribute value for the calculated attribute TipoRetiroNombre
+     */
+    public String getTipoRetiroNombre() {
+        return (String) getAttributeInternal(TIPORETIRONOMBRE);
+    }
+
+    /**Sets <code>value</code> as the attribute value for the calculated attribute TipoRetiroNombre
+     */
+    public void setTipoRetiroNombre(String value) {
+        setAttributeInternal(TIPORETIRONOMBRE, value);
+    }
 }

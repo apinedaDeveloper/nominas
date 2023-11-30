@@ -211,6 +211,7 @@ import enlace_datos.consultas.gestiones.horas_extras.sis_tiempo_extraordinario_v
 import enlace_datos.consultas.gestiones.indemnizaciones.SisHistorialSalarialIndemnizacion_vwImpl;
 import enlace_datos.consultas.gestiones.indemnizaciones.SisIndemnizacion_vwImpl;
 import enlace_datos.consultas.gestiones.indemnizaciones.SisRelacionLaboral_vwImpl;
+import enlace_datos.consultas.gestiones.indemnizaciones.SisSolicitudesDespidoIndem_vwImpl;
 import enlace_datos.consultas.gestiones.indemnizaciones.SisSolicitudesRenunciaIndem_vwImpl;
 import enlace_datos.consultas.gestiones.indemnizaciones.SisTipoIndemnizacion_vwImpl;
 import enlace_datos.consultas.gestiones.judiciales.consul_depto_porel_municipioImpl;
@@ -3438,5 +3439,11 @@ return vResultado;
      */
     public SisSolicitudesRenunciaIndem_vwImpl getSisSolicitudesRenunciaIndem_vw1() {
         return (SisSolicitudesRenunciaIndem_vwImpl)findViewObject("SisSolicitudesRenunciaIndem_vw1");
+    }
+
+    /**Container's getter for SisSolicitudesDespidoIndem_vw1
+     */
+    public SisSolicitudesDespidoIndem_vwImpl getSisSolicitudesDespidoIndem_vw1() {
+        return (SisSolicitudesDespidoIndem_vwImpl)findViewObject("SisSolicitudesDespidoIndem_vw1");
     }
 }
