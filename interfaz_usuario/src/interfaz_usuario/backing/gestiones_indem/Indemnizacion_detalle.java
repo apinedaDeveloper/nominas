@@ -7,6 +7,7 @@ import interfaz_usuario.servlets.verReporteExcel;
 import interfaz_usuario.util.JSFUtils;
 import interfaz_usuario.util.utils;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.faces.application.FacesMessage;
@@ -113,6 +114,7 @@ public class Indemnizacion_detalle {
     private CoreInputText inptText_fechaExpRetiro;
     private CoreInputText inptText_descripcionExpRetiro;
     private CoreSelectOneChoice slctOneChoice_tipoRetiro;
+    private CoreSelectInputDate slctInputDate_fechaRetiro;
 
     public void setHtml1(HtmlHtml html1) {
         this.html1 = html1;
@@ -638,7 +640,7 @@ public class Indemnizacion_detalle {
         Object tipoRetiro = this.getSlctOneChoice_tipoRetiro().getValue();
         if (registroPersonal == null || 
             registroPersonal.toString().compareTo("") == 0) {
-            mensaje("¡¡Ingrese trabajador para continuar por favor!!", 3);
+            mensaje("¡¡Busque trabajador para continuar por favor!!", 3);
         } else if (fechaSolicitud == null || 
                    fechaSolicitud.toString().compareTo("") == 0) {
             mensaje("!!Ingrese Fecha de Solicitud para continuar por favor!!", 
@@ -661,7 +663,23 @@ public class Indemnizacion_detalle {
         } else if (tipoRetiro == null) {
             mensaje("!!Seleccione un Tipo de Retiro para continuar por favor!!", 
                     3);
-        } /*else if (Integer.parseInt(aniosServicio.toString().trim()) <= 0 &&
+        } else {
+            oracle.jbo.domain.Date fechaSol = 
+                (oracle.jbo.domain.Date)this.getSlctInputDate_fechaSolicitud().getValue();
+            oracle.jbo.domain.Date fechaRet = 
+                (oracle.jbo.domain.Date)this.getSlctInputDate_fechaRetiro().getValue();
+            if (fechaSol != null && fechaRet != null) {
+                if (fechaRet.dateValue().after(fechaSol.dateValue())) {
+                    mensaje("!!La Fecha de Retiro es más reciente que la Fecha de Solicitud!!", 
+                            3);
+                } else {
+                    valido = true;
+                }
+            } else {
+                valido = true;
+            }
+        }
+        /*else if (Integer.parseInt(aniosServicio.toString().trim()) <= 0 &&
                    Integer.parseInt(mesesServicio.toString().trim()) <= 0 &&
                    Integer.parseInt(diasServicio.toString().trim()) <= 0) {
             mensaje("!!El tiempo de servicio debe ser mayor de 0!!", 3);
@@ -671,9 +689,7 @@ public class Indemnizacion_detalle {
         } else if (verificarRetiroTrabajador(f)) {
             //El trabajador está retirado de la institución
             valido = true;
-        }*/ else {
-            valido = true;
-        }
+        }*/
         return valido;
     }
 
@@ -1516,5 +1532,13 @@ public class Indemnizacion_detalle {
 
     public CoreSelectOneChoice getSlctOneChoice_tipoRetiro() {
         return slctOneChoice_tipoRetiro;
+    }
+
+    public void setSlctInputDate_fechaRetiro(CoreSelectInputDate slctInputDate_fechaRetiro) {
+        this.slctInputDate_fechaRetiro = slctInputDate_fechaRetiro;
+    }
+
+    public CoreSelectInputDate getSlctInputDate_fechaRetiro() {
+        return slctInputDate_fechaRetiro;
     }
 }
