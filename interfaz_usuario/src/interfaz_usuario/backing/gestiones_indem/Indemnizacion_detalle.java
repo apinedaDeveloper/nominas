@@ -750,6 +750,7 @@ public class Indemnizacion_detalle {
         mensaje("Procedimiento cancelado correctamente.", 1);
         return null;*/
         mensaje("Operación Cancelada Correctamente", 1);
+        JSFUtils.EjecutarAcccion2(FacesContext.getCurrentInstance(), "Rollback");
         return null;
     }
 

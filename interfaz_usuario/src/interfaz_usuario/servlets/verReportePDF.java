@@ -11,6 +11,8 @@ import java.io.IOException;
 
 import java.math.BigDecimal;
 
+import java.sql.CallableStatement;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -36,10 +38,11 @@ import net.sf.jasperreports.engine.export.JRPdfExporterParameter;
 import net.sf.jasperreports.engine.query.JRXPathQueryExecuterFactory;
 import net.sf.jasperreports.engine.util.JRXmlUtils;
 
+import oracle.jdbc.OracleTypes;
+
 import org.w3c.dom.Document;
 
 import pkg_util_base_datos.interfaz_DB;
-
 
 public class verReportePDF extends HttpServlet {
     private static final String CONTENT_HTML = 
@@ -1492,8 +1495,17 @@ public class verReportePDF extends HttpServlet {
                 parametrosReporte.put("pIdIndemnizacion", new BigDecimal(vParametro1));
             } else if (vParametro2.equals("DARHSJI2_INDEMNIZACION")) {
                 pDefReporte = "DARHSJI2_indemnizacion.jasper";
-                //parametrosReporte.put("pIdIndemnizacion", new BigDecimal(vParametro1));
-                //parametrosReporte.put("pRegistroPersonal", new BigDecimal("20141308"));
+                CallableStatement cs;
+                String proc = "{CALL SIS_GENERA_RELACION_LABORAL(?)}";
+                try {
+                    cs = conexion.get_Coneccion().prepareCall(proc);
+                    cs.setString(1, vParametro1);
+                    //cs.registerOutParameter(2,OracleTypes.NUMBER);
+                    cs.execute();
+                    cs.close();
+                } catch (Exception exep) {
+                    exep.printStackTrace();
+                }
                 parametrosReporte.put("pRegistroPersonal", new BigDecimal(vParametro1));
             } else if (vParametro2.equals("DARHSJI3A_INDEMNIZACION")) {
                 pDefReporte = "DARHSJI3A_indemnizacion.jasper";
