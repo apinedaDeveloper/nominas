@@ -7,7 +7,6 @@ import interfaz_usuario.servlets.verReporteExcel;
 import interfaz_usuario.util.JSFUtils;
 import interfaz_usuario.util.utils;
 
-import java.util.Date;
 import java.util.List;
 
 import javax.faces.application.FacesMessage;
@@ -115,6 +114,7 @@ public class Indemnizacion_detalle {
     private CoreInputText inptText_descripcionExpRetiro;
     private CoreSelectOneChoice slctOneChoice_tipoRetiro;
     private CoreSelectInputDate slctInputDate_fechaRetiro;
+    private CoreInputText inptText_TotalSueldos;
 
     public void setHtml1(HtmlHtml html1) {
         this.html1 = html1;
@@ -538,9 +538,9 @@ public class Indemnizacion_detalle {
         return correcto;
     }
 
-    //Procedimiento que rellena los campos pendientes de una solicitud nueva antes de grabar.
+    //Procedimiento que rellena los campos pendientes de un expediente nuevo antes de grabar.
 
-    private boolean rellenarCamposPend_expNuevo(FacesContext f) {
+    private boolean rellenarCamposPends_expNuevo(FacesContext f) {
         boolean correcto = false;
         String b1 = "#{bindings.Anio.inputValue}";
         String b2 = "#{bindings.CorrelativoAnio.inputValue}";
@@ -574,7 +574,23 @@ public class Indemnizacion_detalle {
                 mensaje("No se pudo obtener el tipo de gestión, intente de nuevo por favor!!",
                         3);
             }*/
-            //correcto = obtenerId_solicitudRetiro(f);
+            //correcto = obtenerId_solicitudRetiro(f);            
+            correcto = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            mensaje("Ha ocurrido el siguiente error: " + e.getMessage(), 3);
+        }
+        return correcto;
+    }
+
+    //Procedimiento que rellena los campos pendientes de un expediente existente antes de grabar.
+
+    private boolean rellenarCamposPends_expExistente(FacesContext f) {
+        boolean correcto = false;
+        //String b1 = "#{bindings.DiferidoCalc.inputValue}";
+        try {
+            //JSFUtils.setExpressionValue(f, b1, utils.getNumberOracleFormato("15,547.56"));
+             //JSFUtils.setExpressionValue(f, b1, utils.getNumberOracleFormato(String.format("%.2f", "687.80")));
             correcto = true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -641,27 +657,21 @@ public class Indemnizacion_detalle {
         if (registroPersonal == null || 
             registroPersonal.toString().compareTo("") == 0) {
             mensaje("¡¡Busque trabajador para continuar por favor!!", 3);
+        } else if (aniosServicio != null && 
+                   (Integer.parseInt(aniosServicio.toString().trim()) > 12)) {
+            mensaje("!!Los Años de Servicio no debe ser mayor de 12!!", 3);
+        } else if (mesesServicio != null && 
+                   (Integer.parseInt(mesesServicio.toString().trim()) > 11)) {
+            mensaje("!!Los Meses de Servicio no debe ser mayor de 11!!", 3);
+        } else if (diasServicio != null && 
+                   (Integer.parseInt(diasServicio.toString().trim()) > 30)) {
+            mensaje("!!Los Días de Servicio no debe ser mayor a 29!!", 3);
+        } else if (tipoRetiro == null) {
+            mensaje("!!Seleccione un Tipo de Retiro para continuar por favor!!", 
+                    3);
         } else if (fechaSolicitud == null || 
                    fechaSolicitud.toString().compareTo("") == 0) {
             mensaje("!!Ingrese Fecha de Solicitud para continuar por favor!!", 
-                    3);
-        } else if (aniosServicio != null && 
-                   (Integer.parseInt(aniosServicio.toString().trim()) > 99 || 
-                    Integer.parseInt(aniosServicio.toString().trim()) <= 0)) {
-            mensaje("!!Los Años de Servicio debe ser mayor de 0 y menor de 99!!", 
-                    3);
-        } else if (mesesServicio != null && 
-                   (Integer.parseInt(mesesServicio.toString().trim()) > 11 || 
-                    Integer.parseInt(mesesServicio.toString().trim()) < 0)) {
-            mensaje("!!Los Meses de Servicio debe ser menor o igual de 11 y mayor o igual a 0!!", 
-                    3);
-        } else if (diasServicio != null && 
-                   (Integer.parseInt(diasServicio.toString().trim()) > 30 || 
-                    Integer.parseInt(diasServicio.toString().trim()) < 0)) {
-            mensaje("!!Los Días de Servicio debe ser menor o igual de 30 y mayor o igual a 0!!", 
-                    3);
-        } else if (tipoRetiro == null) {
-            mensaje("!!Seleccione un Tipo de Retiro para continuar por favor!!", 
                     3);
         } else {
             oracle.jbo.domain.Date fechaSol = 
@@ -693,29 +703,26 @@ public class Indemnizacion_detalle {
         return valido;
     }
 
-    //Procedimiento que procesa el botón guardar solicitud
+    //Procedimiento que procesa el botón guardar
 
-    private boolean procesar_guardar(FacesContext f, String bind) {
+    private boolean procesar_guardar(FacesContext f, String bindEsNuevoExp) {
         boolean exito = false;
         if (validarInformacionIngresada(f)) {
-            Object esNuevoObj = JSFUtils.resolveExpression(f, bind);
+            Object esNuevoObj = JSFUtils.resolveExpression(f, bindEsNuevoExp);
             if (esNuevoObj != null) {
                 boolean esNuevo = Boolean.parseBoolean(esNuevoObj.toString());
-                if (esNuevo) { //Solicitud Nueva
-                    if (rellenarCamposPend_expNuevo(f)) {
+                if (esNuevo) { //Expediente Nuevo
+                    if (rellenarCamposPends_expNuevo(f)) {
                         exito = commit(f);
                     }
-                } else { //Solicitud existente )
-                    /*if (rellenarCamposPendientes_solicitudExistente(f)) {
+                } else { //Expediente existente
+                    if (rellenarCamposPends_expExistente(f)) {
                         exito = commit(f);
-                    }*/
+                    }
                     //if (obtenerId_solicitudRetiro(f)) {
-                    exito = commit(f);
+                    //exito = commit(f);
                     //}
                 }
-            } else {
-                mensaje("Error al determinar si la solicitud es nueva o no, intente de nuevo por favor!!", 
-                        3);
             }
         }
         return exito;
@@ -734,23 +741,32 @@ public class Indemnizacion_detalle {
         return null;
     }
 
+    /*FacesContext f = FacesContext.getCurrentInstance();
+    Object aux =
+        JSFUtils.resolveExpression(f, "#{bindings.EsSolicitudNueva.inputValue}");
+    if (aux != null && Boolean.parseBoolean(aux.toString()) == true) {
+        //Es solicitud nueva
+        JSFUtils.EjecutarAcccion(f, "Crear");
+        JSFUtils.EjecutarAcccion(f, "RecuperarMunicipio");
+    } else { //Es existente
+        JSFUtils.EjecutarAcccion(f, "RecuperarIndemnizacion");
+        JSFUtils.EjecutarAcccion(f, "RefrescarIndemnizacion");
+    }
+    habilitar_componentes_solicitud(false);
+    mensaje("Procedimiento cancelado correctamente.", 1);
+    return null;*/
+
     public String cmdBtn_cancelar_action() {
-        /*FacesContext f = FacesContext.getCurrentInstance();
-        Object aux =
-            JSFUtils.resolveExpression(f, "#{bindings.EsSolicitudNueva.inputValue}");
+        mensaje("Operación Cancelada Correctamente", 1);
+        JSFUtils.EjecutarAcccion(FacesContext.getCurrentInstance(), 
+                                 "Rollback");
+        FacesContext f = FacesContext.getCurrentInstance();
+        String b = "#{bindings.EsSolicitudNueva.inputValue}";
+        Object aux = JSFUtils.resolveExpression(f, b);
         if (aux != null && Boolean.parseBoolean(aux.toString()) == true) {
             //Es solicitud nueva
-            JSFUtils.EjecutarAcccion(f, "Crear");
-            JSFUtils.EjecutarAcccion(f, "RecuperarMunicipio");
-        } else { //Es existente
-            JSFUtils.EjecutarAcccion(f, "RecuperarIndemnizacion");
-            JSFUtils.EjecutarAcccion(f, "RefrescarIndemnizacion");
+            JSFUtils.EjecutarAcccion(f, "CrearSolicitud");
         }
-        habilitar_componentes_solicitud(false);
-        mensaje("Procedimiento cancelado correctamente.", 1);
-        return null;*/
-        mensaje("Operación Cancelada Correctamente", 1);
-        JSFUtils.EjecutarAcccion2(FacesContext.getCurrentInstance(), "Rollback");
         return null;
     }
 
@@ -1541,5 +1557,65 @@ public class Indemnizacion_detalle {
 
     public CoreSelectInputDate getSlctInputDate_fechaRetiro() {
         return slctInputDate_fechaRetiro;
+    }
+
+    public String cmdBtn_calcularIndemnizacion_action() {
+        Object aux = this.getInptText_TotalSueldos().getValue();
+        if (aux != null && Double.parseDouble(aux.toString()) > 0) {
+            Double totalSueldos = Double.parseDouble(aux.toString());
+            Double diferido = totalSueldos / 12;
+            Double diferido12 = totalSueldos * .12;
+            Double aguinaldo = (totalSueldos + diferido + diferido12) / 12;
+            Double bono14 = aguinaldo;
+            Double totalPrestaciones = 
+                diferido + diferido12 + aguinaldo + bono14;
+            Double totalParaCalcSueldoProm = totalSueldos + totalPrestaciones;
+            ////almacena los valores en los bindings de la página lista para ser guardadas////
+            FacesContext f = FacesContext.getCurrentInstance();
+            String bindDif = "#{bindings.DiferidoCalc.inputValue}";
+            String bindDif12= "#{bindings.Diferido12Calc.inputValue}";
+            String bindAgui = "#{bindings.AguinaldoCalc.inputValue}";
+            String bindBono14 = "#{bindings.Bono14Calc.inputValue}";
+            String totalPrestac = "#{bindings.TotalPrestacion.inputValue}";
+            try {
+                 JSFUtils.setExpressionValue(f, bindDif, utils.getNumberOracleFormato(String.format("%.2f", diferido)));
+                 JSFUtils.setExpressionValue(f, bindDif12, utils.getNumberOracleFormato(String.format("%.2f", diferido12)));
+                 JSFUtils.setExpressionValue(f, bindAgui, utils.getNumberOracleFormato(String.format("%.2f", aguinaldo)));
+                 JSFUtils.setExpressionValue(f, bindBono14, utils.getNumberOracleFormato(String.format("%.2f", bono14)));
+                 JSFUtils.setExpressionValue(f, totalPrestac, utils.getNumberOracleFormato(String.format("%.2f", totalPrestaciones)));
+             } catch (Exception e) {
+                 e.printStackTrace();
+                 mensaje("Ha ocurrido el siguiente error: " + e.getMessage(), 3);
+             }
+            ///////////////////////////////////////////////////////////
+            String mensaje = 
+                "El Total de Sueldos es Q." + String.format("%1$,.2f", 
+                                                            totalSueldos);
+            mensaje += 
+                    ", El Diferido es Q." + String.format("%1$,.2f", diferido);
+            mensaje += 
+                    ", El Diferido 12% es Q." + String.format("%1$,.2f", diferido12);
+            mensaje += 
+                    ", El Aguinaldo es Q." + String.format("%1$,.2f", aguinaldo);
+            mensaje += ", El Bono 14 es Q." + String.format("%1$,.2f", bono14);
+            mensaje += 
+                    ", El Total de Prestaciones es Q." + String.format("%1$,.2f", 
+                                                                       totalPrestaciones);
+            mensaje += 
+                    ", El Total Para Cálculo de Sueldo Promedio es Q." + String.format("%1$,.2f", 
+                                                                                       totalParaCalcSueldoProm);
+            mensaje(mensaje, 1);
+        } else {
+            mensaje("No hay Total de Sueldos", 3);
+        }
+        return null;
+    }
+
+    public void setInptText_TotalSueldos(CoreInputText inptText_TotalSueldos) {
+        this.inptText_TotalSueldos = inptText_TotalSueldos;
+    }
+
+    public CoreInputText getInptText_TotalSueldos() {
+        return inptText_TotalSueldos;
     }
 }
