@@ -115,6 +115,11 @@ public class Indemnizacion_detalle {
     private CoreSelectOneChoice slctOneChoice_tipoRetiro;
     private CoreSelectInputDate slctInputDate_fechaRetiro;
     private CoreInputText inptText_TotalSueldos;
+    private CoreInputHidden inptHidden_diferidoCalculo;
+    private CoreInputHidden inptHidden_diferido12Calculo;
+    private CoreInputHidden inptHidden_aguinaldoCalculo;
+    private CoreInputHidden inptHidden_bono14Calculo;
+    private CoreInputHidden inptHidden_totalPrestCalculo;
 
     public void setHtml1(HtmlHtml html1) {
         this.html1 = html1;
@@ -587,11 +592,46 @@ public class Indemnizacion_detalle {
 
     private boolean rellenarCamposPends_expExistente(FacesContext f) {
         boolean correcto = false;
-        //String b1 = "#{bindings.DiferidoCalc.inputValue}";
         try {
-            //JSFUtils.setExpressionValue(f, b1, utils.getNumberOracleFormato("15,547.56"));
-             //JSFUtils.setExpressionValue(f, b1, utils.getNumberOracleFormato(String.format("%.2f", "687.80")));
+            Object difObj, dif12Obj, aguiObj, bono14Obj, totalObj;
+            Number diferido, diferido12, aguinaldo, bono14, totalPrest;
+            String bindDif = "#{bindings.DiferidoCalc.inputValue}";
+            String bindDif12 = "#{bindings.Diferido12Calc.inputValue}";
+            String bindAgui = "#{bindings.AguinaldoCalc.inputValue}";
+            String bindBono14 = "#{bindings.Bono14Calc.inputValue}";
+            String totalPrestac = "#{bindings.TotalPrestacion.inputValue}";
+            difObj = this.getInptHidden_diferidoCalculo().getValue();
+            if (difObj != null) {
+                diferido = 
+                        utils.getNumberOracle(String.format("%.2f", difObj));
+                JSFUtils.setExpressionValue(f, bindDif, diferido);
+            }
+            dif12Obj = this.getInptHidden_diferido12Calculo().getValue();
+            if (dif12Obj != null) {
+                diferido12 = 
+                        utils.getNumberOracle(String.format("%.2f", dif12Obj));
+                JSFUtils.setExpressionValue(f, bindDif12, diferido12);
+            }
+            aguiObj = this.getInptHidden_aguinaldoCalculo().getValue();
+            if (aguiObj != null) {
+                aguinaldo = 
+                        utils.getNumberOracle(String.format("%.2f", aguiObj));
+                JSFUtils.setExpressionValue(f, bindAgui, aguinaldo);
+            }
+            bono14Obj = this.getInptHidden_bono14Calculo().getValue();
+            if (bono14Obj != null) {
+                bono14 = 
+                        utils.getNumberOracle(String.format("%.2f", bono14Obj));
+                JSFUtils.setExpressionValue(f, bindBono14, bono14);
+            }
+            totalObj = this.getInptHidden_totalPrestCalculo().getValue();
+            if (totalObj != null) {
+                totalPrest = 
+                        utils.getNumberOracle(String.format("%.2f", totalObj));
+                JSFUtils.setExpressionValue(f, totalPrestac, totalPrest);
+            }
             correcto = true;
+            //correcto = true;
         } catch (Exception e) {
             e.printStackTrace();
             mensaje("Ha ocurrido el siguiente error: " + e.getMessage(), 3);
@@ -647,16 +687,31 @@ public class Indemnizacion_detalle {
         boolean valido = false;
         Object registroPersonal = 
             this.getInptText_registroEmpleado().getValue();
-        Object fechaSolicitud = 
-            this.getSlctInputDate_fechaSolicitud().getValue();
-        //Object tipoCarreraLaboral = this.getSlctOneChoice_tipoCarreraLab().getValue();
-        Object aniosServicio = this.getInptText_AniosServicio().getValue();
+        oracle.jbo.domain.Date fechaRetiro = 
+            (oracle.jbo.domain.Date)this.getSlctInputDate_fechaRetiro().getValue();
+        oracle.jbo.domain.Date fechaSolicitud = 
+            (oracle.jbo.domain.Date)this.getSlctInputDate_fechaSolicitud().getValue();
+        /*Object aniosServicio = this.getInptText_AniosServicio().getValue();
         Object mesesServicio = this.getInptText_MesesServicio().getValue();
-        Object diasServicio = this.getInptText_DiasServicio().getValue();
+        Object diasServicio = this.getInptText_DiasServicio().getValue();*/
+        Number aniosServicio = 
+            (Number)this.getInptText_AniosServicio().getValue();
+        Number mesesServicio = 
+            (Number)this.getInptText_MesesServicio().getValue();
+        Number diasServicio = 
+            (Number)this.getInptText_DiasServicio().getValue();
+
         Object tipoRetiro = this.getSlctOneChoice_tipoRetiro().getValue();
         if (registroPersonal == null || 
             registroPersonal.toString().compareTo("") == 0) {
             mensaje("¡¡Busque trabajador para continuar por favor!!", 3);
+        } else if (fechaRetiro == null) {
+            mensaje("!!Ingrese Fecha de Retiro para continuar por favor!!", 3);
+        } else if ((aniosServicio == null || aniosServicio.intValue() <= 0) && 
+                   (mesesServicio == null || mesesServicio.intValue() <= 0) && 
+                   (diasServicio == null || diasServicio.intValue() <= 0)) {
+            mensaje("!!Ingrese el Tiempo de Servicio para continuar por favor!!", 
+                    3);
         } else if (aniosServicio != null && 
                    (Integer.parseInt(aniosServicio.toString().trim()) > 12)) {
             mensaje("!!Los Años de Servicio no debe ser mayor de 12!!", 3);
@@ -669,17 +724,12 @@ public class Indemnizacion_detalle {
         } else if (tipoRetiro == null) {
             mensaje("!!Seleccione un Tipo de Retiro para continuar por favor!!", 
                     3);
-        } else if (fechaSolicitud == null || 
-                   fechaSolicitud.toString().compareTo("") == 0) {
+        } else if (fechaSolicitud == null) {
             mensaje("!!Ingrese Fecha de Solicitud para continuar por favor!!", 
                     3);
         } else {
-            oracle.jbo.domain.Date fechaSol = 
-                (oracle.jbo.domain.Date)this.getSlctInputDate_fechaSolicitud().getValue();
-            oracle.jbo.domain.Date fechaRet = 
-                (oracle.jbo.domain.Date)this.getSlctInputDate_fechaRetiro().getValue();
-            if (fechaSol != null && fechaRet != null) {
-                if (fechaRet.dateValue().after(fechaSol.dateValue())) {
+            if (fechaSolicitud != null && fechaRetiro != null) {
+                if (fechaRetiro.dateValue().after(fechaSolicitud.dateValue())) {
                     mensaje("!!La Fecha de Retiro es más reciente que la Fecha de Solicitud!!", 
                             3);
                 } else {
@@ -1571,7 +1621,7 @@ public class Indemnizacion_detalle {
                 diferido + diferido12 + aguinaldo + bono14;
             Double totalParaCalcSueldoProm = totalSueldos + totalPrestaciones;
             ////almacena los valores en los bindings de la página lista para ser guardadas////
-            FacesContext f = FacesContext.getCurrentInstance();
+            /*FacesContext f = FacesContext.getCurrentInstance();
             String bindDif = "#{bindings.DiferidoCalc.inputValue}";
             String bindDif12= "#{bindings.Diferido12Calc.inputValue}";
             String bindAgui = "#{bindings.AguinaldoCalc.inputValue}";
@@ -1586,8 +1636,17 @@ public class Indemnizacion_detalle {
              } catch (Exception e) {
                  e.printStackTrace();
                  mensaje("Ha ocurrido el siguiente error: " + e.getMessage(), 3);
-             }
+             }*/
             ///////////////////////////////////////////////////////////
+            //////almacena los valores calculados en los input hiddens creados para este propósito/////
+            //this.getInptHidden_promedioSueldos().setValue(sueldoProm);
+            //this.getInptHidden_montoIndemnizacion().setValue(indemnizacion);
+            this.getInptHidden_diferidoCalculo().setValue(diferido);
+            this.getInptHidden_diferido12Calculo().setValue(diferido12);
+            this.getInptHidden_aguinaldoCalculo().setValue(aguinaldo);
+            this.getInptHidden_bono14Calculo().setValue(bono14);
+            this.getInptHidden_totalPrestCalculo().setValue(totalPrestaciones);
+            ///////////////////////////////////////////////////////////////////
             String mensaje = 
                 "El Total de Sueldos es Q." + String.format("%1$,.2f", 
                                                             totalSueldos);
@@ -1617,5 +1676,45 @@ public class Indemnizacion_detalle {
 
     public CoreInputText getInptText_TotalSueldos() {
         return inptText_TotalSueldos;
+    }
+
+    public void setInptHidden_diferidoCalculo(CoreInputHidden inptHidden_diferidoCalculo) {
+        this.inptHidden_diferidoCalculo = inptHidden_diferidoCalculo;
+    }
+
+    public CoreInputHidden getInptHidden_diferidoCalculo() {
+        return inptHidden_diferidoCalculo;
+    }
+
+    public void setInptHidden_diferido12Calculo(CoreInputHidden inptHidden_diferido12Calculo) {
+        this.inptHidden_diferido12Calculo = inptHidden_diferido12Calculo;
+    }
+
+    public CoreInputHidden getInptHidden_diferido12Calculo() {
+        return inptHidden_diferido12Calculo;
+    }
+
+    public void setInptHidden_aguinaldoCalculo(CoreInputHidden inptHidden_aguinaldoCalculo) {
+        this.inptHidden_aguinaldoCalculo = inptHidden_aguinaldoCalculo;
+    }
+
+    public CoreInputHidden getInptHidden_aguinaldoCalculo() {
+        return inptHidden_aguinaldoCalculo;
+    }
+
+    public void setInptHidden_bono14Calculo(CoreInputHidden inptHidden_bono14Calculo) {
+        this.inptHidden_bono14Calculo = inptHidden_bono14Calculo;
+    }
+
+    public CoreInputHidden getInptHidden_bono14Calculo() {
+        return inptHidden_bono14Calculo;
+    }
+
+    public void setInptHidden_totalPrestCalculo(CoreInputHidden inptHidden_totalPrestCalculo) {
+        this.inptHidden_totalPrestCalculo = inptHidden_totalPrestCalculo;
+    }
+
+    public CoreInputHidden getInptHidden_totalPrestCalculo() {
+        return inptHidden_totalPrestCalculo;
     }
 }

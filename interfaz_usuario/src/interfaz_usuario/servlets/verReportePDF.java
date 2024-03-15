@@ -38,11 +38,10 @@ import net.sf.jasperreports.engine.export.JRPdfExporterParameter;
 import net.sf.jasperreports.engine.query.JRXPathQueryExecuterFactory;
 import net.sf.jasperreports.engine.util.JRXmlUtils;
 
-import oracle.jdbc.OracleTypes;
-
 import org.w3c.dom.Document;
 
 import pkg_util_base_datos.interfaz_DB;
+
 
 public class verReportePDF extends HttpServlet {
     private static final String CONTENT_HTML = 
@@ -274,7 +273,8 @@ public class verReportePDF extends HttpServlet {
                 pDefReporte = "reportePuestos.jasper";
                 parametrosReporte.put("pIdAumento", new BigDecimal(vParametro1));
             } else if (vParametro2.equals("REP_CAT_ACTUAL")) {
-                pDefReporte = "reporte detalle remesa.jasper";
+                //pDefReporte = "reporte detalle remesa.jasper";
+                 pDefReporte = "reportePuestosActual.jasper";
             } else if (vParametro2.equals("REMESA_GENERAL")) {
                 pDefReporte = "reporte detalle remesa.jasper";
                 parametrosReporte.put("id_ajuste", new BigDecimal(vParametro1));
@@ -765,6 +765,14 @@ public class verReportePDF extends HttpServlet {
                 parametrosReporte.put("varDep", new BigDecimal(vParametro1));
                 parametrosReporte.put("varFechIni", utils.getFecha(vParametro3));
                 parametrosReporte.put("varFechFin", utils.getFecha(vParametro4));
+            } else if (vParametro2.equals("REPPROY_INDEM")) {
+                pDefReporte = "provision_indemn.jasper"; 
+                parametrosReporte.put("pIdRemesa", new BigDecimal(vParametro1));
+                
+            }else if (vParametro2.equals("POLIZA_PROVINDEM")) {
+                pDefReporte = "provision_indemn_poliza.jasper"; 
+                parametrosReporte.put("pIdRemesa", new BigDecimal(vParametro1));
+                
             } else if (vParametro2.equals("PROMO_RECLASIFICACION")) {
                 pDefReporte = "audit_promo_reclasificacion.jasper";
                 parametrosReporte.put("varDep", new BigDecimal(vParametro1));
@@ -1509,7 +1517,8 @@ public class verReportePDF extends HttpServlet {
                 parametrosReporte.put("pRegistroPersonal", new BigDecimal(vParametro1));
             } else if (vParametro2.equals("DARHSJI3A_INDEMNIZACION")) {
                 pDefReporte = "DARHSJI3A_indemnizacion.jasper";
-                parametrosReporte.put("pIdIndemnizacion", new BigDecimal(vParametro1));
+                parametrosReporte.put("pAnio", new BigDecimal(vParametro1));
+                parametrosReporte.put("pCorrelativoAnio", new BigDecimal(vParametro5));
             } else if (vParametro2.equals("DARHPM01_POSTMORTEM")) {
                 pDefReporte = "DARHPM01_postmortem.jasper";
                 parametrosReporte.put("pIdIndemnizacion", new BigDecimal(vParametro1));
@@ -1562,6 +1571,15 @@ public class verReportePDF extends HttpServlet {
                     break; //Tiempo Extraordinario
                 }
                 parametrosReporte.put("pTipoReporte", tipoReporteStr);
+            }  else if (vParametro2.equals("REPISR_APLICADO")) {
+                Object varUsuario = "";
+                varUsuario = 
+                        JSFUtils.resolveExpression(FacesContext.getCurrentInstance(), "#{roles_usuario.coordinadorIsr}");
+                if (varUsuario.equals(true)) {
+                    pDefReporte = "nomina_sueldos_isr.jasper";
+                    parametrosReporte.put("pIdProceso", new BigDecimal(vParametro1));
+                                
+                }
             }  else {
                 vGenerarReporte = false;
                 vMensaje = "No se pudo generar el reporte! No se encontró el reporte solicitado.";
