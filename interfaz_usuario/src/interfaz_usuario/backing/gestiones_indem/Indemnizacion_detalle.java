@@ -120,6 +120,15 @@ public class Indemnizacion_detalle {
     private CoreInputHidden inptHidden_aguinaldoCalculo;
     private CoreInputHidden inptHidden_bono14Calculo;
     private CoreInputHidden inptHidden_totalPrestCalculo;
+    private CorePanelHorizontal pnlHoriz_indemCalculada;
+    private CoreOutputFormatted outputFormat_totalSueldos;
+    private CoreOutputFormatted outputFormat_diferido_calc;
+    private CoreOutputFormatted outputFormat_diferido12_calc;
+    private CoreOutputFormatted outputFormat_aguinaldo_calc;
+    private CoreOutputFormatted outputFormat_bono14_calc;
+    private CoreOutputFormatted outputFormat_totalPrestac_calc;
+    private CoreOutputFormatted outputFormat_totalParaCalc_calc;
+    private CoreCommandButton cmdBtn_guardarCalculo;
 
     public void setHtml1(HtmlHtml html1) {
         this.html1 = html1;
@@ -766,9 +775,9 @@ public class Indemnizacion_detalle {
                         exito = commit(f);
                     }
                 } else { //Expediente existente
-                    if (rellenarCamposPends_expExistente(f)) {
-                        exito = commit(f);
-                    }
+                    //if (rellenarCamposPends_expExistente(f)) {
+                    exito = commit(f);
+                    // }
                     //if (obtenerId_solicitudRetiro(f)) {
                     //exito = commit(f);
                     //}
@@ -782,7 +791,7 @@ public class Indemnizacion_detalle {
         FacesContext f = FacesContext.getCurrentInstance();
         String binding = "#{bindings.EsSolicitudNueva.inputValue}";
         if (procesar_guardar(f, binding)) {
-            mensaje("Solicitud Guardada Correctamente.", 1);
+            mensaje("¡¡Información guardada correctamente!!", 1);
             //habilitar_componentes_paso1(false);
             JSFUtils.setExpressionValue(f, binding, 
                                         Boolean.parseBoolean("false"));
@@ -807,16 +816,17 @@ public class Indemnizacion_detalle {
     return null;*/
 
     public String cmdBtn_cancelar_action() {
-        mensaje("Operación Cancelada Correctamente", 1);
-        JSFUtils.EjecutarAcccion(FacesContext.getCurrentInstance(), 
-                                 "Rollback");
-        FacesContext f = FacesContext.getCurrentInstance();
-        String b = "#{bindings.EsSolicitudNueva.inputValue}";
-        Object aux = JSFUtils.resolveExpression(f, b);
-        if (aux != null && Boolean.parseBoolean(aux.toString()) == true) {
+        FacesContext faces = FacesContext.getCurrentInstance();
+        JSFUtils.EjecutarAcccion(faces, "Rollback");
+        String bind = "#{bindings.EsSolicitudNueva.inputValue}";
+        Object esNuevo = JSFUtils.resolveExpression(faces, bind);
+        if (esNuevo != null && Boolean.parseBoolean(esNuevo.toString())) {
             //Es solicitud nueva
-            JSFUtils.EjecutarAcccion(f, "CrearSolicitud");
+            JSFUtils.EjecutarAcccion(faces, "CrearSolicitud");
         }
+        //this.getPnlHoriz_mensajes_calculo().setRendered(false);
+        this.getPnlHoriz_indemCalculada().setRendered(false);
+        mensaje("Operación Cancelada Correctamente", 1);
         return null;
     }
 
@@ -978,7 +988,7 @@ public class Indemnizacion_detalle {
     //Rellena campos pendientes antes de guardar el cálculo
 
     private boolean rellenarCamposPend_guardar_calculo(FacesContext f) {
-        Number aux;
+        /*Number aux;
         String b1 = "#{bindings.SueldoPromedio.inputValue}";
         //String b2 = "#{bindings.PostMortem.inputValue}";
         String b2 = "#{bindings.TotalPrestacion.inputValue}";
@@ -994,16 +1004,61 @@ public class Indemnizacion_detalle {
         } else {
             mensaje("No se pudo grabar. Intente de nuevo por favor", 3);
         }
+        return correcto;*/
+        boolean correcto = false;
+        try {
+            Object difObj, dif12Obj, aguiObj, bono14Obj, totalObj;
+            Number diferido, diferido12, aguinaldo, bono14, totalPrest;
+            String bindDif = "#{bindings.DiferidoCalc.inputValue}";
+            String bindDif12 = "#{bindings.Diferido12Calc.inputValue}";
+            String bindAgui = "#{bindings.AguinaldoCalc.inputValue}";
+            String bindBono14 = "#{bindings.Bono14Calc.inputValue}";
+            String totalPrestac = "#{bindings.TotalPrestacion.inputValue}";
+            difObj = this.getInptHidden_diferidoCalculo().getValue();
+            if (difObj != null) {
+                diferido = 
+                        utils.getNumberOracle(String.format("%.2f", difObj));
+                JSFUtils.setExpressionValue(f, bindDif, diferido);
+            }
+            dif12Obj = this.getInptHidden_diferido12Calculo().getValue();
+            if (dif12Obj != null) {
+                diferido12 = 
+                        utils.getNumberOracle(String.format("%.2f", dif12Obj));
+                JSFUtils.setExpressionValue(f, bindDif12, diferido12);
+            }
+            aguiObj = this.getInptHidden_aguinaldoCalculo().getValue();
+            if (aguiObj != null) {
+                aguinaldo = 
+                        utils.getNumberOracle(String.format("%.2f", aguiObj));
+                JSFUtils.setExpressionValue(f, bindAgui, aguinaldo);
+            }
+            bono14Obj = this.getInptHidden_bono14Calculo().getValue();
+            if (bono14Obj != null) {
+                bono14 = 
+                        utils.getNumberOracle(String.format("%.2f", bono14Obj));
+                JSFUtils.setExpressionValue(f, bindBono14, bono14);
+            }
+            totalObj = this.getInptHidden_totalPrestCalculo().getValue();
+            if (totalObj != null) {
+                totalPrest = 
+                        utils.getNumberOracle(String.format("%.2f", totalObj));
+                JSFUtils.setExpressionValue(f, totalPrestac, totalPrest);
+            }
+            correcto = true;
+            //correcto = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            mensaje("Ha ocurrido el siguiente error: " + e.getMessage(), 3);
+        }
         return correcto;
     }
 
     public String cmdBtn_guardar_calculo_action() {
-        //procesar_guardar_calculo();
         FacesContext f = FacesContext.getCurrentInstance();
         if (rellenarCamposPend_guardar_calculo(f)) {
             if (commit(f)) {
-                mensaje("Información grabada correctamente.", 1);
-                habilitar_componentes_calculo(false);
+                mensaje("¡¡Información guardada correctamente!!", 1);
+                //habilitar_componentes_calculo(false);
                 JSFUtils.EjecutarAcccion(f, "RefrescarIndemnizacion");
             }
         }
@@ -1218,7 +1273,7 @@ public class Indemnizacion_detalle {
         return showDetItem_solicitud;
     }
 
-    public String cmdBtn_cancelar_calculo_action() {
+    /*public String cmdBtn_cancelar_calculo_action() {
         FacesContext f = FacesContext.getCurrentInstance();
         //Reseteamos y ocultamos los mensajes
         this.getOutputTxt_mensaje_calculo().setValue(null);
@@ -1230,7 +1285,7 @@ public class Indemnizacion_detalle {
         habilitar_componentes_calculo(false);
         mensaje("Se cancelaron los cambios no guardados correctamente.", 1);
         return null;
-    }
+    }*/
 
     public void setCmdBtn_retornar(CoreCommandButton cmdBtn_retornar) {
         this.cmdBtn_retornar = cmdBtn_retornar;
@@ -1663,7 +1718,16 @@ public class Indemnizacion_detalle {
             mensaje += 
                     ", El Total Para Cálculo de Sueldo Promedio es Q." + String.format("%1$,.2f", 
                                                                                        totalParaCalcSueldoProm);
-            mensaje(mensaje, 1);
+            //mensaje(mensaje, 1);
+            this.getOutputFormat_totalSueldos().setValue(totalSueldos);
+            this.getOutputFormat_diferido_calc().setValue(diferido);
+            this.getOutputFormat_diferido12_calc().setValue(diferido12);
+            this.getOutputFormat_aguinaldo_calc().setValue(aguinaldo);
+            this.getOutputFormat_bono14_calc().setValue(bono14);
+            this.getOutputFormat_totalPrestac_calc().setValue(totalPrestaciones);
+            this.getOutputFormat_totalParaCalc_calc().setValue(totalParaCalcSueldoProm);
+            //this.getPnlHoriz_mensajes_calculo().setRendered(true);
+            this.getPnlHoriz_indemCalculada().setRendered(true);
         } else {
             mensaje("No hay Total de Sueldos", 3);
         }
@@ -1716,5 +1780,77 @@ public class Indemnizacion_detalle {
 
     public CoreInputHidden getInptHidden_totalPrestCalculo() {
         return inptHidden_totalPrestCalculo;
+    }
+
+    public void setPnlHoriz_indemCalculada(CorePanelHorizontal pnlHoriz_indemCalculada) {
+        this.pnlHoriz_indemCalculada = pnlHoriz_indemCalculada;
+    }
+
+    public CorePanelHorizontal getPnlHoriz_indemCalculada() {
+        return pnlHoriz_indemCalculada;
+    }
+
+    public void setOutputFormat_totalSueldos(CoreOutputFormatted outputFormat_totalSueldos) {
+        this.outputFormat_totalSueldos = outputFormat_totalSueldos;
+    }
+
+    public CoreOutputFormatted getOutputFormat_totalSueldos() {
+        return outputFormat_totalSueldos;
+    }
+
+    public void setOutputFormat_diferido_calc(CoreOutputFormatted outputFormat_diferido_calc) {
+        this.outputFormat_diferido_calc = outputFormat_diferido_calc;
+    }
+
+    public CoreOutputFormatted getOutputFormat_diferido_calc() {
+        return outputFormat_diferido_calc;
+    }
+
+    public void setOutputFormat_diferido12_calc(CoreOutputFormatted outputFormat_diferido12_calc) {
+        this.outputFormat_diferido12_calc = outputFormat_diferido12_calc;
+    }
+
+    public CoreOutputFormatted getOutputFormat_diferido12_calc() {
+        return outputFormat_diferido12_calc;
+    }
+
+    public void setOutputFormat_aguinaldo_calc(CoreOutputFormatted outputFormat_aguinaldo_calc) {
+        this.outputFormat_aguinaldo_calc = outputFormat_aguinaldo_calc;
+    }
+
+    public CoreOutputFormatted getOutputFormat_aguinaldo_calc() {
+        return outputFormat_aguinaldo_calc;
+    }
+
+    public void setOutputFormat_bono14_calc(CoreOutputFormatted outputFormat_bono14_calc) {
+        this.outputFormat_bono14_calc = outputFormat_bono14_calc;
+    }
+
+    public CoreOutputFormatted getOutputFormat_bono14_calc() {
+        return outputFormat_bono14_calc;
+    }
+
+    public void setOutputFormat_totalPrestac_calc(CoreOutputFormatted outputFormat_totalPrestac_calc) {
+        this.outputFormat_totalPrestac_calc = outputFormat_totalPrestac_calc;
+    }
+
+    public CoreOutputFormatted getOutputFormat_totalPrestac_calc() {
+        return outputFormat_totalPrestac_calc;
+    }
+
+    public void setOutputFormat_totalParaCalc_calc(CoreOutputFormatted outputFormat_totalParaCalc_calc) {
+        this.outputFormat_totalParaCalc_calc = outputFormat_totalParaCalc_calc;
+    }
+
+    public CoreOutputFormatted getOutputFormat_totalParaCalc_calc() {
+        return outputFormat_totalParaCalc_calc;
+    }
+
+    public void setCmdBtn_guardarCalculo(CoreCommandButton cmdBtn_guardarCalculo) {
+        this.cmdBtn_guardarCalculo = cmdBtn_guardarCalculo;
+    }
+
+    public CoreCommandButton getCmdBtn_guardarCalculo() {
+        return cmdBtn_guardarCalculo;
     }
 }
