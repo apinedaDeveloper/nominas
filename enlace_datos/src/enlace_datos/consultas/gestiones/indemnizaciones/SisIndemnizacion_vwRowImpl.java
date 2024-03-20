@@ -47,6 +47,8 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
     public static final int NOMBREESTADOTRABAJADOR = 31;
     public static final int FECHAEXPEDIENTERETIRO = 32;
     public static final int OBSERVACIONEXPRETIRO = 33;
+    public static final int TOTALPRESTACIONES = 34;
+    public static final int TOTALPARACALCULOSUELDOPROM = 35;
 
     /**This is the default constructor (do not remove)
      */
@@ -139,6 +141,10 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
             return getFechaExpedienteRetiro();
         case OBSERVACIONEXPRETIRO:
             return getObservacionExpRetiro();
+        case TOTALPRESTACIONES:
+            return getTotalPrestaciones();
+        case TOTALPARACALCULOSUELDOPROM:
+            return getTotalParaCalculoSueldoProm();
         default:
             return super.getAttrInvokeAccessor(index, attrDef);
         }
@@ -250,6 +256,12 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
             return;
         case OBSERVACIONEXPRETIRO:
             setObservacionExpRetiro((String)value);
+            return;
+        case TOTALPRESTACIONES:
+            setTotalPrestaciones((Number)value);
+            return;
+        case TOTALPARACALCULOSUELDOPROM:
+            setTotalParaCalculoSueldoProm((Number)value);
             return;
         default:
             super.setAttrInvokeAccessor(index, value, attrDef);
@@ -673,5 +685,29 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
      */
     public void setFechaRetiro(Date value) {
         setAttributeInternal(FECHARETIRO, value);
+    }
+
+    /**Gets the attribute value for the calculated attribute TotalPrestaciones
+     */
+    public Number getTotalPrestaciones() {
+        return (Number) getAttributeInternal(TOTALPRESTACIONES);
+    }
+
+    /**Sets <code>value</code> as the attribute value for the calculated attribute TotalPrestaciones
+     */
+    public void setTotalPrestaciones(Number value) {
+        setAttributeInternal(TOTALPRESTACIONES, value);
+    }
+
+    /**Gets the attribute value for the calculated attribute TotalParaCalculoSueldoProm
+     */
+    public Number getTotalParaCalculoSueldoProm() {
+        return (Number) getAttributeInternal(TOTALPARACALCULOSUELDOPROM);
+    }
+
+    /**Sets <code>value</code> as the attribute value for the calculated attribute TotalParaCalculoSueldoProm
+     */
+    public void setTotalParaCalculoSueldoProm(Number value) {
+        setAttributeInternal(TOTALPARACALCULOSUELDOPROM, value);
     }
 }

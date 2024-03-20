@@ -119,7 +119,7 @@ public class Indemnizacion_detalle {
     private CoreInputHidden inptHidden_diferido12Calculo;
     private CoreInputHidden inptHidden_aguinaldoCalculo;
     private CoreInputHidden inptHidden_bono14Calculo;
-    private CoreInputHidden inptHidden_totalPrestCalculo;
+    //private CoreInputHidden inptHidden_totalPrestCalculo;
     private CorePanelHorizontal pnlHoriz_indemCalculada;
     private CoreOutputFormatted outputFormat_totalSueldos;
     private CoreOutputFormatted outputFormat_diferido_calc;
@@ -128,7 +128,7 @@ public class Indemnizacion_detalle {
     private CoreOutputFormatted outputFormat_bono14_calc;
     private CoreOutputFormatted outputFormat_totalPrestac_calc;
     private CoreOutputFormatted outputFormat_totalParaCalc_calc;
-    private CoreCommandButton cmdBtn_guardarCalculo;
+    //private CoreCommandButton cmdBtn_guardarCalculo;
 
     public void setHtml1(HtmlHtml html1) {
         this.html1 = html1;
@@ -602,13 +602,13 @@ public class Indemnizacion_detalle {
     private boolean rellenarCamposPends_expExistente(FacesContext f) {
         boolean correcto = false;
         try {
-            Object difObj, dif12Obj, aguiObj, bono14Obj, totalObj;
-            Number diferido, diferido12, aguinaldo, bono14, totalPrest;
+            Object difObj, dif12Obj, aguiObj, bono14Obj; //, totalObj;
+            Number diferido, diferido12, aguinaldo, bono14; //, totalPrest;
             String bindDif = "#{bindings.DiferidoCalc.inputValue}";
             String bindDif12 = "#{bindings.Diferido12Calc.inputValue}";
             String bindAgui = "#{bindings.AguinaldoCalc.inputValue}";
             String bindBono14 = "#{bindings.Bono14Calc.inputValue}";
-            String totalPrestac = "#{bindings.TotalPrestacion.inputValue}";
+            //String totalPrestac = "#{bindings.TotalPrestacion.inputValue}";
             difObj = this.getInptHidden_diferidoCalculo().getValue();
             if (difObj != null) {
                 diferido = 
@@ -633,12 +633,12 @@ public class Indemnizacion_detalle {
                         utils.getNumberOracle(String.format("%.2f", bono14Obj));
                 JSFUtils.setExpressionValue(f, bindBono14, bono14);
             }
-            totalObj = this.getInptHidden_totalPrestCalculo().getValue();
+            /*totalObj = this.getInptHidden_totalPrestCalculo().getValue();
             if (totalObj != null) {
                 totalPrest = 
                         utils.getNumberOracle(String.format("%.2f", totalObj));
                 JSFUtils.setExpressionValue(f, totalPrestac, totalPrest);
-            }
+            }*/
             correcto = true;
             //correcto = true;
         } catch (Exception e) {
@@ -791,7 +791,7 @@ public class Indemnizacion_detalle {
         FacesContext f = FacesContext.getCurrentInstance();
         String binding = "#{bindings.EsSolicitudNueva.inputValue}";
         if (procesar_guardar(f, binding)) {
-            mensaje("¡¡Información guardada correctamente!!", 1);
+            mensaje("¡¡Información Guardada Correctamente!!", 1);
             //habilitar_componentes_paso1(false);
             JSFUtils.setExpressionValue(f, binding, 
                                         Boolean.parseBoolean("false"));
@@ -1007,13 +1007,13 @@ public class Indemnizacion_detalle {
         return correcto;*/
         boolean correcto = false;
         try {
-            Object difObj, dif12Obj, aguiObj, bono14Obj, totalObj;
-            Number diferido, diferido12, aguinaldo, bono14, totalPrest;
+            Object difObj, dif12Obj, aguiObj, bono14Obj;
+            Number diferido, diferido12, aguinaldo, bono14;
             String bindDif = "#{bindings.DiferidoCalc.inputValue}";
             String bindDif12 = "#{bindings.Diferido12Calc.inputValue}";
             String bindAgui = "#{bindings.AguinaldoCalc.inputValue}";
             String bindBono14 = "#{bindings.Bono14Calc.inputValue}";
-            String totalPrestac = "#{bindings.TotalPrestacion.inputValue}";
+            //String totalPrestac = "#{bindings.TotalPrestacion.inputValue}";
             difObj = this.getInptHidden_diferidoCalculo().getValue();
             if (difObj != null) {
                 diferido = 
@@ -1038,12 +1038,12 @@ public class Indemnizacion_detalle {
                         utils.getNumberOracle(String.format("%.2f", bono14Obj));
                 JSFUtils.setExpressionValue(f, bindBono14, bono14);
             }
-            totalObj = this.getInptHidden_totalPrestCalculo().getValue();
+            /*totalObj = this.getInptHidden_totalPrestCalculo().getValue();
             if (totalObj != null) {
                 totalPrest = 
                         utils.getNumberOracle(String.format("%.2f", totalObj));
                 JSFUtils.setExpressionValue(f, totalPrestac, totalPrest);
-            }
+            }*/
             correcto = true;
             //correcto = true;
         } catch (Exception e) {
@@ -1057,7 +1057,7 @@ public class Indemnizacion_detalle {
         FacesContext f = FacesContext.getCurrentInstance();
         if (rellenarCamposPend_guardar_calculo(f)) {
             if (commit(f)) {
-                mensaje("¡¡Información guardada correctamente!!", 1);
+                mensaje("¡¡Información Guardada Correctamente!!", 1);
                 //habilitar_componentes_calculo(false);
                 JSFUtils.EjecutarAcccion(f, "RefrescarIndemnizacion");
             }
@@ -1700,9 +1700,9 @@ public class Indemnizacion_detalle {
             this.getInptHidden_diferido12Calculo().setValue(diferido12);
             this.getInptHidden_aguinaldoCalculo().setValue(aguinaldo);
             this.getInptHidden_bono14Calculo().setValue(bono14);
-            this.getInptHidden_totalPrestCalculo().setValue(totalPrestaciones);
+            //this.getInptHidden_totalPrestCalculo().setValue(totalPrestaciones);
             ///////////////////////////////////////////////////////////////////
-            String mensaje = 
+            /*String mensaje = 
                 "El Total de Sueldos es Q." + String.format("%1$,.2f", 
                                                             totalSueldos);
             mensaje += 
@@ -1717,7 +1717,7 @@ public class Indemnizacion_detalle {
                                                                        totalPrestaciones);
             mensaje += 
                     ", El Total Para Cálculo de Sueldo Promedio es Q." + String.format("%1$,.2f", 
-                                                                                       totalParaCalcSueldoProm);
+                                                                                       totalParaCalcSueldoProm);*/
             //mensaje(mensaje, 1);
             this.getOutputFormat_totalSueldos().setValue(totalSueldos);
             this.getOutputFormat_diferido_calc().setValue(diferido);
@@ -1726,8 +1726,8 @@ public class Indemnizacion_detalle {
             this.getOutputFormat_bono14_calc().setValue(bono14);
             this.getOutputFormat_totalPrestac_calc().setValue(totalPrestaciones);
             this.getOutputFormat_totalParaCalc_calc().setValue(totalParaCalcSueldoProm);
-            //this.getPnlHoriz_mensajes_calculo().setRendered(true);
             this.getPnlHoriz_indemCalculada().setRendered(true);
+            this.getCmdBtn_guardar_calculo().setDisabled(false);
         } else {
             mensaje("No hay Total de Sueldos", 3);
         }
@@ -1774,13 +1774,13 @@ public class Indemnizacion_detalle {
         return inptHidden_bono14Calculo;
     }
 
-    public void setInptHidden_totalPrestCalculo(CoreInputHidden inptHidden_totalPrestCalculo) {
+    /*public void setInptHidden_totalPrestCalculo(CoreInputHidden inptHidden_totalPrestCalculo) {
         this.inptHidden_totalPrestCalculo = inptHidden_totalPrestCalculo;
     }
 
     public CoreInputHidden getInptHidden_totalPrestCalculo() {
         return inptHidden_totalPrestCalculo;
-    }
+    }*/
 
     public void setPnlHoriz_indemCalculada(CorePanelHorizontal pnlHoriz_indemCalculada) {
         this.pnlHoriz_indemCalculada = pnlHoriz_indemCalculada;
@@ -1846,11 +1846,11 @@ public class Indemnizacion_detalle {
         return outputFormat_totalParaCalc_calc;
     }
 
-    public void setCmdBtn_guardarCalculo(CoreCommandButton cmdBtn_guardarCalculo) {
+    /*public void setCmdBtn_guardarCalculo(CoreCommandButton cmdBtn_guardarCalculo) {
         this.cmdBtn_guardarCalculo = cmdBtn_guardarCalculo;
     }
 
     public CoreCommandButton getCmdBtn_guardarCalculo() {
         return cmdBtn_guardarCalculo;
-    }
+    }*/
 }
