@@ -71,7 +71,7 @@ public class Indemnizacion_detalle {
     private CoreTable tbl_listadoUltimosSueldos_calculo;
     private CoreCommandLink cdmLink_buscarEmpl;
     private CoreOutputFormatted outputFormat_importe_calculo;
-    private CorePanelHorizontal pnlHoriz_mensajes_calculo;
+    //private CorePanelHorizontal pnlHoriz_mensajes_calculo;
     private CoreOutputText outputTxt_mensaje2_calculo;
     private CoreOutputFormatted outputFormat_promedio_sueldos_calculo;
     private CoreInputHidden inptHidden_promedioSueldos;
@@ -413,14 +413,6 @@ public class Indemnizacion_detalle {
         return outputFormat_importe_calculo;
     }
 
-    public void setPnlHoriz_mensajes_calculo(CorePanelHorizontal pnlHoriz_mensajes_calculo) {
-        this.pnlHoriz_mensajes_calculo = pnlHoriz_mensajes_calculo;
-    }
-
-    public CorePanelHorizontal getPnlHoriz_mensajes_calculo() {
-        return pnlHoriz_mensajes_calculo;
-    }
-
     public void setOutputTxt_mensaje2_calculo(CoreOutputText outputTxt_mensaje2_calculo) {
         this.outputTxt_mensaje2_calculo = outputTxt_mensaje2_calculo;
     }
@@ -599,7 +591,7 @@ public class Indemnizacion_detalle {
 
     //Procedimiento que rellena los campos pendientes de un expediente existente antes de grabar.
 
-    private boolean rellenarCamposPends_expExistente(FacesContext f) {
+    /*private boolean rellenarCamposPends_expExistente(FacesContext f) {
         boolean correcto = false;
         try {
             Object difObj, dif12Obj, aguiObj, bono14Obj; //, totalObj;
@@ -608,7 +600,6 @@ public class Indemnizacion_detalle {
             String bindDif12 = "#{bindings.Diferido12Calc.inputValue}";
             String bindAgui = "#{bindings.AguinaldoCalc.inputValue}";
             String bindBono14 = "#{bindings.Bono14Calc.inputValue}";
-            //String totalPrestac = "#{bindings.TotalPrestacion.inputValue}";
             difObj = this.getInptHidden_diferidoCalculo().getValue();
             if (difObj != null) {
                 diferido = 
@@ -633,12 +624,6 @@ public class Indemnizacion_detalle {
                         utils.getNumberOracle(String.format("%.2f", bono14Obj));
                 JSFUtils.setExpressionValue(f, bindBono14, bono14);
             }
-            /*totalObj = this.getInptHidden_totalPrestCalculo().getValue();
-            if (totalObj != null) {
-                totalPrest = 
-                        utils.getNumberOracle(String.format("%.2f", totalObj));
-                JSFUtils.setExpressionValue(f, totalPrestac, totalPrest);
-            }*/
             correcto = true;
             //correcto = true;
         } catch (Exception e) {
@@ -646,7 +631,7 @@ public class Indemnizacion_detalle {
             mensaje("Ha ocurrido el siguiente error: " + e.getMessage(), 3);
         }
         return correcto;
-    }
+    }*/
 
     //Función que realiza el commit a la base de Datos
 
@@ -826,6 +811,7 @@ public class Indemnizacion_detalle {
         }
         //this.getPnlHoriz_mensajes_calculo().setRendered(false);
         this.getPnlHoriz_indemCalculada().setRendered(false);
+        this.getCmdBtn_guardar_calculo().setDisabled(true);
         mensaje("Operación Cancelada Correctamente", 1);
         return null;
     }
@@ -988,23 +974,6 @@ public class Indemnizacion_detalle {
     //Rellena campos pendientes antes de guardar el cálculo
 
     private boolean rellenarCamposPend_guardar_calculo(FacesContext f) {
-        /*Number aux;
-        String b1 = "#{bindings.SueldoPromedio.inputValue}";
-        //String b2 = "#{bindings.PostMortem.inputValue}";
-        String b2 = "#{bindings.TotalPrestacion.inputValue}";
-        boolean correcto = false;
-        Object promObj = this.getInptHidden_promedioSueldos().getValue();
-        Object totalObj = this.getInptHidden_montoIndemnizacion().getValue();
-        if (promObj != null && totalObj != null) {
-            aux = utils.getNumberOracle(String.format("%.2f", promObj));
-            JSFUtils.setExpressionValue(f, b1, aux);
-            aux = utils.getNumberOracle(String.format("%.2f", totalObj));
-            JSFUtils.setExpressionValue(f, b2, aux);
-            correcto = true;
-        } else {
-            mensaje("No se pudo grabar. Intente de nuevo por favor", 3);
-        }
-        return correcto;*/
         boolean correcto = false;
         try {
             Object difObj, dif12Obj, aguiObj, bono14Obj;
@@ -1013,7 +982,6 @@ public class Indemnizacion_detalle {
             String bindDif12 = "#{bindings.Diferido12Calc.inputValue}";
             String bindAgui = "#{bindings.AguinaldoCalc.inputValue}";
             String bindBono14 = "#{bindings.Bono14Calc.inputValue}";
-            //String totalPrestac = "#{bindings.TotalPrestacion.inputValue}";
             difObj = this.getInptHidden_diferidoCalculo().getValue();
             if (difObj != null) {
                 diferido = 
@@ -1060,6 +1028,8 @@ public class Indemnizacion_detalle {
                 mensaje("¡¡Información Guardada Correctamente!!", 1);
                 //habilitar_componentes_calculo(false);
                 JSFUtils.EjecutarAcccion(f, "RefrescarIndemnizacion");
+                this.getCmdBtn_guardar_calculo().setDisabled(true);
+                this.getPnlHoriz_indemCalculada().setRendered(false);
             }
         }
         return null;
@@ -1675,24 +1645,6 @@ public class Indemnizacion_detalle {
             Double totalPrestaciones = 
                 diferido + diferido12 + aguinaldo + bono14;
             Double totalParaCalcSueldoProm = totalSueldos + totalPrestaciones;
-            ////almacena los valores en los bindings de la página lista para ser guardadas////
-            /*FacesContext f = FacesContext.getCurrentInstance();
-            String bindDif = "#{bindings.DiferidoCalc.inputValue}";
-            String bindDif12= "#{bindings.Diferido12Calc.inputValue}";
-            String bindAgui = "#{bindings.AguinaldoCalc.inputValue}";
-            String bindBono14 = "#{bindings.Bono14Calc.inputValue}";
-            String totalPrestac = "#{bindings.TotalPrestacion.inputValue}";
-            try {
-                 JSFUtils.setExpressionValue(f, bindDif, utils.getNumberOracleFormato(String.format("%.2f", diferido)));
-                 JSFUtils.setExpressionValue(f, bindDif12, utils.getNumberOracleFormato(String.format("%.2f", diferido12)));
-                 JSFUtils.setExpressionValue(f, bindAgui, utils.getNumberOracleFormato(String.format("%.2f", aguinaldo)));
-                 JSFUtils.setExpressionValue(f, bindBono14, utils.getNumberOracleFormato(String.format("%.2f", bono14)));
-                 JSFUtils.setExpressionValue(f, totalPrestac, utils.getNumberOracleFormato(String.format("%.2f", totalPrestaciones)));
-             } catch (Exception e) {
-                 e.printStackTrace();
-                 mensaje("Ha ocurrido el siguiente error: " + e.getMessage(), 3);
-             }*/
-            ///////////////////////////////////////////////////////////
             //////almacena los valores calculados en los input hiddens creados para este propósito/////
             //this.getInptHidden_promedioSueldos().setValue(sueldoProm);
             //this.getInptHidden_montoIndemnizacion().setValue(indemnizacion);
