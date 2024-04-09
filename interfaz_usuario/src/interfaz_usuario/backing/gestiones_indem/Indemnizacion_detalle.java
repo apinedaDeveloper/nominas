@@ -53,82 +53,79 @@ public class Indemnizacion_detalle {
     private HtmlBody body1;
     private CoreForm form1;
     private CorePage page1;
+    private CoreCommandButton cmdBtn_calcular_prestacion;
+    private CoreCommandButton cmdBtn_comprobar_gasto_funerario;
     private CoreCommandButton cmdBtn_guardar;
     private CoreCommandButton cmdBtn_guardar_calculo;
-    private CoreInputText inptText_registroEmpleado;
-    private CoreInputText inptText_nombreCompleto;
-    private CoreInputText inptText_nombreEstadoTrabajador;
-    private CoreInputText inptText_IdIndemnizacion;
-    private CoreInputText inptText_Correlativo;
-    private CoreInputText inptText_IdSolicitud;
-    private CoreInputText inptText_EstadoExpediente;
-    private CoreInputText inptText_AniosServicio;
-    private CoreInputText inptText_MesesServicio;
-    private CoreInputText inptText_DiasServicio;
-    private CoreCommandMenuItem cmdMenuItem;
-    private CoreInputText inptText_cuiTrabajador;
-    private CoreSelectOneChoice slctOneChoice_tipoCarreraLab;
-    private CoreTable tbl_listadoUltimosSueldos_calculo;
-    private CoreCommandLink cdmLink_buscarEmpl;
-    private CoreOutputFormatted outputFormat_importe_calculo;
-    //private CorePanelHorizontal pnlHoriz_mensajes_calculo;
-    private CoreOutputText outputTxt_mensaje2_calculo;
-    private CoreOutputFormatted outputFormat_promedio_sueldos_calculo;
-    private CoreInputHidden inptHidden_promedioSueldos;
-    private CoreInputHidden inptHidden_montoIndemnizacion;
-    private CoreOutputFormatted outputFormat_cantidad_contratos_calculo;
-    private CoreCommandButton cmdBtn_calcular_prestacion;
-    private CoreOutputText outputTxt_mensaje_calculo;
-    private CoreShowDetailItem showDetItem_calculo;
-    private CoreShowDetailItem showDetItem_solicitud;
-    private CoreCommandButton cmdBtn_retornar;
-    private CorePanelBox pnlBox_informacionSolicitante;
-    private CorePanelForm pnlForm_solicitante;
-    private CoreMessages messages_paso1_above;
-    private CoreMessages messages_paso1_below;
-    private CoreCommandButton cmdBtn_verReporteBasico;
-    private CoreCommandLink cmdLink_trasladar_solicitud;
-    private CoreCommandButton cmdBtn_retornar_calculo;
-    private CoreInputText inptText_serieFacturaPost;
-    private CoreInputText inptText_numeroFactPost;
-    private CoreSelectInputDate slctInputDate_fechaFactPost;
-    private CoreInputText inptText_nombreFunerariaPost;
-    private CoreInputText inptText_montoFacturaPost;
-    private CoreCommandButton cmdBtn_comprobar_gasto_funerario;
     private CoreCommandButton cmdBtn_guardar_gasto_funerario;
-    private CoreCommandButton cmdBtn_retornar_gasto_funerario;
-    private CoreCommandLink cmdLink_trasladar_gasto_funerario;
-    private CoreCommandLink cmdLink_trasladar_calculo;
-    private CoreInputHidden inptHidden_gastoFunerario;
-    private CoreCommandButton cmdBtn_verReporteDARHSJI1;
     private CoreCommandButton cmdBtn_guardarRelacionLab;
-    private CoreTable tbl_relacionLaboral;
-    private CoreSelectInputDate slctInputDate_fechaSolicitud;
-    private CoreInputText inptText_motivoRenuncia;
-    private CoreSelectBooleanCheckbox slctBooleanCheckBox_bantrab;
-    private CoreSelectBooleanCheckbox slctBooleanCheckBox_judicial;
-    private CoreSelectBooleanCheckbox slctBooleanCheckBox_cargoCont;
-    private CoreSelectBooleanCheckbox slctBooleanCheckBox_otros;
-    private CoreInputText inptText_numeroExpRetiro;
-    private CoreInputText inptText_fechaExpRetiro;
-    private CoreInputText inptText_descripcionExpRetiro;
-    private CoreSelectOneChoice slctOneChoice_tipoRetiro;
-    private CoreSelectInputDate slctInputDate_fechaRetiro;
-    private CoreInputText inptText_TotalSueldos;
-    private CoreInputHidden inptHidden_diferidoCalculo;
-    private CoreInputHidden inptHidden_diferido12Calculo;
+    private CoreCommandButton cmdBtn_retornar;
+    private CoreCommandButton cmdBtn_retornar_calculo;
+    private CoreCommandButton cmdBtn_retornar_gasto_funerario;
+    private CoreCommandButton cmdBtn_verReporteBasico;
+    private CoreCommandButton cmdBtn_verReporteDARHSJI1;
+    private CoreCommandLink cdmLink_buscarEmpl;
+    private CoreCommandLink cmdLink_trasladar_gasto_funerario;
+    private CoreCommandLink cmdLink_trasladar_solicitud;
+    private CoreCommandMenuItem cmdMenuItem;
     private CoreInputHidden inptHidden_aguinaldoCalculo;
     private CoreInputHidden inptHidden_bono14Calculo;
-    //private CoreInputHidden inptHidden_totalPrestCalculo;
-    private CorePanelHorizontal pnlHoriz_indemCalculada;
-    private CoreOutputFormatted outputFormat_totalSueldos;
-    private CoreOutputFormatted outputFormat_diferido_calc;
-    private CoreOutputFormatted outputFormat_diferido12_calc;
+    private CoreInputHidden inptHidden_diferido12Calculo;
+    private CoreInputHidden inptHidden_diferidoCalculo;
+    private CoreInputHidden inptHidden_sueldoPromedio;
+    private CoreInputText inptText_AniosServicio;
+    private CoreInputText inptText_Correlativo;
+    private CoreInputText inptText_cuiTrabajador;
+    private CoreInputText inptText_descripcionExpRetiro;
+    private CoreInputText inptText_DiasServicio;
+    private CoreInputText inptText_EstadoExpediente;
+    private CoreInputText inptText_fechaExpRetiro;
+    private CoreInputText inptText_IdIndemnizacion;
+    private CoreInputText inptText_IdSolicitud;
+    private CoreInputText inptText_MesesServicio;
+    private CoreInputText inptText_montoFacturaPost;
+    private CoreInputText inptText_motivoRenuncia;
+    private CoreInputText inptText_nombreCompleto;
+    private CoreInputText inptText_nombreEstadoTrabajador;
+    private CoreInputText inptText_nombreFunerariaPost;
+    private CoreInputText inptText_numeroExpRetiro;
+    private CoreInputText inptText_numeroFactPost;
+    private CoreInputText inptText_registroEmpleado;
+    private CoreInputText inptText_serieFacturaPost;
+    private CoreInputText inptText_TotalSueldos;
+    private CoreMessages messages_paso1_above;
+    private CoreMessages messages_paso1_below;
     private CoreOutputFormatted outputFormat_aguinaldo_calc;
     private CoreOutputFormatted outputFormat_bono14_calc;
-    private CoreOutputFormatted outputFormat_totalPrestac_calc;
+    private CoreOutputFormatted outputFormat_diferido_calc;
+    private CoreOutputFormatted outputFormat_diferido12_calc;
+    private CoreOutputFormatted outputFormat_montIndAnios_calc;
+    private CoreOutputFormatted outputFormat_montIndDias_calc;
+    private CoreOutputFormatted outputFormat_montIndMeses_calc;
+    private CoreOutputFormatted outputFormat_sueldoProm_calc;
     private CoreOutputFormatted outputFormat_totalParaCalc_calc;
-    //private CoreCommandButton cmdBtn_guardarCalculo;
+    private CoreOutputFormatted outputFormat_totalPrestac_calc;
+    private CoreOutputFormatted outputFormat_totalSueldos;
+    private CoreOutputText outputTxt_mensaje_calculo;
+    private CoreOutputText outputTxt_mensaje2_calculo;
+    private CorePanelBox pnlBox_informacionSolicitante;
+    private CorePanelForm pnlForm_solicitante;
+    private CorePanelHorizontal pnlHoriz_indemCalculada;
+    private CoreSelectBooleanCheckbox slctBooleanCheckBox_bantrab;
+    private CoreSelectBooleanCheckbox slctBooleanCheckBox_cargoCont;
+    private CoreSelectBooleanCheckbox slctBooleanCheckBox_judicial;
+    private CoreSelectBooleanCheckbox slctBooleanCheckBox_otros;
+    private CoreSelectInputDate slctInputDate_fechaFactPost;
+    private CoreSelectInputDate slctInputDate_fechaRetiro;
+    private CoreSelectInputDate slctInputDate_fechaSolicitud;
+    private CoreSelectOneChoice slctOneChoice_tipoCarreraLab;
+    private CoreSelectOneChoice slctOneChoice_tipoRetiro;
+    private CoreShowDetailItem showDetItem_calculo;
+    private CoreShowDetailItem showDetItem_solicitud;
+    private CoreTable tbl_listadoUltimosSueldos_calculo;
+    private CoreTable tbl_relacionLaboral;
+    private CoreOutputFormatted outputFormat_montIndTotal_calc;
+    private CoreInputHidden inptHidden_montoIndemTotal;
 
     public void setHtml1(HtmlHtml html1) {
         this.html1 = html1;
@@ -187,7 +184,7 @@ public class Indemnizacion_detalle {
 
     //Función que habilita o deshabilita los campos de texto del formulario
 
-    private void habilitar_componentes_solicitud_detallado(boolean deshabilitado) {
+    /*private void habilitar_componentes_solicitud_detallado(boolean deshabilitado) {
         this.getCdmLink_buscarEmpl().setDisabled(deshabilitado); //botón para buscar trabajador
         this.getSlctInputDate_fechaSolicitud().setDisabled(deshabilitado); //input Fecha de Solicitud
         this.getInptText_motivoRenuncia().setDisabled(deshabilitado); //input Motivo de Renuncia
@@ -199,22 +196,22 @@ public class Indemnizacion_detalle {
         this.getSlctBooleanCheckBox_judicial().setDisabled(deshabilitado); //Check box Judicial
         this.getSlctBooleanCheckBox_cargoCont().setDisabled(deshabilitado); //Check box Cargo Contable
         this.getSlctBooleanCheckBox_otros().setDisabled(deshabilitado); //Check box Otros Pagos pendientes
-    }
+    }*/
 
     //Obtiene los datos del expediente en que se registró el retiro del extrabajador
 
-    private void obtener_expediente_retiro(String regEmpleado, 
+    /*private void obtener_expediente_retiro(String regEmpleado,
                                            interfaz_DB inter) {
-        String consulta = 
+        String consulta =
             "select s.id_solicitud, s.fecha_solicitud, s.observacion, ts.nombre_solicitud ";
-        consulta += 
+        consulta +=
                 " from sis_solicitud s inner join sis_tipo_solicitud ts  on ts.id_tipo_solicitud = s.id_tipo_solicitud ";
-        consulta += 
+        consulta +=
                 " where s.id_tipo_solicitud in(5,6, 11) and s.id_estado = 39 and ";
-        consulta += 
+        consulta +=
                 " s.registro_empleado = " + regEmpleado + " order by s.id_solicitud desc";
         Object idSol = inter.getValorConsultaSimple("id_solicitud", consulta);
-        Object fecha = 
+        Object fecha =
             inter.getValorConsultaSimple("fecha_solicitud", consulta);
         Object obs = inter.getValorConsultaSimple("observacion", consulta);
         this.getInptText_numeroExpRetiro().setSubmittedValue(null);
@@ -223,7 +220,7 @@ public class Indemnizacion_detalle {
         this.getInptText_fechaExpRetiro().setValue(fecha);
         this.getInptText_descripcionExpRetiro().setSubmittedValue(null);
         this.getInptText_descripcionExpRetiro().setValue(obs);
-    }
+    }*/
 
     public void cdmLink_buscarEmpl_returnListener(ReturnEvent returnEvent) {
         String registroEmpleado;
@@ -238,8 +235,8 @@ public class Indemnizacion_detalle {
             consulta += "WHERE REGISTRO_EMPLEADO = " + registroEmpleado;
             Object nombreCompleto = 
                 interfaz.getValorConsultaSimple("NOMBRECOMPLETO", consulta);
-            Object estadoTrabajador = 
-                interfaz.getValorConsultaSimple("ESTADO_TRABAJADOR", consulta);
+            //Object estadoTrabajador = 
+            //interfaz.getValorConsultaSimple("ESTADO_TRABAJADOR", consulta);
             Object cuiTrabajador = 
                 interfaz.getValorConsultaSimple("CUI", consulta);
             if (nombreCompleto != null) {
@@ -405,45 +402,12 @@ public class Indemnizacion_detalle {
         return cmdBtn_guardar_calculo;
     }
 
-    public void setOutputFormat_importe_calculo(CoreOutputFormatted outputFormat_importe_calculo) {
-        this.outputFormat_importe_calculo = outputFormat_importe_calculo;
-    }
-
-    public CoreOutputFormatted getOutputFormat_importe_calculo() {
-        return outputFormat_importe_calculo;
-    }
-
     public void setOutputTxt_mensaje2_calculo(CoreOutputText outputTxt_mensaje2_calculo) {
         this.outputTxt_mensaje2_calculo = outputTxt_mensaje2_calculo;
     }
 
     public CoreOutputText getOutputTxt_mensaje2_calculo() {
         return outputTxt_mensaje2_calculo;
-    }
-
-    public void setOutputFormat_promedio_sueldos_calculo(CoreOutputFormatted outputFormat_promedio_sueldos_calculo) {
-        this.outputFormat_promedio_sueldos_calculo = 
-                outputFormat_promedio_sueldos_calculo;
-    }
-
-    public CoreOutputFormatted getOutputFormat_promedio_sueldos_calculo() {
-        return outputFormat_promedio_sueldos_calculo;
-    }
-
-    public void setInptHidden_promedioSueldos(CoreInputHidden inptHidden_promedioSueldos) {
-        this.inptHidden_promedioSueldos = inptHidden_promedioSueldos;
-    }
-
-    public CoreInputHidden getInptHidden_promedioSueldos() {
-        return inptHidden_promedioSueldos;
-    }
-
-    public void setInptHidden_montoIndemnizacion(CoreInputHidden inptHidden_montoIndemnizacion) {
-        this.inptHidden_montoIndemnizacion = inptHidden_montoIndemnizacion;
-    }
-
-    public CoreInputHidden getInptHidden_montoIndemnizacion() {
-        return inptHidden_montoIndemnizacion;
     }
 
     public void setCmdBtn_guardar(CoreCommandButton cmdBtn_guardar) {
@@ -477,14 +441,14 @@ public class Indemnizacion_detalle {
 
     //Habilita o deshabilita componentes del formulario al comprobar, guardar o cancelar una solicitud
 
-    private void habilitar_componentes_paso1(boolean deshabilitado) {
+    /*private void habilitar_componentes_paso1(boolean deshabilitado) {
         this.getShowDetItem_calculo().setDisabled(deshabilitado);
         //this.getCmdBtn_comprobar().setDisabled(deshabilitado);
         this.getCmdBtn_guardar().setDisabled(!deshabilitado);
         this.getCmdBtn_verReporteBasico().setDisabled(deshabilitado);
         this.getCmdLink_trasladar_solicitud().setDisabled(deshabilitado);
         habilitar_componentes_solicitud_detallado(deshabilitado); //Campos de Texto y Combos
-    }
+    }*/
 
     //comprueba información para prestaciones postmortem
 
@@ -589,50 +553,6 @@ public class Indemnizacion_detalle {
         return correcto;
     }
 
-    //Procedimiento que rellena los campos pendientes de un expediente existente antes de grabar.
-
-    /*private boolean rellenarCamposPends_expExistente(FacesContext f) {
-        boolean correcto = false;
-        try {
-            Object difObj, dif12Obj, aguiObj, bono14Obj; //, totalObj;
-            Number diferido, diferido12, aguinaldo, bono14; //, totalPrest;
-            String bindDif = "#{bindings.DiferidoCalc.inputValue}";
-            String bindDif12 = "#{bindings.Diferido12Calc.inputValue}";
-            String bindAgui = "#{bindings.AguinaldoCalc.inputValue}";
-            String bindBono14 = "#{bindings.Bono14Calc.inputValue}";
-            difObj = this.getInptHidden_diferidoCalculo().getValue();
-            if (difObj != null) {
-                diferido = 
-                        utils.getNumberOracle(String.format("%.2f", difObj));
-                JSFUtils.setExpressionValue(f, bindDif, diferido);
-            }
-            dif12Obj = this.getInptHidden_diferido12Calculo().getValue();
-            if (dif12Obj != null) {
-                diferido12 = 
-                        utils.getNumberOracle(String.format("%.2f", dif12Obj));
-                JSFUtils.setExpressionValue(f, bindDif12, diferido12);
-            }
-            aguiObj = this.getInptHidden_aguinaldoCalculo().getValue();
-            if (aguiObj != null) {
-                aguinaldo = 
-                        utils.getNumberOracle(String.format("%.2f", aguiObj));
-                JSFUtils.setExpressionValue(f, bindAgui, aguinaldo);
-            }
-            bono14Obj = this.getInptHidden_bono14Calculo().getValue();
-            if (bono14Obj != null) {
-                bono14 = 
-                        utils.getNumberOracle(String.format("%.2f", bono14Obj));
-                JSFUtils.setExpressionValue(f, bindBono14, bono14);
-            }
-            correcto = true;
-            //correcto = true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            mensaje("Ha ocurrido el siguiente error: " + e.getMessage(), 3);
-        }
-        return correcto;
-    }*/
-
     //Función que realiza el commit a la base de Datos
 
     private boolean commit(FacesContext f) {
@@ -656,24 +576,24 @@ public class Indemnizacion_detalle {
 
     //Verifica si el trabajador ya se retiró de la institución
 
-    private boolean verificarRetiroTrabajador(FacesContext f) {
+    /*private boolean verificarRetiroTrabajador(FacesContext f) {
         boolean retirado = false;
-        Object aux = 
+        Object aux =
             JSFUtils.EjecutarAcccion(f, "ComprobarTrabajadorRetirado");
         if (aux != null) {
             int result = Integer.parseInt(aux.toString());
             if (result >= 1) {
                 retirado = true;
             } else {
-                mensaje("¡¡El trabajador no aparece como retirado en el sistema, verifique por favor!!", 
+                mensaje("¡¡El trabajador no aparece como retirado en el sistema, verifique por favor!!",
                         3);
             }
         } else {
-            mensaje("Error al intentar verificar si el trabajador aparece como retirado en el sistema. Intente de nuevo por favor!!", 
+            mensaje("Error al intentar verificar si el trabajador aparece como retirado en el sistema. Intente de nuevo por favor!!",
                     3);
         }
         return retirado;
-    }
+    }*/
 
     //Valida la información ingresada por el usuario
 
@@ -685,17 +605,15 @@ public class Indemnizacion_detalle {
             (oracle.jbo.domain.Date)this.getSlctInputDate_fechaRetiro().getValue();
         oracle.jbo.domain.Date fechaSolicitud = 
             (oracle.jbo.domain.Date)this.getSlctInputDate_fechaSolicitud().getValue();
-        /*Object aniosServicio = this.getInptText_AniosServicio().getValue();
-        Object mesesServicio = this.getInptText_MesesServicio().getValue();
-        Object diasServicio = this.getInptText_DiasServicio().getValue();*/
         Number aniosServicio = 
             (Number)this.getInptText_AniosServicio().getValue();
         Number mesesServicio = 
             (Number)this.getInptText_MesesServicio().getValue();
         Number diasServicio = 
             (Number)this.getInptText_DiasServicio().getValue();
-
         Object tipoRetiro = this.getSlctOneChoice_tipoRetiro().getValue();
+        Number totalSueldos = 
+            (Number)this.getInptText_TotalSueldos().getValue();
         if (registroPersonal == null || 
             registroPersonal.toString().compareTo("") == 0) {
             mensaje("¡¡Busque trabajador para continuar por favor!!", 3);
@@ -717,6 +635,9 @@ public class Indemnizacion_detalle {
             mensaje("!!Los Días de Servicio no debe ser mayor a 29!!", 3);
         } else if (tipoRetiro == null) {
             mensaje("!!Seleccione un Tipo de Retiro para continuar por favor!!", 
+                    3);
+        } else if (totalSueldos == null || totalSueldos.doubleValue() <= 0) {
+            mensaje("!!Ingrese Total de Sueldos para continuar por favor!!", 
                     3);
         } else if (fechaSolicitud == null) {
             mensaje("!!Ingrese Fecha de Solicitud para continuar por favor!!", 
@@ -760,9 +681,7 @@ public class Indemnizacion_detalle {
                         exito = commit(f);
                     }
                 } else { //Expediente existente
-                    //if (rellenarCamposPends_expExistente(f)) {
                     exito = commit(f);
-                    // }
                     //if (obtenerId_solicitudRetiro(f)) {
                     //exito = commit(f);
                     //}
@@ -819,24 +738,14 @@ public class Indemnizacion_detalle {
     public String cmdBtn_retornar_action() {
         return "ir_a_listado_indemnizaciones";
     }
-
-    //Habilita o deshabilita componentes del formulario al calcular, guardar o cancelar el cálculo
-
-    private void habilitar_componentes_calculo(boolean deshabilitado) {
-        this.getShowDetItem_solicitud().setDisabled(deshabilitado);
-        this.getCmdBtn_calcular_prestacion().setDisabled(deshabilitado);
-        this.getCmdBtn_guardar_calculo().setDisabled(!deshabilitado);
-        this.getCmdLink_trasladar_calculo().setDisabled(deshabilitado);
-    }
-
     //Calcula la indemnización por retiro definitivo
 
-    private void calcular_indemnizacion(int anios, int meses, int dias, 
+    /* private void calcular_indemnizacion(int anios, int meses, int dias,
                                         FacesContext f) {
         //Total sueldos últimos doce meses
-        //Object numSueldObj = 
+        //Object numSueldObj =
         //  JSFUtils.EjecutarAcccion(f, "obtenerNumeroSueldos");
-        int numSueldos = 
+        int numSueldos =
             this.getTbl_listadoUltimosSueldos_calculo().getRowCount();
         if (numSueldos > 0) {
             if (numSueldos > 12) {
@@ -866,35 +775,34 @@ public class Indemnizacion_detalle {
                 //Se guardan los resultados en controles ocultos
                 this.getInptHidden_promedioSueldos().setValue(sueldoProm);
                 this.getInptHidden_montoIndemnizacion().setValue(indemnizacion);
-                habilitar_componentes_calculo(true);
-                String mensaje = 
+                String mensaje =
                     "Cálculo de Indemnización por Retiro Definitivo realizado correctamente.\n";
                 mensaje += " Número de sueldos para promedio " + numSueldos;
-                mensaje += 
+                mensaje +=
                         ", total sueldos Q." + String.format("%1$,.2f", totalSueldos);
-                mensaje += 
+                mensaje +=
                         ", diferido Q." + String.format("%1$,.2f", diferido);
-                mensaje += 
+                mensaje +=
                         ", diferido 12% Q." + String.format("%1$,.2f", diferido12);
-                mensaje += 
+                mensaje +=
                         ", aguinaldo Q." + String.format("%1$,.2f", aguinaldo);
                 mensaje += ", bono 14 Q." + String.format("%1$,.2f", bono14);
-                mensaje += 
+                mensaje +=
                         ", sueldo promedio Q." + String.format("%1$,.2f", sueldoProm);
                 mensaje += ", tiempo de servicio: " + anios + " años";
                 mensaje += ", " + meses + " meses y " + dias + " días";
-                mensaje += 
+                mensaje +=
                         ", indemnización Q." + String.format("%1$,.2f", indemnizacion);
                 mensaje(mensaje, 1);
             } else {
-                mensaje("No se pudo calcular la indemnización correctamente. Intente de nuevo por favor.", 
+                mensaje("No se pudo calcular la indemnización correctamente. Intente de nuevo por favor.",
                         3);
             }
         } else {
-            mensaje("No se pudo calcular la indemnización correctamente. Intente de nuevo por favor.", 
+            mensaje("No se pudo calcular la indemnización correctamente. Intente de nuevo por favor.",
                     3);
         }
-    }
+    }*/
 
     //Procedimiento que calcula la prestación detalladamente
 
@@ -916,7 +824,6 @@ public class Indemnizacion_detalle {
         //Se guardan los resultados en controles ocultos
         this.getInptHidden_promedioSueldos().setValue(sueldoPr);
         this.getInptHidden_montoIndemnizacion().setValue(postMortem);
-        habilitar_componentes_calculo(true);
         mensaje("Cálculo de prestación post-mortem realizado correctamente.",
                 1);
     }*/
@@ -951,37 +858,20 @@ public class Indemnizacion_detalle {
         }
     }*/
 
-    public String cmdBtn_calcular_action() {
-        String b1 = "#{bindings.AniosTiempoServicio.inputValue}";
-        String b2 = "#{bindings.MesesTiempoServicio.inputValue}";
-        String b3 = "#{bindings.DiasTiempoServicio.inputValue}";
-        FacesContext f = FacesContext.getCurrentInstance();
-        Object aniosObj = JSFUtils.resolveExpression(f, b1);
-        Object mesesObj = JSFUtils.resolveExpression(f, b2);
-        Object diasObj = JSFUtils.resolveExpression(f, b3);
-        if (aniosObj != null && mesesObj != null && diasObj != null) {
-            int anios = Integer.valueOf(aniosObj.toString()).intValue();
-            int meses = Integer.valueOf(mesesObj.toString()).intValue();
-            int dias = Integer.valueOf(diasObj.toString()).intValue();
-            calcular_indemnizacion(anios, meses, dias, f);
-        } else {
-            mensaje("No se pudo obtener el tiempo de servicio del trabajador. Intente de nuevo por favor!!", 
-                    3);
-        }
-        return null;
-    }
-
     //Rellena campos pendientes antes de guardar el cálculo
 
-    private boolean rellenarCamposPend_guardar_calculo(FacesContext f) {
+    private boolean rellenarCamposPends_guardar_calculo(FacesContext f) {
         boolean correcto = false;
         try {
-            Object difObj, dif12Obj, aguiObj, bono14Obj;
-            Number diferido, diferido12, aguinaldo, bono14;
+            Object difObj, dif12Obj, aguiObj, bono14Obj, sueldoPromObj, totalIndemObj;
+            Number diferido, diferido12, aguinaldo, bono14, sueldoProm, totalIndem;
             String bindDif = "#{bindings.DiferidoCalc.inputValue}";
             String bindDif12 = "#{bindings.Diferido12Calc.inputValue}";
             String bindAgui = "#{bindings.AguinaldoCalc.inputValue}";
             String bindBono14 = "#{bindings.Bono14Calc.inputValue}";
+            String bindSueldoProm = "#{bindings.SueldoPromedio.inputValue}";
+            String bindTotalIndem = "#{bindings.TotalPrestacion.inputValue}";
+            ///////////////////////////////////////////////////
             difObj = this.getInptHidden_diferidoCalculo().getValue();
             if (difObj != null) {
                 diferido = 
@@ -1006,12 +896,18 @@ public class Indemnizacion_detalle {
                         utils.getNumberOracle(String.format("%.2f", bono14Obj));
                 JSFUtils.setExpressionValue(f, bindBono14, bono14);
             }
-            /*totalObj = this.getInptHidden_totalPrestCalculo().getValue();
-            if (totalObj != null) {
-                totalPrest = 
-                        utils.getNumberOracle(String.format("%.2f", totalObj));
-                JSFUtils.setExpressionValue(f, totalPrestac, totalPrest);
-            }*/
+            sueldoPromObj = this.getInptHidden_sueldoPromedio().getValue();
+            if (sueldoPromObj != null) {
+                sueldoProm = 
+                        utils.getNumberOracle(String.format("%.2f", sueldoPromObj));
+                JSFUtils.setExpressionValue(f, bindSueldoProm, sueldoProm);
+            }
+            totalIndemObj = this.getInptHidden_montoIndemTotal().getValue();
+            if (totalIndemObj != null) {
+                totalIndem = 
+                        utils.getNumberOracle(String.format("%.2f", totalIndemObj));
+                JSFUtils.setExpressionValue(f, bindTotalIndem, totalIndem);
+            }
             correcto = true;
             //correcto = true;
         } catch (Exception e) {
@@ -1023,10 +919,9 @@ public class Indemnizacion_detalle {
 
     public String cmdBtn_guardar_calculo_action() {
         FacesContext f = FacesContext.getCurrentInstance();
-        if (rellenarCamposPend_guardar_calculo(f)) {
+        if (rellenarCamposPends_guardar_calculo(f)) {
             if (commit(f)) {
                 mensaje("¡¡Información Guardada Correctamente!!", 1);
-                //habilitar_componentes_calculo(false);
                 JSFUtils.EjecutarAcccion(f, "RefrescarIndemnizacion");
                 this.getCmdBtn_guardar_calculo().setDisabled(true);
                 this.getPnlHoriz_indemCalculada().setRendered(false);
@@ -1037,7 +932,7 @@ public class Indemnizacion_detalle {
 
     //Realiza una comprobación básica del formulario
 
-    private boolean comprobarCamposDeTexto_gastoFunerario() {
+    /*private boolean comprobarCamposDeTexto_gastoFunerario() {
         boolean valido = false;
         Object serieFactura, numeroFactura, fechaFactura, nombreFuneraria, montoFactura;
         serieFactura = this.getInptText_serieFacturaPost().getValue();
@@ -1067,40 +962,40 @@ public class Indemnizacion_detalle {
             this.getInptText_montoFacturaPost().setValue(montoFactura);
         }
         if (serieFactura == null) {
-            mensaje("Ingrese la serie de la factura para para continuar por favor!!", 
+            mensaje("Ingrese la serie de la factura para para continuar por favor!!",
                     3);
         } else if (numeroFactura == null) {
-            mensaje("Ingrese el número de factura para continuar por favor!!", 
+            mensaje("Ingrese el número de factura para continuar por favor!!",
                     3);
         } else if (fechaFactura == null) {
-            mensaje("Ingrese la fecha de la factura para continuar por favor!!", 
+            mensaje("Ingrese la fecha de la factura para continuar por favor!!",
                     3);
         } else if (nombreFuneraria == null) {
-            mensaje("Ingrese el nombre de la funeraria para continuar por favor!!", 
+            mensaje("Ingrese el nombre de la funeraria para continuar por favor!!",
                     3);
         } else if (montoFactura == null) {
-            mensaje("Ingrese el monto de la factura para continuar por favor!!", 
+            mensaje("Ingrese el monto de la factura para continuar por favor!!",
                     3);
         } else {
             valido = true;
         }
         return valido;
-    }
+    }*/
 
     //Habilita o deshabilita componentes del formulario al comprobar, guardar o cancelar el gasto funerario
 
-    private void habilitar_componentes_gasto_funerario(boolean deshabilitado) {
+    /*private void habilitar_componentes_gasto_funerario(boolean deshabilitado) {
         this.getShowDetItem_solicitud().setDisabled(deshabilitado);
         this.getShowDetItem_calculo().setDisabled(deshabilitado);
         this.getCmdBtn_comprobar_gasto_funerario().setDisabled(deshabilitado);
         this.getCmdBtn_guardar_gasto_funerario().setDisabled(!deshabilitado);
         this.getCmdLink_trasladar_gasto_funerario().setDisabled(deshabilitado);
-    }
+    }*/
 
     //Comprueba los valores ingresados del gasto funerario detalladamente
 
-    private void comprobar_gasto_funerario_detallado(FacesContext f, 
-                                                     double montoFactura, 
+    /*private void comprobar_gasto_funerario_detallado(FacesContext f,
+                                                     double montoFactura,
                                                      double montoMaximo) {
         double totalPrest;
         String b = "#{bindings.PostMortem.inputValue}";
@@ -1128,11 +1023,11 @@ public class Indemnizacion_detalle {
         }
         habilitar_componentes_gasto_funerario(true);
         JSFUtils.EjecutarAcccion(f, "RefrescarIndemnizacion");
-    }
+    }*/
 
     //Comprueba los valores ingresado del gasto funerario
 
-    private void comprobar_gasto_funerario() {
+    /*private void comprobar_gasto_funerario() {
         String b1 = "#{bindings.SueldoPromedio.inputValue}";
         String b2 = "#{bindings.MontoFacturaPost.inputValue}";
         FacesContext f = FacesContext.getCurrentInstance();
@@ -1144,32 +1039,32 @@ public class Indemnizacion_detalle {
                 aux = JSFUtils.resolveExpression(f, b2); //monto de la factura
                 if (aux != null && Double.parseDouble(aux.toString()) >= 160) {
                     double montoFact = Double.parseDouble(aux.toString());
-                    comprobar_gasto_funerario_detallado(f, montoFact, 
+                    comprobar_gasto_funerario_detallado(f, montoFact,
                                                         montoMax);
                 } else {
-                    mensaje("El monto de la factura del gasto funerario debe ser de al menos de Q160.00.", 
+                    mensaje("El monto de la factura del gasto funerario debe ser de al menos de Q160.00.",
                             3);
                 }
             } else {
-                mensaje("El monto máximo a cubrir dió resultado 0 o negativo, verifique por favor.", 
+                mensaje("El monto máximo a cubrir dió resultado 0 o negativo, verifique por favor.",
                         3);
             }
         } else {
-            mensaje("Calcule primeramente el sueldo promedio para continuar por favor.", 
+            mensaje("Calcule primeramente el sueldo promedio para continuar por favor.",
                     3);
         }
-    }
+    }*/
 
-    public String cmdBtn_comprobar_gasto_funerario_action() {
+    /*public String cmdBtn_comprobar_gasto_funerario_action() {
         if (comprobarCamposDeTexto_gastoFunerario()) {
             comprobar_gasto_funerario();
         }
         return null;
-    }
+    }*/
 
     //Rellena campos pendientes antes de guardar el gasto funerario
 
-    private void rellenarCamposPendientes_guardar_gasto_fun(FacesContext f) {
+    /*private void rellenarCamposPendientes_guardar_gasto_fun(FacesContext f) {
         Number aux;
         String b1 = "#{bindings.GastoFunerario.inputValue}";
         String b2 = "#{bindings.TotalPrestacion.inputValue}";
@@ -1183,11 +1078,11 @@ public class Indemnizacion_detalle {
             aux = utils.getNumberOracle(String.format("%.2f", totalObj));
             JSFUtils.setExpressionValue(f, b2, aux);
         }
-    }
+    }*/
 
     //Procesa el guardar gasto funerario.
 
-    private void procesar_guardar_gasto_funerario() {
+    /*private void procesar_guardar_gasto_funerario() {
         FacesContext f = FacesContext.getCurrentInstance();
         rellenarCamposPendientes_guardar_gasto_fun(f);
         if (commit(f)) {
@@ -1195,21 +1090,12 @@ public class Indemnizacion_detalle {
             habilitar_componentes_gasto_funerario(false);
             JSFUtils.EjecutarAcccion(f, "RefrescarIndemnizacion");
         }
-    }
+    }*/
 
-    public String cmdBtn_guardar_gasto_funerario_action() {
+    /*public String cmdBtn_guardar_gasto_funerario_action() {
         procesar_guardar_gasto_funerario();
         return null;
-    }
-
-    public void setOutputFormat_cantidad_contratos_calculo(CoreOutputFormatted outputFormat_cantidad_contratos_calculo) {
-        this.outputFormat_cantidad_contratos_calculo = 
-                outputFormat_cantidad_contratos_calculo;
-    }
-
-    public CoreOutputFormatted getOutputFormat_cantidad_contratos_calculo() {
-        return outputFormat_cantidad_contratos_calculo;
-    }
+    }*/
 
     public void setCmdBtn_calcular_prestacion(CoreCommandButton cmdBtn_calcular_prestacion) {
         this.cmdBtn_calcular_prestacion = cmdBtn_calcular_prestacion;
@@ -1242,20 +1128,6 @@ public class Indemnizacion_detalle {
     public CoreShowDetailItem getShowDetItem_solicitud() {
         return showDetItem_solicitud;
     }
-
-    /*public String cmdBtn_cancelar_calculo_action() {
-        FacesContext f = FacesContext.getCurrentInstance();
-        //Reseteamos y ocultamos los mensajes
-        this.getOutputTxt_mensaje_calculo().setValue(null);
-        this.getInptHidden_promedioSueldos().setValue(null);
-        this.getInptHidden_montoIndemnizacion().setValue(null);
-        this.getPnlHoriz_mensajes_calculo().setRendered(false);
-        JSFUtils.EjecutarAcccion(f, "recuperarExpediente");
-        JSFUtils.EjecutarAcccion(f, "RefrescarIndemnizacion");
-        habilitar_componentes_calculo(false);
-        mensaje("Se cancelaron los cambios no guardados correctamente.", 1);
-        return null;
-    }*/
 
     public void setCmdBtn_retornar(CoreCommandButton cmdBtn_retornar) {
         this.cmdBtn_retornar = cmdBtn_retornar;
@@ -1382,14 +1254,14 @@ public class Indemnizacion_detalle {
         return cmdBtn_guardar_gasto_funerario;
     }
 
-    public String cmdBtn_cancelar_gasto_funerario_action() {
+    /*public String cmdBtn_cancelar_gasto_funerario_action() {
         FacesContext f = FacesContext.getCurrentInstance();
         JSFUtils.EjecutarAcccion(f, "recuperarExpediente");
         JSFUtils.EjecutarAcccion(f, "RefrescarIndemnizacion");
         habilitar_componentes_gasto_funerario(false);
         mensaje("Se cancelaron los cambios no guardados correctamente.", 1);
         return null;
-    }
+    }*/
 
     public String cmdBtn_retornar_gasto_funerario_action() {
         return "ir_a_listado_indemnizaciones";
@@ -1410,22 +1282,6 @@ public class Indemnizacion_detalle {
 
     public CoreCommandLink getCmdLink_trasladar_gasto_funerario() {
         return cmdLink_trasladar_gasto_funerario;
-    }
-
-    public void setCmdLink_trasladar_calculo(CoreCommandLink cmdLink_trasladar_calculo) {
-        this.cmdLink_trasladar_calculo = cmdLink_trasladar_calculo;
-    }
-
-    public CoreCommandLink getCmdLink_trasladar_calculo() {
-        return cmdLink_trasladar_calculo;
-    }
-
-    public void setInptHidden_gastoFunerario(CoreInputHidden inptHidden_gastoFunerario) {
-        this.inptHidden_gastoFunerario = inptHidden_gastoFunerario;
-    }
-
-    public CoreInputHidden getInptHidden_gastoFunerario() {
-        return inptHidden_gastoFunerario;
     }
 
     public void setCmdBtn_verReporteDARHSJI1(CoreCommandButton cmdBtn_verReporteDARHSJI1) {
@@ -1593,7 +1449,6 @@ public class Indemnizacion_detalle {
     }
 
     public String cmdBtn_exportExcelRelLab_action() {
-        //System.out.println("A");
         HttpServletRequest vRequest = 
             (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
         HttpServletResponse vResponse = 
@@ -1645,32 +1500,14 @@ public class Indemnizacion_detalle {
             Double totalPrestaciones = 
                 diferido + diferido12 + aguinaldo + bono14;
             Double totalParaCalcSueldoProm = totalSueldos + totalPrestaciones;
+            Double sueldoPromedio = totalParaCalcSueldoProm / 12;
             //////almacena los valores calculados en los input hiddens creados para este propósito/////
-            //this.getInptHidden_promedioSueldos().setValue(sueldoProm);
-            //this.getInptHidden_montoIndemnizacion().setValue(indemnizacion);
             this.getInptHidden_diferidoCalculo().setValue(diferido);
             this.getInptHidden_diferido12Calculo().setValue(diferido12);
             this.getInptHidden_aguinaldoCalculo().setValue(aguinaldo);
             this.getInptHidden_bono14Calculo().setValue(bono14);
-            //this.getInptHidden_totalPrestCalculo().setValue(totalPrestaciones);
+            this.getInptHidden_sueldoPromedio().setValue(sueldoPromedio);
             ///////////////////////////////////////////////////////////////////
-            /*String mensaje = 
-                "El Total de Sueldos es Q." + String.format("%1$,.2f", 
-                                                            totalSueldos);
-            mensaje += 
-                    ", El Diferido es Q." + String.format("%1$,.2f", diferido);
-            mensaje += 
-                    ", El Diferido 12% es Q." + String.format("%1$,.2f", diferido12);
-            mensaje += 
-                    ", El Aguinaldo es Q." + String.format("%1$,.2f", aguinaldo);
-            mensaje += ", El Bono 14 es Q." + String.format("%1$,.2f", bono14);
-            mensaje += 
-                    ", El Total de Prestaciones es Q." + String.format("%1$,.2f", 
-                                                                       totalPrestaciones);
-            mensaje += 
-                    ", El Total Para Cálculo de Sueldo Promedio es Q." + String.format("%1$,.2f", 
-                                                                                       totalParaCalcSueldoProm);*/
-            //mensaje(mensaje, 1);
             this.getOutputFormat_totalSueldos().setValue(totalSueldos);
             this.getOutputFormat_diferido_calc().setValue(diferido);
             this.getOutputFormat_diferido12_calc().setValue(diferido12);
@@ -1678,6 +1515,40 @@ public class Indemnizacion_detalle {
             this.getOutputFormat_bono14_calc().setValue(bono14);
             this.getOutputFormat_totalPrestac_calc().setValue(totalPrestaciones);
             this.getOutputFormat_totalParaCalc_calc().setValue(totalParaCalcSueldoProm);
+            this.getOutputFormat_sueldoProm_calc().setValue(sueldoPromedio);
+            //////Ahora se calculará el monto por años meses y días laborados/////////////////
+            Object aux2 = this.getInptText_AniosServicio().getValue();
+            Object aux3 = this.getInptText_MesesServicio().getValue();
+            Object aux4 = this.getInptText_DiasServicio().getValue();
+            if (aux2 != null || aux3 != null || aux4 != null) {
+                int aniosLab = 0;
+                if (aux2 != null && Integer.parseInt(aux2.toString()) > 0) {
+                    aniosLab = Integer.valueOf(aux2.toString()).intValue();
+                }
+                int mesesLab = 0;
+                if (aux3 != null && Integer.parseInt(aux3.toString()) > 0) {
+                    mesesLab = Integer.valueOf(aux3.toString()).intValue();
+                }
+                int diasLab = 0;
+                if (aux4 != null && Integer.parseInt(aux4.toString()) > 0) {
+                    diasLab = Integer.valueOf(aux4.toString()).intValue();
+                }
+                double sueldoPromRedon = 
+                    Math.round(sueldoPromedio * 100.0) / 100.0;
+                double montoIndAnios = aniosLab * sueldoPromRedon;
+                double montoIndMeses = (mesesLab * sueldoPromRedon) / 12;
+                montoIndMeses = Math.round(montoIndMeses * 100.0) / 100.0;
+                double montoIndDias = (diasLab * sueldoPromRedon) / 365;
+                montoIndDias = Math.round(montoIndDias * 100.0) / 100.0;
+                double montoIndTotal = 
+                    montoIndAnios + montoIndMeses + montoIndDias;
+                this.getOutputFormat_montIndAnios_calc().setValue(montoIndAnios);
+                this.getOutputFormat_montIndMeses_calc().setValue(montoIndMeses);
+                this.getOutputFormat_montIndDias_calc().setValue(montoIndDias);
+                this.getOutputFormat_montIndTotal_calc().setValue(montoIndTotal);
+                this.getInptHidden_montoIndemTotal().setValue(montoIndTotal);
+            }
+            //////////////////////////////////////////////////////////////////
             this.getPnlHoriz_indemCalculada().setRendered(true);
             this.getCmdBtn_guardar_calculo().setDisabled(false);
         } else {
@@ -1685,6 +1556,26 @@ public class Indemnizacion_detalle {
         }
         return null;
     }
+
+    /*public String cmdBtn_calcular_action() {
+        String b1 = "#{bindings.AniosTiempoServicio.inputValue}";
+        String b2 = "#{bindings.MesesTiempoServicio.inputValue}";
+        String b3 = "#{bindings.DiasTiempoServicio.inputValue}";
+        FacesContext f = FacesContext.getCurrentInstance();
+        Object aniosObj = JSFUtils.resolveExpression(f, b1);
+        Object mesesObj = JSFUtils.resolveExpression(f, b2);
+        Object diasObj = JSFUtils.resolveExpression(f, b3);
+        if (aniosObj != null && mesesObj != null && diasObj != null) {
+            int anios = Integer.valueOf(aniosObj.toString()).intValue();
+            int meses = Integer.valueOf(mesesObj.toString()).intValue();
+            int dias = Integer.valueOf(diasObj.toString()).intValue();
+            calcular_indemnizacion(anios, meses, dias, f);
+        } else {
+            mensaje("No se pudo obtener el tiempo de servicio del trabajador. Intente de nuevo por favor!!",
+                    3);
+        }
+        return null;
+    }*/
 
     public void setInptText_TotalSueldos(CoreInputText inptText_TotalSueldos) {
         this.inptText_TotalSueldos = inptText_TotalSueldos;
@@ -1725,14 +1616,6 @@ public class Indemnizacion_detalle {
     public CoreInputHidden getInptHidden_bono14Calculo() {
         return inptHidden_bono14Calculo;
     }
-
-    /*public void setInptHidden_totalPrestCalculo(CoreInputHidden inptHidden_totalPrestCalculo) {
-        this.inptHidden_totalPrestCalculo = inptHidden_totalPrestCalculo;
-    }
-
-    public CoreInputHidden getInptHidden_totalPrestCalculo() {
-        return inptHidden_totalPrestCalculo;
-    }*/
 
     public void setPnlHoriz_indemCalculada(CorePanelHorizontal pnlHoriz_indemCalculada) {
         this.pnlHoriz_indemCalculada = pnlHoriz_indemCalculada;
@@ -1798,11 +1681,59 @@ public class Indemnizacion_detalle {
         return outputFormat_totalParaCalc_calc;
     }
 
-    /*public void setCmdBtn_guardarCalculo(CoreCommandButton cmdBtn_guardarCalculo) {
-        this.cmdBtn_guardarCalculo = cmdBtn_guardarCalculo;
+    public void setInptHidden_sueldoPromedio(CoreInputHidden inptHidden_sueldoPromedio) {
+        this.inptHidden_sueldoPromedio = inptHidden_sueldoPromedio;
     }
 
-    public CoreCommandButton getCmdBtn_guardarCalculo() {
-        return cmdBtn_guardarCalculo;
-    }*/
+    public CoreInputHidden getInptHidden_sueldoPromedio() {
+        return inptHidden_sueldoPromedio;
+    }
+
+    public void setOutputFormat_sueldoProm_calc(CoreOutputFormatted outputFormat_sueldoProm_calc) {
+        this.outputFormat_sueldoProm_calc = outputFormat_sueldoProm_calc;
+    }
+
+    public CoreOutputFormatted getOutputFormat_sueldoProm_calc() {
+        return outputFormat_sueldoProm_calc;
+    }
+
+    public void setOutputFormat_montIndAnios_calc(CoreOutputFormatted outputFormat_montIndAnios_calc) {
+        this.outputFormat_montIndAnios_calc = outputFormat_montIndAnios_calc;
+    }
+
+    public CoreOutputFormatted getOutputFormat_montIndAnios_calc() {
+        return outputFormat_montIndAnios_calc;
+    }
+
+    public void setOutputFormat_montIndMeses_calc(CoreOutputFormatted outputFormat_montIndMeses_calc) {
+        this.outputFormat_montIndMeses_calc = outputFormat_montIndMeses_calc;
+    }
+
+    public CoreOutputFormatted getOutputFormat_montIndMeses_calc() {
+        return outputFormat_montIndMeses_calc;
+    }
+
+    public void setOutputFormat_montIndDias_calc(CoreOutputFormatted outputFormat_montIndDias_calc) {
+        this.outputFormat_montIndDias_calc = outputFormat_montIndDias_calc;
+    }
+
+    public CoreOutputFormatted getOutputFormat_montIndDias_calc() {
+        return outputFormat_montIndDias_calc;
+    }
+
+    public void setOutputFormat_montIndTotal_calc(CoreOutputFormatted outputFormat_montIndTotal_calc) {
+        this.outputFormat_montIndTotal_calc = outputFormat_montIndTotal_calc;
+    }
+
+    public CoreOutputFormatted getOutputFormat_montIndTotal_calc() {
+        return outputFormat_montIndTotal_calc;
+    }
+
+    public void setInptHidden_montoIndemTotal(CoreInputHidden inptHidden_montoIndemTotal) {
+        this.inptHidden_montoIndemTotal = inptHidden_montoIndemTotal;
+    }
+
+    public CoreInputHidden getInptHidden_montoIndemTotal() {
+        return inptHidden_montoIndemTotal;
+    }
 }

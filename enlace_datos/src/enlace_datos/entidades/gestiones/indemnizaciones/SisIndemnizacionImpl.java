@@ -44,7 +44,9 @@ public class SisIndemnizacionImpl extends EntityImpl {
     public static final int FECHACREACION = 22;
     public static final int MODIFICADOPOR = 23;
     public static final int FECHAMOD = 24;
-    public static final int SISTIPOINDEMNIZACION = 25;
+    public static final int NUMCHEQUE = 25;
+    public static final int IDINDEMNIZACION = 26;
+    public static final int SISTIPOINDEMNIZACION = 27;
     private static EntityDefImpl mDefinitionObject;
 
     /**This is the default constructor (do not remove)
@@ -393,6 +395,10 @@ public class SisIndemnizacionImpl extends EntityImpl {
             return getModificadoPor();
         case FECHAMOD:
             return getFechaMod();
+        case NUMCHEQUE:
+            return getNumCheque();
+        case IDINDEMNIZACION:
+            return getIdIndemnizacion();
         case SISTIPOINDEMNIZACION:
             return getSisTipoIndemnizacion();
         default:
@@ -479,6 +485,12 @@ public class SisIndemnizacionImpl extends EntityImpl {
             return;
         case FECHAMOD:
             setFechaMod((Date)value);
+            return;
+        case NUMCHEQUE:
+            setNumCheque((Number)value);
+            return;
+        case IDINDEMNIZACION:
+            setIdIndemnizacion((Number)value);
             return;
         default:
             super.setAttrInvokeAccessor(index, value, attrDef);
@@ -573,6 +585,30 @@ public class SisIndemnizacionImpl extends EntityImpl {
      */
     public void setTipoRetiro(Number value) {
         setAttributeInternal(TIPORETIRO, value);
+    }
+
+    /**Gets the attribute value for NumCheque, using the alias name NumCheque
+     */
+    public Number getNumCheque() {
+        return (Number)getAttributeInternal(NUMCHEQUE);
+    }
+
+    /**Sets <code>value</code> as the attribute value for NumCheque
+     */
+    public void setNumCheque(Number value) {
+        setAttributeInternal(NUMCHEQUE, value);
+    }
+
+    /**Gets the attribute value for IdIndemnizacion, using the alias name IdIndemnizacion
+     */
+    public Number getIdIndemnizacion() {
+        return (Number)getAttributeInternal(IDINDEMNIZACION);
+    }
+
+    /**Sets <code>value</code> as the attribute value for IdIndemnizacion
+     */
+    public void setIdIndemnizacion(Number value) {
+        setAttributeInternal(IDINDEMNIZACION, value);
     }
 
     /**Creates a Key object based on given key constituents
