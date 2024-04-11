@@ -11,6 +11,8 @@ function boton_aceptar_click() {
         var vval = lista.options[indice].value;
         var vTipo=document.getElementById("hdn_tipo");
         var vId=document.getElementById("hdn_Id");
+        //alert("vTipo es: " + vTipo.value);
+        //alert("vId es: " + vId.value);
         if (vval!="ER") {
             $.ajax( {
                 url: "/Nomina/faces/servMant",
@@ -71,7 +73,7 @@ function inicializarDialogo(){
                 vIdGestion = document.getElementById("hdn_Id");
                 vMensajeConfirmacion = "¿Desea aceptar la operación?";
                 if ( vIdGestion != null){
-                    vMensajeConfirmacion = "¿Desea aceptar la operación del ID " + vIdGestion.value + "?";    
+                    vMensajeConfirmacion = "¿Desea aceptar la operación del ID No. " + vIdGestion.value + "?";    
                 }
                 if ( confirm(vMensajeConfirmacion) == true ) {
                     boton_aceptar_click();
