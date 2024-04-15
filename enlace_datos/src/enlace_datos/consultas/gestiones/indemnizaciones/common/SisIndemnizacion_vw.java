@@ -10,4 +10,6 @@ public interface SisIndemnizacion_vw extends ViewObject {
 
     void RecuperarSolicitud(Number pIdTipoPrestacion, Number pAnio, 
                             Number pCorrelativoAnio);
+
+    void ObtenerSolicitudesProfesionalCaja();
 }

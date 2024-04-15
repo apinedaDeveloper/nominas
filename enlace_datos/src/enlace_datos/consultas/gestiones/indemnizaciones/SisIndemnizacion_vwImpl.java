@@ -39,10 +39,17 @@ public class SisIndemnizacion_vwImpl extends ViewObjectImpl implements SisIndemn
         this.executeQuery();
     }
 
-    //Función que obtiene las solicitudes de Pago de Indemnización por Retiro de los últimos 30 dias
+    //Función que obtiene los expedientes de Pago de Indemnización por Retiro de los últimos 30 dias
 
     public void ObtenerSolicitudesIndemnizacion() {
         this.setWhereClause("( TO_DATE(SYSDATE, 'dd/mm/yyyy' ) - TO_DATE(FECHA_CREACION, 'dd/mm/yyyy')) <= 30 AND ID_TIPO_PRESTACION=1");
+        this.executeQuery();
+    }
+    
+    //Función que obtiene los expedientes de Pago de Indemnización por Retiro para el rol de Profesional de Caja
+    
+    public void ObtenerSolicitudesProfesionalCaja() {
+        this.setWhereClause("NOMBRE_ESTADO_INDEMNIZACION IN ('TRASLADADO A CAJA','LIQUIDADO')  AND ID_TIPO_PRESTACION=1");
         this.executeQuery();
     }
 

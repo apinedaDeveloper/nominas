@@ -22,6 +22,12 @@ public class SisIndemnizacion_vwClient extends ViewUsageImpl implements SisIndem
         return;
     }
 
+    public void ObtenerSolicitudesProfesionalCaja() {
+        Object _ret = 
+            getApplicationModuleProxy().riInvokeExportedMethod(this,"ObtenerSolicitudesProfesionalCaja",null,null);
+        return;
+    }
+
     public void RecuperarSolicitud(Number pIdTipoPrestacion, Number pAnio, 
                                    Number pCorrelativoAnio) {
         Object _ret = 
