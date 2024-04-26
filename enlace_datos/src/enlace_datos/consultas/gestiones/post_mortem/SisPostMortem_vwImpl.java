@@ -1,6 +1,8 @@
 package enlace_datos.consultas.gestiones.post_mortem;
 
 
+import enlace_datos.consultas.gestiones.post_mortem.common.SisPostMortem_vw;
+
 import oracle.jbo.domain.Number;
 import oracle.jbo.server.ViewObjectImpl;
 // ---------------------------------------------------------------------
@@ -8,7 +10,7 @@ import oracle.jbo.server.ViewObjectImpl;
 // ---    Custom code may be added to this class.
 // ---    Warning: Do not modify method signatures of generated methods.
 // ---------------------------------------------------------------------
-public class SisPostMortem_vwImpl extends ViewObjectImpl {
+public class SisPostMortem_vwImpl extends ViewObjectImpl implements SisPostMortem_vw {
     /**This is the default constructor (do not remove)
      */
     public SisPostMortem_vwImpl() {
@@ -16,8 +18,8 @@ public class SisPostMortem_vwImpl extends ViewObjectImpl {
     
     //Recupera las solicitudes de prestaciones post mortem de los últimos 30 dias
 
-    public void RecuperarSolicitudesPrestacionesPost() {
-        this.setWhereClause("( TO_DATE(SYSDATE, 'dd/mm/yyyy' ) - TO_DATE(FECHA_CREACION, 'dd/mm/yyyy')) <= 30 AND ID_TIPO_INDEMNIZACION=2");
+    public void RecuperarSolicitudes() {
+        this.setWhereClause("( TO_DATE(SYSDATE, 'dd/mm/yyyy' ) - TO_DATE(FECHA_CREACION, 'dd/mm/yyyy')) <= 30 AND ID_TIPO_PRESTACION=2");
         this.executeQuery();
     }
     

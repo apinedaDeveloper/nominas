@@ -182,75 +182,62 @@ private String getFirmas(String vOpcion){
     ResultSet vFilas;
     String vResultado;
     
-   
-    vConsulta="select distinct nombre||'|'||trim(cargo) as firma,nombre from SIS_AUTH_CONTRATO_DATOS_VW\n" + 
+   // se agrega un replace chr(9) tab, chr(10) Nueva linea y chr(13) retorno de carro
+   // Ya se ha detectado ingreso de datos con tabulación al inicio del texto y eso ocasiona error al cargar el popup
+    vConsulta = "select distinct (replace(replace(replace(Nombre, chr(9),''), chr(10),''), chr(13),'')) || '|' || trim(replace(replace(replace(cargo, chr(9),''), chr(10),''), chr(13),'')) firma, nombre from SIS_AUTH_CONTRATO_DATOS_VW\n" + 
     "where id_auth_contrato in \n" + 
     "(\n" + 
     "select id_auth_contrato from sis_auth_contrato auth\n" + 
     "where fecha_baja is null "+ "\n"+ 
-    "and exists\n" + 
-    "(\n" + 
+    "and exists (\n" + 
     "        select 1 from partida part\n" + 
     "        where\n" + 
-    "        d1=4 and d8 is null and d9d10 is null\n" + 
+    "        d1 = 4 and d8 is null and d9d10 is null\n" + 
     "        and exists\n" + 
     "        (\n" + 
     "            select 1 from usuario_unidad b, partida c\n" + 
-    "            where b.id_partida=c.id_partida\n" + 
-    "            and usuario='" + vUsuario + "' \n"+
-    "            and b.tipo_usuario='TRABAJADOR'\n" + 
-    "            and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)\n" + 
-    "            and part.aniomanual=c.aniomanual\n" + 
-    "            and part.d1=c.d1\n" + 
-    "            and part.d2=c.d2\n" + 
-    "            and part.d3d4=c.d3d4\n" + 
-    "            and \n" + 
-    "            (\n" + 
-    "                (\n" + 
-    "                part.d7=c.d7\n" + 
-    "                and part.d6=c.d6\n" + 
-    "                and part.d5=c.d5\n" + 
-    "                )\n" + 
+    "            where b.id_partida = c.id_partida\n" + 
+    "            and usuario = '" + vUsuario + "' \n"+
+    "            and b.tipo_usuario = 'TRABAJADOR'\n" + 
+    "            and sysdate between b.vigencia_de and nvl(b.vigencia_a, sysdate)\n" + 
+    "            and part.aniomanual = c.aniomanual\n" + 
+    "            and part.d1 = c.d1 and part.d2 = c.d2 and part.d3d4 = c.d3d4\n" + 
+    "            and (\n" + 
+    "                (part.d7 = c.d7 and part.d6 = c.d6 and part.d5 = c.d5)\n" + 
     "                or\n" + 
-    "                (\n" + 
-    "                c.d5 is null\n" + 
-    "                and c.d6 is null\n" + 
-    "                and c.d7 is null \n" + 
-    "                )\n" + 
+    "                (c.d5 is null and c.d6 is null and c.d7 is null)\n" + 
     "            )\n" + 
     "        )\n" + 
-    "and \n" + 
-    "(\n" + 
-    "    auth.id_dependencia=part.d3d4\n" + 
-    "    or\n" + 
-    "    (\n" + 
-    "        auth.id_unidad_prog=to_number(part.d1||d2)\n" + 
-    "        and auth.id_unidad_depen=part.d3d4\n" + 
-    "        and auth.id_unidad=to_number(part.d5||d6||d7)\n" + 
+    "and (\n" + 
+    "    auth.id_dependencia = part.d3d4\n" + 
+    "    or (\n" + 
+    "        auth.id_unidad_prog = to_number(part.d1||d2)\n" + 
+    "        and auth.id_unidad_depen = part.d3d4\n" + 
+    "        and auth.id_unidad = to_number(part.d5||d6||d7)\n" + 
     "    )\n" + 
     ")\n" + 
     ")        \n" + 
-    ") order by nombre||'|'||trim(cargo) asc \n";
+    ") order by 1 asc \n";
     
     try
     {
     
-        vResultado="[";
+        vResultado = "[";
         vFilas=datos.Bol_ejecutar_sentencia(vConsulta);
         while (vFilas.next())
         {            
-            vResultado=vResultado+"{\"firma\":\""+enlace_datos.util.utils.getHTMLCode(vFilas.getString("firma").trim())+"\",\"nombre\":\""+vFilas.getString("nombre").trim()+"\"},";         
+            vResultado = vResultado + "{\"firma\":\""+enlace_datos.util.utils.getHTMLCode(vFilas.getString("firma").trim())+"\",\"nombre\":\""+vFilas.getString("nombre").trim()+"\"},";         
             
         }
         
-        if (vResultado.length()>1)
+        if (vResultado.length() > 1)
         {
         
-          vResultado=vResultado.substring(0,vResultado.length()-1)+"]";  
+          vResultado = vResultado.substring(0,vResultado.length() -1 ) + "]";  
             
         }else{
             
-            vResultado+="]";
+            vResultado+= "]";
         }
         
         datos.cn_Cerrar_coneccion();
@@ -261,9 +248,10 @@ private String getFirmas(String vOpcion){
         vResultado="[]";
         
     }
- 
+  
 //System.out.println(" ------------ vusuario: "+vUsuario);   
 //System.out.println(vConsulta);
+//System.out.println(vResultado);
 
 return vResultado;    
 

@@ -508,51 +508,6 @@ public class Indemnizacion_detalle {
         return correcto;
     }
 
-    //Procedimiento que rellena los campos pendientes de un expediente nuevo antes de grabar.
-
-    private boolean rellenarCamposPends_expNuevo(FacesContext f) {
-        boolean correcto = false;
-        String b1 = "#{bindings.Anio.inputValue}";
-        String b2 = "#{bindings.CorrelativoAnio.inputValue}";
-        String b3 = "#{bindings.IdEstado.inputValue}";
-        String b4 = "#{bindings.IdTipoPrestacion.inputValue}";
-        //String b5 = "#{bindings.IdSolicitudAutorizadaRetiro.inputValue}";
-        //String b6 = "#{bindings.IdSolicitudAutorizadaFallec.inputValue}";
-        //String b7 = "#{bindings.IdSolicitudRetiro.inputValue}";
-        //String b8 = "ObtenerIDSolicitudAutorizadaRetiro";
-        //String b9 = "ObtenerIDSolicitudAutorizadaFallecimiento";
-        try {
-            Number anioActual = utils.getNumberOracle(utils.getAnioActual());
-            //System.out.println("El año actual es: " + anioActual);
-            //obtenemos el correlativo de la solicitud dependiendo del año actual
-            long correlativo = 
-                obtenerUltimoCorrelativo_solicitud(anioActual) + 1;
-            JSFUtils.setExpressionValue(f, b1, anioActual);
-            JSFUtils.setExpressionValue(f, b2, 
-                                        utils.getNumberOracle(correlativo));
-            JSFUtils.setExpressionValue(f, b3, utils.getNumberOracle("250"));
-            JSFUtils.setExpressionValue(f, b4, utils.getNumberOracle("1"));
-            /*Object tipo = JSFUtils.resolveExpression(f, b4); //Tipo de Gestión
-            if (tipo != null) {
-                if (Integer.parseInt(tipo.toString()) == 1) {
-                    //indemnizacion por retiro definitivo
-                    correcto = obtenerId_solicitudAutorizada(f, b8, b5, b7);
-                } else { //prestaciones post-mortem
-                    correcto = obtenerId_solicitudAutorizada(f, b9, b6, b7);
-                }
-            } else {
-                mensaje("No se pudo obtener el tipo de gestión, intente de nuevo por favor!!",
-                        3);
-            }*/
-            //correcto = obtenerId_solicitudRetiro(f);            
-            correcto = true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            mensaje("Ha ocurrido el siguiente error: " + e.getMessage(), 3);
-        }
-        return correcto;
-    }
-
     //Función que realiza el commit a la base de Datos
 
     private boolean commit(FacesContext f) {
@@ -599,6 +554,7 @@ public class Indemnizacion_detalle {
 
     private boolean validarInformacionIngresada(FacesContext f) {
         boolean valido = false;
+        boolean continuar = false;
         Object registroPersonal = 
             this.getInptText_registroEmpleado().getValue();
         oracle.jbo.domain.Date fechaRetiro = 
@@ -625,47 +581,109 @@ public class Indemnizacion_detalle {
             mensaje("!!Ingrese el Tiempo de Servicio para continuar por favor!!", 
                     3);
         } else if (aniosServicio != null && 
-                   (Integer.parseInt(aniosServicio.toString().trim()) > 12)) {
-            mensaje("!!Los Años de Servicio no debe ser mayor de 12!!", 3);
-        } else if (mesesServicio != null && 
-                   (Integer.parseInt(mesesServicio.toString().trim()) > 11)) {
-            mensaje("!!Los Meses de Servicio no debe ser mayor de 11!!", 3);
-        } else if (diasServicio != null && 
-                   (Integer.parseInt(diasServicio.toString().trim()) > 30)) {
-            mensaje("!!Los Días de Servicio no debe ser mayor a 29!!", 3);
-        } else if (tipoRetiro == null) {
-            mensaje("!!Seleccione un Tipo de Retiro para continuar por favor!!", 
+                   (aniosServicio.intValue() < 0 || aniosServicio.intValue() > 
+                    10) && aniosServicio.intValue() != 12) {
+            mensaje("!!Años de Servicio para Cálculo de Indemnización Inválido (Debe ser entre 0 y 10 o 12)!!", 
                     3);
-        } else if (totalSueldos == null || totalSueldos.doubleValue() <= 0) {
-            mensaje("!!Ingrese Total de Sueldos para continuar por favor!!", 
-                    3);
-        } else if (fechaSolicitud == null) {
-            mensaje("!!Ingrese Fecha de Solicitud para continuar por favor!!", 
+        } else if (aniosServicio != null && 
+                   (aniosServicio.intValue() == 10 || aniosServicio.intValue() == 
+                    12)) {
+            if (mesesServicio != null && mesesServicio.intValue() > 0) {
+                mensaje("!!Meses de Servicio Inválido cuando Años de Servicio es 10 o 12 (Debe de ser 0)!!", 
+                        3);
+            } else if (diasServicio != null && diasServicio.intValue()>0) {
+                mensaje("!!Días de Servicio Inválido cuando Años de Servicio es 10 o 12 (Debe de ser 0)!!", 
+                        3);
+            } else {
+                continuar = true;
+            }
+        } else if (mesesServicio != null && mesesServicio.intValue() >= 0 && 
+                   mesesServicio.intValue() <= 11) {
+            if (diasServicio != null && diasServicio.intValue() >= 0 && 
+                diasServicio.intValue() <= 29) {
+                continuar = true;
+            } else if (diasServicio != null) {
+                mensaje("!!Días de Servicio para Cálculo de Indemnización Inválido (debe ser entre 0 y 29)!!", 
+                        3);
+            } else {
+                continuar = true;
+            }
+        } else if (mesesServicio != null) {
+            mensaje("!!Meses de Servicio para Cálculo de Indemnización Inválido (debe ser entre 0 y 11)!!", 
                     3);
         } else {
-            if (fechaSolicitud != null && fechaRetiro != null) {
-                if (fechaRetiro.dateValue().after(fechaSolicitud.dateValue())) {
-                    mensaje("!!La Fecha de Retiro es más reciente que la Fecha de Solicitud!!", 
-                            3);
+            continuar = true;
+        }
+        if (continuar == true) {
+            if (tipoRetiro == null) {
+                mensaje("!!Seleccione un Tipo de Retiro para continuar por favor!!", 
+                        3);
+            } else if (totalSueldos == null || 
+                       totalSueldos.doubleValue() <= 0) {
+                mensaje("!!Ingrese Total de Sueldos para continuar por favor!!", 
+                        3);
+            } else if (fechaSolicitud == null) {
+                mensaje("!!Ingrese Fecha de Solicitud para continuar por favor!!", 
+                        3);
+            } else {
+                if (fechaSolicitud != null && fechaRetiro != null) {
+                    if (fechaRetiro.dateValue().after(fechaSolicitud.dateValue())) {
+                        mensaje("!!La Fecha de Retiro es más reciente que la Fecha de Solicitud!!", 
+                                3);
+                    } else {
+                        valido = true;
+                    }
                 } else {
                     valido = true;
                 }
-            } else {
-                valido = true;
             }
         }
-        /*else if (Integer.parseInt(aniosServicio.toString().trim()) <= 0 &&
-                   Integer.parseInt(mesesServicio.toString().trim()) <= 0 &&
-                   Integer.parseInt(diasServicio.toString().trim()) <= 0) {
-            mensaje("!!El tiempo de servicio debe ser mayor de 0!!", 3);
-        } else if (tipoCarreraLaboral == null) {
-            mensaje("!!Seleccione un tipo de carrera laboral para continuar por favor!!",
-                    3);
-        } else if (verificarRetiroTrabajador(f)) {
-            //El trabajador está retirado de la institución
-            valido = true;
-        }*/
         return valido;
+    }
+    
+    //Procedimiento que rellena los campos pendientes de un expediente nuevo antes de grabar.
+
+    private boolean rellenarCamposPends_expNuevo(FacesContext f) {
+        boolean correcto = false;
+        String b1 = "#{bindings.Anio.inputValue}";
+        String b2 = "#{bindings.CorrelativoAnio.inputValue}";
+        String b3 = "#{bindings.IdEstado.inputValue}";
+        String b4 = "#{bindings.IdTipoPrestacion.inputValue}";
+        //String b5 = "#{bindings.IdSolicitudAutorizadaRetiro.inputValue}";
+        //String b6 = "#{bindings.IdSolicitudAutorizadaFallec.inputValue}";
+        //String b7 = "#{bindings.IdSolicitudRetiro.inputValue}";
+        //String b8 = "ObtenerIDSolicitudAutorizadaRetiro";
+        //String b9 = "ObtenerIDSolicitudAutorizadaFallecimiento";
+        try {
+            Number anioActual = utils.getNumberOracle(utils.getAnioActual());
+            //System.out.println("El año actual es: " + anioActual);
+            //obtenemos el correlativo de la solicitud dependiendo del año actual
+            long correlativo = 
+                obtenerUltimoCorrelativo_solicitud(anioActual) + 1;
+            JSFUtils.setExpressionValue(f, b1, anioActual);
+            JSFUtils.setExpressionValue(f, b2, 
+                                        utils.getNumberOracle(correlativo));
+            JSFUtils.setExpressionValue(f, b3, utils.getNumberOracle("250"));
+            JSFUtils.setExpressionValue(f, b4, utils.getNumberOracle("1"));
+            /*Object tipo = JSFUtils.resolveExpression(f, b4); //Tipo de Gestión
+            if (tipo != null) {
+                if (Integer.parseInt(tipo.toString()) == 1) {
+                    //indemnizacion por retiro definitivo
+                    correcto = obtenerId_solicitudAutorizada(f, b8, b5, b7);
+                } else { //prestaciones post-mortem
+                    correcto = obtenerId_solicitudAutorizada(f, b9, b6, b7);
+                }
+            } else {
+                mensaje("No se pudo obtener el tipo de gestión, intente de nuevo por favor!!",
+                        3);
+            }*/
+            //correcto = obtenerId_solicitudRetiro(f);            
+            correcto = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            mensaje("Ha ocurrido el siguiente error: " + e.getMessage(), 3);
+        }
+        return correcto;
     }
 
     //Procedimiento que procesa el botón guardar
@@ -682,9 +700,6 @@ public class Indemnizacion_detalle {
                     }
                 } else { //Expediente existente
                     exito = commit(f);
-                    //if (obtenerId_solicitudRetiro(f)) {
-                    //exito = commit(f);
-                    //}
                 }
             }
         }
@@ -692,11 +707,10 @@ public class Indemnizacion_detalle {
     }
 
     public String cmdBtn_guardar_action() {
-        FacesContext f = FacesContext.getCurrentInstance();
         String binding = "#{bindings.EsSolicitudNueva.inputValue}";
+        FacesContext f = FacesContext.getCurrentInstance();
         if (procesar_guardar(f, binding)) {
             mensaje("¡¡Información Guardada Correctamente!!", 1);
-            //habilitar_componentes_paso1(false);
             JSFUtils.setExpressionValue(f, binding, 
                                         Boolean.parseBoolean("false"));
             JSFUtils.EjecutarAcccion(f, "RefrescarIndemnizacion");

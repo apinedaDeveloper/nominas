@@ -24,6 +24,8 @@ import oracle.binding.OperationBinding;
 
 import oracle.jbo.JboException;
 
+import oracle.jbo.domain.Number;
+
 import pkg_util_base_datos.interfaz_DB;
 
 
@@ -71,23 +73,6 @@ public class Postmortem_detalle {
 
     public CoreInputText getInptText_nombreCompleto() {
         return inptText_nombreCompleto;
-    }
-
-    //Función que obtiene el correlativo de SIS_INDEMNIZACIÓN del año actual para prestaciones Post-mortem
-
-    private long obtenerCorrelativoSolicitud(String anioActual) {
-        long correlativo = 0;
-        interfaz_DB interfaz = new interfaz_DB();
-        String consulta = "Select max(CORRELATIVO_ANIO) as valor ";
-        consulta += "from siif.SIS_INDEMNIZACION ";
-        consulta += "where ANIO_ACTUAL = " + anioActual + " ";
-        consulta += "AND ID_TIPO_INDEMNIZACION = 2";
-        Object varId = interfaz.getValorConsultaSimple("valor", consulta);
-        interfaz.cn_Cerrar_coneccion();
-        if (varId != null) {
-            correlativo = Long.valueOf(varId.toString());
-        }
-        return correlativo;
     }
 
     //Prodecimiento que Despliega el error detalladamente
@@ -143,7 +128,7 @@ public class Postmortem_detalle {
     //Obtiene los datos del expediente en que se registró el fallecimiento
 
     private void obtener_expediente_fallecimiento(String regEmpleado, 
-                                                        interfaz_DB interfaz) {
+                                                  interfaz_DB interfaz) {
         String consulta = "select id_solicitud, fecha_solicitud, observacion ";
         consulta += "from sis_solicitud where id_tipo_solicitud = 9 ";
         consulta += "and id_estado = 39 and ";
@@ -152,7 +137,7 @@ public class Postmortem_detalle {
             interfaz.getValorConsultaSimple("id_solicitud", consulta);
         Object fechaSolicitud = 
             interfaz.getValorConsultaSimple("fecha_solicitud", consulta);
-        Object observacion =
+        Object observacion = 
             interfaz.getValorConsultaSimple("observacion", consulta);
         this.getOutputText_fechaFallecTrab().setValue(fechaSolicitud);
         this.getInptText_numeroExpFallec().setSubmittedValue(null);
@@ -174,8 +159,6 @@ public class Postmortem_detalle {
             consulta += "WHERE REGISTRO_EMPLEADO = " + registroEmpleado;
             Object nombreCompleto = 
                 interfaz.getValorConsultaSimple("NOMBRECOMPLETO", consulta);
-            Object estadoTrabajador = 
-                interfaz.getValorConsultaSimple("ESTADO_TRABAJADOR", consulta);
             Object cuiTrabajador = 
                 interfaz.getValorConsultaSimple("CUI", consulta);
             if (nombreCompleto != null) {
@@ -183,11 +166,9 @@ public class Postmortem_detalle {
                 this.getInptText_registroEmpleado().setValue(returnEvent.getReturnValue());
                 this.getInptText_nombreCompleto().setSubmittedValue(null);
                 this.getInptText_nombreCompleto().setValue(nombreCompleto);
-                this.getInptText_nombreEstadoTrabajador().setSubmittedValue(null);
-                this.getInptText_nombreEstadoTrabajador().setValue(estadoTrabajador);
                 this.getInptText_cuiTrabajador().setSubmittedValue(null);
                 this.getInptText_cuiTrabajador().setValue(cuiTrabajador);
-                obtener_expediente_fallecimiento(registroEmpleado, interfaz);
+                //obtener_expediente_fallecimiento(registroEmpleado, interfaz);
             } else {
                 mensaje("¡¡No se pudieron recuperar los datos del trabajador. Intente de nuevo por favor!!", 
                         3);
@@ -230,77 +211,131 @@ public class Postmortem_detalle {
 
     //valida la información ingresada antes de guardarla
 
-    private boolean validarInformacionIngresada() {
+    private boolean validarInformacionIngresada(FacesContext f) {
         boolean valido = false;
         Object registroPersonal, tipoCarreraLaboral, nombreSolicitante;
-        Object cuiSolicitante, parentescoSol, otroParentescoSol;
+        //Object cuiSolicitante, parentescoSol, otroParentescoSol;
         registroPersonal = this.getInptText_registroEmpleado().getValue();
-        tipoCarreraLaboral = this.getSlctOneChoice_tipoCarreraLab().getValue();
+        /*tipoCarreraLaboral = this.getSlctOneChoice_tipoCarreraLab().getValue();
         nombreSolicitante = this.getInptText_nombreSolicitante().getValue();
         cuiSolicitante = this.getInptText_cuiSolicitante().getValue();
         parentescoSol = this.getSlctOneChoice_parentescoSol().getValue();
-        otroParentescoSol = this.getInptText_otroParentescoSol().getValue();
-        if (registroPersonal == null || 
+        otroParentescoSol = this.getInptText_otroParentescoSol().getValue();*/
+        if (registroPersonal == null ||
             registroPersonal.toString().compareTo("") == 0) {
             mensaje("¡¡Ingrese trabajador para continuar, por favor!!", 3);
-        } else if (tipoCarreraLaboral == null) {
-            mensaje("!!Seleccione un tipo de carrera laboral para continuar, por favor!!", 
+        } /*else if (tipoCarreraLaboral == null) {
+            mensaje("!!Seleccione un tipo de carrera laboral para continuar, por favor!!",
                     3);
-        } else if (nombreSolicitante == null || 
+        } else if (nombreSolicitante == null ||
                    nombreSolicitante.toString().compareTo("") == 0) {
-            mensaje("¡¡Ingrese nombre del solicitante para continuar, por favor!!", 
+            mensaje("¡¡Ingrese nombre del solicitante para continuar, por favor!!",
                     3);
-        } else if (cuiSolicitante == null || 
+        } else if (cuiSolicitante == null ||
                    cuiSolicitante.toString().compareTo("") == 0) {
-            mensaje("¡¡Ingrese CUI del solicitante para continuar, por favor!!", 
+            mensaje("¡¡Ingrese CUI del solicitante para continuar, por favor!!",
                     3);
         } else if (parentescoSol == null) {
-            mensaje("!!Seleccione un parentesco del solicitante para continuar, por favor!!", 
+            mensaje("!!Seleccione un parentesco del solicitante para continuar, por favor!!",
                     3);
-        } else if (parentescoSol.toString().compareTo("8") == 0 && 
-                   (otroParentescoSol == null || 
+        } else if (parentescoSol.toString().compareTo("8") == 0 &&
+                   (otroParentescoSol == null ||
                     otroParentescoSol.toString().compareTo("") == 0)) {
-            mensaje("!!Ingrese otro parentesco del solicitante para continuar, por favor!!", 
+            mensaje("!!Ingrese otro parentesco del solicitante para continuar, por favor!!",
                     3);
-        } else {
-            //System.out.println("El parentesco seleccionado es: " + 
-              //                 parentescoSol);
+        }*/ else {
             valido = true;
         }
         return valido;
     }
 
-    //Procesa la información del botón guardar el Paso 1
+    //Función que obtiene el correlativo de SIS_INDEMNIZACIÓN del año actual para Prestaciones Post-mortem
 
-    private void procesar_guardar(FacesContext f, boolean esNuevaSol) {
-        String binding;
+    private long obtenerUltimoCorrelativo(Number anioActual) {
+        long correlativo = 0;
+        interfaz_DB interfaz = new interfaz_DB();
+        String consulta = "Select max(CORRELATIVO_ANIO) as valor ";
+        consulta += "from siif.SIS_INDEMNIZACION ";
+        consulta += "where ANIO = " + anioActual.toString() + " ";
+        consulta += "AND ID_TIPO_INDEMNIZACION = 2";
+        Object varId = interfaz.getValorConsultaSimple("valor", consulta);
+        interfaz.cn_Cerrar_coneccion();
+        if (varId != null) {
+            correlativo = Long.valueOf(varId.toString());
+        }
+        return correlativo;
+    }
+
+    //Procedimiento que rellena los campos pendientes de un expediente nuevo antes de grabar.
+
+    private boolean rellenarCamposPends_expNuevo(FacesContext f) {
+        boolean correcto = false;
+        String b1 = "#{bindings.Anio.inputValue}";
+        String b2 = "#{bindings.CorrelativoAnio.inputValue}";
+        String b3 = "#{bindings.IdEstado.inputValue}";
+        String b4 = "#{bindings.IdTipoPrestacion.inputValue}";
+        try {
+            Number anioActual = utils.getNumberOracle(utils.getAnioActual());
+            //System.out.println("El año actual es: " + anioActual);
+            //obtenemos el correlativo de la solicitud dependiendo del año actual
+            long correlativo = obtenerUltimoCorrelativo(anioActual) + 1;
+            JSFUtils.setExpressionValue(f, b1, anioActual);
+            JSFUtils.setExpressionValue(f, b2, 
+                                        utils.getNumberOracle(correlativo));
+            JSFUtils.setExpressionValue(f, b3, utils.getNumberOracle("250"));
+            JSFUtils.setExpressionValue(f, b4, utils.getNumberOracle("2"));
+            correcto = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            mensaje("Ha ocurrido el siguiente error: " + e.getMessage(), 3);
+        }
+        return correcto;
+    }
+
+    //Procedimiento que procesa el botón guardar
+
+    //private void procesar_guardar(FacesContext f, boolean esNuevaSol) 
+
+    private boolean procesar_guardar(FacesContext f, String bindEsNuevoExp) {
+        boolean exito = false;
+        /*String binding;
         if (esNuevaSol) { //Solicitud Nueva
             binding = "#{bindings.CorrelativoAnio.inputValue}";
             long corr = obtenerCorrelativoSolicitud(utils.getAnioActual());
             corr += 1;
-            JSFUtils.setExpressionValue(f, binding, 
+            JSFUtils.setExpressionValue(f, binding,
                                         utils.getNumberOracle(corr));
         }
         if (commit(f)) {
             mensaje("¡¡Datos guardados correctamente!!", 1);
-            //this.getOutFormat_rotuloNuevaSol().setRendered(false);
-            //this.getPnlLbl_idSolicitud().setRendered(true);
-            //this.getPnlLbl_correlativoSol().setRendered(true);
-            //this.getPnlLbl_estadoActualSol().setRendered(true);
             binding = "#{bindings.EsSolicitudNueva.inputValue}";
-            JSFUtils.setExpressionValue(f, binding, 
+            JSFUtils.setExpressionValue(f, binding,
                                         Boolean.parseBoolean("false"));
             JSFUtils.EjecutarAcccion(f, "EjecutarSolicitud");
         } else {
-            mensaje("¡¡No se pudo guardar porque ocurrió un error inesperado. Intente de nuevo por favor!!", 
+            mensaje("¡¡No se pudo guardar porque ocurrió un error inesperado. Intente de nuevo por favor!!",
                     3);
+        }*/
+        if (validarInformacionIngresada(f)) {
+            Object esNuevoObj = JSFUtils.resolveExpression(f, bindEsNuevoExp);
+            if (esNuevoObj != null) {
+                boolean esNuevo = Boolean.parseBoolean(esNuevoObj.toString());
+                if (esNuevo) { //Expediente Nuevo
+                    if (rellenarCamposPends_expNuevo(f)) {
+                        exito = commit(f);
+                    }
+                } else { //Expediente existente
+                    exito = commit(f);
+                }
+            }
         }
+        return exito;
     }
 
     public String cmdBtn_guardar_action() {
-        String binding  = "#{bindings.EsSolicitudNueva.inputValue}";
+        String binding = "#{bindings.EsSolicitudNueva.inputValue}";
         FacesContext f = FacesContext.getCurrentInstance();
-        if (validarInformacionIngresada()) {
+        /* if (validarInformacionIngresada()) {
             boolean esNuevaSol = false;
             f = FacesContext.getCurrentInstance();
             Object obj = JSFUtils.resolveExpression(f, binding);
@@ -308,10 +343,16 @@ public class Postmortem_detalle {
                 esNuevaSol = Boolean.parseBoolean(obj.toString());
                 procesar_guardar(f, esNuevaSol);
             } else {
-                mensaje("Error al determinar si la solicitud es nueva o no, intente de nuevo por favor!!", 
+                mensaje("Error al determinar si la solicitud es nueva o no, intente de nuevo por favor!!",
                         3);
             }
             return "ir_a_listado_postmortem";
+        }*/
+        if (procesar_guardar(f, binding)) {
+            mensaje("¡¡Información Guardada Correctamente!!", 1);
+            JSFUtils.setExpressionValue(f, binding, 
+                                        Boolean.parseBoolean("false"));
+            JSFUtils.EjecutarAcccion(f, "RefrescarPrestacion");
         }
         return null;
     }
