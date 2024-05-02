@@ -72,6 +72,7 @@ public class Indemnizacion_detalle {
     private CoreInputHidden inptHidden_bono14Calculo;
     private CoreInputHidden inptHidden_diferido12Calculo;
     private CoreInputHidden inptHidden_diferidoCalculo;
+    private CoreInputHidden inptHidden_montoIndemTotal;
     private CoreInputHidden inptHidden_sueldoPromedio;
     private CoreInputText inptText_AniosServicio;
     private CoreInputText inptText_Correlativo;
@@ -102,6 +103,7 @@ public class Indemnizacion_detalle {
     private CoreOutputFormatted outputFormat_montIndAnios_calc;
     private CoreOutputFormatted outputFormat_montIndDias_calc;
     private CoreOutputFormatted outputFormat_montIndMeses_calc;
+    private CoreOutputFormatted outputFormat_montIndTotal_calc;
     private CoreOutputFormatted outputFormat_sueldoProm_calc;
     private CoreOutputFormatted outputFormat_totalParaCalc_calc;
     private CoreOutputFormatted outputFormat_totalPrestac_calc;
@@ -124,8 +126,6 @@ public class Indemnizacion_detalle {
     private CoreShowDetailItem showDetItem_solicitud;
     private CoreTable tbl_listadoUltimosSueldos_calculo;
     private CoreTable tbl_relacionLaboral;
-    private CoreOutputFormatted outputFormat_montIndTotal_calc;
-    private CoreInputHidden inptHidden_montoIndemTotal;
 
     public void setHtml1(HtmlHtml html1) {
         this.html1 = html1;
@@ -552,7 +552,7 @@ public class Indemnizacion_detalle {
 
     //Valida la información ingresada por el usuario
 
-    private boolean validarInformacionIngresada(FacesContext f) {
+    private boolean validarInformacionIngresada() {
         boolean valido = false;
         boolean continuar = false;
         Object registroPersonal = 
@@ -572,7 +572,7 @@ public class Indemnizacion_detalle {
             (Number)this.getInptText_TotalSueldos().getValue();
         if (registroPersonal == null || 
             registroPersonal.toString().compareTo("") == 0) {
-            mensaje("¡¡Busque trabajador para continuar por favor!!", 3);
+            mensaje("¡¡Ingrese trabajador para continuar, por favor!!", 3);
         } else if (fechaRetiro == null) {
             mensaje("!!Ingrese Fecha de Retiro para continuar por favor!!", 3);
         } else if ((aniosServicio == null || aniosServicio.intValue() <= 0) && 
@@ -690,7 +690,7 @@ public class Indemnizacion_detalle {
 
     private boolean procesar_guardar(FacesContext f, String bindEsNuevoExp) {
         boolean exito = false;
-        if (validarInformacionIngresada(f)) {
+        if (validarInformacionIngresada()) {
             Object esNuevoObj = JSFUtils.resolveExpression(f, bindEsNuevoExp);
             if (esNuevoObj != null) {
                 boolean esNuevo = Boolean.parseBoolean(esNuevoObj.toString());

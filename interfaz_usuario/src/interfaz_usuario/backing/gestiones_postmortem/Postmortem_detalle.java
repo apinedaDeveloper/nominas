@@ -11,6 +11,7 @@ import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 
 import oracle.adf.view.faces.component.core.input.CoreInputText;
+import oracle.adf.view.faces.component.core.input.CoreSelectInputDate;
 import oracle.adf.view.faces.component.core.input.CoreSelectOneChoice;
 import oracle.adf.view.faces.component.core.layout.CorePanelLabelAndMessage;
 import oracle.adf.view.faces.component.core.nav.CoreCommandButton;
@@ -30,26 +31,31 @@ import pkg_util_base_datos.interfaz_DB;
 
 
 public class Postmortem_detalle {
-    private CoreInputText inptText_registroEmpleado;
-    private CoreCommandLink cdmLink_buscarTrabajador;
-    private CoreInputText inptText_nombreCompleto;
-    private CoreInputText inptText_cuiTrabajador;
-    private CoreInputText inptText_nombreEstadoTrabajador;
-    private CoreCommandButton cmdBtn_guardar;
     private CoreCommandButton cmdBtn_cancelar;
-    private CoreSelectOneChoice slctOneChoice_tipoCarreraLab;
-    private CoreInputText inptText_numeroExpFallec;
-    private CoreOutputText outputText_fechaFallecTrab;
-    private CoreInputText inptText_descripcionExpFallec;
-    private CoreInputText inptText_nombreSolicitante;
+    private CoreCommandButton cmdBtn_guardar;
+    private CoreCommandButton cmdBtn_retornar;
+    private CoreCommandLink cdmLink_buscarTrabajador;
     private CoreInputText inptText_cuiSolicitante;
-    private CoreSelectOneChoice slctOneChoice_parentescoSol;
+    private CoreInputText inptText_cuiTrabajador;
+    private CoreInputText inptText_descripcionExpFallec;
+    private CoreInputText inptText_nombreCompleto;
+    private CoreInputText inptText_nombreEstadoTrabajador;
+    private CoreInputText inptText_nombreSolicitante;
+    private CoreInputText inptText_numeroExpFallec;
     private CoreInputText inptText_otroParentescoSol;
+    private CoreInputText inptText_registroEmpleado;
     private CoreOutputFormatted outFormat_rotuloNuevaSol;
-    private CorePanelLabelAndMessage pnlLbl_idSolicitud;
+    private CoreOutputText outputText_fechaFallecTrab;
     private CorePanelLabelAndMessage pnlLbl_correlativoSol;
     private CorePanelLabelAndMessage pnlLbl_estadoActualSol;
-    private CoreCommandButton cmdBtn_retornar;
+    private CorePanelLabelAndMessage pnlLbl_idSolicitud;
+    private CoreSelectOneChoice slctOneChoice_parentescoSol;
+    private CoreSelectOneChoice slctOneChoice_tipoCarreraLab;
+    private CoreInputText inptText_AniosServicio;
+    private CoreInputText inptText_MesesServicio;
+    private CoreInputText inptText_DiasServicio;
+    private CoreInputText inptText_sueldoPromedio;
+    private CoreSelectInputDate slctInputDate_fechaSolicitud;
 
     public void setInptText_registroEmpleado(CoreInputText inptText_registroEmpleado) {
         this.inptText_registroEmpleado = inptText_registroEmpleado;
@@ -127,7 +133,7 @@ public class Postmortem_detalle {
 
     //Obtiene los datos del expediente en que se registró el fallecimiento
 
-    private void obtener_expediente_fallecimiento(String regEmpleado, 
+    /*private void obtener_expediente_fallecimiento(String regEmpleado, 
                                                   interfaz_DB interfaz) {
         String consulta = "select id_solicitud, fecha_solicitud, observacion ";
         consulta += "from sis_solicitud where id_tipo_solicitud = 9 ";
@@ -144,7 +150,7 @@ public class Postmortem_detalle {
         this.getInptText_numeroExpFallec().setValue(idSolicitud);
         this.getInptText_descripcionExpFallec().setSubmittedValue(null);
         this.getInptText_descripcionExpFallec().setValue(observacion);
-    }
+    }*/
 
     public void cdmLink_buscarTrabajador_returnListener(ReturnEvent returnEvent) {
         String registroEmpleado;
@@ -211,40 +217,73 @@ public class Postmortem_detalle {
 
     //valida la información ingresada antes de guardarla
 
-    private boolean validarInformacionIngresada(FacesContext f) {
+    private boolean validarInformacionIngresada() {
         boolean valido = false;
-        Object registroPersonal, tipoCarreraLaboral, nombreSolicitante;
-        //Object cuiSolicitante, parentescoSol, otroParentescoSol;
-        registroPersonal = this.getInptText_registroEmpleado().getValue();
-        /*tipoCarreraLaboral = this.getSlctOneChoice_tipoCarreraLab().getValue();
-        nombreSolicitante = this.getInptText_nombreSolicitante().getValue();
-        cuiSolicitante = this.getInptText_cuiSolicitante().getValue();
-        parentescoSol = this.getSlctOneChoice_parentescoSol().getValue();
-        otroParentescoSol = this.getInptText_otroParentescoSol().getValue();*/
-        if (registroPersonal == null ||
+        boolean continuar = false;
+        Object registroPersonal = 
+            this.getInptText_registroEmpleado().getValue();
+        Number aniosServicio = 
+            (Number)this.getInptText_AniosServicio().getValue();
+        Number mesesServicio = 
+            (Number)this.getInptText_MesesServicio().getValue();
+        Number diasServicio = 
+            (Number)this.getInptText_DiasServicio().getValue();
+        Number sueldoPromedio = 
+            (Number)this.getInptText_sueldoPromedio().getValue();
+        oracle.jbo.domain.Date fechaSolicitud = 
+            (oracle.jbo.domain.Date)this.getSlctInputDate_fechaSolicitud().getValue();
+        if (registroPersonal == null || 
             registroPersonal.toString().compareTo("") == 0) {
             mensaje("¡¡Ingrese trabajador para continuar, por favor!!", 3);
-        } /*else if (tipoCarreraLaboral == null) {
-            mensaje("!!Seleccione un tipo de carrera laboral para continuar, por favor!!",
+        } else if ((aniosServicio == null || aniosServicio.intValue() <= 0) && 
+                   (mesesServicio == null || mesesServicio.intValue() <= 0) && 
+                   (diasServicio == null || diasServicio.intValue() <= 0)) {
+            mensaje("!!Ingrese el Tiempo de Servicio para continuar por favor!!", 
                     3);
-        } else if (nombreSolicitante == null ||
-                   nombreSolicitante.toString().compareTo("") == 0) {
-            mensaje("¡¡Ingrese nombre del solicitante para continuar, por favor!!",
+        } else if (aniosServicio != null && 
+                   (aniosServicio.intValue() < 0 || aniosServicio.intValue() > 
+                    10) && aniosServicio.intValue() != 12) {
+            mensaje("!!Años de Servicio para Cálculo de Prestaciones Inválido (Debe ser entre 0 y 10 o 12)!!", 
                     3);
-        } else if (cuiSolicitante == null ||
-                   cuiSolicitante.toString().compareTo("") == 0) {
-            mensaje("¡¡Ingrese CUI del solicitante para continuar, por favor!!",
+        } else if (aniosServicio != null && 
+                   (aniosServicio.intValue() == 10 || aniosServicio.intValue() == 
+                    12)) {
+            if (mesesServicio != null && mesesServicio.intValue() > 0) {
+                mensaje("!!Meses de Servicio Inválido cuando Años de Servicio es 10 o 12 (Debe de ser 0)!!", 
+                        3);
+            } else if (diasServicio != null && diasServicio.intValue() > 0) {
+                mensaje("!!Días de Servicio Inválido cuando Años de Servicio es 10 o 12 (Debe de ser 0)!!", 
+                        3);
+            } else {
+                continuar = true;
+            }
+        } else if (mesesServicio != null && mesesServicio.intValue() >= 0 && 
+                   mesesServicio.intValue() <= 11) {
+            if (diasServicio != null && diasServicio.intValue() >= 0 && 
+                diasServicio.intValue() <= 29) {
+                continuar = true;
+            } else if (diasServicio != null) {
+                mensaje("!!Días de Servicio para Cálculo de Prestaciones Inválido (debe ser entre 0 y 29)!!", 
+                        3);
+            } else {
+                continuar = true;
+            }
+        } else if (mesesServicio != null) {
+            mensaje("!!Meses de Servicio para Cálculo de Prestaciones Inválido (debe ser entre 0 y 11)!!", 
                     3);
-        } else if (parentescoSol == null) {
-            mensaje("!!Seleccione un parentesco del solicitante para continuar, por favor!!",
-                    3);
-        } else if (parentescoSol.toString().compareTo("8") == 0 &&
-                   (otroParentescoSol == null ||
-                    otroParentescoSol.toString().compareTo("") == 0)) {
-            mensaje("!!Ingrese otro parentesco del solicitante para continuar, por favor!!",
-                    3);
-        }*/ else {
-            valido = true;
+        } else {
+            continuar = true;
+        }
+        if (continuar == true) {
+            if (sueldoPromedio == null || sueldoPromedio.doubleValue() <= 0) {
+                mensaje("!!Ingrese Sueldo Promedio para continuar, por favor!!", 
+                        3);
+            } else if (fechaSolicitud == null) {
+                mensaje("!!Ingrese Fecha de Solicitud para continuar, por favor!!", 
+                        3);
+            } else {
+                valido = true;
+            }
         }
         return valido;
     }
@@ -257,7 +296,7 @@ public class Postmortem_detalle {
         String consulta = "Select max(CORRELATIVO_ANIO) as valor ";
         consulta += "from siif.SIS_INDEMNIZACION ";
         consulta += "where ANIO = " + anioActual.toString() + " ";
-        consulta += "AND ID_TIPO_INDEMNIZACION = 2";
+        consulta += "AND ID_TIPO_PRESTACION = 2";
         Object varId = interfaz.getValorConsultaSimple("valor", consulta);
         interfaz.cn_Cerrar_coneccion();
         if (varId != null) {
@@ -316,7 +355,7 @@ public class Postmortem_detalle {
             mensaje("¡¡No se pudo guardar porque ocurrió un error inesperado. Intente de nuevo por favor!!",
                     3);
         }*/
-        if (validarInformacionIngresada(f)) {
+        if (validarInformacionIngresada()) {
             Object esNuevoObj = JSFUtils.resolveExpression(f, bindEsNuevoExp);
             if (esNuevoObj != null) {
                 boolean esNuevo = Boolean.parseBoolean(esNuevoObj.toString());
@@ -335,19 +374,6 @@ public class Postmortem_detalle {
     public String cmdBtn_guardar_action() {
         String binding = "#{bindings.EsSolicitudNueva.inputValue}";
         FacesContext f = FacesContext.getCurrentInstance();
-        /* if (validarInformacionIngresada()) {
-            boolean esNuevaSol = false;
-            f = FacesContext.getCurrentInstance();
-            Object obj = JSFUtils.resolveExpression(f, binding);
-            if (obj != null) {
-                esNuevaSol = Boolean.parseBoolean(obj.toString());
-                procesar_guardar(f, esNuevaSol);
-            } else {
-                mensaje("Error al determinar si la solicitud es nueva o no, intente de nuevo por favor!!",
-                        3);
-            }
-            return "ir_a_listado_postmortem";
-        }*/
         if (procesar_guardar(f, binding)) {
             mensaje("¡¡Información Guardada Correctamente!!", 1);
             JSFUtils.setExpressionValue(f, binding, 
@@ -469,5 +495,45 @@ public class Postmortem_detalle {
 
     public String cmdBtn_retornar_action() {
         return "ir_a_listado_postmortem";
+    }
+
+    public void setInptText_AniosServicio(CoreInputText inptText_AniosServicio) {
+        this.inptText_AniosServicio = inptText_AniosServicio;
+    }
+
+    public CoreInputText getInptText_AniosServicio() {
+        return inptText_AniosServicio;
+    }
+
+    public void setInptText_MesesServicio(CoreInputText inptText_MesesServicio) {
+        this.inptText_MesesServicio = inptText_MesesServicio;
+    }
+
+    public CoreInputText getInptText_MesesServicio() {
+        return inptText_MesesServicio;
+    }
+
+    public void setInptText_DiasServicio(CoreInputText inptText_DiasServicio) {
+        this.inptText_DiasServicio = inptText_DiasServicio;
+    }
+
+    public CoreInputText getInptText_DiasServicio() {
+        return inptText_DiasServicio;
+    }
+
+    public void setInptText_sueldoPromedio(CoreInputText inptText_sueldoPromedio) {
+        this.inptText_sueldoPromedio = inptText_sueldoPromedio;
+    }
+
+    public CoreInputText getInptText_sueldoPromedio() {
+        return inptText_sueldoPromedio;
+    }
+
+    public void setSlctInputDate_fechaSolicitud(CoreSelectInputDate slctInputDate_fechaSolicitud) {
+        this.slctInputDate_fechaSolicitud = slctInputDate_fechaSolicitud;
+    }
+
+    public CoreSelectInputDate getSlctInputDate_fechaSolicitud() {
+        return slctInputDate_fechaSolicitud;
     }
 }

@@ -15,20 +15,25 @@ public class SisPostMortem_vwImpl extends ViewObjectImpl implements SisPostMorte
      */
     public SisPostMortem_vwImpl() {
     }
-    
+
     //Recupera las solicitudes de prestaciones post mortem de los últimos 30 dias
 
     public void RecuperarSolicitudes() {
         this.setWhereClause("( TO_DATE(SYSDATE, 'dd/mm/yyyy' ) - TO_DATE(FECHA_CREACION, 'dd/mm/yyyy')) <= 30 AND ID_TIPO_PRESTACION=2");
         this.executeQuery();
     }
-    
-    //Recupera una solicitud por su número de ID
 
-    public void RecuperarSolicitudPrestaciones(Number pIdPostMortem) {
+    //Recupera una solicitud por su llave primaria
+
+    public void RecuperarSolicitud(Number pIdTipoPrestacion, Number pAnio, 
+                                   Number pCorrelativoAnio) {
         String str_querry = "";
-        if (pIdPostMortem != null && pIdPostMortem.intValue() > 0) {
-            str_querry = " ID_INDEMNIZACION = " + pIdPostMortem;
+        if (pIdTipoPrestacion != null && pIdTipoPrestacion.intValue() > 0 && 
+            pAnio != null && pAnio.intValue() > 0 && 
+            pCorrelativoAnio != null && pCorrelativoAnio.intValue() > 0) {
+            str_querry = 
+                    " ID_TIPO_PRESTACION = " + pIdTipoPrestacion + " AND ANIO = " + 
+                    pAnio + " AND CORRELATIVO_ANIO = " + pCorrelativoAnio;
             this.setWhereClause(str_querry);
         }
         this.executeQuery();

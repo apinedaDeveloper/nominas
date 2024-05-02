@@ -18,7 +18,7 @@ public class Listado_postmortems {
         return cmdButton_nuevaSolicitud;
     }
     
-    public String cmdLinkIdPostmortem_action() {
+    public String cmdLinkRegistroPersonal_action() {
         usuario.set_opciones(usuario.VISTA_OPERACION, utils.getInteger("2"));
         return "ir_a_detalle_postmortem";
     }
