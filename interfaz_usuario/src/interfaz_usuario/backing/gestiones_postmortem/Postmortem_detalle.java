@@ -133,17 +133,17 @@ public class Postmortem_detalle {
 
     //Obtiene los datos del expediente en que se registró el fallecimiento
 
-    /*private void obtener_expediente_fallecimiento(String regEmpleado, 
+    /*private void obtener_expediente_fallecimiento(String regEmpleado,
                                                   interfaz_DB interfaz) {
         String consulta = "select id_solicitud, fecha_solicitud, observacion ";
         consulta += "from sis_solicitud where id_tipo_solicitud = 9 ";
         consulta += "and id_estado = 39 and ";
         consulta += "registro_empleado = " + regEmpleado;
-        Object idSolicitud = 
+        Object idSolicitud =
             interfaz.getValorConsultaSimple("id_solicitud", consulta);
-        Object fechaSolicitud = 
+        Object fechaSolicitud =
             interfaz.getValorConsultaSimple("fecha_solicitud", consulta);
-        Object observacion = 
+        Object observacion =
             interfaz.getValorConsultaSimple("observacion", consulta);
         this.getOutputText_fechaFallecTrab().setValue(fechaSolicitud);
         this.getInptText_numeroExpFallec().setSubmittedValue(null);
@@ -215,9 +215,30 @@ public class Postmortem_detalle {
         return cmdBtn_cancelar;
     }
 
+    //Comprueba si un trabajador ya falleció
+
+    private boolean comprobarFallecimientoTrabajador(FacesContext f) {
+        boolean correcto = false;
+        Object aux = 
+            JSFUtils.EjecutarAcccion(f, "ComprobarTrabajadorFallecido");
+        if (aux != null) {
+            int resultado = Integer.parseInt(aux.toString());
+            if (resultado >= 1) {
+                correcto = true;
+            } else {
+                mensaje("¡¡No hay un fallecimiento registrado para el trabajador seleccionado!!", 
+                        3);
+            }
+        } else {
+            mensaje("Error al intentar verificar si hay un fallecimiento registrado para el trabajador seleccionado!!", 
+                    3);
+        }
+        return correcto;
+    }
+
     //valida la información ingresada antes de guardarla
 
-    private boolean validarInformacionIngresada() {
+    private boolean validarInformacionIngresada(FacesContext f) {
         boolean valido = false;
         boolean continuar = false;
         Object registroPersonal = 
@@ -235,6 +256,8 @@ public class Postmortem_detalle {
         if (registroPersonal == null || 
             registroPersonal.toString().compareTo("") == 0) {
             mensaje("¡¡Ingrese trabajador para continuar, por favor!!", 3);
+        } else if (!comprobarFallecimientoTrabajador(f)) {
+            //Sí hubo error se mostro en la función invocada
         } else if ((aniosServicio == null || aniosServicio.intValue() <= 0) && 
                    (mesesServicio == null || mesesServicio.intValue() <= 0) && 
                    (diasServicio == null || diasServicio.intValue() <= 0)) {
@@ -248,6 +271,7 @@ public class Postmortem_detalle {
         } else if (aniosServicio != null && 
                    (aniosServicio.intValue() == 10 || aniosServicio.intValue() == 
                     12)) {
+            //los años de servicio están en el rango permitido
             if (mesesServicio != null && mesesServicio.intValue() > 0) {
                 mensaje("!!Meses de Servicio Inválido cuando Años de Servicio es 10 o 12 (Debe de ser 0)!!", 
                         3);
@@ -259,8 +283,10 @@ public class Postmortem_detalle {
             }
         } else if (mesesServicio != null && mesesServicio.intValue() >= 0 && 
                    mesesServicio.intValue() <= 11) {
+            //los meses de servicio están en el rango permitido
             if (diasServicio != null && diasServicio.intValue() >= 0 && 
                 diasServicio.intValue() <= 29) {
+                //los dias de servicio están en el rango permitido
                 continuar = true;
             } else if (diasServicio != null) {
                 mensaje("!!Días de Servicio para Cálculo de Prestaciones Inválido (debe ser entre 0 y 29)!!", 
@@ -305,6 +331,39 @@ public class Postmortem_detalle {
         return correlativo;
     }
 
+    //Procedimiento que obtiene el ID de la solicitud de fallecimiento autorizada del trabajador
+
+    private boolean obtenerId_solicitudFallecimiento(FacesContext f) {
+        boolean correcto = false;
+        String metodo = "ObtenerIDSolicitudFallecimiento";
+        try {
+            List errors = JSFUtils.EjecutarAcccion3(f, metodo);
+            if (errors.size() == 0) {
+                //No hubo errores
+                Object res = 
+                    JSFUtils.resolveExpression(f, "#{bindings.IdSolicitudFallecRec.inputValue}");
+                if (res != null && Integer.parseInt(res.toString()) > 0) {
+                    JSFUtils.setExpressionValue(f, 
+                                                "#{bindings.IdSolicitudFallecimiento.inputValue}", 
+                                                utils.getNumberOracle(res));
+                    //System.out.println("El resultado es: " + res);
+                    correcto = true;
+                } else {
+                    mensaje("Error al intentar obtener el ID de la solicitud de fallecimiento!!", 
+                            3);
+                }
+            } else {
+                mensaje("Error al intentar obtener el ID de la solicitud de fallecimiento, intente de nuevo por favor!!", 
+                        3);
+                desplegarErrores(errors);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            mensaje("Ha ocurrido el siguiente error: " + e.getMessage(), 3);
+        }
+        return correcto;
+    }
+
     //Procedimiento que rellena los campos pendientes de un expediente nuevo antes de grabar.
 
     private boolean rellenarCamposPends_expNuevo(FacesContext f) {
@@ -323,7 +382,7 @@ public class Postmortem_detalle {
                                         utils.getNumberOracle(correlativo));
             JSFUtils.setExpressionValue(f, b3, utils.getNumberOracle("250"));
             JSFUtils.setExpressionValue(f, b4, utils.getNumberOracle("2"));
-            correcto = true;
+            correcto = obtenerId_solicitudFallecimiento(f);
         } catch (Exception e) {
             e.printStackTrace();
             mensaje("Ha ocurrido el siguiente error: " + e.getMessage(), 3);
@@ -337,25 +396,7 @@ public class Postmortem_detalle {
 
     private boolean procesar_guardar(FacesContext f, String bindEsNuevoExp) {
         boolean exito = false;
-        /*String binding;
-        if (esNuevaSol) { //Solicitud Nueva
-            binding = "#{bindings.CorrelativoAnio.inputValue}";
-            long corr = obtenerCorrelativoSolicitud(utils.getAnioActual());
-            corr += 1;
-            JSFUtils.setExpressionValue(f, binding,
-                                        utils.getNumberOracle(corr));
-        }
-        if (commit(f)) {
-            mensaje("¡¡Datos guardados correctamente!!", 1);
-            binding = "#{bindings.EsSolicitudNueva.inputValue}";
-            JSFUtils.setExpressionValue(f, binding,
-                                        Boolean.parseBoolean("false"));
-            JSFUtils.EjecutarAcccion(f, "EjecutarSolicitud");
-        } else {
-            mensaje("¡¡No se pudo guardar porque ocurrió un error inesperado. Intente de nuevo por favor!!",
-                    3);
-        }*/
-        if (validarInformacionIngresada()) {
+        if (validarInformacionIngresada(f)) {
             Object esNuevoObj = JSFUtils.resolveExpression(f, bindEsNuevoExp);
             if (esNuevoObj != null) {
                 boolean esNuevo = Boolean.parseBoolean(esNuevoObj.toString());
@@ -364,7 +405,10 @@ public class Postmortem_detalle {
                         exito = commit(f);
                     }
                 } else { //Expediente existente
-                    exito = commit(f);
+                    //volverá a obtener el ID de la Solicitud de Fallecimiento
+                    if (obtenerId_solicitudFallecimiento(f)) {
+                        exito = commit(f);
+                    }
                 }
             }
         }
@@ -384,8 +428,20 @@ public class Postmortem_detalle {
     }
 
     public String cmdBtn_cancelar_action() {
-        // Add event code here...
-        mensaje("¡¡Operación cancelada correctamente!!", 1);
+        FacesContext f = FacesContext.getCurrentInstance();
+        BindingContainer cont = 
+            (BindingContainer)JSFUtils.resolveExpression(f, "#{bindings}");
+        OperationBinding operationBinding = 
+            cont.getOperationBinding("Rollback");
+        operationBinding.execute(); //Ejecutamos el Commit
+        if (operationBinding.getErrors().isEmpty()) {
+            mensaje("¡¡Operación cancelada correctamente!!", 1);
+            JSFUtils.EjecutarAcccion(f, "RefrescarPrestacion");
+        } else {
+            desplegarErrores(operationBinding.getErrors()); //Despliega el detalle de los errores
+            mensaje("¡¡Hubo un error al cancelar la operación!!", 3);
+        }
+        //mensaje("¡¡Operación cancelada correctamente!!", 1);
         return null;
     }
 

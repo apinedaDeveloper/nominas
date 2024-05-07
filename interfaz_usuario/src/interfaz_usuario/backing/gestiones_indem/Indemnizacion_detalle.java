@@ -418,27 +418,6 @@ public class Indemnizacion_detalle {
         return cmdBtn_guardar;
     }
 
-    //Comprueba si un trabajador ya falleció
-
-    /*private boolean comprobarFallecimientoTrabajador(FacesContext f) {
-        boolean correcto = false;
-        Object aux =
-            JSFUtils.EjecutarAcccion(f, "ComprobarTrabajadorFallecido");
-        if (aux != null) {
-            int resultado = Integer.parseInt(aux.toString());
-            if (resultado >= 1) {
-                correcto = true;
-            } else {
-                mensaje("El trabajador no está fallecido, verifique por favor!!",
-                        3);
-            }
-        } else {
-            mensaje("Error al intentar verificar si el trabajador esta fallecido o no, intente de nuevo por favor!!",
-                    3);
-        }
-        return correcto;
-    }*/
-
     //Habilita o deshabilita componentes del formulario al comprobar, guardar o cancelar una solicitud
 
     /*private void habilitar_componentes_paso1(boolean deshabilitado) {
@@ -448,15 +427,6 @@ public class Indemnizacion_detalle {
         this.getCmdBtn_verReporteBasico().setDisabled(deshabilitado);
         this.getCmdLink_trasladar_solicitud().setDisabled(deshabilitado);
         habilitar_componentes_solicitud_detallado(deshabilitado); //Campos de Texto y Combos
-    }*/
-
-    //comprueba información para prestaciones postmortem
-
-    /*private void comprobar_prestacion_postmortem(FacesContext f) {
-        if (comprobarFallecimientoTrabajador(f)) {
-            mensaje("Información Comprobada Correctamente!!", 1);
-            habilitar_componentes_solicitud(true);
-        }
     }*/
 
     //Función que obtiene el último correlativo de SIS_INDEMNIZACIÓN del año actual para Indemnización por Retiro Definitivo
