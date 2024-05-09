@@ -224,6 +224,7 @@ import enlace_datos.consultas.gestiones.plazas021.consul_sispartida021Impl;
 import enlace_datos.consultas.gestiones.plazas021.consul_sispuesto021Impl;
 import enlace_datos.consultas.gestiones.plazas021.sis_plazaImpl;
 import enlace_datos.consultas.gestiones.plazasParaMapearImpl;
+import enlace_datos.consultas.gestiones.post_mortem.SisBeneficiariosPost_vwImpl;
 import enlace_datos.consultas.gestiones.post_mortem.SisPostMortem_vwImpl;
 import enlace_datos.consultas.gestiones.procesos.ProcesoVwImpl;
 import enlace_datos.consultas.gestiones.procesos.SisProcesoSfltroImpl;
@@ -3445,5 +3446,11 @@ return vResultado;
      */
     public SisSolicitudesDespidoIndem_vwImpl getSisSolicitudesDespidoIndem_vw1() {
         return (SisSolicitudesDespidoIndem_vwImpl)findViewObject("SisSolicitudesDespidoIndem_vw1");
+    }
+
+    /**Container's getter for SisBeneficiariosPost_vw
+     */
+    public SisBeneficiariosPost_vwImpl getSisBeneficiariosPost_vw() {
+        return (SisBeneficiariosPost_vwImpl)findViewObject("SisBeneficiariosPost_vw");
     }
 }

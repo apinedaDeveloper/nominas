@@ -42,6 +42,7 @@ public class SisPostMortem_vwRowImpl extends ViewRowImpl {
     public static final int NOMBRETIPOINDEMNIZACION = 27;
     public static final int NOMBREESTADOTRABAJADOR = 28;
     public static final int FECHAEXPFALLECIMIENTO = 29;
+    public static final int OBSERVACIONFALLECIMIENTO = 30;
 
     /**This is the default constructor (do not remove)
      */
@@ -114,6 +115,8 @@ public class SisPostMortem_vwRowImpl extends ViewRowImpl {
             return getNombreEstadoTrabajador();
         case FECHAEXPFALLECIMIENTO:
             return getFechaExpFallecimiento();
+        case OBSERVACIONFALLECIMIENTO:
+            return getObservacionFallecimiento();
         default:
             return super.getAttrInvokeAccessor(index, attrDef);
         }
@@ -213,6 +216,9 @@ public class SisPostMortem_vwRowImpl extends ViewRowImpl {
             return;
         case FECHAEXPFALLECIMIENTO:
             setFechaExpFallecimiento((Date)value);
+            return;
+        case OBSERVACIONFALLECIMIENTO:
+            setObservacionFallecimiento((String)value);
             return;
         default:
             super.setAttrInvokeAccessor(index, value, attrDef);
@@ -588,5 +594,18 @@ public class SisPostMortem_vwRowImpl extends ViewRowImpl {
      */
     public SisIndemnizacionImpl getSisIndemnizacion() {
         return (SisIndemnizacionImpl)getEntity(0);
+    }
+
+
+    /**Gets the attribute value for the calculated attribute ObservacionFallecimiento
+     */
+    public String getObservacionFallecimiento() {
+        return (String) getAttributeInternal(OBSERVACIONFALLECIMIENTO);
+    }
+
+    /**Sets <code>value</code> as the attribute value for the calculated attribute ObservacionFallecimiento
+     */
+    public void setObservacionFallecimiento(String value) {
+        setAttributeInternal(OBSERVACIONFALLECIMIENTO, value);
     }
 }
