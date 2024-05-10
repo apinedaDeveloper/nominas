@@ -16,6 +16,13 @@
             window.open(link,'preview','width=1200,height=723,scrollbars=YES,location=NO,directories=NO,resizable=1');
             return false;
         }
+        //Abre el reporte de Cálculo de Prestaciones Post-mortem (DARH PM-02)
+        function generarReporteDARH_PM_02(idIndemnizacion){ 
+            var link;
+            link = "/${flujo_usuario.dominioApp}/faces/verreportepdf?id="+idIndemnizacion+String.fromCharCode(38)+"rep=DARHPM02_POSTMORTEM";
+            window.open(link,'preview','width=1200,height=723,scrollbars=YES,location=NO,directories=NO,resizable=1');
+            return false;
+        }
         //Pregunta si se desea guardar la información
         function preguntarGuardar(){ return confirm("¿Desea guardar la información?"); }
         //Pregunta si se desea cancelar la operación
@@ -84,7 +91,7 @@
                       <f:convertNumber groupingUsed="false"/>
                     </af:outputText>
                   </af:panelLabelAndMessage>
-                  <af:panelLabelAndMessage label="Fecha fallecimiento:" inlineStyle="font-weight:bold;">
+                  <af:panelLabelAndMessage label="Fecha expediente:" inlineStyle="font-weight:bold;">
                     <af:outputText value="#{bindings.FechaSolicitudFallecimiento.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;">
                       <f:convertDateTime pattern="dd/MM/yyyy"/>
                     </af:outputText>
@@ -183,7 +190,7 @@
                     <af:inputText id="inptText_sueldoPromedio" value="#{bindings.SueldoPromedio.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);" columns="10"
                                   readOnly='#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; (bindings.NombreEstadoIndemnizacion.inputValue eq "GRABADO"?false:true)}'
                                   binding="#{Postmortem_detalle.inptText_sueldoPromedio}">
-                      <f:convertNumber groupingUsed="true" maxFractionDigits="2" minIntegerDigits="1" pattern="###,###.##"/>
+                      <f:convertNumber groupingUsed="true" maxFractionDigits="2" minIntegerDigits="1" pattern="###,###.##" minFractionDigits="2"/>
                     </af:inputText>
                     <af:outputText value="Fecha de la Solicitud:" inlineStyle="font-weight:bold;"/>
                     <af:selectInputDate id="slctInputDate_fechaSolicitud" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);" shortDesc="Fecha de la Solicitud"
@@ -196,11 +203,92 @@
                       <af:objectSpacer height="10" width="10"/>
                     </f:facet>
                   </af:panelHorizontal>
+                  <af:table rows="#{bindings.tblBeneficiarios.rangeSize}" first="#{bindings.tblBeneficiarios.rangeStart}"
+                            emptyText="#{bindings.tblBeneficiarios.viewable ? 'No rows yet.' : 'Access Denied.'}" var="row" value="#{bindings.tblBeneficiarios.collectionModel}"
+                            selectionState="#{bindings.tblBeneficiarios.collectionModel.selectedRow}" selectionListener="#{bindings.tblBeneficiarios.collectionModel.makeCurrent}" rendered="false">
+                    <f:facet name="selection">
+                      <af:tableSelectOne text="Seleccione un beneficiario que solicita la prestación y guardar ">
+                        <af:commandButton text="Guardar"/>
+                      </af:tableSelectOne>
+                    </f:facet>
+                    <af:forEach items="#{bindings.tblBeneficiarios.attributeDefs}" var="def">
+                      <af:column headerText="#{bindings.tblBeneficiarios.labels[def.name]}" sortable="true" sortProperty="#{def.name}">
+                        <af:outputText value="#{row[def.name]}"/>
+                      </af:column>
+                    </af:forEach>
+                  </af:table>
+                  <af:panelHorizontal halign="center" rendered="#{!bindings.EsSolicitudNueva.inputValue}">
+                    <af:table value="#{bindings.tblBeneficiarios.collectionModel}" var="row" rows="#{bindings.tblBeneficiarios.rangeSize}" first="#{bindings.tblBeneficiarios.rangeStart}"
+                              emptyText="#{bindings.tblBeneficiarios.viewable ? 'No hay información para mostrár aún.' : 'Access Denied.'}" selectionState="#{bindings.tblBeneficiarios.collectionModel.selectedRow}"
+                              selectionListener="#{bindings.tblBeneficiarios.collectionModel.makeCurrent}" banding="row">
+                      <f:facet name="selection">
+                        <af:tableSelectOne text="Seleccione un beneficiario que solicita la prestación y guardar ">
+                          <af:commandButton text="Guardar"/>
+                        </af:tableSelectOne>
+                      </f:facet>
+                      <af:column sortProperty="NombreCompleto" sortable="false" headerText="Nombre Completo">
+                        <af:outputText value="#{row.NombreCompleto}" inlineStyle="padding:3.0pt;"/>
+                      </af:column>
+                      <af:column sortProperty="Cui" sortable="false" headerText="CUI" formatType="icon">
+                        <af:outputText value="#{row.Cui}" inlineStyle="padding:3.0pt;"/>
+                      </af:column>
+                      <af:column sortProperty="Parentesco" sortable="false" headerText="Parentesco" formatType="icon">
+                        <af:outputText value="#{row.Parentesco}" inlineStyle="padding:3.0pt;"/>
+                      </af:column>
+                      <af:column sortProperty="CreadoPor" sortable="false" headerText="Ingresado Por" formatType="icon">
+                        <af:outputText value="#{row.CreadoPor}" inlineStyle="padding:3.0pt;"/>
+                      </af:column>
+                      <af:column sortProperty="FechaCreacion" sortable="false" headerText="Fecha Ingresado" formatType="icon">
+                        <af:outputText value="#{row.FechaCreacion}" inlineStyle="padding:3.0pt;">
+                          <f:convertDateTime pattern="#{bindings.tblBeneficiarios.formats.FechaCreacion}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="IdBeneficiario" sortable="false" headerText="ID Interno" formatType="icon">
+                        <af:outputText value="#{row.IdBeneficiario}" inlineStyle="padding:3.0pt;">
+                          <f:convertNumber groupingUsed="false" pattern="#{bindings.tblBeneficiarios.formats.IdBeneficiario}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="IdSolicitud" sortable="false" headerText="#{bindings.tblBeneficiarios.labels.IdSolicitud}" rendered="false">
+                        <af:outputText value="#{row.IdSolicitud}">
+                          <f:convertNumber groupingUsed="false" pattern="#{bindings.tblBeneficiarios.formats.IdSolicitud}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="IdParentesco" sortable="false" headerText="#{bindings.tblBeneficiarios.labels.IdParentesco}" rendered="false">
+                        <af:outputText value="#{row.IdParentesco}">
+                          <f:convertNumber groupingUsed="false" pattern="#{bindings.tblBeneficiarios.formats.IdParentesco}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Nombre1" sortable="false" headerText="#{bindings.tblBeneficiarios.labels.Nombre1}" rendered="false">
+                        <af:outputText value="#{row.Nombre1}"/>
+                      </af:column>
+                      <af:column sortProperty="Nombre2" sortable="false" headerText="#{bindings.tblBeneficiarios.labels.Nombre2}" rendered="false">
+                        <af:outputText value="#{row.Nombre2}"/>
+                      </af:column>
+                      <af:column sortProperty="Nombre3" sortable="false" headerText="#{bindings.tblBeneficiarios.labels.Nombre3}" rendered="false">
+                        <af:outputText value="#{row.Nombre3}"/>
+                      </af:column>
+                      <af:column sortProperty="Apellido1" sortable="false" headerText="#{bindings.tblBeneficiarios.labels.Apellido1}" rendered="false">
+                        <af:outputText value="#{row.Apellido1}"/>
+                      </af:column>
+                      <af:column sortProperty="Apellido2" sortable="false" headerText="#{bindings.tblBeneficiarios.labels.Apellido2}" rendered="false">
+                        <af:outputText value="#{row.Apellido2}"/>
+                      </af:column>
+                      <f:facet name="header">
+                        <af:outputText value="Beneficiarios del Fallecido"/>
+                      </f:facet>
+                    </af:table>
+                    <af:objectSpacer height="10" width="20"/>
+                    <af:outputText value="Gasto Funerario Q." inlineStyle="font-weight:bold;"/>
+                    <af:objectSpacer height="10" width="10"/>
+                    <af:inputText columns="10" value="#{bindings.GastoFunerario.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);">
+                      <f:convertNumber maxFractionDigits="2" minIntegerDigits="1" pattern="###,###.##" minFractionDigits="2"/>
+                    </af:inputText>
+                  </af:panelHorizontal>
                   <af:panelHorizontal halign="center">
                     <af:commandButton text="Guardar" inlineStyle="font-weight:bold; font-size:large;" id="cmdBtn_guardar" binding="#{Postmortem_detalle.cmdBtn_guardar}"
-                                      action="#{Postmortem_detalle.cmdBtn_guardar_action}" onclick="return preguntarGuardar();" shortDesc="Guardar cambios"/>
+                                      action="#{Postmortem_detalle.cmdBtn_guardar_action}" onclick="return preguntarGuardar();" shortDesc="Guardar Cambios"/>
                     <af:commandButton text="Cancelar" immediate="true" inlineStyle="font-weight:bold; font-size:large;" id="cmdBtn_cancelar" binding="#{Postmortem_detalle.cmdBtn_cancelar}"
-                                      action="#{Postmortem_detalle.cmdBtn_cancelar_action}" onclick="return preguntarCancelar();" shortDesc="Cancelar operación actual">
+                                      action="#{Postmortem_detalle.cmdBtn_cancelar_action}" onclick="return preguntarCancelar();" shortDesc="Cancelar Cambios">
                       <af:resetActionListener/>
                     </af:commandButton>
                     <af:commandButton text="Retornar" shortDesc="Retornar a la pantalla anterior" inlineStyle="font-weight:bold; font-size:large;" immediate="true" id="cmdBtn_retornar"
@@ -213,6 +301,17 @@
                     </af:commandLink>
                     <!--<af:commandButton text="Reporte DARH PM-01" rendered="#{!bindings.EsSolicitudNueva.inputValue}" inlineStyle="font-weight:bold;"
                                       onclick='return generarReporteDARH_PM_01("#{bindings.IdIndemnizacion.inputValue}");'/>-->
+                    <f:facet name="separator">
+                      <af:objectSpacer height="10" width="10"/>
+                    </f:facet>
+                  </af:panelHorizontal>
+                  <af:panelHorizontal rendered="#{!bindings.EsSolicitudNueva.inputValue}" halign="center">
+                    <af:commandButton text="Solicitud de Pago" inlineStyle="font-weight:bold; font-size:large;" shortDesc="Generar Solicitud de Pago"
+                                      onclick='return generarReporteDARH_PM_01("#{bindings.IdIndemnizacion.inputValue}");'/>
+                    <af:commandButton text="Calcular Prestación" inlineStyle="font-weight:bold; font-size:large;" shortDesc="Calcular Prestación"/>
+                    <af:commandButton text="Guatdar Cálculo" inlineStyle="font-weight:bold; font-size:large;" shortDesc="Guardar Cálculo"/>
+                    <af:commandButton text="Reporte de Cálculo" inlineStyle="font-weight:bold; font-size:large;" shortDesc="Reporte de Cálculo de Prestaciones"
+                                      onclick="return generarReporteDARH_PM_02(&quot;#{bindings.IdIndemnizacion.inputValue}&quot;);"/>
                     <f:facet name="separator">
                       <af:objectSpacer height="10" width="10"/>
                     </f:facet>
