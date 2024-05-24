@@ -16,9 +16,9 @@ public class SisPostMortem_vwClient extends ViewUsageImpl implements SisPostMort
     }
 
 
-    public void RecuperarSolicitudes() {
+    public void RecuperarSolicitudesProfesionalCaja() {
         Object _ret = 
-            getApplicationModuleProxy().riInvokeExportedMethod(this,"RecuperarSolicitudes",null,null);
+            getApplicationModuleProxy().riInvokeExportedMethod(this,"RecuperarSolicitudesProfesionalCaja",null,null);
         return;
     }
 
@@ -26,6 +26,12 @@ public class SisPostMortem_vwClient extends ViewUsageImpl implements SisPostMort
                                    Number pCorrelativoAnio) {
         Object _ret = 
             getApplicationModuleProxy().riInvokeExportedMethod(this,"RecuperarSolicitud",new String [] {"oracle.jbo.domain.Number","oracle.jbo.domain.Number","oracle.jbo.domain.Number"},new Object[] {pIdTipoPrestacion, pAnio, pCorrelativoAnio});
+        return;
+    }
+
+    public void RecuperarSolicitudes() {
+        Object _ret = 
+            getApplicationModuleProxy().riInvokeExportedMethod(this,"RecuperarSolicitudes",null,null);
         return;
     }
 }

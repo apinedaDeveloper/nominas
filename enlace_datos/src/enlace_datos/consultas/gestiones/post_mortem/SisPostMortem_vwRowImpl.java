@@ -43,6 +43,11 @@ public class SisPostMortem_vwRowImpl extends ViewRowImpl {
     public static final int NOMBREESTADOTRABAJADOR = 28;
     public static final int FECHAEXPFALLECIMIENTO = 29;
     public static final int OBSERVACIONFALLECIMIENTO = 30;
+    public static final int PRESTACANIOS = 31;
+    public static final int PRESTACMESES = 32;
+    public static final int PRESTACDIAS = 33;
+    public static final int SUELDOPROMEDIOLECTURA = 34;
+    public static final int GASTOFUNERARIOLECTURA = 35;
 
     /**This is the default constructor (do not remove)
      */
@@ -117,6 +122,16 @@ public class SisPostMortem_vwRowImpl extends ViewRowImpl {
             return getFechaExpFallecimiento();
         case OBSERVACIONFALLECIMIENTO:
             return getObservacionFallecimiento();
+        case PRESTACANIOS:
+            return getPrestacAnios();
+        case PRESTACMESES:
+            return getPrestacMeses();
+        case PRESTACDIAS:
+            return getPrestacDias();
+        case SUELDOPROMEDIOLECTURA:
+            return getSueldoPromedioLectura();
+        case GASTOFUNERARIOLECTURA:
+            return getGastoFunerarioLectura();
         default:
             return super.getAttrInvokeAccessor(index, attrDef);
         }
@@ -219,6 +234,21 @@ public class SisPostMortem_vwRowImpl extends ViewRowImpl {
             return;
         case OBSERVACIONFALLECIMIENTO:
             setObservacionFallecimiento((String)value);
+            return;
+        case PRESTACANIOS:
+            setPrestacAnios((Number)value);
+            return;
+        case PRESTACMESES:
+            setPrestacMeses((Number)value);
+            return;
+        case PRESTACDIAS:
+            setPrestacDias((Number)value);
+            return;
+        case SUELDOPROMEDIOLECTURA:
+            setSueldoPromedioLectura((Number)value);
+            return;
+        case GASTOFUNERARIOLECTURA:
+            setGastoFunerarioLectura((Number)value);
             return;
         default:
             super.setAttrInvokeAccessor(index, value, attrDef);
@@ -607,5 +637,65 @@ public class SisPostMortem_vwRowImpl extends ViewRowImpl {
      */
     public void setObservacionFallecimiento(String value) {
         setAttributeInternal(OBSERVACIONFALLECIMIENTO, value);
+    }
+
+    /**Gets the attribute value for the calculated attribute PrestacAnios
+     */
+    public Number getPrestacAnios() {
+        return (Number) getAttributeInternal(PRESTACANIOS);
+    }
+
+    /**Sets <code>value</code> as the attribute value for the calculated attribute PrestacAnios
+     */
+    public void setPrestacAnios(Number value) {
+        setAttributeInternal(PRESTACANIOS, value);
+    }
+
+    /**Gets the attribute value for the calculated attribute PrestacMeses
+     */
+    public Number getPrestacMeses() {
+        return (Number) getAttributeInternal(PRESTACMESES);
+    }
+
+    /**Sets <code>value</code> as the attribute value for the calculated attribute PrestacMeses
+     */
+    public void setPrestacMeses(Number value) {
+        setAttributeInternal(PRESTACMESES, value);
+    }
+
+    /**Gets the attribute value for the calculated attribute PrestacDias
+     */
+    public Number getPrestacDias() {
+        return (Number) getAttributeInternal(PRESTACDIAS);
+    }
+
+    /**Sets <code>value</code> as the attribute value for the calculated attribute PrestacDias
+     */
+    public void setPrestacDias(Number value) {
+        setAttributeInternal(PRESTACDIAS, value);
+    }
+
+    /**Gets the attribute value for the calculated attribute SueldoPromedioLectura
+     */
+    public Number getSueldoPromedioLectura() {
+        return (Number) getAttributeInternal(SUELDOPROMEDIOLECTURA);
+    }
+
+    /**Sets <code>value</code> as the attribute value for the calculated attribute SueldoPromedioLectura
+     */
+    public void setSueldoPromedioLectura(Number value) {
+        setAttributeInternal(SUELDOPROMEDIOLECTURA, value);
+    }
+
+    /**Gets the attribute value for the calculated attribute GastoFunerarioLectura
+     */
+    public Number getGastoFunerarioLectura() {
+        return (Number) getAttributeInternal(GASTOFUNERARIOLECTURA);
+    }
+
+    /**Sets <code>value</code> as the attribute value for the calculated attribute GastoFunerarioLectura
+     */
+    public void setGastoFunerarioLectura(Number value) {
+        setAttributeInternal(GASTOFUNERARIOLECTURA, value);
     }
 }

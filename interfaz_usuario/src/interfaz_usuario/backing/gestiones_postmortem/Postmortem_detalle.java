@@ -10,9 +10,12 @@ import java.util.List;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 
+import oracle.adf.view.faces.component.core.data.CoreTable;
+import oracle.adf.view.faces.component.core.input.CoreInputHidden;
 import oracle.adf.view.faces.component.core.input.CoreInputText;
 import oracle.adf.view.faces.component.core.input.CoreSelectInputDate;
 import oracle.adf.view.faces.component.core.input.CoreSelectOneChoice;
+import oracle.adf.view.faces.component.core.layout.CorePanelHorizontal;
 import oracle.adf.view.faces.component.core.layout.CorePanelLabelAndMessage;
 import oracle.adf.view.faces.component.core.nav.CoreCommandButton;
 import oracle.adf.view.faces.component.core.nav.CoreCommandLink;
@@ -44,7 +47,6 @@ public class Postmortem_detalle {
     private CoreInputText inptText_numeroExpFallec;
     private CoreInputText inptText_otroParentescoSol;
     private CoreInputText inptText_registroEmpleado;
-    private CoreOutputFormatted outFormat_rotuloNuevaSol;
     private CoreOutputText outputText_fechaFallecTrab;
     private CorePanelLabelAndMessage pnlLbl_correlativoSol;
     private CorePanelLabelAndMessage pnlLbl_estadoActualSol;
@@ -56,6 +58,17 @@ public class Postmortem_detalle {
     private CoreInputText inptText_DiasServicio;
     private CoreInputText inptText_sueldoPromedio;
     private CoreSelectInputDate slctInputDate_fechaSolicitud;
+    private CoreTable tbl_beneficiarios_fallecido;
+    private CoreCommandButton cmdBtn_guardar_calculo;
+    private CorePanelHorizontal pnlHoriz_prestacCalculadas;
+    private CoreOutputFormatted outputFormat_sueldoPromedio;
+    private CoreOutputFormatted outputFormat_sueldoPromAnios;
+    private CoreOutputFormatted outputFormat_sueldoPromMeses;
+    private CoreOutputFormatted outputFormat_sueldoPromDias;
+    private CoreOutputFormatted outputFormat_gastoFunerario;
+    private CoreOutputFormatted outputFormat_totalPresta;
+    private CoreInputText inptText_gastoFunerario;
+    private CoreInputHidden inptHidden_totalPrestac;
 
     public void setInptText_registroEmpleado(CoreInputText inptText_registroEmpleado) {
         this.inptText_registroEmpleado = inptText_registroEmpleado;
@@ -130,27 +143,6 @@ public class Postmortem_detalle {
         FacesContext context = FacesContext.getCurrentInstance();
         context.addMessage("El control", fm);
     }
-
-    //Obtiene los datos del expediente en que se registró el fallecimiento
-
-    /*private void obtener_expediente_fallecimiento(String regEmpleado,
-                                                  interfaz_DB interfaz) {
-        String consulta = "select id_solicitud, fecha_solicitud, observacion ";
-        consulta += "from sis_solicitud where id_tipo_solicitud = 9 ";
-        consulta += "and id_estado = 39 and ";
-        consulta += "registro_empleado = " + regEmpleado;
-        Object idSolicitud =
-            interfaz.getValorConsultaSimple("id_solicitud", consulta);
-        Object fechaSolicitud =
-            interfaz.getValorConsultaSimple("fecha_solicitud", consulta);
-        Object observacion =
-            interfaz.getValorConsultaSimple("observacion", consulta);
-        this.getOutputText_fechaFallecTrab().setValue(fechaSolicitud);
-        this.getInptText_numeroExpFallec().setSubmittedValue(null);
-        this.getInptText_numeroExpFallec().setValue(idSolicitud);
-        this.getInptText_descripcionExpFallec().setSubmittedValue(null);
-        this.getInptText_descripcionExpFallec().setValue(observacion);
-    }*/
 
     public void cdmLink_buscarTrabajador_returnListener(ReturnEvent returnEvent) {
         String registroEmpleado;
@@ -422,26 +414,23 @@ public class Postmortem_detalle {
             mensaje("¡¡Información Guardada Correctamente!!", 1);
             JSFUtils.setExpressionValue(f, binding, 
                                         Boolean.parseBoolean("false"));
-            JSFUtils.EjecutarAcccion(f, "RefrescarPrestacion");
+            JSFUtils.EjecutarAcccion(f, "RefrescarPrestaciones");
         }
         return null;
     }
 
     public String cmdBtn_cancelar_action() {
-        FacesContext f = FacesContext.getCurrentInstance();
-        BindingContainer cont = 
-            (BindingContainer)JSFUtils.resolveExpression(f, "#{bindings}");
-        OperationBinding operationBinding = 
-            cont.getOperationBinding("Rollback");
-        operationBinding.execute(); //Ejecutamos el Commit
-        if (operationBinding.getErrors().isEmpty()) {
-            mensaje("¡¡Operación cancelada correctamente!!", 1);
-            JSFUtils.EjecutarAcccion(f, "RefrescarPrestacion");
-        } else {
-            desplegarErrores(operationBinding.getErrors()); //Despliega el detalle de los errores
-            mensaje("¡¡Hubo un error al cancelar la operación!!", 3);
+        FacesContext faces = FacesContext.getCurrentInstance();
+        JSFUtils.EjecutarAcccion(faces, "Rollback");
+        String bind = "#{bindings.EsSolicitudNueva.inputValue}";
+        Object esNuevo = JSFUtils.resolveExpression(faces, bind);
+        if (esNuevo != null && Boolean.parseBoolean(esNuevo.toString())) {
+            //Es solicitud nueva
+            JSFUtils.EjecutarAcccion(faces, "CrearSolicitud");
         }
-        //mensaje("¡¡Operación cancelada correctamente!!", 1);
+        this.getPnlHoriz_prestacCalculadas().setRendered(false);
+        this.getCmdBtn_guardar_calculo().setDisabled(true);
+        mensaje("Operación Cancelada Correctamente", 1);
         return null;
     }
 
@@ -507,14 +496,6 @@ public class Postmortem_detalle {
 
     public CoreInputText getInptText_otroParentescoSol() {
         return inptText_otroParentescoSol;
-    }
-
-    public void setOutFormat_rotuloNuevaSol(CoreOutputFormatted outFormat_rotuloNuevaSol) {
-        this.outFormat_rotuloNuevaSol = outFormat_rotuloNuevaSol;
-    }
-
-    public CoreOutputFormatted getOutFormat_rotuloNuevaSol() {
-        return outFormat_rotuloNuevaSol;
     }
 
     public void setPnlLbl_idSolicitud(CorePanelLabelAndMessage pnlLbl_idSolicitud) {
@@ -591,5 +572,194 @@ public class Postmortem_detalle {
 
     public CoreSelectInputDate getSlctInputDate_fechaSolicitud() {
         return slctInputDate_fechaSolicitud;
+    }
+
+    //Rellena campos pendientes antes de guardar el cálculo
+
+    private boolean rellenarCamposPends_guardar_calculo(FacesContext f) {
+        boolean correcto = false;
+        try {
+            Object totalPrestacObj;
+            Number totalPrestac;
+            String bindTotalPrestac = "#{bindings.TotalPrestacion.inputValue}";
+            totalPrestacObj = this.getInptHidden_totalPrestac().getValue();
+            if (totalPrestacObj != null) {
+                totalPrestac = 
+                        utils.getNumberOracle(String.format("%.2f", totalPrestacObj));
+                JSFUtils.setExpressionValue(f, bindTotalPrestac, totalPrestac);
+            }
+            correcto = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            mensaje("Ha ocurrido el siguiente error: " + e.getMessage(), 3);
+        }
+        return correcto;
+    }
+
+    public String cmdBtn_guardar_calculo_action() {
+        FacesContext f = FacesContext.getCurrentInstance();
+        if (rellenarCamposPends_guardar_calculo(f)) {
+            if (commit(f)) {
+                mensaje("¡¡Información Guardada Correctamente!!", 1);
+                JSFUtils.EjecutarAcccion(f, "RefrescarPrestaciones");
+                this.getCmdBtn_guardar_calculo().setDisabled(true);
+                this.getPnlHoriz_prestacCalculadas().setRendered(false);
+            }
+        }
+        return null;
+    }
+
+    public String cmdBtn_calcular_presta_action() {
+        int numFilas = this.getTbl_beneficiarios_fallecido().getRowCount();
+        //System.out.println("el número de fila es: " + numFilas);
+        if (numFilas > 0) {
+            Object aux = this.getInptText_sueldoPromedio().getValue();
+            if (aux != null && Double.parseDouble(aux.toString()) > 0) {
+                Double sueldoPromedio = Double.parseDouble(aux.toString());
+                this.getOutputFormat_sueldoPromedio().setValue(sueldoPromedio);
+                //////Ahora se calculará el monto por años meses y días laborados///////
+                Object aux2 = this.getInptText_AniosServicio().getValue();
+                Object aux3 = this.getInptText_MesesServicio().getValue();
+                Object aux4 = this.getInptText_DiasServicio().getValue();
+                Object aux5 = this.getInptText_gastoFunerario().getValue();
+                if (aux2 != null || aux3 != null || aux4 != null) {
+                    int aniosLab = 0;
+                    if (aux2 != null && 
+                        Integer.parseInt(aux2.toString()) > 0) {
+                        aniosLab = Integer.valueOf(aux2.toString()).intValue();
+                    }
+                    int mesesLab = 0;
+                    if (aux3 != null && 
+                        Integer.parseInt(aux3.toString()) > 0) {
+                        mesesLab = Integer.valueOf(aux3.toString()).intValue();
+                    }
+                    int diasLab = 0;
+                    if (aux4 != null && 
+                        Integer.parseInt(aux4.toString()) > 0) {
+                        diasLab = Integer.valueOf(aux4.toString()).intValue();
+                    }
+                    double gastoFunerario = 0;
+                    if (aux5 != null && 
+                        Double.parseDouble(aux5.toString()) > 0) {
+                        gastoFunerario = 
+                                Double.valueOf(aux5.toString()).doubleValue();
+                    }
+                    double sueldoPromRedon = 
+                        Math.round(sueldoPromedio * 100.0) / 100.0;
+                    double montoIndAnios = aniosLab * sueldoPromRedon;
+                    double montoIndMeses = (mesesLab * sueldoPromRedon) / 12;
+                    montoIndMeses = Math.round(montoIndMeses * 100.0) / 100.0;
+                    double montoIndDias = (diasLab * sueldoPromRedon) / 365;
+                    montoIndDias = Math.round(montoIndDias * 100.0) / 100.0;
+                    double totalPrestaciones = 
+                        montoIndAnios + montoIndMeses + montoIndDias + 
+                        gastoFunerario;
+                    this.getOutputFormat_sueldoPromAnios().setValue(montoIndAnios);
+                    this.getOutputFormat_sueldoPromMeses().setValue(montoIndMeses);
+                    this.getOutputFormat_sueldoPromDias().setValue(montoIndDias);
+                    this.getOutputFormat_gastoFunerario().setValue(gastoFunerario);
+                    this.getOutputFormat_totalPresta().setValue(totalPrestaciones);
+                    //////almacenamos el valor calculad en el input hiddens creado para este propósito/////
+                    this.getInptHidden_totalPrestac().setValue(totalPrestaciones);
+                }
+                //////////////////////////////////////////////////////////////////
+                this.getPnlHoriz_prestacCalculadas().setRendered(true);
+                this.getCmdBtn_guardar_calculo().setDisabled(false);
+            } else {
+                mensaje("¡¡No hay Sueldo Promedio para realizar el cálculo de Prestaciones, verifique por favor!!", 
+                        3);
+            }
+        } else {
+            mensaje("¡¡No hay beneficiarios aún, verifique por favor!!", 3);
+        }
+        return null;
+    }
+
+    public void setTbl_beneficiarios_fallecido(CoreTable tbl_beneficiarios_fallecido) {
+        this.tbl_beneficiarios_fallecido = tbl_beneficiarios_fallecido;
+    }
+
+    public CoreTable getTbl_beneficiarios_fallecido() {
+        return tbl_beneficiarios_fallecido;
+    }
+
+    public void setCmdBtn_guardar_calculo(CoreCommandButton cmdBtn_guardar_calculo) {
+        this.cmdBtn_guardar_calculo = cmdBtn_guardar_calculo;
+    }
+
+    public CoreCommandButton getCmdBtn_guardar_calculo() {
+        return cmdBtn_guardar_calculo;
+    }
+
+    public void setPnlHoriz_prestacCalculadas(CorePanelHorizontal pnlHoriz_prestacCalculadas) {
+        this.pnlHoriz_prestacCalculadas = pnlHoriz_prestacCalculadas;
+    }
+
+    public CorePanelHorizontal getPnlHoriz_prestacCalculadas() {
+        return pnlHoriz_prestacCalculadas;
+    }
+
+    public void setOutputFormat_sueldoPromedio(CoreOutputFormatted outputFormat_sueldoPromedio) {
+        this.outputFormat_sueldoPromedio = outputFormat_sueldoPromedio;
+    }
+
+    public CoreOutputFormatted getOutputFormat_sueldoPromedio() {
+        return outputFormat_sueldoPromedio;
+    }
+
+    public void setOutputFormat_sueldoPromAnios(CoreOutputFormatted outputFormat_sueldoPromAnios) {
+        this.outputFormat_sueldoPromAnios = outputFormat_sueldoPromAnios;
+    }
+
+    public CoreOutputFormatted getOutputFormat_sueldoPromAnios() {
+        return outputFormat_sueldoPromAnios;
+    }
+
+    public void setOutputFormat_sueldoPromMeses(CoreOutputFormatted outputFormat_sueldoPromMeses) {
+        this.outputFormat_sueldoPromMeses = outputFormat_sueldoPromMeses;
+    }
+
+    public CoreOutputFormatted getOutputFormat_sueldoPromMeses() {
+        return outputFormat_sueldoPromMeses;
+    }
+
+    public void setOutputFormat_sueldoPromDias(CoreOutputFormatted outputFormat_sueldoPromDias) {
+        this.outputFormat_sueldoPromDias = outputFormat_sueldoPromDias;
+    }
+
+    public CoreOutputFormatted getOutputFormat_sueldoPromDias() {
+        return outputFormat_sueldoPromDias;
+    }
+
+    public void setOutputFormat_gastoFunerario(CoreOutputFormatted outputFormat_gastoFunerario) {
+        this.outputFormat_gastoFunerario = outputFormat_gastoFunerario;
+    }
+
+    public CoreOutputFormatted getOutputFormat_gastoFunerario() {
+        return outputFormat_gastoFunerario;
+    }
+
+    public void setOutputFormat_totalPresta(CoreOutputFormatted outputFormat_totalPresta) {
+        this.outputFormat_totalPresta = outputFormat_totalPresta;
+    }
+
+    public CoreOutputFormatted getOutputFormat_totalPresta() {
+        return outputFormat_totalPresta;
+    }
+
+    public void setInptText_gastoFunerario(CoreInputText inptText_gastoFunerario) {
+        this.inptText_gastoFunerario = inptText_gastoFunerario;
+    }
+
+    public CoreInputText getInptText_gastoFunerario() {
+        return inptText_gastoFunerario;
+    }
+
+    public void setInptHidden_totalPrestac(CoreInputHidden inptHidden_totalPrestac) {
+        this.inptHidden_totalPrestac = inptHidden_totalPrestac;
+    }
+
+    public CoreInputHidden getInptHidden_totalPrestac() {
+        return inptHidden_totalPrestac;
     }
 }

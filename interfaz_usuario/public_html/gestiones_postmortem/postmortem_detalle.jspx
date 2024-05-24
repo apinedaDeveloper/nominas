@@ -23,6 +23,13 @@
             window.open(link,'preview','width=1200,height=723,scrollbars=YES,location=NO,directories=NO,resizable=1');
             return false;
         }
+        //Abre el reporte de Liquidación de Prestaciones Post-mortem (DARH PM-03)
+        function generarReporteDARH_PM_03(idIndemnizacion){ 
+            var link;
+            link = "/${flujo_usuario.dominioApp}/faces/verreportepdf?id="+idIndemnizacion+String.fromCharCode(38)+"rep=DARHPM03_POSTMORTEM";
+            window.open(link,'preview','width=1200,height=723,scrollbars=YES,location=NO,directories=NO,resizable=1');
+            return false;
+        }
         //Pregunta si se desea guardar la información
         function preguntarGuardar(){ return confirm("¿Desea guardar la información?"); }
         //Pregunta si se desea cancelar la operación
@@ -38,9 +45,9 @@
             <input type="hidden" name="hdn_tipo" id="hdn_tipo" value="27"/>
             <!--Tipo de Autorización (tipo 27 corresponde a Prestaciones Post-mortem)-->
             <input type="hidden" name="hdn_Id" id="hdn_Id" value="${bindings.IdIndemnizacion.inputValue}"/>
-            <!--Id de la prestación post-mortem-->
+            <!--Id de las prestaciones post-mortem-->
             <jsp:include page="../util/dialog_autoriza.txt"/>
-            <!--Ventana de diálogo para el cambio de estado-->
+            <!--Ventana de diálogo para los traslados de la solicitud-->
           </f:verbatim>
           <af:page title="Prestaciones Post-mortem" value="#{modeloMenu.modeloBD}" var="node">
             <f:facet name="branding">
@@ -63,7 +70,7 @@
             </f:facet>
             <af:panelBox width="100%" id="pnlBoxPrincipal">
               <af:panelGroup layout="vertical" inlineStyle="text-align:center;" rendered="#{!bindings.EsSolicitudNueva.inputValue}">
-                <af:outputFormatted value="Información General del Expediente" inlineStyle="font-weight:bold; color:rgb(0,0,128); font-size:large;"/>
+                <af:outputFormatted value="INFORMACIÓN GENERAL DEL EXPEDIENTE" inlineStyle="font-weight:bold; color:rgb(0,0,128); font-size:medium;"/>
                 <af:objectSeparator/>
                 <af:panelHorizontal halign="center" inlineStyle="padding:2.0pt;">
                   <af:panelLabelAndMessage label="No. de expediente:" inlineStyle="font-weight:bold;">
@@ -86,12 +93,12 @@
                   <af:panelLabelAndMessage label="Estado del trabajador:" inlineStyle="font-weight:bold;">
                     <af:outputText value="#{bindings.NombreEstadoTrabajador.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;"/>
                   </af:panelLabelAndMessage>
-                  <af:panelLabelAndMessage label="No. de expediente fallecimiento:" inlineStyle="font-weight:bold;">
+                  <af:panelLabelAndMessage label="No. de Solicitud de fallecimiento:" inlineStyle="font-weight:bold;">
                     <af:outputText value="#{bindings.IdSolicitudFallecimiento.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;">
                       <f:convertNumber groupingUsed="false"/>
                     </af:outputText>
                   </af:panelLabelAndMessage>
-                  <af:panelLabelAndMessage label="Fecha expediente:" inlineStyle="font-weight:bold;">
+                  <af:panelLabelAndMessage label="Fecha:" inlineStyle="font-weight:bold;">
                     <af:outputText value="#{bindings.FechaSolicitudFallecimiento.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;">
                       <f:convertDateTime pattern="dd/MM/yyyy"/>
                     </af:outputText>
@@ -101,16 +108,18 @@
                   </f:facet>
                 </af:panelHorizontal>
                 <af:panelHorizontal halign="center" inlineStyle="padding:2.0pt;">
+                  <af:inputText columns="20" value="#{bindings.ObservacionFallecimiento.inputValue}" rows="0" simple="true" rendered="false"/>
                   <af:panelLabelAndMessage label="Observación fallecimiento:" inlineStyle="font-weight:bold;">
-                    <af:outputText value="#{bindings.ObservacionFallecimiento.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;"/>
+                    <af:panelBox width="50%" inlineStyle="text-align:center;">
+                      <af:outputText value="#{bindings.ObservacionFallecimiento.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;" rendered="true"/>
+                    </af:panelBox>
                   </af:panelLabelAndMessage>
                 </af:panelHorizontal>
               </af:panelGroup>
               <af:panelBox width="100%">
                 <af:panelForm shortDesc="Panel de información del expediente del trabajador fallecido">
                   <af:panelHorizontal halign="center" rendered="#{bindings.EsSolicitudNueva.inputValue}">
-                    <af:outputFormatted value="NUEVO EXPEDIENTE" inlineStyle="font-size:medium; font-weight:bold; color:rgb(0,0,132);" id="outFormat_rotuloNuevaSol"
-                                        binding="#{Postmortem_detalle.outFormat_rotuloNuevaSol}"/>
+                    <af:outputFormatted value="NUEVO EXPEDIENTE" inlineStyle="font-size:medium; font-weight:bold; color:rgb(0,0,132);"/>
                   </af:panelHorizontal>
                   <af:panelHorizontal halign="center">
                     <af:outputFormatted value="Las casillas con * son requeridos" inlineStyle="color:rgb(128,0,0); font-weight:bold;"/>
@@ -161,7 +170,7 @@
                       <af:objectSpacer height="10" width="10"/>
                     </f:facet>
                     <af:outputText value="*" inlineStyle="font-weight:bold; color:rgb(128,0,0);"/>
-                    <af:outputText value="Tiempo de Servicio (para cálculo de Prestación):" inlineStyle="font-weight:bold;"/>
+                    <af:outputText value="Tiempo de Servicio (para cálculo de Prestaciones):" inlineStyle="font-weight:bold;"/>
                     <af:outputText value="Años:" inlineStyle="font-weight:bold;"/>
                     <af:inputText value="#{bindings.AniosTiempoServicio.inputValue}" columns="3" id="inptText_AniosServicio" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);"
                                   maximumLength="2" shortDesc="Años de Servicio (Máximo 12)"
@@ -186,7 +195,7 @@
                   </af:panelHorizontal>
                   <af:panelHorizontal halign="center">
                     <af:outputText value="*" inlineStyle="font-weight:bold; color:rgb(128,0,0);"/>
-                    <af:outputText value="Sueldo Promedio (para cálculo de Prestación):" inlineStyle="font-weight:bold;"/>
+                    <af:outputText value="Sueldo Promedio (para cálculo de Prestaciones):" inlineStyle="font-weight:bold;"/>
                     <af:inputText id="inptText_sueldoPromedio" value="#{bindings.SueldoPromedio.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);" columns="10"
                                   readOnly='#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; (bindings.NombreEstadoIndemnizacion.inputValue eq "GRABADO"?false:true)}'
                                   binding="#{Postmortem_detalle.inptText_sueldoPromedio}">
@@ -203,26 +212,13 @@
                       <af:objectSpacer height="10" width="10"/>
                     </f:facet>
                   </af:panelHorizontal>
-                  <af:table rows="#{bindings.tblBeneficiarios.rangeSize}" first="#{bindings.tblBeneficiarios.rangeStart}"
-                            emptyText="#{bindings.tblBeneficiarios.viewable ? 'No rows yet.' : 'Access Denied.'}" var="row" value="#{bindings.tblBeneficiarios.collectionModel}"
-                            selectionState="#{bindings.tblBeneficiarios.collectionModel.selectedRow}" selectionListener="#{bindings.tblBeneficiarios.collectionModel.makeCurrent}" rendered="false">
-                    <f:facet name="selection">
-                      <af:tableSelectOne text="Seleccione un beneficiario que solicita la prestación y guardar ">
-                        <af:commandButton text="Guardar"/>
-                      </af:tableSelectOne>
-                    </f:facet>
-                    <af:forEach items="#{bindings.tblBeneficiarios.attributeDefs}" var="def">
-                      <af:column headerText="#{bindings.tblBeneficiarios.labels[def.name]}" sortable="true" sortProperty="#{def.name}">
-                        <af:outputText value="#{row[def.name]}"/>
-                      </af:column>
-                    </af:forEach>
-                  </af:table>
                   <af:panelHorizontal halign="center" rendered="#{!bindings.EsSolicitudNueva.inputValue}">
                     <af:table value="#{bindings.tblBeneficiarios.collectionModel}" var="row" rows="#{bindings.tblBeneficiarios.rangeSize}" first="#{bindings.tblBeneficiarios.rangeStart}"
                               emptyText="#{bindings.tblBeneficiarios.viewable ? 'No hay información para mostrár aún.' : 'Access Denied.'}" selectionState="#{bindings.tblBeneficiarios.collectionModel.selectedRow}"
-                              selectionListener="#{bindings.tblBeneficiarios.collectionModel.makeCurrent}" banding="row">
+                              selectionListener="#{bindings.tblBeneficiarios.collectionModel.makeCurrent}" banding="row" id="tbl_beneficiarios_fallecido" width="100%"
+                              shortDesc="Listado de beneficiarios del trabajador fallecido" binding="#{Postmortem_detalle.tbl_beneficiarios_fallecido}">
                       <f:facet name="selection">
-                        <af:tableSelectOne text="Seleccione un beneficiario que solicita la prestación y guardar ">
+                        <af:tableSelectOne text="Seleccione un beneficiario que solicita las prestaciones y guardar ">
                           <af:commandButton text="Guardar"/>
                         </af:tableSelectOne>
                       </f:facet>
@@ -280,10 +276,55 @@
                     <af:objectSpacer height="10" width="20"/>
                     <af:outputText value="Gasto Funerario Q." inlineStyle="font-weight:bold;"/>
                     <af:objectSpacer height="10" width="10"/>
-                    <af:inputText columns="10" value="#{bindings.GastoFunerario.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);">
+                    <af:inputText columns="10" value="#{bindings.GastoFunerario.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);" id="inptText_gastoFunerario"
+                                  binding="#{Postmortem_detalle.inptText_gastoFunerario}">
                       <f:convertNumber maxFractionDigits="2" minIntegerDigits="1" pattern="###,###.##" minFractionDigits="2"/>
                     </af:inputText>
                   </af:panelHorizontal>
+                  <af:panelGroup layout="vertical" inlineStyle="text-align:center;" rendered="#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; bindings.TotalPrestacion.inputValue != null}">
+                    <af:objectSpacer height="10" width="10"/>
+                    <af:outputFormatted value="PRESTACIONES A LIQUIDAR" inlineStyle="font-weight:bold; color:rgb(0,0,128); font-size:medium;"/>
+                    <af:objectSeparator/>
+                    <af:panelHorizontal halign="center" inlineStyle="padding:2.0pt;">
+                      <af:outputText value="Sueldo Promedio:" inlineStyle="color:rgb(0,0,128); font-weight:bold;"/>
+                      <af:inputText value="#{bindings.SueldoPromedioLectura.inputValue}" readOnly="true" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
+                        <f:convertNumber maxFractionDigits="2" type="currency"/>
+                      </af:inputText>
+                      <af:outputText value="Sueldo Promedio * Años Laborados:" inlineStyle="color:rgb(0,0,128); font-weight:bold;"/>
+                      <af:inputText value="#{bindings.PrestacAnios.inputValue}" readOnly="true" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
+                        <f:convertNumber maxFractionDigits="2" type="currency"/>
+                      </af:inputText>
+                      <f:facet name="separator">
+                        <af:objectSpacer height="10" width="10"/>
+                      </f:facet>
+                    </af:panelHorizontal>
+                    <af:panelHorizontal halign="center" inlineStyle="padding:2.0pt;">
+                      <af:outputText value="Sueldo Promedio * Meses Laborados:" inlineStyle="color:rgb(0,0,128); font-weight:bold;"/>
+                      <af:inputText value="#{bindings.PrestacMeses.inputValue}" readOnly="true" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
+                        <f:convertNumber maxFractionDigits="2" type="currency"/>
+                      </af:inputText>
+                      <af:outputText value="Sueldo Promedio * Días Laborados:" inlineStyle="color:rgb(0,0,128); font-weight:bold;"/>
+                      <af:inputText value="#{bindings.PrestacDias.inputValue}" readOnly="true" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
+                        <f:convertNumber maxFractionDigits="2" type="currency"/>
+                      </af:inputText>
+                      <f:facet name="separator">
+                        <af:objectSpacer height="10" width="10"/>
+                      </f:facet>
+                    </af:panelHorizontal>
+                    <af:panelHorizontal halign="center" inlineStyle="padding:2.0pt;">
+                      <af:outputText value="Gasto Funerario:" inlineStyle="color:rgb(0,0,128); font-weight:bold;"/>
+                      <af:inputText value="#{bindings.GastoFunerarioLectura.inputValue}" readOnly="true" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
+                        <f:convertNumber maxFractionDigits="2" type="currency"/>
+                      </af:inputText>
+                      <af:outputText value="Total Prestaciones a Liquidar:" inlineStyle="color:rgb(0,0,128); font-weight:bold;"/>
+                      <af:inputText value="#{bindings.TotalPrestacion.inputValue}" readOnly="true" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
+                        <f:convertNumber maxFractionDigits="2" type="currency"/>
+                      </af:inputText>
+                      <f:facet name="separator">
+                        <af:objectSpacer height="10" width="10"/>
+                      </f:facet>
+                    </af:panelHorizontal>
+                  </af:panelGroup>
                   <af:panelHorizontal halign="center">
                     <af:commandButton text="Guardar" inlineStyle="font-weight:bold; font-size:large;" id="cmdBtn_guardar" binding="#{Postmortem_detalle.cmdBtn_guardar}"
                                       action="#{Postmortem_detalle.cmdBtn_guardar_action}" onclick="return preguntarGuardar();" shortDesc="Guardar Cambios"/>
@@ -305,17 +346,94 @@
                       <af:objectSpacer height="10" width="10"/>
                     </f:facet>
                   </af:panelHorizontal>
+                  <af:panelHorizontal id="pnlHoriz_prestacCalculadas" binding="#{Postmortem_detalle.pnlHoriz_prestacCalculadas}" halign="center" rendered="false">
+                    <af:panelBox width="100%">
+                      <af:panelList>
+                        <af:panelHorizontal valign="baseline">
+                          <af:outputText value="Sueldo Promedio:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
+                          <af:outputFormatted id="outputFormat_sueldoPromedio" binding="#{Postmortem_detalle.outputFormat_sueldoPromedio}"
+                                              inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);">
+                            <f:convertNumber type="currency" maxFractionDigits="2"/>
+                          </af:outputFormatted>
+                          <f:facet name="separator">
+                            <af:objectSpacer height="10" width="10"/>
+                          </f:facet>
+                        </af:panelHorizontal>
+                      </af:panelList>
+                      <af:panelList>
+                        <af:panelHorizontal valign="baseline">
+                          <af:outputText value="Sueldo Promedio * Años Laborados:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
+                          <af:outputFormatted id="outputFormat_sueldoPromAnios" binding="#{Postmortem_detalle.outputFormat_sueldoPromAnios}"
+                                              inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);">
+                            <f:convertNumber maxFractionDigits="2" type="currency"/>
+                          </af:outputFormatted>
+                          <f:facet name="separator">
+                            <af:objectSpacer height="10" width="10"/>
+                          </f:facet>
+                        </af:panelHorizontal>
+                        <af:panelHorizontal valign="baseline">
+                          <af:outputText value="(Sueldo Promedio * Meses Laborados) / 12:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
+                          <af:outputFormatted id="outputFormat_sueldoPromMeses" binding="#{Postmortem_detalle.outputFormat_sueldoPromMeses}"
+                                              inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);">
+                            <f:convertNumber maxFractionDigits="2" type="currency"/>
+                          </af:outputFormatted>
+                          <f:facet name="separator">
+                            <af:objectSpacer height="10" width="10"/>
+                          </f:facet>
+                        </af:panelHorizontal>
+                        <af:panelHorizontal valign="baseline">
+                          <af:outputText value="(Sueldo Promedio * Días Laborados) / 365:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
+                          <af:outputFormatted id="outputFormat_sueldoPromDias" binding="#{Postmortem_detalle.outputFormat_sueldoPromDias}"
+                                              inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);">
+                            <f:convertNumber maxFractionDigits="2" type="currency"/>
+                          </af:outputFormatted>
+                          <f:facet name="separator">
+                            <af:objectSpacer height="10" width="10"/>
+                          </f:facet>
+                        </af:panelHorizontal>
+                        <af:panelHorizontal valign="baseline">
+                          <af:outputText value="Gasto Funerario:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
+                          <af:outputFormatted id="outputFormat_gastoFunerario" binding="#{Postmortem_detalle.outputFormat_gastoFunerario}"
+                                              inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);">
+                            <f:convertNumber maxFractionDigits="2" type="currency"/>
+                          </af:outputFormatted>
+                          <f:facet name="separator">
+                            <af:objectSpacer height="10" width="10"/>
+                          </f:facet>
+                        </af:panelHorizontal>
+                        <af:panelHorizontal valign="baseline">
+                          <af:outputText value="Total Prestaciones a Pagar:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
+                          <af:outputFormatted id="outputFormat_totalPresta" binding="#{Postmortem_detalle.outputFormat_totalPresta}"
+                                              inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);" onclick="return preguntarGuardar();">
+                            <f:convertNumber maxFractionDigits="2" type="currency"/>
+                          </af:outputFormatted>
+                          <f:facet name="separator">
+                            <af:objectSpacer height="10" width="10"/>
+                          </f:facet>
+                        </af:panelHorizontal>
+                      </af:panelList>
+                    </af:panelBox>
+                  </af:panelHorizontal>
+                  <af:messages/>
                   <af:panelHorizontal rendered="#{!bindings.EsSolicitudNueva.inputValue}" halign="center">
-                    <af:commandButton text="Solicitud de Pago" inlineStyle="font-weight:bold; font-size:large;" shortDesc="Generar Solicitud de Pago"
-                                      onclick='return generarReporteDARH_PM_01("#{bindings.IdIndemnizacion.inputValue}");'/>
-                    <af:commandButton text="Calcular Prestación" inlineStyle="font-weight:bold; font-size:large;" shortDesc="Calcular Prestación"/>
-                    <af:commandButton text="Guatdar Cálculo" inlineStyle="font-weight:bold; font-size:large;" shortDesc="Guardar Cálculo"/>
-                    <af:commandButton text="Reporte de Cálculo" inlineStyle="font-weight:bold; font-size:large;" shortDesc="Reporte de Cálculo de Prestaciones"
+                    <!--<af:commandButton text="Solicitud de Pago" inlineStyle="font-weight:bold; font-size:large;" shortDesc="Generar Solicitud de Pago"
+                                      onclick='return generarReporteDARH_PM_01("#{bindings.IdIndemnizacion.inputValue}");'/>-->
+                    <af:commandButton text="Calcular Prestaciones" inlineStyle="font-weight:bold; font-size:large;" shortDesc="Calcular Prestaciones" id="cmdBtn_calcular_presta"
+                                      action="#{Postmortem_detalle.cmdBtn_calcular_presta_action}"/>
+                    <af:commandButton text="Guardar Cálculo" inlineStyle="font-weight:bold; font-size:large;" shortDesc="Guardar Cambios" id="cmdBtn_guardar_calculo"
+                                      action="#{Postmortem_detalle.cmdBtn_guardar_calculo_action}" binding="#{Postmortem_detalle.cmdBtn_guardar_calculo}" disabled="true"
+                                      onclick="return preguntarGuardar();"/>
+                    <af:commandButton text="Reporte de Cálculo de Prestaciones" inlineStyle="font-weight:bold; font-size:large;" shortDesc="Reporte de Cálculo de Prestaciones"
                                       onclick="return generarReporteDARH_PM_02(&quot;#{bindings.IdIndemnizacion.inputValue}&quot;);"/>
+                    <af:commandButton text="Reporte de Liquidación de Prestaciones" inlineStyle="font-weight:bold; font-size:large;" shortDesc="Reporte de Liquidación de Prestaciones"
+                                      onclick="return generarReporteDARH_PM_03(&quot;#{bindings.IdIndemnizacion.inputValue}&quot;);"/>
                     <f:facet name="separator">
                       <af:objectSpacer height="10" width="10"/>
                     </f:facet>
                   </af:panelHorizontal>
+                  <af:inputHidden id="inptHidden_totalPrestac" binding="#{Postmortem_detalle.inptHidden_totalPrestac}" rendered="false">
+                    <f:convertNumber maxFractionDigits="2" minIntegerDigits="1" type="number"/>
+                  </af:inputHidden>
                 </af:panelForm>
               </af:panelBox>
               <!--<af:panelBox text="Datos del trabajador" width="100%" inlineStyle="text-align:center;">

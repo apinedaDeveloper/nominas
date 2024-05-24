@@ -561,7 +561,7 @@ public class Indemnizacion_detalle {
             if (mesesServicio != null && mesesServicio.intValue() > 0) {
                 mensaje("!!Meses de Servicio Inválido cuando Años de Servicio es 10 o 12 (Debe de ser 0)!!", 
                         3);
-            } else if (diasServicio != null && diasServicio.intValue()>0) {
+            } else if (diasServicio != null && diasServicio.intValue() > 0) {
                 mensaje("!!Días de Servicio Inválido cuando Años de Servicio es 10 o 12 (Debe de ser 0)!!", 
                         3);
             } else {
@@ -610,7 +610,7 @@ public class Indemnizacion_detalle {
         }
         return valido;
     }
-    
+
     //Procedimiento que rellena los campos pendientes de un expediente nuevo antes de grabar.
 
     private boolean rellenarCamposPends_expNuevo(FacesContext f) {
@@ -712,7 +712,6 @@ public class Indemnizacion_detalle {
             //Es solicitud nueva
             JSFUtils.EjecutarAcccion(faces, "CrearSolicitud");
         }
-        //this.getPnlHoriz_mensajes_calculo().setRendered(false);
         this.getPnlHoriz_indemCalculada().setRendered(false);
         this.getCmdBtn_guardar_calculo().setDisabled(true);
         mensaje("Operación Cancelada Correctamente", 1);
@@ -810,36 +809,6 @@ public class Indemnizacion_detalle {
         this.getInptHidden_montoIndemnizacion().setValue(postMortem);
         mensaje("Cálculo de prestación post-mortem realizado correctamente.",
                 1);
-    }*/
-
-
-    //Calcula las presticiones post-mortem
-
-    /*private void calcular_prestaciones_post(int anios, int meses, int dias,
-                                            FacesContext f) {
-        String b1 = "ObtenerNumContratosFinalizadorTrab";
-        String b2 = "ObtenerContratosTrabajadorFallecido";
-        Object aux = JSFUtils.EjecutarAcccion(f, b1);
-        if (aux != null && Integer.parseInt(aux.toString()) > 0) {
-            String mensaje = "Cantidad de contratos finalizados o dados ";
-            mensaje += "de baja al momento del fallecimiento: " + aux;
-            Object cont = JSFUtils.EjecutarAcccion(f, b2);
-            if (cont != null && cont.toString().compareTo("") != 0) {
-                mensaje += " (" + cont.toString() + ")";
-            }
-            aux = JSFUtils.EjecutarAcccion(f, "ObtenerPromedioSueldos");
-            if (aux != null && Double.parseDouble(aux.toString()) > 0) {
-                Double sueldoPromedio = Double.parseDouble(aux.toString());
-                calcular_prestaciones_post_detallado(anios, meses, dias,
-                                                     mensaje, sueldoPromedio);
-            } else {
-                mensaje("No se pudo obtener el sueldo promedio del trabajador.",
-                        3);
-            }
-        } else {
-            mensaje("No hay contratos finalizados o dados de baja al momento del fallecimiento del trabajador.",
-                    3);
-        }
     }*/
 
     //Rellena campos pendientes antes de guardar el cálculo
@@ -1536,7 +1505,8 @@ public class Indemnizacion_detalle {
             this.getPnlHoriz_indemCalculada().setRendered(true);
             this.getCmdBtn_guardar_calculo().setDisabled(false);
         } else {
-            mensaje("No hay Total de Sueldos", 3);
+            mensaje("¡¡No hay Total de Sueldos para cálculo de Indemnización, verifique por favor!!", 
+                    3);
         }
         return null;
     }

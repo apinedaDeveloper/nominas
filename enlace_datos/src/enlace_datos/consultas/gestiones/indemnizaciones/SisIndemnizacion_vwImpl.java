@@ -55,7 +55,7 @@ public class SisIndemnizacion_vwImpl extends ViewObjectImpl implements SisIndemn
 
     //Función que obtiene el número de contratos dados de baja o finalizados del trabajdor fallecido
 
-    public String ObtenerNumeroContratosFinalizadosTrabajador(Number pRegistroEmpleado, 
+    /*public String ObtenerNumeroContratosFinalizadosTrabajador(Number pRegistroEmpleado, 
                                                               Date pFechaFallecimiento) {
         Object vResultado;
         String strConsulta;
@@ -69,11 +69,11 @@ public class SisIndemnizacion_vwImpl extends ViewObjectImpl implements SisIndemn
         vResultado = 
                 utils_DB.getEjecutarQuerry(this.getDBTransaction(), strConsulta);
         return vResultado != null ? vResultado.toString() : "-1";
-    }
+    }*/
 
     //Obtiene los contratos finalizados o dados de bajo del trabajador fallecido al momento del fallecimiento.
 
-    public String ObtenerContratosTrabajadorFallecido(Number pRegistroEmpleado, 
+    /*public String ObtenerContratosTrabajadorFallecido(Number pRegistroEmpleado, 
                                                       Date pFechaFallecimiento) {
         String vQuerry;
         String vDetalleResultado = "";
@@ -109,5 +109,5 @@ public class SisIndemnizacion_vwImpl extends ViewObjectImpl implements SisIndemn
                                e.getMessage());
         }
         return vDetalleResultado != null ? vDetalleResultado.toString() : "-1";
-    }
+    }*/
 }

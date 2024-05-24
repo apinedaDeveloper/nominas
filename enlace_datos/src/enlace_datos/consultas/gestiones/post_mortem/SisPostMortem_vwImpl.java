@@ -22,6 +22,13 @@ public class SisPostMortem_vwImpl extends ViewObjectImpl implements SisPostMorte
         this.setWhereClause("( TO_DATE(SYSDATE, 'dd/mm/yyyy' ) - TO_DATE(FECHA_CREACION, 'dd/mm/yyyy')) <= 30 AND ID_TIPO_PRESTACION=2");
         this.executeQuery();
     }
+    
+    //Recupera las solicitudes de prestaciones post mortem para el rol de Profesional de Caja
+    
+    public void RecuperarSolicitudesProfesionalCaja() {
+        this.setWhereClause("NOMBRE_ESTADO_INDEMNIZACION IN ('TRASLADADO A CAJA','LIQUIDADO')  AND ID_TIPO_PRESTACION=2");
+        this.executeQuery();
+    }
 
     //Recupera una solicitud por su llave primaria
 
