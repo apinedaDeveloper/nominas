@@ -80,7 +80,7 @@ private String insertarDetalleAutorizacion(String pIdGestion,String pIdEstado,St
     } else{
         
       vErrorE=datos.getError();
-      System.out.println(vErrorE);
+      
       if (vErrorE!=null && vErrorE.indexOf("<<")>0 && vErrorE.length()>2){
           
           vErrorE=vErrorE.substring(vErrorE.indexOf("<<")+2,vErrorE.length());  

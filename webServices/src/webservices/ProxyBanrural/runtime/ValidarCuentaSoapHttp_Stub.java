@@ -40,8 +40,7 @@ public class ValidarCuentaSoapHttp_Stub
      */
     public ValidarCuentaSoapHttp_Stub(HandlerChain handlerChain) {
         super(handlerChain);
-        //_setProperty(ENDPOINT_ADDRESS_PROPERTY, "http://localhost:7777/WsValidarCuenta/validarCuentaSoapHttpPort");
-        _setProperty(ENDPOINT_ADDRESS_PROPERTY, "http://apps3.usac.edu.gt:7777/WsValidarCuenta/validarCuentaSoapHttpPort");
+        _setProperty(ENDPOINT_ADDRESS_PROPERTY, "http://localhost:7777/WsValidarCuenta/validarCuentaSoapHttpPort");
         setSoapVersion(SOAPVersion.SOAP_11);
         setServiceName( new QName("http://webservice/","validarCuenta"));
         setPortName( new QName("http://webservice/","validarCuentaSoapHttpPort"));
