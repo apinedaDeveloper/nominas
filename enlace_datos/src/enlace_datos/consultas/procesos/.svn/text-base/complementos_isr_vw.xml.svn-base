@@ -1,0 +1,176 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="complementos_isr_vw"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   RowClass="enlace_datos.consultas.procesos.complementos_isr_vwRowImpl"
+   ComponentClass="enlace_datos.consultas.procesos.complementos_isr_vwImpl"
+   ComponentInterface="enlace_datos.consultas.procesos.common.complementos_isr_vw"
+   ClientProxyName="enlace_datos.consultas.procesos.client.complementos_isr_vwClient"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isCodegen" Value="true" />
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="pFechaI"
+      Kind="where"
+      Type="oracle.jbo.domain.Date" >
+   </Variable>
+   <Variable
+      Name="pFechaF"
+      Kind="where"
+      Type="oracle.jbo.domain.Date" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select distinct  P.ID_PROCESO, TP.NOMBRE, p.periodo, p.anio, p.observaciones, E.NOMBRE ESTADO_PROCESO, p.fecha_creacion, p.creadopor
+, (select count(*) from sis_ajuste_empleado where id_Ajuste = 1 and id_proceso = P.ID_PROCESO) tieneIsr
+from sis_proceso p
+inner join sis_tipo_proceso tp on tp.id_tipoproceso = p.tipoproceso
+INNER JOIN SIS_ESTADO E ON E.ID_ESTADO = P.ID_ESTADO
+inner join sis_nomina n on n.id_proceso = p.id_proceso
+where 
+tp.id_tipoproceso in (15,27,37,39) -- COMPLEMENTOS, COMPELEMENTOS EXTRAORDINARIOS
+--AND P.ANIO = :pAnio
+AND (e.id_estado = 44) --APROBADO
+and n.id_tipo_nomina = 1
+and n.id_proceso not in (select distinct id_proceso /*id_proceso_nomina*/ from sis_proceso_pago_det )
+and trunc(p.fecha_creacion) between nvl(:pFechaI,sysdate-365) and nvl(:pFechaF,sysdate+1)
+ORDER BY P.FECHA_CREACION
+   ]]></SQLQuery>
+   <EntityUsage
+      Name="SisProceso"
+      Entity="enlace_datos.entidades.gestiones.procesos.SisProceso" >
+      <DesignTime>
+         <Attr Name="_queryClause" Value="false" />
+      </DesignTime>
+   </EntityUsage>
+   <ViewAttribute
+      Name="IdProceso"
+      EntityAttrName="IdProceso"
+      EntityUsage="SisProceso"
+      AliasName="ID_PROCESO" >
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nombre"
+      IsPersistent="false"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBRE"
+      Expression="NOMBRE"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Periodo"
+      IsPersistent="false"
+      Precision="2"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="PERIODO"
+      Expression="PERIODO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Anio"
+      IsPersistent="false"
+      Precision="4"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ANIO"
+      Expression="ANIO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Observaciones"
+      IsPersistent="false"
+      Precision="2000"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="OBSERVACIONES"
+      Expression="OBSERVACIONES"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="2000" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="EstadoProceso"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="ESTADO_PROCESO"
+      Expression="ESTADO_PROCESO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaCreacion"
+      IsPersistent="false"
+      IsNotNull="true"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_CREACION"
+      Expression="FECHA_CREACION"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Creadopor"
+      IsPersistent="false"
+      Precision="20"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="CREADOPOR"
+      Expression="CREADOPOR"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="20" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Tieneisr"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="TIENEISR"
+      Expression="TIENEISR"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="is_ISR"
+      IsUpdateable="false"
+      IsSelected="false"
+      IsQueriable="false"
+      IsPersistent="false"
+      Type="java.lang.Boolean"
+      ColumnType="NUMBER"
+      AliasName="VIEW_ATTR"
+      SQLType="BIT" >
+   </ViewAttribute>
+</ViewObject>

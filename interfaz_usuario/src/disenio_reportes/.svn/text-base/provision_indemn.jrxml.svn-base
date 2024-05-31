@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="provision_indemn"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="730"
+		 pageHeight="792"
+		 columnWidth="674"
+		 columnSpacing="0"
+		 leftMargin="28"
+		 rightMargin="28"
+		 topMargin="56"
+		 bottomMargin="56"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pIdRemesa" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[select pt.formato2 formato, ujj.nombre unidad_ejecutora, p.nombre nombre, res.valor, round(res.valor*0.1170,2) provision
+, (select 'Periodo de '|| to_char(fecha_inicio,'dd/mm/yyyy') || ' al ' || to_char(fecha_fin,'dd/mm/yyyy') from sis_remesa where id_remesa = $P{pIdRemesa}) periodo
+from (select n.id_partida, sum(n.nominal) valor
+from sis_documento_banco d
+inner join sis_pago p on p.ID_DOCUMENTO_BANCO = d.ID_DOCUMENTO_BANCO
+inner join sis_nomina n on n.id_nomina = p.id_nomina
+inner join partida part on part.id_partida = n.id_partida
+inner join sis_unidad_ejecutora uj on uj.id_programa = part.d1||part.d2
+                                  and uj.ID_DEPENDENCIA = part.d3d4
+                                  and uj.ID_UNIDAD = part.d5||part.d6||part.d7
+where
+not exists (select 1 from SIS_DOC_PAGO_ANULADO where ID_DOC_PAGO = d.ID_DOCUMENTO_BANCO)
+and d.FECHA_ANULACION is null
+AND N.ID_TIPO_NOMINA = 1
+and uj.nombre not like '%VACAC%' and uj.id_programa = 45 
+and d.id_remesa = $P{pIdRemesa}
+group by n.id_partida
+) res
+inner join sis_partida_vw pt on pt.id_partida = res.id_partida
+inner join partida p on p.id_partida = res.id_partida
+inner join sis_unidad_ejecutora ujj on ujj.id_programa = p.d1||p.d2
+                                  and ujj.ID_DEPENDENCIA = p.d3d4
+                                  and ujj.ID_UNIDAD = p.d5||p.d6||p.d7                                  
+order by p.d3d4, p.d5, p.d6, p.d7, p.d9d10]]></queryString>
+
+	<field name="FORMATO" class="java.lang.String"/>
+	<field name="UNIDAD_EJECUTORA" class="java.lang.String"/>
+	<field name="NOMBRE" class="java.lang.String"/>
+	<field name="VALOR" class="java.math.BigDecimal"/>
+	<field name="PROVISION" class="java.math.BigDecimal"/>
+	<field name="PERIODO" class="java.lang.String"/>
+
+	<variable name="suma_debe" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{VALOR}]]></variableExpression>
+	</variable>
+	<variable name="suma_provision" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{PROVISION}]]></variableExpression>
+	</variable>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="83"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="2"
+						y="70"
+						width="89"
+						height="12"
+						key="staticText-1"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Courier New" pdfFontName="Courier-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[PARTIDA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="321"
+						y="70"
+						width="125"
+						height="12"
+						key="staticText-2"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Courier New" pdfFontName="Courier-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[NOMBRE DE LA CUENTA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="464"
+						y="70"
+						width="72"
+						height="12"
+						key="staticText-4"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Courier New" pdfFontName="Courier-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[VALOR]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="602"
+						y="70"
+						width="70"
+						height="12"
+						key="staticText-5"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Courier New" pdfFontName="Courier-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[PROVISION]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="28"
+						width="674"
+						height="15"
+						key="staticText-6"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" pdfFontName="Courier-Bold" size="12" isBold="true"/>
+					</textElement>
+				<text><![CDATA[REPORTE PROYECCION DE PROVISION INDEMNIZACION]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="2"
+						y="0"
+						width="342"
+						height="11"
+						key="staticText-7"/>
+					<box></box>
+					<textElement>
+						<font fontName="Courier New" pdfFontName="Courier" size="9"/>
+					</textElement>
+				<text><![CDATA[UNIVERSIDAD DE SAN CARLOS DE GUATEMALA]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="534"
+						y="0"
+						width="139"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier" size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["HOJA NO. "+$V{PAGE_NUMBER}.toString()]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="535"
+						y="14"
+						width="139"
+						height="12"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier" size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new java.util.Date()]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="530"
+						y="70"
+						width="57"
+						height="12"
+						key="staticText-9"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Courier New" pdfFontName="Courier-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[* (%)  ]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="1"
+						y="82"
+						width="673"
+						height="0"
+						key="line-10"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="1.0" lineStyle="Double"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="1"
+						y="69"
+						width="673"
+						height="0"
+						key="line-11"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1"
+						y="53"
+						width="201"
+						height="13"
+						key="textField-3"/>
+					<box></box>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PERIODO}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="88"
+						y="70"
+						width="119"
+						height="12"
+						key="staticText-11"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Courier New" pdfFontName="Courier-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[SUB-PROGRAMA]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="517"
+						y="29"
+						width="157"
+						height="13"
+						key="textField-7"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Remesa No: " + $P{pIdRemesa}]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="19"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="2"
+						y="0"
+						width="90"
+						height="14"
+						key="textField"/>
+					<box></box>
+					<textElement verticalAlignment="Top">
+						<font fontName="Courier New" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{FORMATO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="322"
+						y="0"
+						width="124"
+						height="14"
+						key="textField"/>
+					<box></box>
+					<textElement verticalAlignment="Top">
+						<font fontName="Courier New" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="453"
+						y="0"
+						width="88"
+						height="14"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font fontName="Courier New" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{VALOR}.abs()]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="529"
+						y="0"
+						width="57"
+						height="14"
+						key="staticText-10"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font fontName="Courier New" pdfFontName="Courier" size="8" isBold="false"/>
+					</textElement>
+				<text><![CDATA[11.70 ]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="586"
+						y="0"
+						width="86"
+						height="14"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font fontName="Courier New" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{PROVISION}.abs()]]></textFieldExpression>
+				</textField>
+				<line direction="TopDown">
+					<reportElement
+						x="674"
+						y="1"
+						width="0"
+						height="18"
+						key="line-9"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.15" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="87"
+						y="0"
+						width="229"
+						height="19"
+						key="textField-5"/>
+					<box></box>
+					<textElement verticalAlignment="Top">
+						<font fontName="Courier New" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{UNIDAD_EJECUTORA}]]></textFieldExpression>
+				</textField>
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="1"
+						width="0"
+						height="18"
+						key="line-15"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.15" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="18"
+						width="674"
+						height="0"
+						key="line-16"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.15" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="27"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="454"
+						y="1"
+						width="87"
+						height="19"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Courier New" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{suma_debe}]]></textFieldExpression>
+				</textField>
+				<line direction="TopDown">
+					<reportElement
+						x="454"
+						y="3"
+						width="220"
+						height="0"
+						key="line-4"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="586"
+						y="3"
+						width="88"
+						height="19"
+						key="textField-2"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Courier New" pdfFontName="Courier" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{suma_provision}]]></textFieldExpression>
+				</textField>
+				<line direction="TopDown">
+					<reportElement
+						x="454"
+						y="23"
+						width="220"
+						height="0"
+						key="line-13"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="454"
+						y="26"
+						width="220"
+						height="0"
+						key="line-14"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+			</band>
+		</summary>
+</jasperReport>

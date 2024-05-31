@@ -34,23 +34,17 @@
     union
     select 2,'[centros]' from dual 
     union
-	select unique 3, tdep.id_dependencia||'|'||dep.descripcion
-	from sis_documento_banco sdb, sis_pago sp, sis_nomina sn, sis_partida par
-	, (
-	select dep.id_dependencia
-      	from sis_dependencia dep, sis_tipoplanilla_igss plaIgss
-	where dep.id_dependencia = plaIgss.id_dependencia
-      	group by dep.id_dependencia 
-    	) tDep, (
-        select dp.id_dependencia, dp.nombre||'|'||dp.direccion||'|'||dp.zona||'|||||'||depto.cod_dep_retenisr||'|'||muni.cod_muni_retenisr||'|803001|' descripcion
+    select 3, tDep.id_dependencia ||'|'|| (
+        select dp.nombre||'|'||dp.direccion||'|'||dp.zona||'|||Karol Siomara Contreras Santos|contreras.karol@usac.edu.gt|'||depto.cod_dep_retenisr||'|'||muni.cod_muni_retenisr||'|803001|'
         from sis_dependencia dp, sis_municipio muni, sis_departamento depto
-        where dp.id_municipio = muni.id_municipio and muni.id_departamento = depto.id_departamento
-        order by dp.id_dependencia
-        ) dep
-	where sdb.id_documento_banco = sp.id_documento_banco and sp.id_nomina = sn.id_nomina
-	and sn.id_partida = par.id_partida and par.id_dependencia = tdep.id_dependencia
-	and tdep.id_dependencia = dep.id_dependencia
-	and sn.id_tipo_nomina not in (2, 3, 5, 6, 8) and sdb.id_remesa in ($P{pRemesa}, ($P{pRemesa} - 1) )
+        where dp.id_municipio = muni.id_municipio
+        and muni.id_departamento = depto.id_departamento and dp.id_dependencia = tDep.id_dependencia
+    ) descripcion from (
+      select dep.id_dependencia
+      from sis_dependencia dep, sis_tipoplanilla_igss plaIgss
+      where dep.id_dependencia = plaIgss.id_dependencia
+      group by dep.id_dependencia
+    ) tDep
     union
     select 4,'[tiposplanilla]' from dual 
     union
@@ -73,13 +67,13 @@ select 2,2,
   (select id_tipo_planilla from sis_tipoplanilla_igss where id_ajuste = t.ajuste and  
     (select sis_pkg_util2.getDependenciaEmpleado(t.registro_empleado, to_char(to_date($P{pFechaInicioPeriodo},'dd/mm/yyyy'),'mm/yyyy'), t.periodoPago) from dual) = id_dependencia
   )||'|'||
-  (select REPLACE(empl.igss,'-','')||'|'||empl.nombre1||'||'||empl.apellido1
+  (select REPLACE(empl.igss,'-','') || '|' || empl.nombre1 || '|' || empl.nombre2 || '|' || empl.apellido1 || '|' || empl.apellido2
     from sis_empleado empl where empl.registro_empleado = t.registro_empleado)
-  ||'|||'||REPLACE(t.nominal,',','.')||'|'||
+  ||'||'||REPLACE(t.nominal,',','.')||'|'||
   (select sis_pkg_util2.getFechaInicioIGSS(t.registro_empleado,$P{pRemesa} - 1, 0) from dual)
   ||'||'||
   (select sis_pkg_util2.getDependenciaEmpleado(t.registro_empleado,to_char(to_date($P{pFechaInicioPeriodo},'dd/mm/yyyy'),'mm/yyyy'), t.periodoPago) from dual)
-  ||'||3431|P||1||TC||'
+  ||'||3431|P||1|'|| decode((select sis_pkg_util2.getFechaInicioIGSS(t.registro_empleado,$P{pRemesa} - 1, 0) from dual), null, '', 0) ||'|TC||'
 from (
     select empl_nomina.registro_empleado, max(empl_nomina.periodoPago) periodoPago, 
     max(empl_nomina.nominal) nominal, max(empl_nomina.ajuste) ajuste 
@@ -116,30 +110,30 @@ from (
                 select sol.registro_empleado,
                 (case when sus.fecha_inicio_susp_igss < (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pRemesa}) then (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pRemesa}) else sus.fecha_inicio_susp_igss end) as inicio,
                 (case when (select sis_pkg_util2.getFechaAltaIGSS(sol.id_solicitud, ($P{pRemesa})) from dual) >= 
-                    (select last_day(to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy'))) 
+                    (select last_day(to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio, 'yyyy'))) 
                     from sis_remesa sr where sr.id_remesa = $P{pRemesa}) 
                 or sus.fecha_alta_susp_igss is null 
-                    then (select last_day(to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy'))) from sis_remesa sr where sr.id_remesa = $P{pRemesa})
-                    else sus.fecha_alta_susp_igss-1 end) as fin
+                    then (select last_day(to_date('01/'||to_char(sr.periodo, '00')||to_char(fecha_inicio, 'yyyy'))) from sis_remesa sr where sr.id_remesa = $P{pRemesa})
+                    else sus.fecha_alta_susp_igss - 1 end) as fin
                 from sis_solicitud sol, sis_suspencion_igss sus, sis_contrato cont, sis_autorizacion auto, sis_autorizacion_det det, sis_empleado ei
                 where sol.id_solicitud = sus.id_solicitud and sol.registro_empleado= ei.registro_empleado
                 and sol.registro_empleado = cont.registro_empleado and auto.id_solicitud = sol.id_solicitud
-                and det.id_autorizacion = auto.id_autorizacion and sol.id_tipo_solicitud=2
+                and det.id_autorizacion = auto.id_autorizacion and sol.id_tipo_solicitud = 2
                 and sol.id_estado=39 and det.id_estado = 39
                 and trunc(det.fecha) <= (select sr.fecha_fin from sis_remesa sr where sr.id_remesa = $P{pRemesa})
-                and (trunc(sus.fecha_inicio_susp_igss) <=(select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pRemesa})
+                and (trunc(sus.fecha_inicio_susp_igss) <= (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pRemesa})
                 and (trunc((select sis_pkg_util2.getFechaAltaIGSS(sol.id_solicitud, ($P{pRemesa})) from dual)) >= (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pRemesa}) 
                 or sus.fecha_alta_susp_igss is null)
-                    or sus.fecha_inicio_susp_igss > (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pRemesa})
-                and (sus.fecha_inicio_susp_igss < (select last_day(to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy'))) from sis_remesa sr where sr.id_remesa = $P{pRemesa}))
+                    or sus.fecha_inicio_susp_igss > (select to_date('01/'||to_char(sr.periodo, '00')||to_char(fecha_inicio, 'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pRemesa})
+                and (sus.fecha_inicio_susp_igss < (select last_day(to_date('01/'||to_char(sr.periodo, '00')||to_char(fecha_inicio, 'yyyy'))) from sis_remesa sr where sr.id_remesa = $P{pRemesa}))
                 )
-                and (cont.fecha_inicio < (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pRemesa}) 
-                    and ( cont.fecha_fin >= (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pRemesa})) 
+                and (cont.fecha_inicio < (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio, 'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pRemesa}) 
+                    and ( cont.fecha_fin >= (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio, 'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pRemesa})) 
                     and (select vx.id_estado from (
                     select sh.id_contrato, sh.id_estado from sis_historico_est_contrato sh 
                     where  trunc(sh.fecha) < (select sr.fecha_fin from sis_remesa sr where sr.id_remesa = $P{pRemesa})
                     order by sh.fecha desc) vx
-                    where rownum <=1 and vx.id_contrato=cont.id_contrato) not in(43,15)	
+                    where rownum <=1 and vx.id_contrato = cont.id_contrato) not in(43, 15)	
                 )
             ) sus
             group by sus.registro_empleado) nom_sus
@@ -155,14 +149,14 @@ from (
                   or
                   (doc.id_estado = 17 and trunc(doc.fecha_anulacion) > trunc((select fecha_fin from sis_remesa where id_remesa = $P{pRemesa})))
                 )
-                and nom.correlativo = (select to_char(fecha_inicio,'yyyy') from sis_remesa sr where sr.id_remesa = $P{pRemesa})
+                and nom.correlativo = (select to_char(fecha_inicio, 'yyyy') from sis_remesa sr where sr.id_remesa = $P{pRemesa})
                 and  nom.periodo = (select sr.periodo from sis_remesa sr where sr.id_remesa = $P{pRemesa})      
                 )
             )
             or
             (
-                inicio <= (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pRemesa}) 
-                and fin >=(select last_day(to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy'))) from sis_remesa sr where sr.id_remesa = $P{pRemesa})
+                inicio <= (select to_date('01/'||to_char(sr.periodo, '00')||to_char(fecha_inicio, 'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pRemesa}) 
+                and fin >=(select last_day(to_date('01/'||to_char(sr.periodo, '00')||to_char(fecha_inicio, 'yyyy'))) from sis_remesa sr where sr.id_remesa = $P{pRemesa})
             )
         )
         union  -- EMPLEADOS CON SUELDO CERO CON LICENCIA EN EL MES
@@ -170,23 +164,23 @@ from (
         select  licencia.*, 0 ,
             (select max(id_ajuste) from sis_ajuste_empleado
                 where registro_empleado=licencia.registro_empleado and estado = 'A' and id_ajuste in (21, 25)
-            ) ajuste, (select to_char((select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pRemesa}),'mm/yyyy') from dual) periodoPago
+            ) ajuste, (select to_char((select to_date('01/'||to_char(sr.periodo, '00')||to_char(fecha_inicio, 'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pRemesa}),'mm/yyyy') from dual) periodoPago
         from (
             select nom.registro_empleado, sum(nom.nominal) nominal 
             from sis_documento_banco doc, sis_pago pago, sis_nomina nom, sis_empleado ei
             where doc.id_documento_banco = pago.id_documento_banco and nom.id_nomina = pago.id_nomina
             and nom.registro_empleado= ei.registro_empleado and nom.id_tipo_nomina not in (2, 3, 5, 6, 8)
             and doc.id_remesa = $P{pRemesa}
-            and  nom.correlativo = (select to_char(fecha_inicio,'yyyy') from sis_remesa sr where sr.id_remesa = $P{pRemesa})
+            and  nom.correlativo = (select to_char(fecha_inicio, 'yyyy') from sis_remesa sr where sr.id_remesa = $P{pRemesa})
             and  nom.periodo = (select sr.periodo from sis_remesa sr where sr.id_remesa = $P{pRemesa})
             group by nom.registro_empleado
         ) nomina,
         (select sol.registro_empleado  
         from sis_solicitud sol, sis_det_licencia lic, sis_empleado ei
         where sol.id_solicitud = lic.id_solicitud and sol.registro_empleado = ei.registro_empleado
-        and sol.id_tipo_solicitud = 1 and sol.id_estado = 39 and lic.tipo_licencia ='SS' and lic.procede = 'SI'
-        and trunc(lic.fecha_inicio) <= (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pRemesa}) 
-        and trunc(lic.fecha_fin) >= (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pRemesa}) 
+        and sol.id_tipo_solicitud = 1 and sol.id_estado = 39 and lic.tipo_licencia = 'SS' and lic.procede = 'SI'
+        and trunc(lic.fecha_inicio) <= (select to_date('01/'||to_char(sr.periodo, '00')||to_char(fecha_inicio, 'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pRemesa}) 
+        and trunc(lic.fecha_fin) >= (select to_date('01/'||to_char(sr.periodo, '00')||to_char(fecha_inicio, 'yyyy')) from sis_remesa sr where sr.id_remesa = $P{pRemesa}) 
         group by sol.registro_empleado
         ) licencia
         where nomina.registro_empleado(+) = licencia.registro_empleado
@@ -196,24 +190,24 @@ from (
     group by empl_nomina.registro_empleado
 ) t
 union -- EMPLEADOS QUE NO APARECEN EN LA NOMINA ACTUAL, PERO SI APARECIERON EN LA ANTERIOR
-select 2,3, 
+select 2, 3, 
   (
   select id_tipo_planilla from sis_tipoplanilla_igss where id_ajuste = t.ajuste and  
     (select sis_pkg_util2.getDependenciaEmpleado(t.registro_empleado
-        , to_char(((select last_day(to_date('01/'||to_char(sr.periodo,'00')||to_char(sr.fecha_inicio,'yyyy')))
+        , to_char(((select last_day(to_date('01/'||to_char(sr.periodo, '00')||to_char(sr.fecha_inicio, 'yyyy')))
                            from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1))), 'mm/yyyy'), t.periodoPago) from dual) = id_dependencia
-  )||'|'||
-  (select REPLACE(empl.igss, '-', '')||'|'||empl.nombre1||'||'||empl.apellido1
+  ) || '|' ||
+  (select REPLACE(empl.igss,'-','') || '|' || empl.nombre1 || '|' || empl.nombre2 || '|' || empl.apellido1 || '|' || empl.apellido2
     from sis_empleado empl where empl.registro_empleado = t.registro_empleado)
-  ||'|||'||REPLACE(t.nominal, ',', '.')||'||'||
-  (select last_day(to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy'))) from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1))
-  ||'|'||
+  || '||' ||REPLACE(t.nominal, ',', '.') || '||' ||
+  (select last_day(to_date('01/' || to_char(sr.periodo,'00') || to_char(fecha_inicio,'yyyy'))) from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1))
+  || '|' ||
   (select sis_pkg_util2.getDependenciaEmpleado(t.registro_empleado, to_char((select last_day(to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy'))) from sis_remesa sr where id_remesa = ($P{pRemesa} - 1)),'mm/yyyy'), t.periodoPago) from dual)
-  ||'||3431|P||1||TC||'
+  || '||3431|P||1|0|TC||'
 from (
     select empl_nomina.registro_empleado, max(empl_nomina.periodoPago) periodoPago, 
         0 nominal, max(empl_nomina.ajuste) ajuste,
-        (select sis_pkg_util2.getFechaInicioIGSS(empl_nomina.registro_empleado,$P{pRemesa},0) from dual) fecha
+        (select sis_pkg_util2.getFechaInicioIGSS(empl_nomina.registro_empleado, $P{pRemesa}, 0) from dual) fecha
     from (
         ( -- NOMINA DE EMPLEADOS 
         select nom.registro_empleado, 
@@ -222,7 +216,7 @@ from (
         where doc.id_documento_banco = pago.id_documento_banco and nom.id_nomina = pago.id_nomina
         and nom.registro_empleado = ei.registro_empleado and nom.id_tipo_nomina not in (2, 3, 5, 6, 8)
         and scal.id_nomina = nom.id_nomina and scal.id_ajuste in (21, 25)
-        and doc.id_remesa =($P{pRemesa} -1)
+        and doc.id_remesa = ($P{pRemesa} -1 )
         and (
             (doc.id_estado <> 17 and doc.fecha_anulacion is null)  
             or (doc.id_estado = 17 and  
@@ -243,21 +237,21 @@ from (
         select sus.registro_empleado, min(sus.inicio) inicio, max(sus.fin) fin
         from (
             select sol.registro_empleado,
-                (case when sus.fecha_inicio_susp_igss<(select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1)) then (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = ($P{pRemesa}-1)) else sus.fecha_inicio_susp_igss end) as inicio,
-                (case when (select sis_pkg_util2.getFechaAltaIGSS(sol.id_solicitud, ($P{pRemesa}-1)) from dual) >= 
-                (select last_day(to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy'))) from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1)) 
-                or sus.fecha_alta_susp_igss is null then (select last_day(to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy'))) from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1))
+                (case when sus.fecha_inicio_susp_igss<(select to_date('01/'||to_char(sr.periodo, '00')||to_char(fecha_inicio, 'yyyy')) from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1)) then (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = ($P{pRemesa}-1)) else sus.fecha_inicio_susp_igss end) as inicio,
+                (case when (select sis_pkg_util2.getFechaAltaIGSS(sol.id_solicitud, ($P{pRemesa} -1 )) from dual) >= 
+                (select last_day(to_date('01/'||to_char(sr.periodo, '00')||to_char(fecha_inicio, 'yyyy'))) from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1)) 
+                or sus.fecha_alta_susp_igss is null then (select last_day(to_date('01/'||to_char(sr.periodo, '00')||to_char(fecha_inicio, 'yyyy'))) from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1))
                 else sus.fecha_alta_susp_igss end) as fin
             from sis_solicitud sol, sis_suspencion_igss sus, sis_contrato cont, sis_autorizacion auto, sis_autorizacion_det det, sis_empleado ei
-            where sol.id_solicitud = sus.id_solicitud and sol.registro_empleado= ei.registro_empleado
+            where sol.id_solicitud = sus.id_solicitud and sol.registro_empleado = ei.registro_empleado
             and sol.registro_empleado = cont.registro_empleado and auto.id_solicitud = sol.id_solicitud
             and det.id_autorizacion = auto.id_autorizacion and trunc(det.fecha) <= (select sr.fecha_fin from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1))
             and sol.id_tipo_solicitud = 2 and sol.id_estado = 39
-            and (trunc(sus.fecha_inicio_susp_igss) <= (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = ($P{pRemesa}-1))
-                and (trunc((select sis_pkg_util2.getFechaAltaIGSS(sol.id_solicitud, ($P{pRemesa}-1)) from dual)) >= (select to_date('01/'||to_char(sr.periodo,'00')||to_char(sr.fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = ($P{pRemesa}-1))
+            and (trunc(sus.fecha_inicio_susp_igss) <= (select to_date('01/'||to_char(sr.periodo, '00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = ($P{pRemesa}-1))
+                and (trunc((select sis_pkg_util2.getFechaAltaIGSS(sol.id_solicitud, ($P{pRemesa} - 1)) from dual)) >= (select to_date('01/'||to_char(sr.periodo,'00')||to_char(sr.fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = ($P{pRemesa}-1))
                     or sus.fecha_alta_susp_igss is null)
                 or sus.fecha_inicio_susp_igss > (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1))
-                and (sus.fecha_inicio_susp_igss < (select last_day(to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy'))) from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1)))
+                and (sus.fecha_inicio_susp_igss < (select last_day(to_date('01/'||to_char(sr.periodo, '00')||to_char(fecha_inicio,'yyyy'))) from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1)))
             )
             and (
                 (Nvl(cont.fecha_inicio_doc, cont.fecha_inicio) < (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1)) --viernes 24/02/2023 por Rolando Anona
@@ -265,7 +259,7 @@ from (
                 and (cont.fecha_fin > (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1)))
                 and cont.estatus not in (15)
                 ) 
-            or (cont.tipo_validez = 'I' and cont.correlativo <> (select to_char(fecha_inicio,'yyyy') from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1)) 
+            or (cont.tipo_validez = 'I' and cont.correlativo <> (select to_char(fecha_inicio, 'yyyy') from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1)) 
                 and (select vx.id_estado from (
                         select sh.id_contrato, sh.id_estado from sis_historico_est_contrato sh 
                         where  trunc(sh.fecha) < to_date('20/09/2014','dd/mm/yyyy')
@@ -287,13 +281,13 @@ from (
                 or
                 (doc.id_estado = 17 and trunc(doc.fecha_anulacion) > trunc((select fecha_fin from sis_remesa where id_remesa = ($P{pRemesa} - 1))))
             )
-            and nom.correlativo = (select to_char(fecha_inicio,'yyyy') from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1))
+            and nom.correlativo = (select to_char(fecha_inicio, 'yyyy') from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1))
             and  nom.periodo = (select sr.periodo from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1)) 
             )
         )
         or (
-            inicio <= (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1)) 
-            and fin >= (select last_day(to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy'))) from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1))
+            inicio <= (select to_date('01/'||to_char(sr.periodo, '00')||to_char(fecha_inicio, 'yyyy')) from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1)) 
+            and fin >= (select last_day(to_date('01/'||to_char(sr.periodo, '00')||to_char(fecha_inicio, 'yyyy'))) from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1))
         )
         )
         union  -- EMPLEADOS CON SUELDO CERO CON LICENCIA EN EL MES
@@ -315,8 +309,8 @@ from (
         from sis_solicitud sol, sis_det_licencia lic, sis_empleado ei
         where sol.id_solicitud = lic.id_solicitud and sol.registro_empleado = ei.registro_empleado
         and sol.id_tipo_solicitud = 1 and sol.id_estado = 39 and lic.tipo_licencia = 'SS' and lic.procede = 'SI'
-        and trunc(lic.fecha_inicio) <= (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1)) 
-        and trunc(lic.fecha_fin) >= (select to_date('01/'||to_char(sr.periodo,'00')||to_char(fecha_inicio,'yyyy')) from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1)) 
+        and trunc(lic.fecha_inicio) <= (select to_date('01/'||to_char(sr.periodo, '00')||to_char(fecha_inicio, 'yyyy')) from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1)) 
+        and trunc(lic.fecha_fin) >= (select to_date('01/'||to_char(sr.periodo, '00')||to_char(fecha_inicio, 'yyyy')) from sis_remesa sr where sr.id_remesa = ($P{pRemesa} - 1)) 
         group by sol.registro_empleado) licencia
         where nomina.registro_empleado(+) = licencia.registro_empleado
         and nomina.registro_empleado is null
@@ -328,15 +322,16 @@ where t.fecha is not null
 union
 select 3, 1, '[suspendidos]' from dual
 union -- SUSPENSIONES IGSS
-select 3, 2, nom_susp.id_tipo_planilla||'|'||(select REPLACE(empl.igss,'-','')||'|'||empl.nombre1||'||'||empl.apellido1
-    from sis_empleado empl where empl.registro_empleado=nom_susp.registro_empleado) 
-    ||'|||'||to_char(nom_susp.inicio,'dd/mm/yyyy') ||'|'||to_char(nom_susp.fin,'dd/mm/yyyy')||'|' datos
+select 3, 2, nom_susp.id_tipo_planilla || '|' || (select REPLACE(empl.igss, '-', '') || '|' || empl.nombre1 || '|' || empl.nombre2 || '|' || empl.apellido1 || '|' || empl.apellido2
+    from sis_empleado empl where empl.registro_empleado = nom_susp.registro_empleado) 
+    || '||' || to_char(nom_susp.inicio,'dd/mm/yyyy') || '|' || to_char(nom_susp.fin, 'dd/mm/yyyy') || '|' datos
 from (
     select registro_empleado, id_tipo_planilla, min(inicio) inicio, max(fin) fin
     from (
         select sol.registro_empleado, plaigss.id_tipo_planilla
-        , (case when sus.fecha_inicio_susp_igss < to_date($P{pFechaInicioPeriodo},'dd/mm/yyyy') then to_date($P{pFechaInicioPeriodo},'dd/mm/yyyy') else sus.fecha_inicio_susp_igss end) as inicio
-        , (case when (select sis_pkg_util2.getFechaAltaIGSS(sol.id_solicitud, ($P{pRemesa})) from dual) >= to_date($P{pFechaFinPeriodo},'dd/mm/yyyy') or sus.fecha_alta_susp_igss is null then to_date($P{pFechaFinPeriodo},'dd/mm/yyyy') else sus.fecha_alta_susp_igss - 1 end) as fin
+        , (case when sus.fecha_inicio_susp_igss < to_date($P{pFechaInicioPeriodo}, 'dd/mm/yyyy') then to_date($P{pFechaInicioPeriodo},'dd/mm/yyyy') else sus.fecha_inicio_susp_igss end) as inicio
+        -- , (case when (select sis_pkg_util2.getFechaAltaIGSS(sol.id_solicitud, (:pRemesa)) from dual) >= to_date(:pFechaFinPeriodo,'dd/mm/yyyy') or sus.fecha_alta_susp_igss is null then to_date(:pFechaFinPeriodo,'dd/mm/yyyy') else sus.fecha_alta_susp_igss - 1 end) as fin
+        , sis_pkg_util2.getFechaAltaIGSS_2(sol.id_solicitud, $P{pRemesa}, $P{pFechaFinPeriodo} ) fin
         from sis_solicitud sol, sis_suspencion_igss sus, sis_contrato cont, sis_autorizacion auto, sis_autorizacion_det det, sis_empleado ei
         , sis_partida_vw par, sis_dependencia dep, sis_tipoplanilla_igss plaIgss
         , (select registro_empleado, id_ajuste
@@ -355,16 +350,17 @@ from (
         ----
         and sol.id_tipo_solicitud = 2 and sol.id_estado = 39 and det.id_estado = 39
         and trunc(det.fecha) <= (select sr.fecha_fin from sis_remesa sr where sr.id_remesa = $P{pRemesa})
-        and (sus.fecha_inicio_susp_igss <= to_date($P{pFechaInicioPeriodo},'dd/mm/yyyy') and 
+        and (sus.fecha_inicio_susp_igss <= to_date($P{pFechaInicioPeriodo}, 'dd/mm/yyyy') and 
             (trunc((select sis_pkg_util2.getFechaAltaIGSS(sol.id_solicitud, ($P{pRemesa})) from dual)) > to_date($P{pFechaInicioPeriodo},'dd/mm/yyyy') or sus.fecha_alta_susp_igss - 1 is null)
             or sus.fecha_inicio_susp_igss >= to_date($P{pFechaInicioPeriodo},'dd/mm/yyyy') and (sus.fecha_inicio_susp_igss<= to_date($P{pFechaFinPeriodo},'dd/mm/yyyy'))
         )
-        and (cont.fecha_inicio < to_date($P{pFechaInicioPeriodo},'dd/mm/yyyy') and ( cont.fecha_fin >= to_date($P{pFechaInicioPeriodo},'dd/mm/yyyy')) 
+        and (cont.fecha_inicio < to_date( $P{pFechaInicioPeriodo}, 'dd/mm/yyyy') and ( decode(cont.fecha_fin, null, trunc(sysdate), cont.fecha_fin) >= to_date( $P{pFechaInicioPeriodo},'dd/mm/yyyy')) -- corregido 11/10/2023
         and (select vx.id_estado from (
             select sh.id_contrato, sh.id_estado from sis_historico_est_contrato sh 
             where  trunc(sh.fecha) < (select sr.fecha_fin from sis_remesa sr where sr.id_remesa = $P{pRemesa})
             order by sh.fecha desc) vx
-            where rownum <=1 and vx.id_contrato = cont.id_contrato) not in(43, 15)	
+            where rownum <= 1 and vx.id_contrato = cont.id_contrato) not in(43, 15)	
+	and sol.registro_empleado != 0
         )
     ) sus
     group by registro_empleado, sus.id_tipo_planilla
@@ -375,7 +371,7 @@ where exists(
     from sis_nomina nom, sis_documento_banco doc, sis_pago p
     where nom.id_nomina = p.id_nomina and doc.id_documento_banco = p.id_documento_banco
     and nom.id_tipo_nomina not in (2, 3, 5, 6, 8) and doc.id_remesa = $P{pRemesa}
-    and  nom.correlativo = (select to_char(fecha_inicio,'yyyy') from sis_remesa sr where sr.id_remesa = $P{pRemesa})
+    and  nom.correlativo = (select to_char(fecha_inicio, 'yyyy') from sis_remesa sr where sr.id_remesa = $P{pRemesa})
     and  nom.periodo = (select sr.periodo from sis_remesa sr where sr.id_remesa = $P{pRemesa})        
     and (nom.registro_empleado = nom_susp.registro_empleado 
         and ( (doc.id_estado <> 17 and doc.fecha_anulacion is null)  
@@ -383,14 +379,15 @@ where exists(
             )
     )
     )  
-)
-or (inicio <= to_date($P{pFechaInicioPeriodo},'dd/mm/yyyy') and fin >= to_date($P{pFechaFinPeriodo},'dd/mm/yyyy'))
+) and nom_susp.fin >= nom_susp.inicio
+or (nom_susp.inicio <= to_date($P{pFechaInicioPeriodo}, 'dd/mm/yyyy') and nom_susp.fin >= to_date($P{pFechaFinPeriodo}, 'dd/mm/yyyy'))
 union
 select 4, 1, '[licencias]' from dual
 union --LICENCIAS SIN GOCE DE SUELDO
-select  4,2, licencia.id_tipo_planilla||'|'||(select REPLACE(empl.igss,'-','')||'|'||empl.nombre1||'||'||empl.apellido1
+select 4, 2, licencia.id_tipo_planilla || '|' ||
+(select REPLACE(empl.igss,'-','') || '|' || empl.nombre1 || '|' || empl.nombre2 || '|' || empl.apellido1 || '|' || empl.apellido2
     from sis_empleado empl where empl.registro_empleado = licencia.registro_empleado) 
-      ||'|||'||$P{pFechaInicioPeriodo} ||'|'||$P{pFechaFinPeriodo} ||'|' datos
+      || '||' ||$P{pFechaInicioPeriodo} || '|'||$P{pFechaFinPeriodo} ||'|' datos
 from (
     select nom.registro_empleado, max(cont.horascontratadas) hrs , sum(nom.nominal) nominal 
     from sis_documento_banco doc, sis_pago pago, sis_nomina nom, sis_contrato cont, sis_empleado ei
@@ -417,8 +414,8 @@ from (
     and dep.id_dependencia = plaigss.id_dependencia and sol.registro_empleado = aj.registro_empleado
     and plaigss.id_ajuste = aj.id_ajuste
     ----
-    and sol.id_estado=39 and lic.tipo_licencia = 'SS' and lic.procede = 'SI'
-    and lic.fecha_inicio <= to_date($P{pFechaInicioPeriodo},'dd/mm/yyyy') and lic.fecha_fin >= to_date($P{pFechaInicioPeriodo},'dd/mm/yyyy')
+    and sol.id_estado = 39 and lic.tipo_licencia = 'SS' and lic.procede = 'SI'
+    and lic.fecha_inicio <= to_date($P{pFechaInicioPeriodo}, 'dd/mm/yyyy') and lic.fecha_fin >= to_date($P{pFechaInicioPeriodo},'dd/mm/yyyy')
     group by sol.registro_empleado, plaigss.id_tipo_planilla) licencia
     on nomina.registro_empleado = licencia.registro_empleado
 where nomina.registro_empleado is null

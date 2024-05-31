@@ -27,14 +27,14 @@
 	<parameter name="SUBREPORT_DIR" isForPrompting="true" class="java.lang.String">
 		<defaultValueExpression ><![CDATA["C:\\Program Files (x86)\\JasperSoft\\iReport-3.0.0\\"]]></defaultValueExpression>
 	</parameter>
-	<queryString><![CDATA[SELECT * FROM (SELECT Ind.ID_INDEMNIZACION, Ind.ANIO_ACTUAL, Ind.CORRELATIVO_ANIO, Ind.REGISTRO_EMPLEADO, Ind.ANIOS_TIEMPO_SERVICIO, 
-Ind.MESES_TIEMPO_SERVICIO, Ind.DIAS_TIEMPO_SERVICIO, Ind.PROMEDIO_SUELDOS, Ind.GASTO_FUNERARIO, Ind.POST_MORTEM, Ind.TOTAL_PRESTACION, 
-Ind.USUARIO_CREACION, Ind.FECHA_CREACION, Emp.FECHA_INGRESO as FECHA_INGRESO_USAC, Sol.FECHA_SOLICITUD as FECHA_SOLICITUD_AUTORIZADA, 
+	<queryString><![CDATA[SELECT * FROM (SELECT Ind.ID_INDEMNIZACION, Ind.ANIO, Ind.CORRELATIVO_ANIO, Ind.REGISTRO_EMPLEADO, Ind.ANIOS_TIEMPO_SERVICIO, 
+Ind.MESES_TIEMPO_SERVICIO, Ind.DIAS_TIEMPO_SERVICIO, Ind.SUELDO_PROMEDIO, Ind.GASTO_FUNERARIO, Ind.TOTAL_PRESTACION, 
+Ind.CREADO_POR, Ind.FECHA_CREACION, Emp.FECHA_INGRESO as FECHA_INGRESO_USAC, Sol.FECHA_SOLICITUD as FECHA_SOLICITUD_AUTORIZADA, 
 Emp.nombre1 || NVL2 (Emp.nombre2, ' ' || Emp.nombre2, '') || NVL2 (Emp.nombre3, ' ' || Emp.nombre3, '') || ' ' || Emp.apellido1 || NVL2 (Emp.apellido2, ' ' || Emp.apellido2, '') as NOMBRECOMPLETO, 
 Cont.Id_contrato, cont.fecha_inicio, Cont.fecha_fin, Cont.id_puesto, Cont.numero_plaza, Cont.id_partida, (Cont.SUELDOBASE + Cont.COMPL_SAL + Cont.ESCALAF) AS SUELDO_NOMINAL,
 Pues.NOMBRE AS NOMBRE_PUESTO, Par2.nombre as nombre_dependencia, Dep.nombre as nombre_unidad, sysdate FECHA_IMPRESION FROM SIS_INDEMNIZACION Ind 
 INNER JOIN SIIF.SIS_EMPLEADO Emp ON Ind.REGISTRO_EMPLEADO = Emp.REGISTRO_EMPLEADO
-INNER JOIN SIIF.SIS_SOLICITUD Sol ON Ind.ID_SOLICITUD_AUTORIZADO = Sol.ID_SOLICITUD  
+INNER JOIN SIIF.SIS_SOLICITUD Sol ON Ind.ID_SOLICITUD = Sol.ID_SOLICITUD  
 INNER JOIN SIIF.SIS_CONTRATO Cont ON Ind.REGISTRO_EMPLEADO = Cont.REGISTRO_EMPLEADO and Cont.estatus in (15,43)
 INNER JOIN SIIF.SIS_PUESTO Pues on Cont.id_puesto = Pues.id_puesto
 INNER JOIN SIIF.PARTIDA Par on Cont.ID_PARTIDA = Par.ID_PARTIDA
@@ -43,17 +43,16 @@ INNER JOIN SIIF.SIS_DEPENDENCIA Dep on Par2.d3d4 = Dep.id_dependencia
 WHERE Ind.ID_INDEMNIZACION = $P{pIdIndemnizacion} ORDER BY Cont.fecha_fin desc, Cont.sueldobase desc) where rownum <=1]]></queryString>
 
 	<field name="ID_INDEMNIZACION" class="java.math.BigDecimal"/>
-	<field name="ANIO_ACTUAL" class="java.math.BigDecimal"/>
+	<field name="ANIO" class="java.math.BigDecimal"/>
 	<field name="CORRELATIVO_ANIO" class="java.math.BigDecimal"/>
 	<field name="REGISTRO_EMPLEADO" class="java.math.BigDecimal"/>
 	<field name="ANIOS_TIEMPO_SERVICIO" class="java.math.BigDecimal"/>
 	<field name="MESES_TIEMPO_SERVICIO" class="java.math.BigDecimal"/>
 	<field name="DIAS_TIEMPO_SERVICIO" class="java.math.BigDecimal"/>
-	<field name="PROMEDIO_SUELDOS" class="java.math.BigDecimal"/>
+	<field name="SUELDO_PROMEDIO" class="java.math.BigDecimal"/>
 	<field name="GASTO_FUNERARIO" class="java.math.BigDecimal"/>
-	<field name="POST_MORTEM" class="java.math.BigDecimal"/>
 	<field name="TOTAL_PRESTACION" class="java.math.BigDecimal"/>
-	<field name="USUARIO_CREACION" class="java.lang.String"/>
+	<field name="CREADO_POR" class="java.lang.String"/>
 	<field name="FECHA_CREACION" class="java.sql.Timestamp"/>
 	<field name="FECHA_INGRESO_USAC" class="java.sql.Timestamp"/>
 	<field name="FECHA_SOLICITUD_AUTORIZADA" class="java.sql.Timestamp"/>
@@ -523,24 +522,6 @@ WHERE Ind.ID_INDEMNIZACION = $P{pIdIndemnizacion} ORDER BY Cont.fecha_fin desc, 
 					</textElement>
 				<text><![CDATA[Post-mortem (Sueldo por año hasta un máximo de 10 años)]]></text>
 				</staticText>
-				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="276"
-						y="260"
-						width="80"
-						height="15"
-						key="textField-18"
-						positionType="Float"/>
-					<box rightPadding="10">					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="1.0"/>
-					<bottomPen lineWidth="0.5"/>
-					<rightPen lineWidth="1.0"/>
-</box>
-					<textElement textAlignment="Right" verticalAlignment="Middle">
-						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
-					</textElement>
-				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{POST_MORTEM}]]></textFieldExpression>
-				</textField>
 				<staticText>
 					<reportElement
 						x="20"
@@ -576,7 +557,7 @@ WHERE Ind.ID_INDEMNIZACION = $P{pIdIndemnizacion} ORDER BY Cont.fecha_fin desc, 
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
 					</textElement>
-				<textFieldExpression   class="java.lang.Double"><![CDATA[new Double($F{GASTO_FUNERARIO}.doubleValue()+$F{POST_MORTEM}.doubleValue())]]></textFieldExpression>
+				<textFieldExpression   class="java.lang.Double"><![CDATA[new Double($F{GASTO_FUNERARIO}.doubleValue()+$F{GASTO_FUNERARIO}.doubleValue())]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement
@@ -792,7 +773,7 @@ WHERE Ind.ID_INDEMNIZACION = $P{pIdIndemnizacion} ORDER BY Cont.fecha_fin desc, 
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" isBold="true"/>
 					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{ANIO_ACTUAL} + "-" + $F{CORRELATIVO_ANIO}]]></textFieldExpression>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{ANIO} + "-" + $F{CORRELATIVO_ANIO}]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement

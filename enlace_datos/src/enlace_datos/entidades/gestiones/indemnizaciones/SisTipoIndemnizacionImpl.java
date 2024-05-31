@@ -16,11 +16,7 @@ public class SisTipoIndemnizacionImpl extends EntityImpl {
     public static final int IDTIPOINDEMNIZACION = 0;
     public static final int NOMBRE = 1;
     public static final int DESCRIPCION = 2;
-    public static final int CREADOPOR = 3;
-    public static final int FECHACREADO = 4;
-    public static final int USUARIOULTIMAMOD = 5;
-    public static final int FECHAULTIMAMOD = 6;
-    public static final int SISINDEMNIZACION = 7;
+    public static final int SISINDEMNIZACION = 3;
     private static EntityDefImpl mDefinitionObject;
 
     /**This is the default constructor (do not remove)
@@ -74,53 +70,6 @@ public class SisTipoIndemnizacionImpl extends EntityImpl {
         setAttributeInternal(DESCRIPCION, value);
     }
 
-    /**Gets the attribute value for CreadoPor, using the alias name CreadoPor
-     */
-    public String getCreadoPor() {
-        return (String)getAttributeInternal(CREADOPOR);
-    }
-
-    /**Sets <code>value</code> as the attribute value for CreadoPor
-     */
-    public void setCreadoPor(String value) {
-        setAttributeInternal(CREADOPOR, value);
-    }
-
-    /**Gets the attribute value for FechaCreado, using the alias name FechaCreado
-     */
-    public Date getFechaCreado() {
-        return (Date)getAttributeInternal(FECHACREADO);
-    }
-
-    /**Sets <code>value</code> as the attribute value for FechaCreado
-     */
-    public void setFechaCreado(Date value) {
-        setAttributeInternal(FECHACREADO, value);
-    }
-
-    /**Gets the attribute value for UsuarioUltimaMod, using the alias name UsuarioUltimaMod
-     */
-    public String getUsuarioUltimaMod() {
-        return (String)getAttributeInternal(USUARIOULTIMAMOD);
-    }
-
-    /**Sets <code>value</code> as the attribute value for UsuarioUltimaMod
-     */
-    public void setUsuarioUltimaMod(String value) {
-        setAttributeInternal(USUARIOULTIMAMOD, value);
-    }
-
-    /**Gets the attribute value for FechaUltimaMod, using the alias name FechaUltimaMod
-     */
-    public Date getFechaUltimaMod() {
-        return (Date)getAttributeInternal(FECHAULTIMAMOD);
-    }
-
-    /**Sets <code>value</code> as the attribute value for FechaUltimaMod
-     */
-    public void setFechaUltimaMod(Date value) {
-        setAttributeInternal(FECHAULTIMAMOD, value);
-    }
 
     /**getAttrInvokeAccessor: generated method. Do not modify.
      */
@@ -133,14 +82,6 @@ public class SisTipoIndemnizacionImpl extends EntityImpl {
             return getNombre();
         case DESCRIPCION:
             return getDescripcion();
-        case CREADOPOR:
-            return getCreadoPor();
-        case FECHACREADO:
-            return getFechaCreado();
-        case USUARIOULTIMAMOD:
-            return getUsuarioUltimaMod();
-        case FECHAULTIMAMOD:
-            return getFechaUltimaMod();
         case SISINDEMNIZACION:
             return getSisIndemnizacion();
         default:
@@ -161,18 +102,6 @@ public class SisTipoIndemnizacionImpl extends EntityImpl {
             return;
         case DESCRIPCION:
             setDescripcion((String)value);
-            return;
-        case CREADOPOR:
-            setCreadoPor((String)value);
-            return;
-        case FECHACREADO:
-            setFechaCreado((Date)value);
-            return;
-        case USUARIOULTIMAMOD:
-            setUsuarioUltimaMod((String)value);
-            return;
-        case FECHAULTIMAMOD:
-            setFechaUltimaMod((Date)value);
             return;
         default:
             super.setAttrInvokeAccessor(index, value, attrDef);

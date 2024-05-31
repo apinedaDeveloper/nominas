@@ -32,6 +32,7 @@ public class sis_reintegro_vwRowImpl extends ViewRowImpl {
     public static final int REGISTROEMPLEADO = 17;
     public static final int CUI = 18;
     public static final int ISFORMAACTIVA = 19;
+    public static final int ISTRASLADADO = 20;
 
     /**This is the default constructor (do not remove)
      */
@@ -222,6 +223,8 @@ public class sis_reintegro_vwRowImpl extends ViewRowImpl {
             return getCui();
         case ISFORMAACTIVA:
             return getIsFormaActiva();
+        case ISTRASLADADO:
+            return getisTrasladado();
         default:
             return super.getAttrInvokeAccessor(index, attrDef);
         }
@@ -330,8 +333,8 @@ public class sis_reintegro_vwRowImpl extends ViewRowImpl {
             if (this.getIdEstado().compareTo(211)==0 || this.getIdEstado().compareTo(213)==0 || this.getIdEstado().compareTo(214)==0){
                 vActivo=false;
                 
-            }
-             
+            }            
+         
          
          return vActivo;
         
@@ -413,5 +416,26 @@ public class sis_reintegro_vwRowImpl extends ViewRowImpl {
      */
     public void setCui(String value) {
         setAttributeInternal(CUI, value);
+    }
+
+    /**Gets the attribute value for the calculated attribute isTrasladado
+     */
+    public Boolean getisTrasladado() {
+        
+         boolean vActivo=false; 
+         
+            if ( this.getIdEstado().compareTo(214)==0){
+                vActivo=true; 
+            }            
+         
+         
+         return vActivo;
+     
+    }
+
+    /**Sets <code>value</code> as the attribute value for the calculated attribute isTrasladado
+     */
+    public void setisTrasladado(Boolean value) {
+        setAttributeInternal(ISTRASLADADO, value);
     }
 }

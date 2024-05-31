@@ -1,0 +1,411 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+
+<ViewObject
+   Name="SisMovPlazaXAnexo"
+   BindingStyle="OracleName"
+   CustomQuery="true"
+   ComponentClass="enlace_datos.consultas.gestiones.anexo.SisMovPlazaXAnexoImpl"
+   FetchMode="FETCH_AS_NEEDED"
+   UseGlueCode="false" >
+   <DesignTime>
+      <Attr Name="_isExpertMode" Value="true" />
+      <Attr Name="_version" Value="10.1.3.42.70" />
+      <Attr Name="_codeGenFlag2" Value="Access|Coll|VarAccess" />
+   </DesignTime>
+   <Variable
+      Name="pidPrograma"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="pidDependencia"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="pidUnidad"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="IdRenglon"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="pCorrelativo"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <Variable
+      Name="pidPlaza"
+      Kind="where"
+      Type="oracle.jbo.domain.Number" >
+   </Variable>
+   <SQLQuery><![CDATA[
+select pt.id_programa, pt.id_dependencia, pt.id_unidad, mv.id_partida, pt.formato2 numpartida, mv.id_puesto, pp.nombre nombrepuesto, mv.numero_plaza, mv.correlativo año
+,ax.id_anexo, nom_tipo_mov_alta tipo_anexo, es.nombre estado_anexo , decode(mv.operacion,'B',ax.fecha_creacion-0.0001,ax.fecha_creacion) fecha_creacion 
+, case when mv.operacion = 'B' then 'BAJA' else 'ALZA' END operacion
+, mv.fecha_inicio, mv.fecha_fin, mv.cantidad_horas, mv.sueldo_base, mv.escalafon, mv.compl_salarial
+, e.registro_empleado, e.nombrecompleto
+, (select comentario from sis_autorizacion_det dd where dd.fecha = (
+select max(fecha) from sis_autorizacion_Det ad 
+inner join sis_autorizacion anx on anx.id_autorizacion = ad.id_autorizacion
+where anx.id_anexo = ax.id_anexo) and rownum < 2) observaciones_auth
+, (mv.sueldo_base+mv.escalafon+mv.compl_salarial) total_sueldo
+from sis_movimiento_plaza mv
+inner join sis_partida_vw pt on pt.id_partida = mv.id_partida
+inner join sis_anexo ax on ax.id_anexo = mv.id_anexo
+inner join SIS_TIPO_MOV_PLAZA tipo on tipo.id_tipo_mov_alta = ax.ID_TIPO_MOV_PLAZA
+inner join sis_estado es on es.id_estado = ax.estatus
+inner join sis_puesto pp on pp.id_puesto = mv.id_puesto
+left join sis_empleado_Vw e on e.REGISTRO_EMPLEADO = mv.registro_empleado
+where 
+pt.id_programa = :pidPrograma
+and pt.id_dependencia = :pidDependencia
+and pt.id_unidad = :pidUnidad
+and pt.id_renglon = :IdRenglon
+and mv.correlativo = :pCorrelativo
+and mv.numero_plaza = :pidPlaza
+and es.nombre = 'AUTORIZADO'
+order by mv.id_anexo, mv.operacion
+   ]]></SQLQuery>
+   <ViewAttribute
+      Name="IdPrograma"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="6"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_PROGRAMA"
+      Expression="ID_PROGRAMA"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdDependencia"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="5"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_DEPENDENCIA"
+      Expression="ID_DEPENDENCIA"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdUnidad"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="6"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_UNIDAD"
+      Expression="ID_UNIDAD"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdPartida"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="6"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_PARTIDA"
+      Expression="ID_PARTIDA"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Numpartida"
+      IsPersistent="false"
+      Precision="18"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NUMPARTIDA"
+      Expression="NUMPARTIDA"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="18" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdPuesto"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_PUESTO"
+      Expression="ID_PUESTO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nombrepuesto"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="200"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBREPUESTO"
+      Expression="NOMBREPUESTO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="200" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="NumeroPlaza"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="5"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="NUMERO_PLAZA"
+      Expression="NUMERO_PLAZA"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Año"
+      IsPersistent="false"
+      Precision="6"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="AÑO"
+      Expression="AÑO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdAnexo"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_ANEXO"
+      Expression="ID_ANEXO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="TipoAnexo"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="30"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="TIPO_ANEXO"
+      Expression="TIPO_ANEXO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="30" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="EstadoAnexo"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="100"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="ESTADO_ANEXO"
+      Expression="ESTADO_ANEXO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="100" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaCreacion"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_CREACION"
+      Expression="FECHA_CREACION"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Operacion"
+      IsPersistent="false"
+      Precision="4"
+      Type="java.lang.String"
+      ColumnType="CHAR"
+      AliasName="OPERACION"
+      Expression="OPERACION"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="4" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaInicio"
+      IsPersistent="false"
+      IsNotNull="true"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_INICIO"
+      Expression="FECHA_INICIO"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="FechaFin"
+      IsPersistent="false"
+      IsNotNull="true"
+      Type="oracle.jbo.domain.Date"
+      ColumnType="DATE"
+      AliasName="FECHA_FIN"
+      Expression="FECHA_FIN"
+      SQLType="DATE" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="CantidadHoras"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="5"
+      Scale="2"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="CANTIDAD_HORAS"
+      Expression="CANTIDAD_HORAS"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="SueldoBase"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="12"
+      Scale="2"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="SUELDO_BASE"
+      Expression="SUELDO_BASE"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Escalafon"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="2"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ESCALAFON"
+      Expression="ESCALAFON"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="ComplSalarial"
+      IsPersistent="false"
+      IsNotNull="true"
+      Precision="10"
+      Scale="2"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="COMPL_SALARIAL"
+      Expression="COMPL_SALARIAL"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="RegistroEmpleado"
+      IsPersistent="false"
+      Precision="10"
+      Scale="0"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="REGISTRO_EMPLEADO"
+      Expression="REGISTRO_EMPLEADO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="Nombrecompleto"
+      IsPersistent="false"
+      Precision="308"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="NOMBRECOMPLETO"
+      Expression="NOMBRECOMPLETO"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="308" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="ObservacionesAuth"
+      IsPersistent="false"
+      Precision="2500"
+      Type="java.lang.String"
+      ColumnType="VARCHAR2"
+      AliasName="OBSERVACIONES_AUTH"
+      Expression="OBSERVACIONES_AUTH"
+      SQLType="VARCHAR" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="2500" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="TotalSueldo"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="TOTAL_SUELDO"
+      Expression="TOTAL_SUELDO"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
+      </DesignTime>
+   </ViewAttribute>
+</ViewObject>

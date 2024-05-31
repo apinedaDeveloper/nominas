@@ -1,0 +1,502 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="histEmpl_reintegros"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="1405"
+		 pageHeight="586"
+		 columnWidth="1405"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pUsuario" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="pRegEmpl" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pCui" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pFechaInicial" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="pFechaFinal" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="pEstado" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pIdDep" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[select * from ( --reintegros
+SELECT distinct SisReintegro.ID_REINTEGRO, 
+       SisReintegro.ID_DOCUMENTO_BANCO, 
+       SisReintegro.TOTAL_PAGAR, 
+       SisReintegro.OBSERVACIONES, 
+       SisReintegro.CREADO_POR, 
+       SisReintegro.FECHA_CREACION, 
+       SisReintegro.MOD_POR, 
+       SisReintegro.FECHA_MOD, 
+       SisReintegro.ID_ESTADO,
+       SisReintegro.id_orden_pago,
+	SisReintegro.FECHA_CREACION as fecha_inicio, 
+	sis_db.NUM_DOC_FISICO,
+       	sis_db.ID_TIPO_DOCUMENTO,
+       	sis_td.NOMBRE TIPO_DOCUMENTO_NOMBRE,
+       	sis_e.nombre ESTADO,
+       	(case when g.status is null then '' else (case when g.status=1 then 'PAGADO' else 'PENDIENTE DE PAGO' end) end) estado_orden,
+	sis_emp.REGISTRO_EMPLEADO,
+	sis_emp.CUI,
+    	p2.nombre as unidad_ejecutora,
+    	dep.id_dependencia,
+	ad.usuario 
+FROM SIS_REINTEGRO SisReintegro
+inner join sis_autorizacion au on au.id_reintegro = SisReintegro.id_reintegro
+inner join sis_autorizacion_det ad on ad.ID_AUTORIZACION = au.id_autorizacion
+                                  and (ad.ID_ESTADO = SisReintegro.ID_ESTADO or SisReintegro.id_estado = 216)
+inner join SIS_DOCUMENTO_BANCO sis_db on SisReintegro.ID_DOCUMENTO_BANCO = sis_db.ID_DOCUMENTO_BANCO
+inner join SIS_ESTADO sis_e on SisReintegro.ID_ESTADO = sis_e.ID_ESTADO
+inner join SIS_TIPO_DOCUMENTO sis_td on sis_db.ID_TIPO_DOCUMENTO = sis_td.ID_TIPO_DOCUMENTO
+inner join SIS_PAGO sis_p on SisReintegro.ID_DOCUMENTO_BANCO = sis_p.ID_DOCUMENTO_BANCO
+inner join SIS_NOMINA sis_n on sis_p.ID_NOMINA = sis_n.ID_NOMINA
+inner join PARTIDA p on sis_n.id_partida = p.id_partida
+inner join SIS_EMPLEADO sis_emp on sis_n.REGISTRO_EMPLEADO = sis_emp.REGISTRO_EMPLEADO
+inner join partida p2 on p.d1 = p2.d1 and p.d2 = p2.d2 and p.d3d4 = p2.d3d4 and p.d5 = p2.d5 and p.d6 = p2.d6 and p.d7 = p2.d7 and p2.d8 is null and p2.d9d10 is null
+inner join sis_dependencia dep on p2.d3d4 = dep.id_dependencia 
+left join sgi_orden_pago g on SisReintegro.id_orden_pago = g.id_orden_pago
+WHERE /*SisReintegro.ID_ESTADO = 214 and */ exists(
+select 1 from usuario_unidad b, partida c
+where b.id_partida=c.id_partida
+and usuario=$P{pUsuario}
+and b.tipo_usuario='TRABAJADOR'
+and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+and p.aniomanual=c.aniomanual
+and p.d1=c.d1
+and p.d2=c.d2
+and p.d3d4=c.d3d4
+and ( ( p.d7=c.d7
+and p.d6=c.d6
+and p.d5=c.d5
+) or ( c.d5 is null
+and c.d6 is null
+and c.d7 is null 
+) ) )
+) where
+(registro_empleado = $P{pRegEmpl} or $P{pRegEmpl} =0)
+and (cui = $P{pCui} or $P{pCui} =0)
+and (id_estado = $P{pEstado} or $P{pEstado} = 0)
+and (id_dependencia = $P{pIdDep} or $P{pIdDep} =0)
+and (trunc (fecha_inicio) between nvl(to_date($P{pFechaInicial} ,'yyyy-mm-dd'),sysdate) and nvl(to_date($P{pFechaFinal} ,'yyyy-mm-dd'),sysdate) )]]></queryString>
+
+	<field name="ID_REINTEGRO" class="java.math.BigDecimal"/>
+	<field name="ID_DOCUMENTO_BANCO" class="java.math.BigDecimal"/>
+	<field name="TOTAL_PAGAR" class="java.math.BigDecimal"/>
+	<field name="OBSERVACIONES" class="java.lang.String"/>
+	<field name="CREADO_POR" class="java.lang.String"/>
+	<field name="FECHA_CREACION" class="java.sql.Timestamp"/>
+	<field name="MOD_POR" class="java.lang.String"/>
+	<field name="FECHA_MOD" class="java.sql.Timestamp"/>
+	<field name="ID_ESTADO" class="java.math.BigDecimal"/>
+	<field name="ID_ORDEN_PAGO" class="java.math.BigDecimal"/>
+	<field name="FECHA_INICIO" class="java.sql.Timestamp"/>
+	<field name="NUM_DOC_FISICO" class="java.math.BigDecimal"/>
+	<field name="ID_TIPO_DOCUMENTO" class="java.math.BigDecimal"/>
+	<field name="TIPO_DOCUMENTO_NOMBRE" class="java.lang.String"/>
+	<field name="ESTADO" class="java.lang.String"/>
+	<field name="ESTADO_ORDEN" class="java.lang.String"/>
+	<field name="REGISTRO_EMPLEADO" class="java.math.BigDecimal"/>
+	<field name="CUI" class="java.lang.String"/>
+	<field name="UNIDAD_EJECUTORA" class="java.lang.String"/>
+	<field name="ID_DEPENDENCIA" class="java.math.BigDecimal"/>
+	<field name="USUARIO" class="java.lang.String"/>
+
+	<variable name="fecha_actual" class="java.util.Date" resetType="None" calculation="Nothing">
+		<variableExpression><![CDATA[new java.util.Date()]]></variableExpression>
+	</variable>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="24"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="0"
+						y="4"
+						width="1405"
+						height="19"
+						key="staticText-2"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="14" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Reintegros]]></text>
+				</staticText>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="22"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="965"
+						y="0"
+						width="75"
+						height="22"
+						key="staticText-18"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Fecha Creacion]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1128"
+						y="0"
+						width="125"
+						height="22"
+						key="staticText-19"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Estado Orden Pago]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="324"
+						y="0"
+						width="101"
+						height="22"
+						key="staticText-6"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Tipo de Documento]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="0"
+						width="102"
+						height="22"
+						key="staticText-7"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[SIS - 26]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="102"
+						y="0"
+						width="84"
+						height="22"
+						key="staticText-8"
+						stretchType="RelativeToTallestObject"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Registro Empleado]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="186"
+						y="0"
+						width="69"
+						height="22"
+						key="staticText-10"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[CUI]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="425"
+						y="0"
+						width="56"
+						height="22"
+						key="staticText-12"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Total Pagar]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="481"
+						y="0"
+						width="63"
+						height="22"
+						key="staticText-15"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Estado Reintegro]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1040"
+						y="0"
+						width="88"
+						height="22"
+						key="staticText-16"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Orden de Pago]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="255"
+						y="0"
+						width="69"
+						height="22"
+						key="staticText-21"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[No. Documento]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="620"
+						y="0"
+						width="345"
+						height="22"
+						key="staticText-23"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Observaciones]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1253"
+						y="0"
+						width="152"
+						height="22"
+						key="staticText-24"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Unidad Ejecutora]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="544"
+						y="0"
+						width="76"
+						height="22"
+						key="staticText-25"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Registro Empledo Gestion]]></text>
+				</staticText>
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="16"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="true" pattern="##0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="0"
+						width="102"
+						height="16"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ID_REINTEGRO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="324"
+						y="0"
+						width="101"
+						height="16"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{TIPO_DOCUMENTO_NOMBRE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="102"
+						y="0"
+						width="84"
+						height="16"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{REGISTRO_EMPLEADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="186"
+						y="0"
+						width="69"
+						height="16"
+						key="textField-3"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{CUI}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="481"
+						y="0"
+						width="63"
+						height="16"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{ESTADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1040"
+						y="0"
+						width="88"
+						height="16"
+						key="textField-5"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ID_ORDEN_PAGO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="965"
+						y="0"
+						width="75"
+						height="16"
+						key="textField-6"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.sql.Timestamp"><![CDATA[$F{FECHA_CREACION}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1128"
+						y="0"
+						width="125"
+						height="16"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{ESTADO_ORDEN}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="¤ #,##0.00" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="425"
+						y="0"
+						width="56"
+						height="16"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{TOTAL_PAGAR}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="255"
+						y="0"
+						width="69"
+						height="16"
+						key="textField-7"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{NUM_DOC_FISICO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="620"
+						y="0"
+						width="345"
+						height="16"
+						key="textField-9"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{OBSERVACIONES}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1253"
+						y="0"
+						width="152"
+						height="16"
+						key="textField-10"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{UNIDAD_EJECUTORA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="544"
+						y="0"
+						width="76"
+						height="16"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{USUARIO}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

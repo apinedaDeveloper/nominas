@@ -36,20 +36,19 @@
        then to_date('01/07/'||to_char(sysdate,'yyyy'),'dd/mm/yyyy')
        else to_date('01/01/'||to_char(sysdate,'yyyy'),'dd/mm/yyyy') 
        end) 
-  --else nvl(fechafirma, sis_pkg_util.GETFECHAFIRMACONTRATO(:pIdContrato)) 
  else nvl(fecha_posesion,sis_pkg_util.GETFECHAFIRMACONTRATO($P{pIdContrato})) end
 ) as fechafirma, tg.anio, tg.orden, tg.tipo_declaracion, tg.instalacion_posesion, tg.no_pasaporte, tg.sis_puesto_nombre, tg.tipo_validez, tg.fechaindef, tg.no_exceda_de,
 tg.numero_plaza, tg.semestre1, tg.semestre2, tg.periodo_plaza,
-(case when (select fecha_creacion from sis_contrato where id_contrato=$P{pIdContrato})>=
+(case when (select fecha_creacion from sis_contrato where id_contrato=$P{pIdContrato}) >=
 (select to_date(valor_cadena,'dd/mm/yyyy') from sis_parametros_aplicacion where nom_parametro='JURAMENTO_JUBILADO')
 then 1 else 0 end) declaracion_jubilado
-from ( select cont.id_contrato, decode (nvl(cont.contract_vacacion,0),1,3,0,1) as grupo, uni.nombre as nomUnidad,
+from ( select cont.id_contrato, decode (nvl(cont.contract_vacacion,0), 1, 3, 0, 1) as grupo, uni.nombre as nomUnidad,
 initcap(uni.nombre) as nomUni2, uni.id_dependencia,  initcap(dep.nombre) as nomDep, uni.ubicacion, uni.telefono as telUni,
 empl.registro_empleado, empl.nombrecompleto, nvl(empl.tel_casa,empl.celular) as telefono,
 (
 select initcap(dp.nombre)||', '||initcap(muni.nombre)||', '||direc.direccion  
 from sis_direccion direc, sis_municipio muni,sis_departamento dp
-where direc_actual='SI' and muni.id_municipio=direc.id_municipio and dp.id_departamento=muni.id_departamento
+where direc_actual = 'SI' and muni.id_municipio=direc.id_municipio and dp.id_departamento=muni.id_departamento
 and registro_empleado=empl.registro_empleado ) as direccion,
 to_char(empl.cui,'9999G99999G9999','NLS_NUMERIC_CHARACTERS= '', ''') as cui,
 empl.orden_cedula ||' '|| empl.registro_cedula as cedula, nvl(cont.fecha_inicio_doc,cont.fecha_inicio) as fecha_inicio,
@@ -57,25 +56,25 @@ nvl (cont.fecha_fin_doc,cont.fecha_fin) as fecha_fin,
 sis_pkg_calculos.GETPROPORCIONHORASLICENCIA(cont.id_contrato,cont.fecha_inicio )*cont.horascontratadas as horascontratadas,
 nvl(fecha_firma,sis_pkg_util.GETFECHAFIRMACONTRATO(  $P{pIdContrato})) as fechaFirma,  cont.fecha_posesion,
 0 as anio, 0 as orden, 'U' as tipo_declaracion, cont.instalacion_posesion, empl.no_pasaporte,
-case when cont.id_puesto in (999990,999997,999994,999999) 
+case when cont.id_puesto in (999990, 999997, 999994, 999999) 
      then case when cont.nom_plaza is not null then cont.nom_plaza when plz.nomplaza is not null then plz.nomplaza else pst.NOMBRE 
 end else pst.NOMBRE end AS SIS_PUESTO_NOMBRE, cont.tipo_validez, nvl(cont.fecha_inicio_doc,
 ( select decj.fecha_inicio from partida prt2, sis_declaracion_jurada decj, partida prt3
 where prt2.id_partida=cont.id_partida and decj.registro_empleado=cont.registro_Empleado
-and decj.tipo_declaracion='U' 
+and decj.tipo_declaracion = 'U' 
 and decj.anio=(select max(anio) from sis_Declaracion_jurada where registro_Empleado=cont.registro_empleado)
 and decj.id_partida=prt3.id_partida and prt2.d1=prt3.d1 and prt2.d2=prt3.d2 and prt2.d3d4=prt3.d3d4
 and prt2.d5=prt3.d5 and prt2.d6=prt3.d6 and prt2.d7=prt3.d7 and decj.FECHA_FIN is null
-and decj.numero_plaza=cont.numero_plaza and rownum<=1 )) as fechaIndef,
+and decj.numero_plaza=cont.numero_plaza and rownum <= 1 )) as fechaIndef,
 to_char(cont.no_exceda_de,'dd/mm/yyyy') as no_exceda_de, to_char(cont.numero_plaza) as numero_plaza,
 sis_util_report_pkg.GET_HORAS_SEMESTRE2(cont.id_contrato,cont.fecha_inicio,Nvl(cont.No_Exceda_de,cont.fecha_fin),1,cont.opcion_indef) as semestre1,
 sis_util_report_pkg.GET_HORAS_SEMESTRE2(cont.id_contrato,cont.fecha_inicio,Nvl(cont.No_Exceda_de,cont.fecha_fin),2,cont.opcion_indef) as semestre2,
 plz.periodo_plaza
 from sis_contrato cont, sis_empleado_vw empl, sis_partida prt, sis_unidad_ejecutora uni,sis_dependencia dep,sis_puesto pst, sis_plaza plz 
-where cont.registro_empleado=empl.registro_empleado and cont.id_contrato=  $P{pIdContrato}
-and prt.id_partida=cont.id_partida and uni.id_programa=prt.id_programa and uni.id_dependencia=prt.id_dependencia
-and uni.id_unidad=prt.id_unidad and dep.id_dependencia=prt.id_dependencia and pst.id_puesto=cont.id_puesto
-and plz.id_partida=cont.id_partida and plz.id_puesto=cont.id_puesto and plz.numero_plaza=cont.numero_plaza
+where cont.registro_empleado=empl.registro_empleado and cont.id_contrato = $P{pIdContrato}
+and prt.id_partida=cont.id_partida and uni.id_programa=prt.id_programa and uni.id_dependencia = prt.id_dependencia
+and uni.id_unidad=prt.id_unidad and dep.id_dependencia=prt.id_dependencia and pst.id_puesto = cont.id_puesto
+and plz.id_partida=cont.id_partida and plz.id_puesto=cont.id_puesto and plz.numero_plaza = cont.numero_plaza
 and plz.correlativo=cont.correlativo
 and (
 ((select contrat.fecha_inicio from sis_contrato contrat where contrat.ID_CONTRATO =   $P{pIdContrato}) >= cont.FECHA_INICIO and nvl(cont.FECHA_FIN,cont.no_exceda_de) is null)
@@ -83,7 +82,7 @@ or ((select contrat.fecha_inicio from sis_contrato contrat where contrat.ID_CONT
 or( cont.FECHA_INICIO  between  (select contrat.fecha_inicio from sis_contrato contrat where contrat.ID_CONTRATO =   $P{pIdContrato}) and (select nvl(contrat.fecha_fin,no_exceda_de) from sis_contrato contrat where contrat.ID_CONTRATO =   $P{pIdContrato}))
 )
 union
-select cont.id_contrato, decode (nvl(cont.contract_vacacion,0),1,3,0,1) as grupo, uni.nombre as nomUnidad,
+select cont.id_contrato, decode (nvl(cont.contract_vacacion,0), 1, 3, 0, 1) as grupo, uni.nombre as nomUnidad,
 initcap(uni.nombre) as nomUni2, uni.id_dependencia, initcap(dep.nombre) as nomDep, uni.ubicacion,
 uni.telefono as telUni, empl.registro_empleado, empl.nombrecompleto, nvl(empl.tel_casa,empl.celular) as telefono,
 ( select initcap(dp.nombre)||', '||initcap(muni.nombre)||', '||direc.direccion  
@@ -116,10 +115,10 @@ select max(cont.id_contrato) id_contrato, cont.id_partida, cont.id_puesto, cont.
 min(nvl(cont.fecha_inicio_doc, cont.fecha_inicio)) fecha_inicio, max(nvl(cont.fecha_fin_doc,cont.fecha_fin)) fecha_fin
 from sis_contrato cont
 where cont.registro_empleado=(select xy.registro_empleado from sis_contrato xy where xy.ID_CONTRATO = $P{pIdContrato})
-and cont.estatus in (4,3,29,43,32)--INGRESADO, ACTIVO, REVISANDO, OBJETADO, BAJA LICENCIA, FINALIZADO
+and cont.estatus in (3, 4, 29, 32, 36, 43)--INGRESADO, ACTIVO, REVISANDO, OBJETADO, BAJA LICENCIA, FINALIZADO
 and (
 ((select contrat.fecha_inicio from sis_contrato contrat where contrat.ID_CONTRATO =   $P{pIdContrato}) >= cont.FECHA_INICIO and nvl(cont.FECHA_FIN,cont.no_exceda_de) is null)
-or ((select contrat.fecha_inicio from sis_contrato contrat where contrat.ID_CONTRATO =   $P{pIdContrato}) between cont.FECHA_INICIO and nvl(cont.FECHA_FIN,cont.no_exceda_de))
+or ((select contrat.fecha_inicio from sis_contrato contrat where contrat.ID_CONTRATO =   $P{pIdContrato}) between Nvl(cont.fecha_inicio_doc, cont.FECHA_INICIO) and nvl(cont.FECHA_FIN,cont.no_exceda_de))
 or( cont.FECHA_INICIO  between  (select contrat.fecha_inicio from sis_contrato contrat where contrat.ID_CONTRATO = $P{pIdContrato}) and (select nvl(contrat.fecha_fin,no_exceda_de) from sis_contrato contrat where contrat.ID_CONTRATO =   $P{pIdContrato}))
 )
 group by cont.id_partida, cont.id_puesto, cont.numero_plaza, cont.correlativo, cont.tipo_validez
@@ -130,7 +129,7 @@ and uni.id_unidad=prt.id_unidad and dep.id_dependencia=prt.id_dependencia and ps
 and plz.id_partida=cont.id_partida and plz.id_puesto=cont.id_puesto and plz.numero_plaza=cont.numero_plaza
 and plz.correlativo=cont.correlativo
 union
-select cont.id_contrato, decode (nvl(cont.contract_vacacion,0),1,3,0,1) as grupo, uni.nombre as nomUnidad,
+select cont.id_contrato, decode (nvl(cont.contract_vacacion,0), 1, 3, 0, 1) as grupo, uni.nombre as nomUnidad,
 initcap(uni.nombre) as nomUni2, uni.id_dependencia, initcap(dep.nombre) as nomDep, uni.ubicacion,
 uni.telefono as telUni, empl.registro_empleado, empl.nombrecompleto, nvl(empl.tel_casa,empl.celular) as telefono,
 ( select initcap(dp.nombre)||', '||initcap(muni.nombre)||', '||direc.direccion  
@@ -143,7 +142,7 @@ nvl (cont.fecha_fin_doc, cont.fecha_fin) as fecha_fin,
 sis_pkg_calculos.GETPROPORCIONHORASLICENCIA(cont.id_contrato,cont.fecha_inicio )*cont.horascontratadas as horascontratadas,
 nvl(fecha_firma,sis_pkg_util.GETFECHAFIRMACONTRATO(  $P{pIdContrato})) as fechaFirma, cont.fecha_posesion,
 0 as anio, 0 as orden, 'U' as tipo_declaracion, cont.instalacion_posesion, empl.no_pasaporte,
-case when cont.id_puesto in (999990,999997,999994,999999) 
+case when cont.id_puesto in (999990, 999997, 999994, 999999) 
      then case when cont.nom_plaza is not null then cont.nom_plaza when plz.nomplaza is not null then plz.nomplaza else pst.NOMBRE 
 end else pst.NOMBRE end AS SIS_PUESTO_NOMBRE, cont.tipo_validez, nvl(cont.fecha_inicio_doc,
 ( select decj.fecha_inicio from partida prt2, sis_declaracion_jurada decj, partida prt3
@@ -1306,6 +1305,22 @@ horas diarias]]></text>
 						<font size="9"/>
 					</textElement>
 				<textFieldExpression   class="java.lang.String"><![CDATA["                   Hasta que sancione titularidad el Consejo Superior Universitario sin exceder de "+$F{NO_EXCEDA_DE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						mode="Opaque"
+						x="398"
+						y="1"
+						width="120"
+						height="15"
+						key="txt_tipo_val_C">
+							<printWhenExpression><![CDATA[new Boolean (($F{FECHA_FIN}==null && $F{TIPO_DECLARACION}.equals("U")&& $F{TIPO_VALIDEZ}.compareTo("C")==0))]]></printWhenExpression>
+						</reportElement>
+					<box></box>
+					<textElement textAlignment="Justified">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["                      Hasta que se resuelva la situacion legal sin exceder del "+$F{NO_EXCEDA_DE}]]></textFieldExpression>
 				</textField>
 			</band>
 		</detail>

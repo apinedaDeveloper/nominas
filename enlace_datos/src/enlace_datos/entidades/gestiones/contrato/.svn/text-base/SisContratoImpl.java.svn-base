@@ -1341,7 +1341,7 @@ public class SisContratoImpl extends myEntityImpl {
        }
         
         
-       if (!(this.getTipoValidez().equals("G")||this.getTipoValidez().equals("J")||this.getTipoValidez().equals("A")||this.getTipoValidez().equals("P") || this.getTipoValidez().equals("T"))){
+       if (!(this.getTipoValidez().equals("G")||this.getTipoValidez().equals("J")||this.getTipoValidez().equals("A")||this.getTipoValidez().equals("P") || this.getTipoValidez().equals("T")|| this.getTipoValidez().equals("C"))){
            
            this.setNoExcedaDe(null);
            

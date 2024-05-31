@@ -11,8 +11,6 @@ function boton_aceptar_click() {
         var vval = lista.options[indice].value;
         var vTipo=document.getElementById("hdn_tipo");
         var vId=document.getElementById("hdn_Id");
-        //alert("vTipo es: " + vTipo.value);
-        //alert("vId es: " + vId.value);
         if (vval!="ER") {
             $.ajax( {
                 url: "/Nomina/faces/servMant",
@@ -35,6 +33,7 @@ function boton_aceptar_click() {
                         //if(vTipo != null && vTipo.value == 19){ // tipo gestion = liquidaciones
                              //Refrescará la pantalla de liquidaciones
                         setTimeout(location.reload(),1000);
+                        location.reload();
                         //}
                     } else { // error
                         $("#lblResultado").attr("class","ui-state-error");  
@@ -73,7 +72,7 @@ function inicializarDialogo(){
                 vIdGestion = document.getElementById("hdn_Id");
                 vMensajeConfirmacion = "¿Desea aceptar la operación?";
                 if ( vIdGestion != null){
-                    vMensajeConfirmacion = "¿Desea aceptar la operación del ID No. " + vIdGestion.value + "?";    
+                    vMensajeConfirmacion = "¿Desea aceptar la operación del ID " + vIdGestion.value + "?";    
                 }
                 if ( confirm(vMensajeConfirmacion) == true ) {
                     boton_aceptar_click();

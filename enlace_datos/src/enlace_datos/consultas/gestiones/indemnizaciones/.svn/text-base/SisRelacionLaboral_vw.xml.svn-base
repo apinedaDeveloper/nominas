@@ -3,11 +3,13 @@
 
 <ViewObject
    Name="SisRelacionLaboral_vw"
-   OrderBy="anio desc"
    BindingStyle="OracleName"
    CustomQuery="true"
    RowClass="enlace_datos.consultas.gestiones.indemnizaciones.SisRelacionLaboral_vwRowImpl"
    ComponentClass="enlace_datos.consultas.gestiones.indemnizaciones.SisRelacionLaboral_vwImpl"
+   ComponentInterface="enlace_datos.consultas.gestiones.indemnizaciones.common.SisRelacionLaboral_vw"
+   ClientProxyName="enlace_datos.consultas.gestiones.indemnizaciones.client.SisRelacionLaboral_vwClient"
+   FetchMode="FETCH_AS_NEEDED"
    UseGlueCode="false" >
    <DesignTime>
       <Attr Name="_isCodegen" Value="true" />
@@ -21,25 +23,15 @@
       Type="java.lang.String" >
    </Variable>
    <SQLQuery><![CDATA[
-select PARTIDA, NUMERO_PLAZA, ANIO, "1" , "2" , "3" , "4" , "5" , "6" , "7" , "8" , "9" , "10" , "11" , "12",
-CASE WHEN "1" > 0 AND "2" > 0 AND "3" > 0 AND "4" > 0 AND "5" > 0 AND "6" > 0 AND "7" > 0 AND "8" > 0 AND "9" > 0 AND "10" > 0 AND "11" > 0 AND "12" > 0 THEN 1 ELSE 0 END AS ANIOS,
-CASE WHEN (NVL2("1", 1, 0) + NVL2("2", 1, 0) + NVL2("3", 1, 0) + NVL2("4", 1, 0) + NVL2("5", 1, 0) + NVL2("6", 1, 0) + NVL2("7", 1, 0) + NVL2("8", 1, 0) + NVL2("9", 1, 0) + NVL2("10", 1, 0) + NVL2("11", 1, 0) + NVL2("12", 1, 0) >= 12 ) THEN 0 ELSE 
-NVL2("1", 1, 0) + NVL2("2", 1, 0) + NVL2("3", 1, 0) + NVL2("4", 1, 0) + NVL2("5", 1, 0) + NVL2("6", 1, 0) + NVL2("7", 1, 0) + NVL2("8", 1, 0) + NVL2("9", 1, 0) + NVL2("10", 1, 0) + NVL2("11", 1, 0) + NVL2("12", 1, 0) END AS MESES, 0 as DIAS
-from ((select par_vw.formato2 as partida,  nom.numero_plaza, nom.anio, nom.periodo, sum(nom.nominal) as nominal from sis_nomina nom
+select PARTIDA, NUMERO_PLAZA, ANIO, "1" , "2" , "3" , "4" , "5" , "6" , "7" , "8" , "9" , "10" , "11" , "12"
+from ((select par_vw.formato2 as partida,  nom.numero_plaza, nom.anio, nom.periodo, nom.id_contrato, cont.fecha_inicio, cont.fecha_fin, sum(nom.nominal) as nominal from sis_nomina nom
 inner join sis_pago p on nom.id_nomina = p.id_nomina
 inner join sis_documento_banco doc_b on p.id_documento_banco = doc_b.id_documento_banco and doc_b.id_estado in (18,160)
-inner join sis_proceso prc on nom.id_proceso = prc.id_proceso and prc.tipoproceso = 1
 inner join sis_partida_vw par_vw on nom.id_partida = par_vw.id_partida
-WHERE nom.registro_empleado = :pRegistroPersonal and nom.id_tipo_nomina = 1 group by par_vw.formato2, nom.numero_plaza, nom.anio, nom.periodo order by nom.anio desc, nom.periodo desc) 
-pivot (sum(nominal) for periodo in (1,2,3,4,5,6,7,8,9,10,11,12)))
+inner join sis_contrato cont on nom.id_contrato = cont.id_contrato
+WHERE nom.registro_empleado = :pRegistroPersonal and nom.id_tipo_nomina = 1 group by par_vw.formato2, nom.numero_plaza, nom.anio, nom.periodo, nom.id_contrato, cont.fecha_inicio, cont.fecha_fin) 
+pivot (sum(nominal) for periodo in (1,2,3,4,5,6,7,8,9,10,11,12))) order by anio asc, fecha_inicio asc
    ]]></SQLQuery>
-   <EntityUsage
-      Name="SisIndemnizacion"
-      Entity="enlace_datos.entidades.gestiones.indemnizaciones.SisIndemnizacion" >
-      <DesignTime>
-         <Attr Name="_queryClause" Value="false" />
-      </DesignTime>
-   </EntityUsage>
    <ViewAttribute
       Name="Partida"
       IsPersistent="false"
@@ -210,42 +202,6 @@ pivot (sum(nominal) for periodo in (1,2,3,4,5,6,7,8,9,10,11,12)))
       Type="oracle.jbo.domain.Number"
       ColumnType="NUMBER"
       Expression="12"
-      SQLType="NUMERIC" >
-      <DesignTime>
-         <Attr Name="_DisplaySize" Value="22" />
-      </DesignTime>
-   </ViewAttribute>
-   <ViewAttribute
-      Name="Anios"
-      IsPersistent="false"
-      Type="oracle.jbo.domain.Number"
-      ColumnType="NUMBER"
-      AliasName="ANIOS"
-      Expression="ANIOS"
-      SQLType="NUMERIC" >
-      <DesignTime>
-         <Attr Name="_DisplaySize" Value="22" />
-      </DesignTime>
-   </ViewAttribute>
-   <ViewAttribute
-      Name="Meses"
-      IsPersistent="false"
-      Type="oracle.jbo.domain.Number"
-      ColumnType="NUMBER"
-      AliasName="MESES"
-      Expression="MESES"
-      SQLType="NUMERIC" >
-      <DesignTime>
-         <Attr Name="_DisplaySize" Value="22" />
-      </DesignTime>
-   </ViewAttribute>
-   <ViewAttribute
-      Name="Dias"
-      IsPersistent="false"
-      Type="oracle.jbo.domain.Number"
-      ColumnType="NUMBER"
-      AliasName="DIAS"
-      Expression="DIAS"
       SQLType="NUMERIC" >
       <DesignTime>
          <Attr Name="_DisplaySize" Value="22" />

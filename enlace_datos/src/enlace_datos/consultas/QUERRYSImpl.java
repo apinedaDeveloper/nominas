@@ -99,6 +99,8 @@ import enlace_datos.consultas.gestiones.Sis_ajustes_mod_simple2Impl;
 import enlace_datos.consultas.gestiones.Sis_deudores_vwImpl;
 import enlace_datos.consultas.gestiones.Sis_variacionNom_Revisada_vwImpl;
 import enlace_datos.consultas.gestiones.Sis_variacionNom_pendiente_vwImpl;
+import enlace_datos.consultas.gestiones.anexo.SisMPlazaXAperturaImpl;
+import enlace_datos.consultas.gestiones.anexo.SisMovPlazaXAnexoImpl;
 import enlace_datos.consultas.gestiones.anexo.SisPuesto_vwImpl;
 import enlace_datos.consultas.gestiones.anexo.consul_alzaNom_anexoImpl;
 import enlace_datos.consultas.gestiones.anexo.consul_anexo_vwImpl;
@@ -232,6 +234,7 @@ import enlace_datos.consultas.gestiones.procesos.SisProcesoVw2Impl;
 import enlace_datos.consultas.gestiones.procesos.Sis_formsis24_vwImpl;
 import enlace_datos.consultas.gestiones.procesos.Sis_remesaImpl;
 import enlace_datos.consultas.gestiones.procesos.periodos_proc_vwImpl;
+import enlace_datos.consultas.gestiones.procesos.sis_provisionRem_vwImpl;
 import enlace_datos.consultas.gestiones.procesos.tipo_proceso_vwImpl;
 import enlace_datos.consultas.gestiones.revision.SisContratosPendientesRevImpl;
 import enlace_datos.consultas.gestiones.revision.SisContratosRevisadosImpl;
@@ -267,6 +270,7 @@ import enlace_datos.consultas.procesos.SisProcesoConciliacionVwImpl;
 import enlace_datos.consultas.procesos.SisProcesoPagoDetViewImpl;
 import enlace_datos.consultas.procesos.Sis_conciliacion_bancaria_vwImpl;
 import enlace_datos.consultas.procesos.Sis_unidades_liquidacion_vwImpl;
+import enlace_datos.consultas.procesos.complementos_isr_vwImpl;
 import enlace_datos.consultas.procesos.consul_aumentoSalarial_vwImpl;
 import enlace_datos.consultas.procesos.detalle_asig_chequeImpl;
 import enlace_datos.consultas.procesos.liquidacionImpl;
@@ -303,6 +307,7 @@ import enlace_datos.consultas.util.SisAutorizacion_vwImpl;
 import enlace_datos.consultas.util.Sis_documentos_adjuntos_vwImpl;
 import enlace_datos.consultas.util.UsuarioVwImpl;
 import enlace_datos.consultas.util.pregunta_seguridadImpl;
+import enlace_datos.consultas.varios.RenglonXMovAnexosImpl;
 import enlace_datos.consultas.varios.Sis_historial_det1Impl;
 import enlace_datos.consultas.varios.Sis_historial_salarialImpl;
 import enlace_datos.consultas.varios.Sis_historial_salarial_IsrImpl;
@@ -3429,12 +3434,37 @@ return vResultado;
     public sis_solBajaLaboralvwImpl getsis_solBajaLaboralvw() {
         return (sis_solBajaLaboralvwImpl)findViewObject("sis_solBajaLaboralvw");
     }
-    
-    /**Container's getter for SisPostMortem_vw1
+
+    /**Container's getter for complementos_isr_vw1
      */
-    public SisPostMortem_vwImpl getSisPostMortem_vw1() {
-        return (SisPostMortem_vwImpl)findViewObject("SisPostMortem_vw1");
+    public complementos_isr_vwImpl getcomplementos_isr_vw1() {
+        return (complementos_isr_vwImpl)findViewObject("complementos_isr_vw1");
     }
+
+    /**Container's getter for sis_provisionRem_vw1
+     */
+    public sis_provisionRem_vwImpl getsis_provisionRem_vw1() {
+        return (sis_provisionRem_vwImpl)findViewObject("sis_provisionRem_vw1");
+    }
+
+    /**Container's getter for RenglonXMovAnexos1
+     */
+    public RenglonXMovAnexosImpl getRenglonXMovAnexos1() {
+        return (RenglonXMovAnexosImpl)findViewObject("RenglonXMovAnexos1");
+    }
+
+    /**Container's getter for SisMovPlazaXAnexo1
+     */
+    public SisMovPlazaXAnexoImpl getSisMovPlazaXAnexo1() {
+        return (SisMovPlazaXAnexoImpl)findViewObject("SisMovPlazaXAnexo1");
+    }
+
+    /**Container's getter for SisMPlazaXApertura1
+     */
+    public SisMPlazaXAperturaImpl getSisMPlazaXApertura1() {
+        return (SisMPlazaXAperturaImpl)findViewObject("SisMPlazaXApertura1");
+    }
+
 
     /**Container's getter for SisSolicitudesRenunciaIndem_vw1
      */
@@ -3452,5 +3482,11 @@ return vResultado;
      */
     public SisBeneficiariosPost_vwImpl getSisBeneficiariosPost_vw() {
         return (SisBeneficiariosPost_vwImpl)findViewObject("SisBeneficiariosPost_vw");
+    }
+
+    /**Container's getter for SisPostMortem_vw1
+     */
+    public SisPostMortem_vwImpl getSisPostMortem_vw1() {
+        return (SisPostMortem_vwImpl)findViewObject("SisPostMortem_vw1");
     }
 }

@@ -521,15 +521,361 @@ public class verReporteExcel extends HttpServlet {
                 } catch (Exception e) {
                     // TODO
                 }
-            } else if (vParametro2.equals("DARHSJI2_INDEMNIZACION")) {
-                 pDefReporte = "DARHSJI2_indemnizacion_excel.jasper";
+            } else if (vParametro2.equals("REPHISTEMPL_CONTRATOS")) { //HISTORIAL EMPLEADO CONTRATOS
+                pDefReporte = "histEmpl_nombramiento.jasper";
+                vNombreArchivo="excel_nombramiento.xls";
+                String vParametros [];
+                vParametros = vParametro1.split("\\|");
+                for (int i=0;i<vParametros.length;i++){ 
+                    switch (i){
+                        case 0: //cui
+                        parametrosReporte.put("pCui", new BigDecimal(vParametros[i]));
+                        break;
+                        case 1: //registro empleado
+                        parametrosReporte.put("pRegEmpl", new BigDecimal(vParametros[i]));
+                        break;
+                        case 2: //fecha inicio
+                        parametrosReporte.put("pFechaInicial", vParametros[i]);
+                        break;
+                        case 3: //fecha fin  
+                        parametrosReporte.put("pFechaFinal", vParametros[i].equals("0") ? vAnio+"/12/31" : vParametros[i]);
+                        break;
+                        case 4: //dependencia
+                        parametrosReporte.put("pIdDep", new BigDecimal(vParametros[i]));
+                        break;
+                        case 5: //estado
+                        parametrosReporte.put("pEstado", new BigDecimal(vParametros[i]));
+                        break;
+                        
+                    }
+                }
+                parametrosReporte.put("pUsuario", vUsuario); 
+                
+            }else if (vParametro2.equals("REPHISTEMPL_LICENCIAS")) { //HISTORIAL EMPLEADO LICENCIAS
+                pDefReporte = "histEmpl_licencia.jasper";
+                vNombreArchivo="excel_licencias.xls";
+                String vParametros [];
+                vParametros = vParametro1.split("\\|");
+                for (int i=0;i<vParametros.length;i++){ 
+                    switch (i){
+                        case 0: //cui
+                        parametrosReporte.put("pCui", new BigDecimal(vParametros[i]));
+                        break;
+                        case 1: //registro empleado
+                        parametrosReporte.put("pRegEmpl", new BigDecimal(vParametros[i]));
+                        break;
+                        case 2: //fecha inicio
+                        parametrosReporte.put("pFechaInicial", vParametros[i]);
+                        break;
+                        case 3: //fecha fin  
+                        parametrosReporte.put("pFechaFinal", vParametros[i].equals("0") ? vAnio+"/12/31" : vParametros[i]);
+                        break;
+                        case 4: //dependencia
+                        parametrosReporte.put("pIdDep", new BigDecimal(vParametros[i]));
+                        break;
+                        case 5: //estado
+                        parametrosReporte.put("pEstado", new BigDecimal(vParametros[i]));
+                        break;
+                        
+                    }
+                }
+                parametrosReporte.put("pUsuario", vUsuario); 
+                
+            }else if (vParametro2.equals("REPHISTEMPL_SUPIGSS")) { //HISTORIAL EMPLEADO SUSPENCION IGSS
+                pDefReporte = "histEmpl_supigss.jasper";
+                vNombreArchivo="excel_susp_igss.xls";
+                String vParametros [];
+                vParametros = vParametro1.split("\\|");
+                for (int i=0;i<vParametros.length;i++){ 
+                    switch (i){
+                        case 0: //cui
+                        parametrosReporte.put("pCui", new BigDecimal(vParametros[i]));
+                        break;
+                        case 1: //registro empleado
+                        parametrosReporte.put("pRegEmpl", new BigDecimal(vParametros[i]));
+                        break;
+                        case 2: //fecha inicio
+                        parametrosReporte.put("pFechaInicial", vParametros[i]);
+                        break;
+                        case 3: //fecha fin  
+                        parametrosReporte.put("pFechaFinal", vParametros[i].equals("0") ? vAnio+"/12/31" : vParametros[i]);
+                        break;
+                        case 4: //dependencia
+                        parametrosReporte.put("pIdDep", new BigDecimal(vParametros[i]));
+                        break;
+                        case 5: //estado
+                        parametrosReporte.put("pEstado", new BigDecimal(vParametros[i]));
+                        break;
+                        
+                    }
+                }
+                parametrosReporte.put("pUsuario", vUsuario); 
+                
+            }else if (vParametro2.equals("REPHISTEMPL_DESCJUDICIAL")) { //HISTORIAL EMPLEADO DESCUENTOS JUDICIALES
+                pDefReporte = "histEmpl_descjudiciales.jasper";
+                vNombreArchivo="excel_desc_judicial.xls";
+                String vParametros [];
+                vParametros = vParametro1.split("\\|");
+                for (int i=0;i<vParametros.length;i++){ 
+                    switch (i){
+                        case 0: //cui
+                        parametrosReporte.put("pCui", new BigDecimal(vParametros[i]));
+                        break;
+                        case 1: //registro empleado
+                        parametrosReporte.put("pRegEmpl", new BigDecimal(vParametros[i]));
+                        break;
+                        case 2: //fecha inicio
+                        parametrosReporte.put("pFechaInicial", vParametros[i]);
+                        break;
+                        case 3: //fecha fin  
+                        parametrosReporte.put("pFechaFinal", vParametros[i].equals("0") ? vAnio+"/12/31" : vParametros[i]);
+                        break;
+                        case 5: //estado
+                        parametrosReporte.put("pEstado", new BigDecimal(vParametros[i]));
+                        break;
+                    }
+                }
+                parametrosReporte.put("pUsuario", vUsuario); 
+                
+            }else if (vParametro2.equals("REPHISTEMPL_RENUNDESP")) { //HISTORIAL EMPLEADO RENUNCIAS Y DESPIDOS
+                pDefReporte = "histEmpl_renunDesp.jasper";
+                vNombreArchivo="excel_renuncia_despidos.xls";
+                String vParametros [];
+                vParametros = vParametro1.split("\\|");
+                for (int i=0;i<vParametros.length;i++){ 
+                    switch (i){
+                        case 0: //cui
+                        parametrosReporte.put("pCui", new BigDecimal(vParametros[i]));
+                        break;
+                        case 1: //registro empleado
+                        parametrosReporte.put("pRegEmpl", new BigDecimal(vParametros[i]));
+                        break;
+                        case 2: //fecha inicio
+                        parametrosReporte.put("pFechaInicial", vParametros[i]);
+                        break;
+                        case 3: //fecha fin  
+                        parametrosReporte.put("pFechaFinal", vParametros[i].equals("0") ? vAnio+"/12/31" : vParametros[i]);
+                        break;
+                        case 4: //dependencia
+                        parametrosReporte.put("pIdDep", new BigDecimal(vParametros[i]));
+                        break;
+                        case 5: //estado
+                        parametrosReporte.put("pEstado", new BigDecimal(vParametros[i]));
+                        break;
+                    }
+                }
+                parametrosReporte.put("pUsuario", vUsuario); 
+                
+            }else if (vParametro2.equals("REPHISTEMPL_RENUNPARC")) { //HISTORIAL EMPLEADO RENUNCIAS PARCIALES
+                pDefReporte = "histEmpl_renunParciales.jasper";
+                vNombreArchivo="excel_renuncia_parciales.xls";
+                String vParametros [];
+                vParametros = vParametro1.split("\\|");
+                for (int i=0;i<vParametros.length;i++){ 
+                    switch (i){
+                        case 0: //cui
+                        parametrosReporte.put("pCui", new BigDecimal(vParametros[i]));
+                        break;
+                        case 1: //registro empleado
+                        parametrosReporte.put("pRegEmpl", new BigDecimal(vParametros[i]));
+                        break;
+                        case 2: //fecha inicio
+                        parametrosReporte.put("pFechaInicial", vParametros[i]);
+                        break;
+                        case 3: //fecha fin  
+                        parametrosReporte.put("pFechaFinal", vParametros[i].equals("0") ? vAnio+"/12/31" : vParametros[i]);
+                        break;
+                        case 4: //dependencia
+                        parametrosReporte.put("pIdDep", new BigDecimal(vParametros[i]));
+                        break;
+                        case 5: //estado
+                        parametrosReporte.put("pEstado", new BigDecimal(vParametros[i]));
+                        break;
+                    }
+                }
+                parametrosReporte.put("pUsuario", vUsuario); 
+                
+            }else if (vParametro2.equals("REPHISTEMPL_TIEMPEXT")) { //HISTORIAL EMPLEADO TIEMPO EXTRAORDINARIO
+                pDefReporte = "histEmpl_tiempoExt.jasper";
+                vNombreArchivo="excel_tiempo_extrao.xls";
+                String vParametros [];
+                vParametros = vParametro1.split("\\|");
+                for (int i=0;i<vParametros.length;i++){ 
+                    switch (i){
+                        case 0: //cui
+                        parametrosReporte.put("pCui", new BigDecimal(vParametros[i]));
+                        break;
+                        case 1: //registro empleado
+                        parametrosReporte.put("pRegEmpl", new BigDecimal(vParametros[i]));
+                        break;
+                        case 2: //fecha inicio
+                        parametrosReporte.put("pFechaInicial", vParametros[i]);
+                        break;
+                        case 3: //fecha fin  
+                        parametrosReporte.put("pFechaFinal", vParametros[i].equals("0") ? vAnio+"/12/31" : vParametros[i]);
+                        break;
+                        case 4: //dependencia
+                        parametrosReporte.put("pIdDep", new BigDecimal(vParametros[i]));
+                        break;
+                        case 5: //estado
+                        parametrosReporte.put("pEstado", new BigDecimal(vParametros[i]));
+                        break;
+                    }
+                }
+                parametrosReporte.put("pUsuario", vUsuario); 
+                
+            }else if (vParametro2.equals("REPHISTEMPL_FALLECIMIENTO")) { //HISTORIAL EMPLEADO FALLECIMIENTO
+                pDefReporte = "histEmpl_fallecimiento.jasper";
+                vNombreArchivo="excel_fallecimiento.xls";
+                String vParametros [];
+                vParametros = vParametro1.split("\\|");
+                for (int i=0;i<vParametros.length;i++){ 
+                    switch (i){
+                        case 0: //cui
+                        parametrosReporte.put("pCui", new BigDecimal(vParametros[i]));
+                        break;
+                        case 1: //registro empleado
+                        parametrosReporte.put("pRegEmpl", new BigDecimal(vParametros[i]));
+                        break;
+                        case 2: //fecha inicio
+                        parametrosReporte.put("pFechaInicial", vParametros[i]);
+                        break;
+                        case 3: //fecha fin  
+                        parametrosReporte.put("pFechaFinal", vParametros[i].equals("0") ? vAnio+"/12/31" : vParametros[i]);
+                        break;
+                        case 4: //dependencia
+                        parametrosReporte.put("pIdDep", new BigDecimal(vParametros[i]));
+                        break;
+                        case 5: //estado
+                        parametrosReporte.put("pEstado", new BigDecimal(vParametros[i]));
+                        break;
+                    }
+                }
+                parametrosReporte.put("pUsuario", vUsuario); 
+                
+            }else if (vParametro2.equals("REPHISTEMPL_RETIROOBL")) { //HISTORIAL EMPLEADO RETIRO OBLIGATORIO
+                pDefReporte = "histEmpl_retiroOblig.jasper";
+                vNombreArchivo="excel_retiro_obligatorio.xls";
+                String vParametros [];
+                vParametros = vParametro1.split("\\|");
+                for (int i=0;i<vParametros.length;i++){ 
+                    switch (i){
+                        case 0: //cui
+                        parametrosReporte.put("pCui", new BigDecimal(vParametros[i]));
+                        break;
+                        case 1: //registro empleado
+                        parametrosReporte.put("pRegEmpl", new BigDecimal(vParametros[i]));
+                        break;
+                        case 2: //fecha inicio
+                        parametrosReporte.put("pFechaInicial", vParametros[i]);
+                        break;
+                        case 3: //fecha fin  
+                        parametrosReporte.put("pFechaFinal", vParametros[i].equals("0") ? vAnio+"/12/31" : vParametros[i]);
+                        break;
+                        case 4: //dependencia
+                        parametrosReporte.put("pIdDep", new BigDecimal(vParametros[i]));
+                        break;
+                        case 5: //estado
+                        parametrosReporte.put("pEstado", new BigDecimal(vParametros[i]));
+                        break;
+                    }
+                }
+                parametrosReporte.put("pUsuario", vUsuario); 
+                
+            }else if (vParametro2.equals("REPHISTEMPL_REINTEGROS")) { //HISTORIAL EMPLEADO REINTEGROS
+                pDefReporte = "histEmpl_reintegros.jasper";
+                vNombreArchivo="excel_reintegros.xls";
+                String vParametros [];
+                vParametros = vParametro1.split("\\|");
+                for (int i=0;i<vParametros.length;i++){ 
+                    switch (i){
+                        case 0: //cui
+                        parametrosReporte.put("pCui", new BigDecimal(vParametros[i]));
+                        break;
+                        case 1: //registro empleado
+                        parametrosReporte.put("pRegEmpl", new BigDecimal(vParametros[i]));
+                        break;
+                        case 2: //fecha inicio
+                        parametrosReporte.put("pFechaInicial", vParametros[i]);
+                        break;
+                        case 3: //fecha fin  
+                        parametrosReporte.put("pFechaFinal", vParametros[i].equals("0") ? vAnio+"/12/31" : vParametros[i]);
+                        break;
+                        case 4: //dependencia
+                        parametrosReporte.put("pIdDep", new BigDecimal(vParametros[i]));
+                        break;
+                        case 5: //estado
+                        parametrosReporte.put("pEstado", new BigDecimal(vParametros[i]));
+                        break;
+                    }
+                }
+                parametrosReporte.put("pUsuario", vUsuario); 
+                
+            }else if (vParametro2.equals("REPHISTEMPL_BAJALABORAL")) { //HISTORIAL EMPLEADO BAJA LABORAL
+                pDefReporte = "histEmpl_suspbajaLab.jasper";
+                vNombreArchivo="excel_bajaLaboral.xls";
+                String vParametros [];
+                vParametros = vParametro1.split("\\|");
+                for (int i=0;i<vParametros.length;i++){ 
+                    switch (i){
+                        case 0: //cui
+                        parametrosReporte.put("pCui", new BigDecimal(vParametros[i]));
+                        break;
+                        case 1: //registro empleado
+                        parametrosReporte.put("pRegEmpl", new BigDecimal(vParametros[i]));
+                        break;
+                        case 2: //fecha inicio
+                        parametrosReporte.put("pFechaInicial", vParametros[i]);
+                        break;
+                        case 3: //fecha fin  
+                        parametrosReporte.put("pFechaFinal", vParametros[i].equals("0") ? vAnio+"/12/31" : vParametros[i]);
+                        break;
+                        case 4: //dependencia
+                        parametrosReporte.put("pIdDep", new BigDecimal(vParametros[i]));
+                        break;
+                        case 5: //estado
+                        parametrosReporte.put("pEstado", new BigDecimal(vParametros[i]));
+                        break;
+                    }
+                }
+                parametrosReporte.put("pUsuario", vUsuario); 
+                
+            }else if (vParametro2.equals("REPHISTEMPL_PROMREC")) { //HISTORIAL EMPLEADO PROMOCION DOCENTE Y RECLASIFICACION.
+                pDefReporte = "histEmpl_promoDocente.jasper";
+                vNombreArchivo="excel_promoDoc_Reclasif.xls";
+                String vParametros [];
+                vParametros = vParametro1.split("\\|");
+                for (int i=0;i<vParametros.length;i++){ 
+                    switch (i){
+                        case 0: //cui
+                        parametrosReporte.put("pCui", new BigDecimal(vParametros[i]));
+                        break;
+                        case 1: //registro empleado
+                        parametrosReporte.put("pRegEmpl", new BigDecimal(vParametros[i]));
+                        break;
+                        case 2: //fecha inicio
+                        parametrosReporte.put("pFechaInicial", vParametros[i]);
+                        break;
+                        case 3: //fecha fin  
+                        parametrosReporte.put("pFechaFinal", vParametros[i].equals("0") ? vAnio+"/12/31" : vParametros[i]);
+                        break;
+                        case 4: //dependencia
+                        parametrosReporte.put("pIdDep", new BigDecimal(vParametros[i]));
+                        break;
+                        case 5: //estado
+                        parametrosReporte.put("pTipo", vParametros[i]);
+                        break;
+                    }
+                }
+                parametrosReporte.put("pUsuario", vUsuario); 
+                
+            }  else if (vParametro2.equals("DARHSJI2_INDEMNIZACION"))  {
+                pDefReporte = "DARHSJI2_indemnizacion_excel.jasper";
                 parametrosReporte.put("pRegistroPersonal",  new BigDecimal(vParametro1));
-                //parametrosReporte.put("pRegistroPersonal", new BigDecimal("930685"));
-                //parametrosReporte.put("pRegistroPersonal", new BigDecimal("19990018"));
-                //parametrosReporte.put("pRegistroPersonal", new BigDecimal("20140781"));
-                //parametrosReporte.put("pRegistroPersonal", new BigDecimal("20150341"));
                 vNombreArchivo = "rel_lab_" + vParametro1 + ".xls";
             }
+            
+            
             
             try {
             

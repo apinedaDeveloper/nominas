@@ -37,7 +37,7 @@
     union
     select 2,'[centros]' from dual 
     union
-    select unique 3, dep.id_dependencia ||'|'||dep.nombre||'|'||dep.direccion||'|'||dep.zona||'|||||'||depto.cod_dep_retenisr||'|'||muni.cod_muni_retenisr||'|803001|'
+    select unique 3, dep.id_dependencia || '|' || dep.nombre || '|' || dep.direccion || '|' || dep.zona || '|||Christian Geovanny Chan Ayerdi|chan.christian@usac.edu.gt|'||depto.cod_dep_retenisr||'|'||muni.cod_muni_retenisr||'|803001|'
     from sis_documento_banco doc, sis_pago pago, sis_nomina nom, sis_partida par, sis_dependencia dep
     , sis_municipio muni, sis_departamento depto
     where doc.id_documento_banco = pago.id_documento_banco and pago.id_nomina = nom.id_nomina
@@ -109,28 +109,30 @@ select 2,2,
     (select id_tipo_planilla 
     from sis_tipoplanilla_igss 
     where id_ajuste = t.ajuste 
-    and (select sis_pkg_util2.getDependenciaEmpleado(t.registro_empleado,(select to_char(to_date('01/'||to_char(sr.periodo,'00')||to_char(sr.fecha_inicio,'yyyy')),'mm/yyyy') from sis_remesa sr where sr.id_remesa = $P{pRemesa}), t.periodoPago) from dual) = id_dependencia
+    and (select sis_pkg_util2.getDependenciaEmpleado(t.registro_empleado,(select to_char(to_date('01/' || to_char(sr.periodo,'00') || to_char(sr.fecha_inicio,'yyyy')),'mm/yyyy')
+         from sis_remesa sr where sr.id_remesa = $P{pRemesa}), t.periodoPago) from dual) = id_dependencia
     )||'|'||
-    (select REPLACE(empl.igss,'-','')||'|'||empl.nombre1||'||'||empl.apellido1
+    (select REPLACE(empl.igss,'-','') || '|' || empl.nombre1 || '|' || empl.nombre2 || '|' || empl.apellido1 || '|' || empl.apellido2
     from sis_empleado empl 
     where empl.registro_empleado = t.registro_empleado
-    )||'|||'||REPLACE(t.nominal,',','.')||'|'||
+    ) || '||' || REPLACE(t.nominal,',','.') || '|' ||
     (select case when $P{pRemesa} = 33 then 
                     (select to_char(add_months(sis_pkg_util2.getFechaInicioIGSSAgosto(t.registro_empleado,$P{pRemesa}, 1), -1), 'dd/mm/yyyy') from dual)
                 else (select to_char(add_months(sis_pkg_util2.getFechaInicioIGSS(t.registro_empleado,$P{pRemesa}, 0), -1), 'dd/mm/yyyy') from dual) 
             end
-    from dual)||'||'||
-    (select sis_pkg_util2.getDependenciaEmpleado(t.registro_empleado,(select to_char(to_date('01/'||to_char(sr.periodo, '00')||to_char(sr.fecha_inicio, 'yyyy')), 'mm/yyyy') from sis_remesa sr where sr.id_remesa = $P{pRemesa}), t.periodoPago) from dual)
-    ||'||3431|P|'
+    from dual) || '||' ||
+    (select sis_pkg_util2.getDependenciaEmpleado(t.registro_empleado,(select to_char(to_date('01/' || to_char(sr.periodo, '00') || to_char(sr.fecha_inicio, 'yyyy')), 'mm/yyyy')
+     from sis_remesa sr where sr.id_remesa = $P{pRemesa}), t.periodoPago) from dual)
+    || '||3431|P|'
     ||case when (select extract (year from fecha_inicio) from sis_remesa where id_remesa = $P{pRemesa} )  <= 2022 Then '' else '|1||TC||' end
 from (
     select nom.registro_empleado, sum(nom.nominal) nominal, max(id_ajuste) ajuste
-    , to_char(max((to_date(to_char((nom.periodo),'00')||'/'||(nom.correlativo), 'mm/yyyy'))), 'mm/yyyy') periodoPago
+    , to_char(max((to_date(to_char((nom.periodo),'00') || '/' || (nom.correlativo), 'mm/yyyy'))), 'mm/yyyy') periodoPago
     from sis_documento_banco doc, sis_pago pago, sis_nomina nom, sis_det_calculo_ajuste scal, sis_empleado ei
     where doc.id_documento_banco = pago.id_documento_banco
     and nom.id_nomina = pago.id_nomina and nom.registro_empleado = ei.registro_empleado
     and nom.id_tipo_nomina not in (2, 3, 5, 6, 8) and scal.id_nomina = nom.id_nomina
-    and scal.id_ajuste in (21,25) and doc.id_remesa = ($P{pRemesaActual} )
+    and scal.id_ajuste in (21, 25) and doc.id_remesa = ($P{pRemesaActual} )
     and (
         (doc.id_estado <> 17 and doc.fecha_anulacion is null)  
         or (doc.id_estado = 17 and (trunc(doc.fecha_anulacion) > trunc((select fecha_fin from sis_remesa where id_remesa = ($P{pRemesaActual} ))))

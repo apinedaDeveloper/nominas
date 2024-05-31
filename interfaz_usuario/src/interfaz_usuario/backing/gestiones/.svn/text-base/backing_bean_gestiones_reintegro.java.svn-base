@@ -131,6 +131,7 @@ public class backing_bean_gestiones_reintegro {
     public String verReintegro() {
         
         Object pIdReint, pNumDoc, pIdTipoDoc, pObserva; 
+        JSFUtils.EjecutarAcccion(FacesContext.getCurrentInstance(),"Rollback");    
         JSFUtils.EjecutarAcccion(FacesContext.getCurrentInstance(),"setCurrentRowWithKey");
         //JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.pNuevo1.inputValue}","0");
         pIdReint=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.IdReintegro.inputValue}");
@@ -220,6 +221,7 @@ public class backing_bean_gestiones_reintegro {
                 JSFUtils.EjecutarAcccion(FacesContext.getCurrentInstance(),"cambiarEstadoActual");
                 JSFUtils.EjecutarAcccion(FacesContext.getCurrentInstance(),"BusDescReintegro");
             }           
+            JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.pHabilitar1.inputValue}","0");
         } 
         return null;
     }
@@ -227,7 +229,7 @@ public class backing_bean_gestiones_reintegro {
     public String btn_guardar_reintegro() {
         JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.Observaciones.inputValue}",this.getTxtObservaciones().getValue().toString());
         if (JSFUtils.EjecutarAcccion2(FacesContext.getCurrentInstance(),"Confirmar")){
-            JSFUtils.EjecutarAcccion2(FacesContext.getCurrentInstance(),"generarAutomaticoDesc");
+           // JSFUtils.EjecutarAcccion2(FacesContext.getCurrentInstance(),"generarAutomaticoDesc");
             Object pIdReintegro=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.IdReintegro.inputValue}");
             JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.pNuevo1.inputValue}",pIdReintegro.toString());  
             JSFUtils.EjecutarAcccion2(FacesContext.getCurrentInstance(),"BusDetReint");            
@@ -236,7 +238,7 @@ public class backing_bean_gestiones_reintegro {
             this.btn_cancelar();
             JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.pNuevo1.inputValue}","0");            
             utils.setADFMensaje(new resulOp(resulOp.OPE_OK,"Datos guardados exitosamente"));
-            
+            JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.pHabilitar1.inputValue}","1");
         }
         return null;
     }
@@ -280,6 +282,7 @@ public class backing_bean_gestiones_reintegro {
         JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.pNuevo1.inputValue}",pIdReintegro.toString()); 
         JSFUtils.EjecutarAcccion(FacesContext.getCurrentInstance(),"setCurrentRowWithKeyValue");
         JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.pNuevo1.inputValue}","0");
+        JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.pHabilitar1.inputValue}","1");
         this.verReintegro();
         return null;
     }
@@ -355,4 +358,19 @@ public class backing_bean_gestiones_reintegro {
         return checkGenTodos;
     }
 
+    public String btn_AplicarDescAutoma() {
+        if (JSFUtils.EjecutarAcccion2(FacesContext.getCurrentInstance(),"Confirmar")){
+            JSFUtils.EjecutarAcccion2(FacesContext.getCurrentInstance(),"generarAutomaticoDesc");
+            Object pIdReintegro=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.IdReintegro.inputValue}");
+            JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.pNuevo1.inputValue}",pIdReintegro.toString());  
+            JSFUtils.EjecutarAcccion2(FacesContext.getCurrentInstance(),"BusDetReint");            
+            JSFUtils.EjecutarAcccion(FacesContext.getCurrentInstance(),"cambiarEstadoTodos");                                              
+            JSFUtils.EjecutarAcccion2(FacesContext.getCurrentInstance(),"actualizaTotalPagoReintegro");
+            this.btn_cancelar();
+            JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.pNuevo1.inputValue}","0");            
+            utils.setADFMensaje(new resulOp(resulOp.OPE_OK,"Datos guardados exitosamente"));
+            JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.pHabilitar1.inputValue}","1");
+        }
+        return null;
+    }
 }

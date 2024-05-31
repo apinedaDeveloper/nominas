@@ -224,7 +224,7 @@ vOpcion = vList.options[vIndice].value;
 var vInput = document.getElementById("_id5:inptNoExceda");
 var vCmbIndef = document.getElementById("_id5:cmb_tipoIndef");
 
-if (vOpcion=="G" || vOpcion=="J" ||vOpcion=="A" ||vOpcion=="P" || vOpcion=="T") {
+if (vOpcion=="G" || vOpcion=="J" ||vOpcion=="A" ||vOpcion=="P" || vOpcion=="T" || vOpcion=="C") {
 
    vInput.disabled=false;
    vCmbIndef.disabled=true;

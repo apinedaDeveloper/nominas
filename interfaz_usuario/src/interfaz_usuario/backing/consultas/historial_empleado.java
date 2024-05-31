@@ -1,8 +1,17 @@
 package interfaz_usuario.backing.consultas;
 
+import enlace_datos.util.utils;
+
+import interfaz_usuario.servlets.verReporteExcel;
+
 import interfaz_usuario.util.JSFUtils;
 
+import java.util.ArrayList;
+
 import javax.faces.context.FacesContext;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import oracle.adf.view.faces.component.core.input.CoreInputText;
 import oracle.adf.view.faces.component.core.input.CoreSelectBooleanCheckbox;
@@ -261,5 +270,211 @@ public class historial_empleado {
 
     public CoreSelectBooleanCheckbox getSlctBoolChkBoxContrataciones() {
         return slctBoolChkBoxContrataciones;
+    }
+
+    public String cmd_excel(int tipoReporte) {
+        // Add event code here...
+         HttpServletRequest vRequest=((HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest());
+         HttpServletResponse vResponse; 
+         vResponse=(HttpServletResponse)FacesContext.getCurrentInstance().getExternalContext().getResponse();
+         String vParametros = "";
+         
+         //-PARA OBTENER PARAMETRO 
+          Object vValor, vAux;
+          
+          // Registro de empleado
+          
+         
+        vValor=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.pCui.inputValue}");
+        vParametros += (vValor==null ? "0" : vValor) ; 
+          
+        vValor=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.regEmpleado.inputValue}");
+        vParametros += "|"+(vValor==null ? "0" : vValor) ; 
+        
+        vValor=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.FechaI.inputValue}");
+        vParametros += "|"+(vValor==null ? "0" : vValor) ; 
+        
+        vValor=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.FechaF.inputValue}");
+        vParametros += "|"+(vValor==null ? "0" : vValor) ; 
+        
+        vValor=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.unaConsulta_buscaDep.inputValue}");
+        if (Boolean.parseBoolean(vValor+""))
+            vValor=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.Dependencia.inputValue}");
+        else 
+            vValor = null;
+        
+        vParametros += "|"+(vValor==null ? "0" : vValor) ;
+        
+        verReporteExcel Excel;
+        Excel = new verReporteExcel();
+        try{
+         
+        if (tipoReporte == 1){
+            vValor=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.vEstadoContrato1.inputValue}");
+            vParametros += "|"+(vValor==null ? "0" : vValor) ; 
+          vRequest.setAttribute("id",vParametros);                
+          vRequest.setAttribute("rep","REPHISTEMPL_CONTRATOS");   
+          
+        }else if (tipoReporte == 2){
+            vValor=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.vEstadoLic1.inputValue}");
+            vParametros += "|"+(vValor==null ? "0" : vValor) ; 
+          vRequest.setAttribute("id",vParametros);                
+          vRequest.setAttribute("rep","REPHISTEMPL_LICENCIAS");   
+          
+        }else if (tipoReporte == 3){
+            vValor=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.vSuspIgss1.inputValue}");
+            vParametros += "|"+(vValor==null ? "0" : vValor) ; 
+          vRequest.setAttribute("id",vParametros);                
+          vRequest.setAttribute("rep","REPHISTEMPL_SUPIGSS");   
+          
+        }else if (tipoReporte == 4){
+            vValor=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.vDescJud1.inputValue}");
+            vParametros += "|"+(vValor==null ? "0" : vValor) ; 
+          vRequest.setAttribute("id",vParametros);                
+          vRequest.setAttribute("rep","REPHISTEMPL_DESCJUDICIAL");   
+          
+        }else if (tipoReporte == 5){
+            vValor=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.vRenun1.inputValue}");
+            vParametros += "|"+(vValor==null ? "0" : vValor) ; 
+          vRequest.setAttribute("id",vParametros);                
+          vRequest.setAttribute("rep","REPHISTEMPL_RENUNDESP");   
+          
+        }else if (tipoReporte == 6){
+            vValor=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.vRenunParcial1.inputValue}");
+            vParametros += "|"+(vValor==null ? "0" : vValor) ; 
+          vRequest.setAttribute("id",vParametros);                
+          vRequest.setAttribute("rep","REPHISTEMPL_RENUNPARC");   
+          
+        }else if (tipoReporte == 7){
+            vValor=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.vHoraE1.inputValue}");
+            vParametros += "|"+(vValor==null ? "0" : vValor) ; 
+          vRequest.setAttribute("id",vParametros);                
+          vRequest.setAttribute("rep","REPHISTEMPL_TIEMPEXT");   
+          
+        }else if (tipoReporte == 8){
+            vValor=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.vEstFalle1.inputValue}");
+            vParametros += "|"+(vValor==null ? "0" : vValor) ; 
+          vRequest.setAttribute("id",vParametros);                
+          vRequest.setAttribute("rep","REPHISTEMPL_FALLECIMIENTO");   
+          
+        }else if (tipoReporte == 9){
+            vValor=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.vEstReti1.inputValue}");
+            vParametros += "|"+(vValor==null ? "0" : vValor) ; 
+          vRequest.setAttribute("id",vParametros);                
+          vRequest.setAttribute("rep","REPHISTEMPL_RETIROOBL");   
+          
+        }else if (tipoReporte == 10){
+            vValor=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.vReintegros1.inputValue}");
+            vParametros += "|"+(vValor==null ? "0" : vValor) ; 
+          vRequest.setAttribute("id",vParametros);                
+          vRequest.setAttribute("rep","REPHISTEMPL_REINTEGROS");   
+          
+        }else if (tipoReporte == 11){
+            vValor=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.vSuspBajaLab1.inputValue}");
+            vParametros += "|"+(vValor==null ? "0" : vValor) ; 
+          vRequest.setAttribute("id",vParametros);                
+          vRequest.setAttribute("rep","REPHISTEMPL_BAJALABORAL");   
+          
+        }else if (tipoReporte == 12){
+            vValor=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.mostrarReclaf1.inputValue}");
+            vAux=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.mostrarPromDoc1.inputValue}");
+            
+           if ( (vValor!=null&&vValor.equals(true)) && (vAux!=null&&vAux.equals(true)) ){
+                vValor = "-1";
+           }else if (vValor!=null&&vValor.equals(true)) {
+               vValor = "2";
+           }else if (vAux!=null&&vAux.equals(true)){
+               vValor = "1";
+           }
+            
+            vParametros += "|"+(vValor==null ? "0" : vValor) ; 
+          vRequest.setAttribute("id",vParametros);                
+          vRequest.setAttribute("rep","REPHISTEMPL_PROMREC");   
+          
+        }
+        
+        
+          Excel.doGet(vRequest,vResponse);
+        
+        
+        }catch(Exception exep){
+            exep.printStackTrace(); 
+        }  
+        
+          //histEmpl_nombramiento
+        return null;
+    }
+
+
+    public String cmd_excel() {
+        // Add event code here...
+        cmd_excel(1);
+        return null;
+    }
+
+    public String cmd_excel_lic() {
+        // Add event code here...
+         cmd_excel(2);
+        return null;
+    }
+
+    public String cmd_excel_suspIgss() {
+        // Add event code here...
+         cmd_excel(3);
+        return null;
+    }
+
+    public String cmd_excel_descjudicial() {
+        // Add event code here.
+        cmd_excel(4);
+        return null;
+    }
+
+    public String cmd_excel_renunDesp() {
+        // Add event code here...
+         cmd_excel(5);
+        return null;
+    }
+
+    public String cmd_excel_renunParcial() {
+        // Add event code here...
+         cmd_excel(6);
+        return null;
+    }
+
+    public String cmd_excel_tiempoExt() {
+        // Add event code here...
+         cmd_excel(7);
+        return null;
+    }
+
+    public String cmd_excel_falleci() {
+        // Add event code here...
+         cmd_excel(8);
+        return null;
+    }
+
+    public String cmd_excel_retObl() {
+        // Add event code here...
+         cmd_excel(9);
+        return null;
+    }
+
+    public String cmd_excel_promo() {
+        // Add event code here...
+         cmd_excel(12);
+        return null;
+    }
+
+    public String cmd_excel_reintegros() {
+        // Add event code here...
+         cmd_excel(10);
+        return null;
+    }
+
+    public String cmd_excel_solbajalab() {
+        // Add event code here...
+         cmd_excel(11);
+        return null;
     }
 }

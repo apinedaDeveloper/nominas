@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="histEmpl_supigss"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="750"
+		 pageHeight="586"
+		 columnWidth="750"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pUsuario" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="pRegEmpl" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pCui" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pFechaInicial" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="pFechaFinal" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="pEstado" isForPrompting="true" class="java.math.BigDecimal"/>
+	<parameter name="pIdDep" isForPrompting="true" class="java.math.BigDecimal"/>
+	<queryString><![CDATA[select * from (
+select 
+a.id_solicitud,
+b.nombre_solicitud,
+e.descripcion as motivo,
+a.registro_empleado,
+f.nombrecompleto,
+f.cui,
+d.fecha_inicio_susp_igss as fecha_inicio,
+d.fecha_alta_susp_igss,
+a.fecha_creacion,
+c.nombre as nomEstado,
+d.fecha_alta_susp_igss as fecha_fin,
+a.id_estado,
+(
+select prt1.id_dependencia
+from sis_contrato contr, sis_partida prt1
+where contr.id_partida=prt1.id_partida
+and contr.registro_Empleado=a.registro_empleado
+and contr.ESTATUS not in (11,32)
+and fecha_inicio=(select max(fecha_inicio) from sis_contrato  ct2 where
+ct2.registro_Empleado=a.registro_empleado and ct2.ESTATUS not in (11,32))
+and rownum<=1
+)  as  id_dependencia
+from sis_solicitud a,sis_tipo_solicitud b,sis_estado_solicitud_vw c, sis_suspencion_igss d, sis_tipo_suspencion_igss e,sis_empleado_vw f
+where a.id_tipo_solicitud=b.id_tipo_solicitud
+and d.id_solicitud=a.id_solicitud
+and a.registro_empleado=f.registro_empleado
+and e.id_tipo_suspencion_igss=d.id_tipo_suspencion_igss
+and c.id_estado=a.id_estado
+and exists(
+    select 1 from sis_contrato contrat, partida part
+    where contrat.id_partida=part.id_partida
+    and contrat.registro_empleado=a.registro_empleado
+    and contrat.ESTATUS not in (11,32)
+    and
+    exists(
+    select 1 from usuario_unidad b, partida c
+    where b.id_partida=c.id_partida
+    and usuario=$P{pUsuario}
+    and b.tipo_usuario='TRABAJADOR'
+    and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+    and part.aniomanual=c.aniomanual
+    and part.d1=c.d1
+    and part.d2=c.d2
+    and part.d3d4=c.d3d4
+    and 
+    (
+    (part.d7=c.d7
+    and part.d6=c.d6
+    and part.d5=c.d5
+    )
+    or
+    (
+    c.d5 is null
+    and c.d6 is null
+    and c.d7 is null 
+    )
+    )
+    )
+)
+) where
+(registro_empleado = $P{pRegEmpl} or $P{pRegEmpl} =0)
+and (cui = $P{pCui} or $P{pCui} =0)
+and (id_estado = $P{pEstado} or $P{pEstado} = 0)
+and (id_dependencia = $P{pIdDep} or $P{pIdDep} =0)
+and (trunc (fecha_inicio) between nvl(to_date($P{pFechaInicial} ,'yyyy-mm-dd'),sysdate) and nvl(to_date($P{pFechaFinal} ,'yyyy-mm-dd'),sysdate) )]]></queryString>
+
+	<field name="ID_SOLICITUD" class="java.math.BigDecimal"/>
+	<field name="NOMBRE_SOLICITUD" class="java.lang.String"/>
+	<field name="MOTIVO" class="java.lang.String"/>
+	<field name="REGISTRO_EMPLEADO" class="java.math.BigDecimal"/>
+	<field name="NOMBRECOMPLETO" class="java.lang.String"/>
+	<field name="CUI" class="java.lang.String"/>
+	<field name="FECHA_INICIO" class="java.sql.Timestamp"/>
+	<field name="FECHA_ALTA_SUSP_IGSS" class="java.sql.Timestamp"/>
+	<field name="FECHA_CREACION" class="java.sql.Timestamp"/>
+	<field name="NOMESTADO" class="java.lang.String"/>
+	<field name="FECHA_FIN" class="java.sql.Timestamp"/>
+	<field name="ID_ESTADO" class="java.math.BigDecimal"/>
+	<field name="ID_DEPENDENCIA" class="java.math.BigDecimal"/>
+
+	<variable name="fecha_actual" class="java.util.Date" resetType="None" calculation="Nothing">
+		<variableExpression><![CDATA[new java.util.Date()]]></variableExpression>
+	</variable>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="24"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="59"
+						y="4"
+						width="689"
+						height="19"
+						key="staticText-2"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Courier New" pdfFontName="Helvetica-Bold" size="14" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Suspenciones IGSS]]></text>
+				</staticText>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="22"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="635"
+						y="0"
+						width="48"
+						height="22"
+						key="staticText-18"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Fecha Creacion]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="683"
+						y="0"
+						width="66"
+						height="22"
+						key="staticText-19"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Estado]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="65"
+						y="0"
+						width="110"
+						height="22"
+						key="staticText-6"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Motivo]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="0"
+						width="65"
+						height="22"
+						key="staticText-7"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[ID Suspencion]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="175"
+						y="0"
+						width="48"
+						height="22"
+						key="staticText-8"
+						stretchType="RelativeToTallestObject"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Registro Empleado]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="292"
+						y="0"
+						width="247"
+						height="22"
+						key="staticText-9"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Nombre Completo]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="223"
+						y="0"
+						width="69"
+						height="22"
+						key="staticText-10"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[CUI]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="587"
+						y="0"
+						width="48"
+						height="22"
+						key="staticText-14"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Fecha Alta]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="539"
+						y="0"
+						width="48"
+						height="22"
+						key="staticText-22"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Fecha Inicio]]></text>
+				</staticText>
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="16"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="0"
+						width="65"
+						height="16"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{ID_SOLICITUD}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="65"
+						y="0"
+						width="110"
+						height="16"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{MOTIVO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="175"
+						y="0"
+						width="48"
+						height="16"
+						key="textField-1"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{REGISTRO_EMPLEADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="223"
+						y="0"
+						width="69"
+						height="16"
+						key="textField-3"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{CUI}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="587"
+						y="0"
+						width="48"
+						height="16"
+						key="textField-4"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.sql.Timestamp"><![CDATA[$F{FECHA_FIN}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="635"
+						y="0"
+						width="48"
+						height="16"
+						key="textField-6"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.sql.Timestamp"><![CDATA[$F{FECHA_CREACION}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="683"
+						y="0"
+						width="66"
+						height="16"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMESTADO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="292"
+						y="0"
+						width="247"
+						height="16"
+						key="textField"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{NOMBRECOMPLETO}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="539"
+						y="0"
+						width="48"
+						height="16"
+						key="textField-8"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.sql.Timestamp"><![CDATA[$F{FECHA_INICIO}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>
