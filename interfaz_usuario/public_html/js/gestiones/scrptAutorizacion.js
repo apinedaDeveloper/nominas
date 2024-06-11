@@ -29,12 +29,10 @@ function boton_aceptar_click() {
                         $("#inptObserv").attr("disabled",true); 
                         $("button").attr("disabled", "disable");
                         $(this).dialog('close');
-                        alert("Operación realizada exitósamente!!");
-                        //if(vTipo != null && vTipo.value == 19){ // tipo gestion = liquidaciones
-                             //Refrescará la pantalla de liquidaciones
-                        setTimeout(location.reload(),1000);
-                        location.reload();
-                        //}
+                        alert("¡¡Operación realizada exitósamente!!!");
+                        //setTimeout(location.reload(),1000);
+                        //location.reload(3000);
+                        setTimeout(function(){location.reload(true);}, 2000);
                     } else { // error
                         $("#lblResultado").attr("class","ui-state-error");  
                         $("#lblResultado").html(data.msg);

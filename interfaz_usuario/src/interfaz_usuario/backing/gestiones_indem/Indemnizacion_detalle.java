@@ -1,13 +1,13 @@
 package interfaz_usuario.backing.gestiones_indem;
 
-import enlace_datos.util.resulOp;
+//import enlace_datos.util.resulOp;
 
 import interfaz_usuario.servlets.verReporteExcel;
 
 import interfaz_usuario.util.JSFUtils;
 import interfaz_usuario.util.utils;
 
-import java.util.List;
+//import java.util.List;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -38,10 +38,10 @@ import oracle.adf.view.faces.component.html.HtmlHead;
 import oracle.adf.view.faces.component.html.HtmlHtml;
 import oracle.adf.view.faces.event.ReturnEvent;
 
-import oracle.binding.BindingContainer;
-import oracle.binding.OperationBinding;
+//import oracle.binding.BindingContainer;
+//import oracle.binding.OperationBinding;
 
-import oracle.jbo.JboException;
+//import oracle.jbo.JboException;
 import oracle.jbo.domain.Number;
 
 import pkg_util_base_datos.interfaz_DB;
@@ -259,7 +259,7 @@ public class Indemnizacion_detalle {
 
     //Prodecimiento que Despliega el Error detalladamente
 
-    private void desplegarErrores(List pErrores) {
+    /*private void desplegarErrores(List pErrores) {
         int vCantidadErrores = pErrores.size();
         JboException vError;
         resulOp vResultado = new resulOp();
@@ -271,7 +271,7 @@ public class Indemnizacion_detalle {
                 utils.setADFMensaje(vResultado);
             }
         }
-    }
+    }*/
 
     public void setInptText_registroEmpleado(CoreInputText inptText_registroEmpleado) {
         this.inptText_registroEmpleado = inptText_registroEmpleado;
@@ -448,7 +448,7 @@ public class Indemnizacion_detalle {
 
     //Procedimiento que obtiene el ID de la solicitud de retiro definitivo y lo setea al binding respectivo
 
-    private boolean obtenerId_solicitudRetiro(FacesContext f) {
+    /*private boolean obtenerId_solicitudRetiro(FacesContext f) {
         boolean correcto = false;
         String b1 = "#{bindings.IdSolicitudRetiro.inputValue}";
         //String b2 = "#{bindings.IdSolicitudRetiro.inputValue}";
@@ -459,8 +459,7 @@ public class Indemnizacion_detalle {
                 //No hubo errores y el resultado se guardó en una variable auxiliar
                 Object aux = JSFUtils.resolveExpression(f, b1);
                 if (aux != null && Integer.parseInt(aux.toString()) > 0) {
-                    /*JSFUtils.setExpressionValue(f, b2,
-                                                utils.getNumberOracle(aux));*/
+                    //JSFUtils.setExpressionValue(f, b2, utils.getNumberOracle(aux));
                     correcto = true;
                 } else {
                     mensaje("Error al intentar obtener el ID de la solicitud autorizada, intente de nuevo por favor!!", 
@@ -476,11 +475,11 @@ public class Indemnizacion_detalle {
             mensaje("Ha ocurrido el siguiente error: " + e.getMessage(), 3);
         }
         return correcto;
-    }
+    }*/
 
     //Función que realiza el commit a la base de Datos
 
-    private boolean commit(FacesContext f) {
+    /*private boolean commit(FacesContext f) {
         boolean correcto = false;
         OperationBinding operationBinding;
         BindingContainer cont = 
@@ -497,7 +496,7 @@ public class Indemnizacion_detalle {
             operationBinding.execute();
         }
         return correcto;
-    }
+    }*/
 
     //Verifica si el trabajador ya se retiró de la institución
 
@@ -666,10 +665,16 @@ public class Indemnizacion_detalle {
                 boolean esNuevo = Boolean.parseBoolean(esNuevoObj.toString());
                 if (esNuevo) { //Expediente Nuevo
                     if (rellenarCamposPends_expNuevo(f)) {
-                        exito = commit(f);
+                        //exito = commit(f);
+                        exito = 
+                                JSFUtils.EjecutarAcccion2(FacesContext.getCurrentInstance(), 
+                                                          "Confirmar");
                     }
                 } else { //Expediente existente
-                    exito = commit(f);
+                    //exito = commit(f);
+                    exito = 
+                            JSFUtils.EjecutarAcccion2(FacesContext.getCurrentInstance(), 
+                                                      "Confirmar");
                 }
             }
         }
@@ -684,6 +689,8 @@ public class Indemnizacion_detalle {
             JSFUtils.setExpressionValue(f, binding, 
                                         Boolean.parseBoolean("false"));
             JSFUtils.EjecutarAcccion(f, "RefrescarIndemnizacion");
+            //JSFUtils.EjecutarAcccion(f, "Confirmar");
+            //JSFUtils.EjecutarAcccion(f, "setCurrentRowWithKey");
         }
         return null;
     }
@@ -873,9 +880,12 @@ public class Indemnizacion_detalle {
     public String cmdBtn_guardar_calculo_action() {
         FacesContext f = FacesContext.getCurrentInstance();
         if (rellenarCamposPends_guardar_calculo(f)) {
-            if (commit(f)) {
+            //if (commit(f)) {
+            if (JSFUtils.EjecutarAcccion2(FacesContext.getCurrentInstance(), 
+                                          "Confirmar")) {
                 mensaje("¡¡Información Guardada Correctamente!!", 1);
                 JSFUtils.EjecutarAcccion(f, "RefrescarIndemnizacion");
+                //JSFUtils.EjecutarAcccion(f, "Confirmar");
                 this.getCmdBtn_guardar_calculo().setDisabled(true);
                 this.getPnlHoriz_indemCalculada().setRendered(false);
             }
