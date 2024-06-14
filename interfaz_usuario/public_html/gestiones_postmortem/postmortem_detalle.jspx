@@ -93,12 +93,12 @@
                   <af:panelLabelAndMessage label="Estado del trabajador:" inlineStyle="font-weight:bold;">
                     <af:outputText value="#{bindings.NombreEstadoTrabajador.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;"/>
                   </af:panelLabelAndMessage>
-                  <af:panelLabelAndMessage label="No. de Solicitud de fallecimiento:" inlineStyle="font-weight:bold;">
+                  <af:panelLabelAndMessage label="ID Solicitud Fallecimiento:" inlineStyle="font-weight:bold;">
                     <af:outputText value="#{bindings.IdSolicitudFallecimiento.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;">
                       <f:convertNumber groupingUsed="false"/>
                     </af:outputText>
                   </af:panelLabelAndMessage>
-                  <af:panelLabelAndMessage label="Fecha:" inlineStyle="font-weight:bold;">
+                  <af:panelLabelAndMessage label="Fecha Solicitud:" inlineStyle="font-weight:bold;">
                     <af:outputText value="#{bindings.FechaSolicitudFallecimiento.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;">
                       <f:convertDateTime pattern="dd/MM/yyyy"/>
                     </af:outputText>
@@ -110,9 +110,14 @@
                 <af:panelHorizontal halign="center" inlineStyle="padding:2.0pt;">
                   <af:outputText inlineStyle="font-weight:bold; font-size:small;" value="Observación Fallecimiento:"/>
                   <af:objectSpacer height="10" width="10"/>
-                  <af:panelBox width="700px" inlineStyle="text-align:justify;">
+                  <af:panelBox width="700px">
                     <af:outputText value="#{bindings.ObservacionFallecimiento.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;" rendered="true"/>
                   </af:panelBox>
+                </af:panelHorizontal>
+                <af:panelHorizontal halign="center">
+                  <af:panelLabelAndMessage label="Beneficiario que solicita el Pago:" inlineStyle="font-weight:bold;">
+                    <af:outputText value="#{bindings.SolicitantePago.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;"/>
+                  </af:panelLabelAndMessage>
                 </af:panelHorizontal>
               </af:panelGroup>
               <af:panelBox width="100%">
@@ -129,7 +134,7 @@
                     </f:facet>
                     <af:commandLink partialSubmit="true" id="cdmLink_buscarTrabajador" binding="#{Postmortem_detalle.cdmLink_buscarTrabajador}" useWindow="true" windowHeight="500" windowWidth="800"
                                     shortDesc="Buscador de trabajador" action="dialog:buscaEmpl" returnListener="#{Postmortem_detalle.cdmLink_buscarTrabajador_returnListener}" immediate="true"
-                                    rendered='#{bindings.EsSolicitudNueva.inputValue || (bindings.NombreEstadoIndemnizacion.inputValue!=null &amp;&amp; bindings.NombreEstadoIndemnizacion.inputValue eq "GRABADO")}'>
+                                    rendered='#{bindings.EsSolicitudNueva.inputValue}'>
                       <af:goButton text="Buscar Trabajador" inlineStyle="font-weight:bold; color:rgb(0,0,132); font-size:large;"/>
                     </af:commandLink>
                     <af:outputText inlineStyle="font-weight:bold; color:rgb(128,0,0);" value="*"/>
@@ -217,10 +222,16 @@
                               selectionListener="#{bindings.tblBeneficiarios.collectionModel.makeCurrent}" banding="row" id="tbl_beneficiarios_fallecido" width="100%"
                               shortDesc="Listado de beneficiarios del trabajador fallecido" binding="#{Postmortem_detalle.tbl_beneficiarios_fallecido}">
                       <f:facet name="selection">
-                        <af:tableSelectOne text="Seleccione un beneficiario que solicita las prestaciones y guardar ">
-                          <af:commandButton text="Guardar"/>
+                        <af:tableSelectOne text="Seleccione el beneficiario que solicita el pago de las prestaciones y guarde">
+                          <af:commandButton text="Guardar" id="btn_guardar_beneficiario" action="#{Postmortem_detalle.btn_guardar_beneficiario_action}"
+                                            inlineStyle="font-weight:bold; font-size:large;" onclick="return preguntarGuardar();"/>
                         </af:tableSelectOne>
                       </f:facet>
+                      <af:column sortProperty="IdBeneficiario" sortable="false" headerText="ID Interno" formatType="icon">
+                        <af:outputText value="#{row.IdBeneficiario}" inlineStyle="padding:3.0pt;">
+                          <f:convertNumber groupingUsed="false" pattern="#{bindings.tblBeneficiarios.formats.IdBeneficiario}"/>
+                        </af:outputText>
+                      </af:column>
                       <af:column sortProperty="NombreCompleto" sortable="false" headerText="Nombre Completo">
                         <af:outputText value="#{row.NombreCompleto}" inlineStyle="padding:3.0pt;"/>
                       </af:column>
@@ -238,41 +249,12 @@
                           <f:convertDateTime pattern="#{bindings.tblBeneficiarios.formats.FechaCreacion}"/>
                         </af:outputText>
                       </af:column>
-                      <af:column sortProperty="IdBeneficiario" sortable="false" headerText="ID Interno" formatType="icon">
-                        <af:outputText value="#{row.IdBeneficiario}" inlineStyle="padding:3.0pt;">
-                          <f:convertNumber groupingUsed="false" pattern="#{bindings.tblBeneficiarios.formats.IdBeneficiario}"/>
-                        </af:outputText>
-                      </af:column>
-                      <af:column sortProperty="IdSolicitud" sortable="false" headerText="#{bindings.tblBeneficiarios.labels.IdSolicitud}" rendered="false">
-                        <af:outputText value="#{row.IdSolicitud}">
-                          <f:convertNumber groupingUsed="false" pattern="#{bindings.tblBeneficiarios.formats.IdSolicitud}"/>
-                        </af:outputText>
-                      </af:column>
-                      <af:column sortProperty="IdParentesco" sortable="false" headerText="#{bindings.tblBeneficiarios.labels.IdParentesco}" rendered="false">
-                        <af:outputText value="#{row.IdParentesco}">
-                          <f:convertNumber groupingUsed="false" pattern="#{bindings.tblBeneficiarios.formats.IdParentesco}"/>
-                        </af:outputText>
-                      </af:column>
-                      <af:column sortProperty="Nombre1" sortable="false" headerText="#{bindings.tblBeneficiarios.labels.Nombre1}" rendered="false">
-                        <af:outputText value="#{row.Nombre1}"/>
-                      </af:column>
-                      <af:column sortProperty="Nombre2" sortable="false" headerText="#{bindings.tblBeneficiarios.labels.Nombre2}" rendered="false">
-                        <af:outputText value="#{row.Nombre2}"/>
-                      </af:column>
-                      <af:column sortProperty="Nombre3" sortable="false" headerText="#{bindings.tblBeneficiarios.labels.Nombre3}" rendered="false">
-                        <af:outputText value="#{row.Nombre3}"/>
-                      </af:column>
-                      <af:column sortProperty="Apellido1" sortable="false" headerText="#{bindings.tblBeneficiarios.labels.Apellido1}" rendered="false">
-                        <af:outputText value="#{row.Apellido1}"/>
-                      </af:column>
-                      <af:column sortProperty="Apellido2" sortable="false" headerText="#{bindings.tblBeneficiarios.labels.Apellido2}" rendered="false">
-                        <af:outputText value="#{row.Apellido2}"/>
-                      </af:column>
                       <f:facet name="header">
                         <af:outputText value="Beneficiarios del Fallecido"/>
                       </f:facet>
                     </af:table>
-                    <af:objectSpacer height="10" width="20"/>
+                  </af:panelHorizontal>
+                  <af:panelHorizontal halign="center" rendered="#{!bindings.EsSolicitudNueva.inputValue}">
                     <af:outputText value="Gasto Funerario Q." inlineStyle="font-weight:bold;"/>
                     <af:objectSpacer height="10" width="10"/>
                     <af:inputText columns="10" value="#{bindings.GastoFunerario.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);" id="inptText_gastoFunerario"
@@ -435,70 +417,6 @@
                   </af:inputHidden>
                 </af:panelForm>
               </af:panelBox>
-              <!--<af:panelBox text="Datos del trabajador" width="100%" inlineStyle="text-align:center;">
-                    <af:panelForm shortDesc="Información general del trabajador fallecido">
-                      <f:facet name="footer"/>
-                    </af:panelForm>
-                  </af:panelBox>
-                  <af:panelBox text="Datos del Solicitante" width="100%" inlineStyle="text-align:center;">
-                    <af:panelForm shortDesc="Información general del solicitante">
-                      <f:facet name="footer"/>
-                      <af:panelHorizontal halign="center">
-                        <af:inputText label="* Nombre:" columns="40" id="inptText_nombreSolicitante" inlineStyle="font-weight:bold;" maximumLength="50" value="#{bindings.NombreSolicitante.inputValue}"
-                                      binding="#{Postmortem_detalle.inptText_nombreSolicitante}"/>
-                        <af:inputText value="#{bindings.CuiSolicitante.inputValue}" label="* CUI:" columns="15" id="inptText_cuiSolicitante" inlineStyle="font-weight:bold; text-align:center;"
-                                      maximumLength="13" tip="Número sin espacios" onkeypress="return validaNumero(event);" binding="#{Postmortem_detalle.inptText_cuiSolicitante}">
-                          <f:convertNumber pattern="#############" groupingUsed="false"/>
-                        </af:inputText>
-                        <af:selectOneChoice value="#{bindings.List_parentescoSolicitante.inputValue}" label="* Parentesco:" inlineStyle="font-weight:bold;" id="slctOneChoice_parentescoSol"
-                                            binding="#{Postmortem_detalle.slctOneChoice_parentescoSol}">
-                          <f:selectItems value="#{bindings.List_parentescoSolicitante.items}"/>
-                        </af:selectOneChoice>
-                        <af:inputText value="#{bindings.OtroParentescoSol.inputValue}" label="Otro Parentesco:" columns="10" id="inptText_otroParentescoSol"
-                                      inlineStyle="font-weight:bold; text-align:center;" shortDesc="Otros Parentesco del Solicitante" maximumLength="15"
-                                      binding="#{Postmortem_detalle.inptText_otroParentescoSol}"/>
-                        <f:facet name="separator">
-                          <af:objectSpacer height="10" width="10"/>
-                        </f:facet>
-                      </af:panelHorizontal>
-                      <af:panelHorizontal halign="center">
-                        <af:inputText value="#{bindings.DireccionSolicitante.inputValue}" label="Dirección:" columns="60" id="inptText_direccionSolicitante" inlineStyle="font-weight:bold;"
-                                      maximumLength="150" shortDesc="Dirección del Solicitante"/>
-                        <af:selectOneChoice label="Departamento:" inlineStyle="font-weight:bold;" value="#{bindings.List_departamentoDirecSolicitante.inputValue}" autoSubmit="true"
-                                            id="slctOneChoice_departamentoDirecSol" shortDesc="Departamento de Residencia del Solicitante" immediate="true">
-                          <f:selectItems value="#{bindings.List_departamentoDirecSolicitante.items}"/>
-                        </af:selectOneChoice>
-                        <f:facet name="separator">
-                          <af:objectSpacer width="10" height="10"/>
-                        </f:facet>
-                      </af:panelHorizontal>
-                      <af:panelHorizontal halign="center">
-                        <af:selectOneChoice value="#{bindings.List_municipioDirecSolicitante.inputValue}" label="Municipio:" id="slctOneChoice_municipioDirecSol" inlineStyle="font-weight:bold;"
-                                            partialTriggers="slctOneChoice_departamentoDirecSol" shortDesc="Municipio de Residencia del Solicitante">
-                          <f:selectItems value="#{bindings.List_municipioDirecSolicitante.items}"/>
-                        </af:selectOneChoice>
-                        <af:inputText value="#{bindings.TelefonosSolicita.inputValue}" label="Teléfono(s):" columns="18" id="inptText_telefonosSolicitante"
-                                      inlineStyle="font-weight:bold; text-align:center;" maximumLength="30"/>
-                        <af:inputText value="#{bindings.CorreoSolicitante.inputValue}" label="Correo electrónico:" columns="30" id="inptText_correoSolicitante"
-                                      inlineStyle="font-weight:bold; text-align:center;" maximumLength="45"/>
-                        <f:facet name="separator">
-                          <af:objectSpacer height="10" width="10"/>
-                        </f:facet>
-                      </af:panelHorizontal>
-                    </af:panelForm>
-                  </af:panelBox>
-                </af:showDetailItem>
-                <af:showDetailItem text="Paso 2: Cálculo de Prestaciones" rendered="#{ bindings.IdEstado.inputValue !=null &amp;&amp; bindings.IdEstado.inputValue!=&quot;260&quot; }">
-                  <af:table emptyText="#{bindings.Tbl_utlimosSueldos.viewable?'Ninguna Fila Aun' : 'Acceso Denegado'}" value="#{bindings.Tbl_ultimosSueldos.collectionModel}" var="row" banding="row" bandingInterval="1" id="tbl_UltimosSueldos"
-                            selectionListener="#{bindings.Tbl_utlimosSueldos.collectionModel.makeCurrent}" selectionState="#{bindings.Tbl_utlimosSueldos.collectionModel.selectedRow}" width="100%"
-                            shortDesc="Últimos sueldos recibidos">
-                    <f:facet name="header">
-                      <af:outputFormatted value="Últimos Sueldos Recibidos" inlineStyle="color:rgb(0,24,82); font-size:medium; text-align:center;"/>
-                    </f:facet>
-                    <af:column sortable="false" headerText="Partida" formatType="icon">
-                      <af:outputText value="#{row.Partida}"/>
-                    </af:column>
-                  </af:table>-->
             </af:panelBox>
           </af:page>
         </af:form>

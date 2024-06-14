@@ -48,6 +48,7 @@ public class SisPostMortem_vwRowImpl extends ViewRowImpl {
     public static final int PRESTACDIAS = 33;
     public static final int SUELDOPROMEDIOLECTURA = 34;
     public static final int GASTOFUNERARIOLECTURA = 35;
+    public static final int SOLICITANTEPAGO = 36;
 
     /**This is the default constructor (do not remove)
      */
@@ -132,6 +133,8 @@ public class SisPostMortem_vwRowImpl extends ViewRowImpl {
             return getSueldoPromedioLectura();
         case GASTOFUNERARIOLECTURA:
             return getGastoFunerarioLectura();
+        case SOLICITANTEPAGO:
+            return getSolicitantePago();
         default:
             return super.getAttrInvokeAccessor(index, attrDef);
         }
@@ -249,6 +252,9 @@ public class SisPostMortem_vwRowImpl extends ViewRowImpl {
             return;
         case GASTOFUNERARIOLECTURA:
             setGastoFunerarioLectura((Number)value);
+            return;
+        case SOLICITANTEPAGO:
+            setSolicitantePago((String)value);
             return;
         default:
             super.setAttrInvokeAccessor(index, value, attrDef);
@@ -697,5 +703,17 @@ public class SisPostMortem_vwRowImpl extends ViewRowImpl {
      */
     public void setGastoFunerarioLectura(Number value) {
         setAttributeInternal(GASTOFUNERARIOLECTURA, value);
+    }
+
+    /**Gets the attribute value for the calculated attribute SolicitantePago
+     */
+    public String getSolicitantePago() {
+        return (String) getAttributeInternal(SOLICITANTEPAGO);
+    }
+
+    /**Sets <code>value</code> as the attribute value for the calculated attribute SolicitantePago
+     */
+    public void setSolicitantePago(String value) {
+        setAttributeInternal(SOLICITANTEPAGO, value);
     }
 }

@@ -27,8 +27,8 @@ import oracle.binding.BindingContainer;
 import oracle.binding.OperationBinding;
 
 import oracle.jbo.JboException;
-
 import oracle.jbo.domain.Number;
+import oracle.jbo.uicli.binding.JUCtrlValueBindingRef;
 
 import pkg_util_base_datos.interfaz_DB;
 
@@ -761,5 +761,26 @@ public class Postmortem_detalle {
 
     public CoreInputHidden getInptHidden_totalPrestac() {
         return inptHidden_totalPrestac;
+    }
+
+    public String btn_guardar_beneficiario_action() {
+        try {
+            FacesContext f = FacesContext.getCurrentInstance();
+            JUCtrlValueBindingRef tableRowRef = 
+                (JUCtrlValueBindingRef)this.getTbl_beneficiarios_fallecido().set.getSelectedRowData();
+            if (tableRowRef != null) {
+                String binding = "#{bindings.IdBeneficiarioSol.inputValue}";
+                JSFUtils.setExpressionValue(f, binding, 
+                                            tableRowRef.getRow().getAttribute("IdBeneficiario"));
+                if (commit(f)) {
+                    mensaje("¡¡Información Guardada Correctamente!!", 1);
+                    JSFUtils.EjecutarAcccion(f, "RefrescarPrestaciones");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            mensaje("Ha ocurrido el siguiente error: " + e.getMessage(), 3);
+        }
+        return null;
     }
 }

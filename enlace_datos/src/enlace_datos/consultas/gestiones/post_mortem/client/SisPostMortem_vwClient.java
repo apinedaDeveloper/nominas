@@ -16,6 +16,12 @@ public class SisPostMortem_vwClient extends ViewUsageImpl implements SisPostMort
     }
 
 
+    public void RecuperarSolicitudesProfesionalCaja() {
+        Object _ret = 
+            getApplicationModuleProxy().riInvokeExportedMethod(this,"RecuperarSolicitudesProfesionalCaja",null,null);
+        return;
+    }
+
     public void RecuperarSolicitud(Number pIdTipoPrestacion, Number pAnio, 
                                    Number pCorrelativoAnio) {
         Object _ret = 
@@ -26,12 +32,6 @@ public class SisPostMortem_vwClient extends ViewUsageImpl implements SisPostMort
     public void RecuperarSolicitudes() {
         Object _ret = 
             getApplicationModuleProxy().riInvokeExportedMethod(this,"RecuperarSolicitudes",null,null);
-        return;
-    }
-
-    public void RecuperarSolicitudesProfesionalCaja() {
-        Object _ret = 
-            getApplicationModuleProxy().riInvokeExportedMethod(this,"RecuperarSolicitudesProfesionalCaja",null,null);
         return;
     }
 }
