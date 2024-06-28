@@ -767,7 +767,7 @@ public class Postmortem_detalle {
         try {
             FacesContext f = FacesContext.getCurrentInstance();
             JUCtrlValueBindingRef tableRowRef = 
-                (JUCtrlValueBindingRef)this.getTbl_beneficiarios_fallecido().set.getSelectedRowData();
+                (JUCtrlValueBindingRef)this.getTbl_beneficiarios_fallecido().getSelectedRowData();
             if (tableRowRef != null) {
                 String binding = "#{bindings.IdBeneficiarioSol.inputValue}";
                 JSFUtils.setExpressionValue(f, binding, 
@@ -775,6 +775,11 @@ public class Postmortem_detalle {
                 if (commit(f)) {
                     mensaje("¡¡Información Guardada Correctamente!!", 1);
                     JSFUtils.EjecutarAcccion(f, "RefrescarPrestaciones");
+                    System.out.println(tableRowRef.getRow().getKey());
+                    this.getTbl_beneficiarios_fallecido().setRowIndex(1);
+                    /*Key rowKey = this.getTbl_beneficiarios_fallecido().getRowKey();
+                    ArrayList tableRowKey = new ArrayList();
+                    tableRowKey.add(rowKey);*/
                 }
             }
         } catch (Exception e) {

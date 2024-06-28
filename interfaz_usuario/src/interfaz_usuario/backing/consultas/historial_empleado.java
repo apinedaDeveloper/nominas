@@ -1,12 +1,8 @@
 package interfaz_usuario.backing.consultas;
 
-import enlace_datos.util.utils;
-
 import interfaz_usuario.servlets.verReporteExcel;
 
 import interfaz_usuario.util.JSFUtils;
-
-import java.util.ArrayList;
 
 import javax.faces.context.FacesContext;
 
@@ -18,7 +14,6 @@ import oracle.adf.view.faces.component.core.input.CoreSelectBooleanCheckbox;
 import oracle.adf.view.faces.component.core.input.CoreSelectInputDate;
 import oracle.adf.view.faces.component.core.input.CoreSelectOneChoice;
 import oracle.adf.view.faces.component.core.nav.CoreCommandButton;
-import oracle.adf.view.faces.context.AdfFacesContext;
 
 public class historial_empleado {
 
@@ -121,7 +116,12 @@ public class historial_empleado {
         if (pBinding!=null&&pBinding.equals(true)){
             vConsultas=vConsultas+"|BAJALABORAL";
             //vEspecifico=true;
-        }    
+        }
+        
+        pBinding=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.mostrarIndemnizaciones1.inputValue}");
+        if (pBinding!=null&&pBinding.equals(true)){
+            vConsultas=vConsultas+"|INDEMNIZACIONES";
+        }
         
         vParamEstados="";
         pEstado=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.vEstadoContrato1.inputValue}");
@@ -213,6 +213,8 @@ public class historial_empleado {
         JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.mostrarReclaf1.inputValue}",false);
         JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.mostrarReintegros1.inputValue}",false);
         JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.mostrarTodoAux1.inputValue}",false);
+        JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.mostrarSuspBajaLab1.inputValue}",false);
+        JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.mostrarIndemnizaciones1.inputValue}",false);
         return null;
     }
 

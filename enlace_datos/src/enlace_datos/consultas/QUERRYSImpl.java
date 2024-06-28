@@ -51,6 +51,7 @@ import enlace_datos.consultas.empleado.Sis_list_referencias_empleado_fichaImpl;
 import enlace_datos.consultas.empleado.consul_empl_bibliovwImpl;
 import enlace_datos.consultas.empleado.sis_desc_judicial_consulImpl;
 import enlace_datos.consultas.empleado.sis_fallecimiento_consulImpl;
+import enlace_datos.consultas.empleado.sis_indemnizaciones_consulImpl;
 import enlace_datos.consultas.empleado.sis_licencias_consulImpl;
 import enlace_datos.consultas.empleado.sis_nombramientos_consulImpl;
 import enlace_datos.consultas.empleado.sis_promo_reclaf_consulImpl;
@@ -505,6 +506,8 @@ public class QUERRYSImpl extends ApplicationModuleImpl implements QUERRYS {
                 }else if (vConsulta.equals("BAJALABORAL")){
                     this.getsis_solBajaLaboralvw().consultaFecha = 2;
                     this.getsis_solBajaLaboralvw().BusquedaAvanzada(FechaI,FechaF,regEmpleado,Dependencia,pUsuario,getValorArray(vEstados,"BL"), pCui);
+                }else if (vConsulta.equals("INDEMNIZACIONES")){
+                    this.getsis_indemnizaciones_consul().BusquedaAvanzada(FechaI,FechaF,regEmpleado,Dependencia,pUsuario,getValorArray(vEstados,"F"), pCui);
                 }
                 
             } //fin del for
@@ -3488,5 +3491,11 @@ return vResultado;
      */
     public SisPostMortem_vwImpl getSisPostMortem_vw1() {
         return (SisPostMortem_vwImpl)findViewObject("SisPostMortem_vw1");
+    }
+
+    /**Container's getter for sis_indemnizaciones_consul
+     */
+    public sis_indemnizaciones_consulImpl getsis_indemnizaciones_consul() {
+        return (sis_indemnizaciones_consulImpl)findViewObject("sis_indemnizaciones_consul");
     }
 }
