@@ -1217,15 +1217,6 @@ public class Indemnizacion_detalle {
         return cmdBtn_guardar_gasto_funerario;
     }
 
-    /*public String cmdBtn_cancelar_gasto_funerario_action() {
-        FacesContext f = FacesContext.getCurrentInstance();
-        JSFUtils.EjecutarAcccion(f, "recuperarExpediente");
-        JSFUtils.EjecutarAcccion(f, "RefrescarIndemnizacion");
-        habilitar_componentes_gasto_funerario(false);
-        mensaje("Se cancelaron los cambios no guardados correctamente.", 1);
-        return null;
-    }*/
-
     public String cmdBtn_retornar_gasto_funerario_action() {
         return "ir_a_listado_indemnizaciones";
     }
@@ -1262,62 +1253,6 @@ public class Indemnizacion_detalle {
     public CoreCommandButton getCmdBtn_guardarRelacionLab() {
         return cmdBtn_guardarRelacionLab;
     }
-
-    /*private void guardarRelacionLaboral() {
-        int numFilas = this.getTbl_relacionLaboral().getRowCount();
-        JUCtrlValueBindingRef rwRef;
-        Row rw;
-        Object  aux;
-        //System.out.println("El número de filas es: " + numFilas);
-        for (int i = 0; i < numFilas; i++) {
-            rwRef =
-                    (JUCtrlValueBindingRef)this.getTbl_relacionLaboral().getRowData(i);
-            rw = rwRef.getRow();
-            aux = rw.getAttribute("Partida");
-            if (aux!=null) { System.out.println(aux.toString()); } else { System.out.println("Partida Undefined"); }
-            aux = rw.getAttribute("NumeroPlaza");
-            if (aux!=null) { System.out.println(aux.toString()); } else { System.out.println("NumeroPlaza Undefined"); }
-            aux = rw.getAttribute("Anio");
-            if (aux!=null) { System.out.println(aux.toString()); } else { System.out.println("Anio Undefined"); }
-            aux = rw.getAttribute("J1");
-            if (aux!=null) { System.out.println(aux.toString()); } else { System.out.println("J1 Undefined"); }
-            aux = rw.getAttribute("J2");
-            if (aux!=null) { System.out.println(aux.toString()); } else { System.out.println("J2 Undefined"); }
-            aux = rw.getAttribute("J3");
-            if (aux!=null) { System.out.println(aux.toString()); } else { System.out.println("J3 Undefined"); }
-            aux = rw.getAttribute("J4");
-            if (aux!=null) { System.out.println(aux.toString()); } else { System.out.println("J4 Undefined"); }
-            aux = rw.getAttribute("J5");
-            if (aux!=null) { System.out.println(aux.toString()); } else { System.out.println("J5 Undefined"); }
-            aux = rw.getAttribute("J6");
-            if (aux!=null) { System.out.println(aux.toString()); } else { System.out.println("J6 Undefined"); }
-            aux = rw.getAttribute("J7");
-            if (aux!=null) { System.out.println(aux.toString()); } else { System.out.println("J7 Undefined"); }
-            aux = rw.getAttribute("J8");
-            if (aux!=null) { System.out.println(aux.toString()); } else { System.out.println("J8 Undefined"); }
-            aux = rw.getAttribute("J9");
-            if (aux!=null) { System.out.println(aux.toString()); } else { System.out.println("J9 Undefined"); }
-            aux = rw.getAttribute("J10");
-            if (aux!=null) { System.out.println(aux.toString()); } else { System.out.println("J10 Undefined"); }
-            aux = rw.getAttribute("J11");
-            if (aux!=null) { System.out.println(aux.toString()); } else { System.out.println("J11 Undefined"); }
-            aux = rw.getAttribute("J12");
-            if (aux!=null) { System.out.println(aux.toString()); } else { System.out.println("J13 Undefined"); }
-            aux = rw.getAttribute("Anios");
-            if (aux!=null) { System.out.println(aux.toString()); } else { System.out.println("Anios Undefined"); }
-            aux = rw.getAttribute("Meses");
-            if (aux!=null) { System.out.println(aux.toString()); } else { System.out.println("Mese Undefined"); }
-            aux = rw.getAttribute("Dias");
-            if (aux!=null) { System.out.println(aux.toString()); } else { System.out.println("Dias Undefined"); }
-        }
-        Iterator it = this.getTbl_relacionLaboral().getSelectionState().getKeySet().iterator();
-        //JUIteratorBinding vIterBinding = (JUIteratorBinding) JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.SisRelacionLaboral_vw1Iterator}");
-        //RowSetIterator vBinding=vIterBinding.getRowSetIterator();
-        while(it.hasNext()){
-            //String key = it.next().toString();
-            //System.out.println("hola: " + key);
-        }
-    }*/
 
     public String cmdBtn_guardarRelacionLab_action() {
         //guardarRelacionLaboral();

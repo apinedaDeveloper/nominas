@@ -507,7 +507,7 @@ public class QUERRYSImpl extends ApplicationModuleImpl implements QUERRYS {
                     this.getsis_solBajaLaboralvw().consultaFecha = 2;
                     this.getsis_solBajaLaboralvw().BusquedaAvanzada(FechaI,FechaF,regEmpleado,Dependencia,pUsuario,getValorArray(vEstados,"BL"), pCui);
                 }else if (vConsulta.equals("INDEMNIZACIONES")){
-                    this.getsis_indemnizaciones_consul().BusquedaAvanzada(FechaI,FechaF,regEmpleado,Dependencia,pUsuario,getValorArray(vEstados,"F"), pCui);
+                    this.getsis_indemnizaciones_consul().BusquedaAvanzada(FechaI,FechaF,regEmpleado,Dependencia,pUsuario,getValorArray(vEstados,"IND"), pCui);
                 }
                 
             } //fin del for

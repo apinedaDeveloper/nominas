@@ -180,6 +180,12 @@ public class historial_empleado {
             vParamEstados=vParamEstados+"|REI|"+pEstado; 
         }
         
+        pEstado=JSFUtils.resolveExpression(FacesContext.getCurrentInstance(),"#{bindings.vEstadoIndem1.inputValue}");
+        
+        if (pEstado!=null){
+            vParamEstados=vParamEstados+"|IND|"+pEstado; 
+        }
+        
         JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.pConsulta.inputValue}",vConsultas);
         JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.vEstados1.inputValue}",vParamEstados);
         JSFUtils.EjecutarAcccion(FacesContext.getCurrentInstance(),"EjecutarConsulGestiones");
@@ -200,6 +206,7 @@ public class historial_empleado {
         this.getSlctInputDateFechaInicio().setValue("");
         this.getSlctInputDateFechaFin().setValue("");
         this.getSlctBoolChkBoxFiltrarDependencia().setSelected(false);
+        this.getSlcOneChoiceDependencias().setSubmittedValue(0);
         JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.mostrarContr1.inputValue}",false);
         JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.mostrarLic1.inputValue}",false);
         JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.mostrarSuspIgss1.inputValue}",false);
@@ -215,6 +222,9 @@ public class historial_empleado {
         JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.mostrarTodoAux1.inputValue}",false);
         JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.mostrarSuspBajaLab1.inputValue}",false);
         JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.mostrarIndemnizaciones1.inputValue}",false);
+        //JSFUtils.setExpressionValue(FacesContext.getCurrentInstance(),"#{bindings.unaConsulta_buscaDep.inputValue}",false);
+        //JSFUtils.EjecutarAcccion(FacesContext.getCurrentInstance(),"EjecutarConsulGestiones");
+        //JSFUtils.EjecutarAcccion(FacesContext.getCurrentInstance(),"Rollback");
         return null;
     }
 

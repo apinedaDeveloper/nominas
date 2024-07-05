@@ -3,6 +3,7 @@
 
 <ViewObject
    Name="sis_indemnizaciones_consul"
+   OrderBy="FECHA_SOLICITUD DESC"
    BindingStyle="OracleName"
    CustomQuery="true"
    RowClass="enlace_datos.consultas.empleado.sis_indemnizaciones_consulRowImpl"
@@ -21,7 +22,7 @@
       Type="java.lang.String" >
    </Variable>
    <SQLQuery><![CDATA[
-SELECT SisIndem.ID_INDEMNIZACION, 
+SELECT DISTINCT SisIndem.ID_INDEMNIZACION, 
        SisIndem.ANIO, 
        SisIndem.CORRELATIVO_ANIO, 
        SisIndem.REGISTRO_EMPLEADO, 
@@ -34,15 +35,22 @@ SELECT SisIndem.ID_INDEMNIZACION,
        SisIndem.CREADO_POR,
        SisIndem.FECHA_CREACION, 
        SisIndem.MODIFICADO_POR,
-       SisIndem.FECHA_MOD,
+       SisIndem.FECHA_MOD, 
+       (select id_dependencia from (select prt1.id_dependencia, contr.REGISTRO_EMPLEADO from sis_partida prt1
+        inner join sis_contrato contr on prt1.id_partida  = contr.id_partida and contr.ESTATUS not in (11,32) order by contr.id_contrato DESC)
+        where registro_Empleado=SisIndem.REGISTRO_EMPLEADO and rownum<=1) as id_dependencia,
        DECODE (SisIndem.TIPO_RETIRO,1,'RENUNCIA',2,'DESPIDO',3,'FINALIZACIÓN DE CONTRATO','DESCONOCIDO') as TIPO_RETIRO_NOMBRE,
-       empl.NOMBRECOMPLETO, Trim(To_Char(empl.cui,'9999G99999G9999','NLS_NUMERIC_CHARACTERS= '', ''')) as CUI,
-       sisEstado.NOMBRE as NOMBRE_ESTADO_INDEMNIZACION
+       empl.NOMBRECOMPLETO, empl.CUI, SisEstado.NOMBRE as NOMBRE_ESTADO_INDEMNIZACION
 FROM SIS_INDEMNIZACION SisIndem
 INNER JOIN SIIF.SIS_EMPLEADO_VW empl ON SisIndem.REGISTRO_EMPLEADO = empl.REGISTRO_EMPLEADO
 INNER JOIN SIIF.SIS_ESTADO sisEstado ON SisIndem.ID_ESTADO = sisEstado.ID_ESTADO
-INNER JOIN SIIF.SIS_ESTADO sisEstadoEmpl ON empl.ID_ESTADO = sisEstadoEmpl.ID_ESTADO
-WHERE ID_TIPO_PRESTACION = 1 and :pUsuario = :pUsuario
+LEFT OUTER JOIN SIIF.SIS_CONTRATO sisCont ON SisIndem.REGISTRO_EMPLEADO = sisCont.REGISTRO_EMPLEADO
+LEFT OUTER JOIN SIIF.SEP_PARTIDA_VW part ON sisCont.ID_PARTIDA = part.ID_PARTIDA
+WHERE ID_TIPO_PRESTACION = 1
+and exists( select 1 from usuario_unidad b, partida c where b.id_partida=c.id_partida
+and usuario=:pUsuario and b.tipo_usuario='TRABAJADOR' and sysdate between b.vigencia_de and nvl(b.vigencia_a,sysdate)
+and part.aniomanual=c.aniomanual and part.d1=c.d1 and part.d2=c.d2 and part.d3d4=c.d3d4 and 
+( ( part.d7=c.d7 and part.d6=c.d6 and part.d5=c.d5 ) or ( c.d5 is null and c.d6 is null and c.d7 is null ) ) )
    ]]></SQLQuery>
    <ViewAttribute
       Name="IdIndemnizacion"
@@ -235,6 +243,18 @@ WHERE ID_TIPO_PRESTACION = 1 and :pUsuario = :pUsuario
       SQLType="DATE" >
       <DesignTime>
          <Attr Name="_DisplaySize" Value="7" />
+      </DesignTime>
+   </ViewAttribute>
+   <ViewAttribute
+      Name="IdDependencia"
+      IsPersistent="false"
+      Type="oracle.jbo.domain.Number"
+      ColumnType="NUMBER"
+      AliasName="ID_DEPENDENCIA"
+      Expression="ID_DEPENDENCIA"
+      SQLType="NUMERIC" >
+      <DesignTime>
+         <Attr Name="_DisplaySize" Value="22" />
       </DesignTime>
    </ViewAttribute>
    <ViewAttribute
