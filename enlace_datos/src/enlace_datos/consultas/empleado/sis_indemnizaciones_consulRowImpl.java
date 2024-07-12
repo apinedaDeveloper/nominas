@@ -24,11 +24,11 @@ public class sis_indemnizaciones_consulRowImpl extends ViewRowImpl {
     public static final int FECHACREACION = 11;
     public static final int MODIFICADOPOR = 12;
     public static final int FECHAMOD = 13;
-    public static final int IDDEPENDENCIA = 14;
-    public static final int TIPORETIRONOMBRE = 15;
-    public static final int NOMBRECOMPLETO = 16;
-    public static final int CUI = 17;
-    public static final int NOMBREESTADOINDEMNIZACION = 18;
+    public static final int TIPORETIRONOMBRE = 14;
+    public static final int NOMBRECOMPLETO = 15;
+    public static final int CUI = 16;
+    public static final int NOMBREESTADOINDEMNIZACION = 17;
+    public static final int IDDEPENDENCIA = 18;
 
     /**This is the default constructor (do not remove)
      */
@@ -272,8 +272,6 @@ public class sis_indemnizaciones_consulRowImpl extends ViewRowImpl {
             return getModificadoPor();
         case FECHAMOD:
             return getFechaMod();
-        case IDDEPENDENCIA:
-            return getIdDependencia();
         case TIPORETIRONOMBRE:
             return getTipoRetiroNombre();
         case NOMBRECOMPLETO:
@@ -282,6 +280,8 @@ public class sis_indemnizaciones_consulRowImpl extends ViewRowImpl {
             return getCui();
         case NOMBREESTADOINDEMNIZACION:
             return getNombreEstadoIndemnizacion();
+        case IDDEPENDENCIA:
+            return getIdDependencia();
         default:
             return super.getAttrInvokeAccessor(index, attrDef);
         }
@@ -334,9 +334,6 @@ public class sis_indemnizaciones_consulRowImpl extends ViewRowImpl {
         case FECHAMOD:
             setFechaMod((Date)value);
             return;
-        case IDDEPENDENCIA:
-            setIdDependencia((Number)value);
-            return;
         case TIPORETIRONOMBRE:
             setTipoRetiroNombre((String)value);
             return;
@@ -348,6 +345,9 @@ public class sis_indemnizaciones_consulRowImpl extends ViewRowImpl {
             return;
         case NOMBREESTADOINDEMNIZACION:
             setNombreEstadoIndemnizacion((String)value);
+            return;
+        case IDDEPENDENCIA:
+            setIdDependencia((Number)value);
             return;
         default:
             super.setAttrInvokeAccessor(index, value, attrDef);
