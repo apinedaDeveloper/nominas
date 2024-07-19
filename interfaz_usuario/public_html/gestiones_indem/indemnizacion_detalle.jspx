@@ -222,7 +222,15 @@
       </afh:head>
       <afh:body>
         <af:messages/>
-        <h:form id="form1">
+        <af:form id="form1">
+          <f:verbatim>
+            <!--Tipo de Autorización (tipo 25 corresponde a Indemnización por Retiro)-->
+            <input type="hidden" name="hdn_tipo" id="hdn_tipo" value="25"/>
+            <!--Id de la indemnización por retiro-->
+            <input type="hidden" name="hdn_Id" id="hdn_Id" value="${bindings.IdIndemnizacion.inputValue}"/>
+            <!--Ventana de diálogo para los cambios de estado del expediente-->
+            <jsp:include page="../util/dialog_autoriza.txt"/>
+          </f:verbatim>
           <af:page value="#{modeloMenu.modeloBD}" var="node" id="page1" title="Indemnización por Retiro Definitivo">
             <f:facet name="nodeStamp">
               <af:commandMenuItem text="#{node.label}" action="#{node.getOutcome}" actionListener="#{modeloMenu.listener_menu}" disabled="#{node.readOnly}" rendered="#{node.shown}"/>
@@ -243,31 +251,27 @@
               </f:subview>
             </f:facet>
             <af:panelBox id="pnlBoxPrincipal" width="100%">
-              <f:verbatim>
-                <input type="hidden" name="hdn_tipo" id="hdn_tipo" value="25"/>
-                <!--Tipo de Autorización (tipo 25 corresponde a Indemnización por Retiro)-->
-                <input type="hidden" name="hdn_Id" id="hdn_Id" value="${bindings.IdIndemnizacion.inputValue}"/>
-                <!--Id de la indemnización por retiro-->
-              </f:verbatim>
-              <af:panelBox width="100%" inlineStyle="text-align:center;" text="INFORMACIÓN GENERAL DEL EXPEDIENTE" rendered="#{!bindings.EsSolicitudNueva.inputValue}">
-                <af:panelHorizontal halign="center">
-                  <af:panelLabelAndMessage label="No. de expediente:" inlineStyle="font-weight:bold;">
+              <af:panelGroup rendered="#{!bindings.EsSolicitudNueva.inputValue}" inlineStyle="text-align:center;" layout="vertical">
+                <af:outputFormatted value="INFORMACIÓN GENERAL DEL EXPEDIENTE" inlineStyle="font-weight:bold; color:rgb(0,0,128); font-size:medium;"/>
+                <af:objectSeparator/>
+                <af:panelHorizontal halign="center" inlineStyle="padding:2.0pt;">
+                  <af:panelLabelAndMessage label="No. de Expediente:" inlineStyle="font-weight:bold;">
                     <af:outputText value="#{bindings.CorrelativoAnio.inputValue}-#{bindings.Anio.inputValue}-#{bindings.RegistroEmpleado.inputValue}"
                                    inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;"/>
                   </af:panelLabelAndMessage>
-                  <af:panelLabelAndMessage label="Estado actual:" inlineStyle="font-weight:bold;">
+                  <af:panelLabelAndMessage label="Estado Actual:" inlineStyle="font-weight:bold;">
                     <af:outputText inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;" value="#{bindings.NombreEstadoIndemnizacion.inputValue}"/>
                   </af:panelLabelAndMessage>
-                  <!--<af:panelLabelAndMessage label="ID:" inlineStyle="font-weight:bold;">
-                      <af:outputText inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;" value="#{bindings.IdIndemnizacion.inputValue}">
-                        <f:convertNumber groupingUsed="false"/>
-                      </af:outputText>
-                    </af:panelLabelAndMessage>-->
+                  <af:panelLabelAndMessage label="ID Interno:" inlineStyle="font-weight:bold;">
+                    <af:outputText inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;" value="#{bindings.IdIndemnizacion.inputValue}">
+                      <f:convertNumber groupingUsed="false"/>
+                    </af:outputText>
+                  </af:panelLabelAndMessage>
                   <f:facet name="separator">
                     <af:objectSpacer height="10" width="10"/>
                   </f:facet>
                 </af:panelHorizontal>
-              </af:panelBox>
+              </af:panelGroup>
               <af:panelBox width="100%">
                 <af:panelForm>
                   <af:panelHorizontal halign="center" rendered="#{bindings.EsSolicitudNueva.inputValue}">
@@ -450,7 +454,7 @@
                       <af:resetActionListener/>
                     </af:commandButton>
                     <af:commandLink onclick="return OpenDialogo(1);" id="cmdLink_trasladar_expediente"
-                                    rendered='#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; bindings.TotalPrestacion.inputValue != null &amp;&amp; ((bindings.NombreEstadoIndemnizacion.inputValue eq "GRABADO" &amp;&amp; roles_usuario.analistaRecursosHum) || (bindings.NombreEstadoIndemnizacion.inputValue eq "TRASLADADO A CAJA" &amp;&amp; roles_usuario.profesionalCaja)) }'>
+                                    rendered='#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; bindings.TotalPrestacion.inputValue != null &amp;&amp; ((bindings.NombreEstadoIndemnizacion.inputValue eq "GRABADO" &amp;&amp; roles_usuario.analistaIndemnizacion) || (bindings.NombreEstadoIndemnizacion.inputValue eq "TRASLADADO A CAJA" &amp;&amp; roles_usuario.profesionalCaja)) }'>
                       <af:objectImage source="/imagenes/btn_trasladar.png"/>
                     </af:commandLink>
                     <f:facet name="separator">
@@ -593,7 +597,7 @@
                       </af:panelList>
                     </af:panelBox>
                   </af:panelHorizontal>
-                  <af:panelHorizontal rendered="#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; ( roles_usuario.analistaRecursosHum || roles_usuario.administrador) &amp;&amp; (bindings.NombreEstadoIndemnizacion eq 'GRABADO'?true:false)}"
+                  <af:panelHorizontal rendered="#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; ( roles_usuario.analistaIndemnizacion || roles_usuario.administrador) &amp;&amp; (bindings.NombreEstadoIndemnizacion eq 'GRABADO'?true:false)}"
                                       halign="center">
                     <af:commandButton text="Relación Laboral" id="cmdBtn_verReporteDARHSJ_I2" inlineStyle="font-weight:bold; font-size:large;"
                                       onclick='return generarReporteDARHSJ_I_2("#{bindings.RegistroEmpleado.inputValue}");' rendered="false"/>
@@ -860,11 +864,7 @@
               </af:showOneTab>
             </af:panelBox>
           </af:page>
-          <f:verbatim>
-            <jsp:include page="../util/dialog_autoriza.txt"/>
-            <!--Ventana de diálogo para el cambio de estado-->
-          </f:verbatim>
-        </h:form>
+        </af:form>
       </afh:body>
     </afh:html>
   </f:view>
