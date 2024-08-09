@@ -267,9 +267,47 @@
                       <f:convertNumber groupingUsed="false"/>
                     </af:outputText>
                   </af:panelLabelAndMessage>
+                  <af:panelLabelAndMessage inlineStyle="font-weight:bold;" label="Ingresado Por:">
+                    <af:outputText value="#{bindings.CreadoPor.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;"/>
+                  </af:panelLabelAndMessage>
+                  <af:panelLabelAndMessage inlineStyle="font-weight:bold;" label="Fecha Ingresado:">
+                    <af:outputText value="#{bindings.FechaCreacion.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;">
+                      <f:convertDateTime dateStyle="default" pattern="dd/MM/yyyy"/>
+                    </af:outputText>
+                  </af:panelLabelAndMessage>
                   <f:facet name="separator">
                     <af:objectSpacer height="10" width="10"/>
                   </f:facet>
+                </af:panelHorizontal>
+                <af:panelHorizontal halign="center" rendered="#{bindings.SisHistorialTrasladosIndem_vw.estimatedRowCount > 0}">
+                  <af:table value="#{bindings['SisHistorialTrasladosIndem_vw'].collectionModel}" var="row" rows="#{bindings['SisHistorialTrasladosIndem_vw'].rangeSize}"
+                            first="#{bindings['SisHistorialTrasladosIndem_vw'].rangeStart}" emptyText="#{bindings['SisHistorialTrasladosIndem_vw'].viewable ? 'No rows yet.' : 'Access Denied.'}"
+                            banding="row" bandingInterval="1" inlineStyle="text-align:left;">
+                    <af:column sortProperty="IdAutorizacionDet" sortable="false" headerText="Id Interno" formatType="icon">
+                      <af:outputText value="#{row.IdAutorizacionDet}">
+                        <f:convertNumber groupingUsed="false" pattern="#{bindings['SisHistorialTrasladosIndem_vw'].formats.IdAutorizacionDet}"/>
+                      </af:outputText>
+                    </af:column>
+                    <af:column sortProperty="NombreEstado" sortable="false" headerText="Estado" formatType="icon">
+                      <af:outputText value="#{row.NombreEstado}" inlineStyle="padding:3.0pt;"/>
+                    </af:column>
+                    <af:column sortProperty="Comentario" sortable="false" headerText="Comentario" formatType="text">
+                      <af:outputText value="#{row.Comentario}"/>
+                    </af:column>
+                    <af:column sortProperty="Usuario" sortable="false" headerText="Usuario" formatType="icon">
+                      <af:outputText value="#{row.Usuario}" inlineStyle="padding:3.0pt;"/>
+                    </af:column>
+                    <af:column sortProperty="Fecha" sortable="false" headerText="Fecha" formatType="icon">
+                      <af:outputText value="#{row.Fecha}" inlineStyle="padding:3.0pt;">
+                        <f:convertDateTime pattern="#{bindings['SisHistorialTrasladosIndem_vw'].formats.Fecha}"/>
+                      </af:outputText>
+                    </af:column>
+                    <f:facet name="header">
+                      <h:panelGroup>
+                        <af:outputFormatted value="HISTORIAL DE TRASLADOS"/>
+                      </h:panelGroup>
+                    </f:facet>
+                  </af:table>
                 </af:panelHorizontal>
               </af:panelGroup>
               <af:panelBox width="100%">
@@ -327,7 +365,7 @@
                     <af:outputText value="Fecha de Retiro:" inlineStyle="font-weight:bold;"/>
                     <af:selectInputDate id="slctInputDate_fechaRetiro" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);" shortDesc="Fecha de Retiro del Trabajador"
                                         value="#{bindings.FechaRetiro.inputValue}" binding="#{Indemnizacion_detalle.slctInputDate_fechaRetiro}"
-                                        readOnly='#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; (bindings.NombreEstadoIndemnizacion.inputValue eq "GRABADO"?false:true)}'>
+                                        readOnly='#{!(bindings.EsSolicitudNueva.inputValue || (roles_usuario.analistaIndemnizacion &amp;&amp; (bindings.idEstado.inputValue == "250" || bindings.idEstado.inputValue == "252")))}'>
                       <af:convertDateTime pattern="dd/MM/yyyy"/>
                     </af:selectInputDate>
                     <af:outputText value="*" inlineStyle="font-weight:bold; color:rgb(128,0,0);"/>
@@ -335,19 +373,19 @@
                     <af:outputText value="Años:" inlineStyle="font-weight:bold;"/>
                     <af:inputText value="#{bindings.AniosTiempoServicio.inputValue}" columns="3" id="inptText_AniosServicio" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);"
                                   binding="#{Indemnizacion_detalle.inptText_AniosServicio}" maximumLength="2" shortDesc="Años de Servicio (Máximo 12)"
-                                  readOnly='#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; (bindings.NombreEstadoIndemnizacion.inputValue eq "GRABADO"?false:true)}'>
+                                  readOnly='#{!(bindings.EsSolicitudNueva.inputValue || (roles_usuario.analistaIndemnizacion &amp;&amp; (bindings.idEstado.inputValue == "250" || bindings.idEstado.inputValue == "252")))}'>
                       <f:convertNumber groupingUsed="false" pattern="###"/>
                     </af:inputText>
                     <af:outputText value="Meses:" inlineStyle="font-weight:bold;"/>
                     <af:inputText value="#{bindings.MesesTiempoServicio.inputValue}" id="inptText_MesesServicio" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);"
                                   binding="#{Indemnizacion_detalle.inptText_MesesServicio}" columns="3" maximumLength="2" shortDesc="Meses de Servicio (Máximo 11)"
-                                  readOnly='#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; (bindings.NombreEstadoIndemnizacion.inputValue eq "GRABADO"?false:true)}'>
+                                  readOnly='#{!(bindings.EsSolicitudNueva.inputValue || (roles_usuario.analistaIndemnizacion &amp;&amp; (bindings.idEstado.inputValue == "250" || bindings.idEstado.inputValue == "252")))}'>
                       <f:convertNumber groupingUsed="false" pattern="###"/>
                     </af:inputText>
                     <af:outputText value="Días:" inlineStyle="font-weight:bold;"/>
                     <af:inputText value="#{bindings.DiasTiempoServicio.inputValue}" columns="3" id="inptText_DiasServicio" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);"
                                   binding="#{Indemnizacion_detalle.inptText_DiasServicio}" maximumLength="2" shortDesc="Días de Servicio (Máximo 29)"
-                                  readOnly='#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; (bindings.NombreEstadoIndemnizacion.inputValue eq "GRABADO"?false:true)}'>
+                                  readOnly='#{!(bindings.EsSolicitudNueva.inputValue || (roles_usuario.analistaIndemnizacion &amp;&amp; (bindings.idEstado.inputValue == "250" || bindings.idEstado.inputValue == "252")))}'>
                       <f:convertNumber groupingUsed="false" pattern="###"/>
                     </af:inputText>
                     <f:facet name="separator">
@@ -359,7 +397,7 @@
                     <af:outputText value="Tipo de Retiro:" inlineStyle="font-weight:bold;"/>
                     <af:selectOneChoice inlineStyle="font-weight:bold; color:rgb(0,0,128);" id="slctOneChoice_tipoRetiro" shortDesc="Tipo de Retiro del Trabajador por ejemplo: Despido o Renuncia"
                                         value="#{bindings.TipoRetiro.inputValue}" binding="#{Indemnizacion_detalle.slctOneChoice_tipoRetiro}"
-                                        readOnly='#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; (bindings.NombreEstadoIndemnizacion.inputValue eq "GRABADO"?false:true)}'>
+                                        readOnly='#{!(bindings.EsSolicitudNueva.inputValue || (roles_usuario.analistaIndemnizacion &amp;&amp; (bindings.idEstado.inputValue == "250" || bindings.idEstado.inputValue == "252")))}'>
                       <af:selectItem label="RENUNCIA" value="1"/>
                       <af:selectItem label="DESPIDO" value="2"/>
                       <af:selectItem label="FINALIZACIÓN DE CONTRATO" value="3"/>
@@ -368,13 +406,13 @@
                     <af:outputText value="Total de Sueldos (para cálculo de Indemnización):" inlineStyle="font-weight:bold;"/>
                     <af:inputText id="inptText_TotalSueldos" value="#{bindings.TotalSueldos.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);" columns="10"
                                   binding="#{Indemnizacion_detalle.inptText_TotalSueldos}"
-                                  readOnly='#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; (bindings.NombreEstadoIndemnizacion.inputValue eq "GRABADO"?false:true)}'>
+                                  readOnly='#{!(bindings.EsSolicitudNueva.inputValue || (roles_usuario.analistaIndemnizacion &amp;&amp; (bindings.idEstado.inputValue == "250" || bindings.idEstado.inputValue == "252")))}'>
                       <f:convertNumber groupingUsed="true" maxFractionDigits="2" minIntegerDigits="1" pattern="###,###.##" minFractionDigits="2"/>
                     </af:inputText>
                     <af:outputText value="Fecha de la Solicitud:" inlineStyle="font-weight:bold;"/>
                     <af:selectInputDate id="slctInputDate_fechaSolicitud" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);" shortDesc="Fecha de la Solicitud"
                                         value="#{bindings.FechaSolicitud.inputValue}" binding="#{Indemnizacion_detalle.slctInputDate_fechaSolicitud}" required="true"
-                                        readOnly='#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; (bindings.NombreEstadoIndemnizacion.inputValue eq "GRABADO"?false:true)}'>
+                                        readOnly='#{!(bindings.EsSolicitudNueva.inputValue || (roles_usuario.analistaIndemnizacion &amp;&amp; (bindings.idEstado.inputValue == "250" || bindings.idEstado.inputValue == "252")))}'>
                       <af:convertDateTime pattern="dd/MM/yyyy"/>
                     </af:selectInputDate>
                     <f:facet name="separator">
@@ -422,6 +460,28 @@
                       <af:inputText value="#{bindings.SueldoPromedio.inputValue}" readOnly="true" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
                         <f:convertNumber type="currency" maxFractionDigits="2"/>
                       </af:inputText>
+                      <f:facet name="separator">
+                        <af:objectSpacer height="10" width="10"/>
+                      </f:facet>
+                    </af:panelHorizontal>
+                    <af:panelHorizontal halign="center">
+                      <af:outputText value="Sueldo Promedio * años:"/>
+                      <af:inputText value="#{bindings.IndemAnios.inputValue}" readOnly="true" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
+                        <f:convertNumber maxFractionDigits="2" type="currency"/>
+                      </af:inputText>
+                      <af:outputText value="(Sueldo Promedio * meses) / 12:"/>
+                      <af:inputText value="#{bindings.IndemMeses.inputValue}" readOnly="true" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
+                        <f:convertNumber maxFractionDigits="2" type="currency"/>
+                      </af:inputText>
+                      <f:facet name="separator">
+                        <af:objectSpacer height="10" width="10"/>
+                      </f:facet>
+                    </af:panelHorizontal>
+                    <af:panelHorizontal halign="center">
+                      <af:outputText value="(Sueldo Promedio * días) / 365:"/>
+                      <af:inputText value="#{bindings.IndemDias.inputValue}" readOnly="true" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
+                        <f:convertNumber maxFractionDigits="2" type="currency"/>
+                      </af:inputText>
                       <af:outputText value="Total Indemnización:"/>
                       <af:inputText value="#{bindings.TotalPrestacion.inputValue}" readOnly="true" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
                         <f:convertNumber type="currency" maxFractionDigits="2"/>
@@ -430,10 +490,13 @@
                         <af:objectSpacer height="10" width="10"/>
                       </f:facet>
                     </af:panelHorizontal>
-                    <af:panelHorizontal halign="center" rendered="#{roles_usuario.administrador || roles_usuario.profesionalCaja}">
+                    <af:panelHorizontal halign="center"
+                                        rendered="#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; (bindings.IdEstado.inputValue==&quot;256&quot; || bindings.IdEstado.inputValue==&quot;257&quot;)}">
                       <af:outputText value="Número de Cheque:" inlineStyle="font-weight:bold;"/>
                       <af:inputText columns="10" value="#{bindings.NumCheque.inputValue}" maximumLength="10" inlineStyle="font-size:medium; font-weight:bold; text-align:center"
-                                    shortDesc="Número de Cheque" readOnly='#{!(bindings.NombreEstadoIndemnizacion.inputValue eq "TRASLADADO A CAJA")}'>
+                                    shortDesc="Número de Cheque"
+                                    readOnly='#{!(!bindings.EsSolicitudNueva.inputValue &amp;&amp; roles_usuario.profesionalCaja &amp;&amp; bindings.idEstado.inputValue=="256")}'
+                                    id="inptText_numeroCheque" binding="#{Indemnizacion_detalle.inptText_numeroCheque}">
                         <f:convertNumber groupingUsed="false" pattern="##########"/>
                       </af:inputText>
                       <f:facet name="separator">
@@ -443,18 +506,26 @@
                   </af:panelBox>
                   <af:panelHorizontal halign="center">
                     <af:commandButton text="Guardar" inlineStyle="font-weight:bold; font-size:large;" onclick="return confirmarGuardar();" id="cmdBtn_guardar"
-                                      binding="#{Indemnizacion_detalle.cmdBtn_guardar}" action="#{Indemnizacion_detalle.cmdBtn_guardar_action}" shortDesc="Guardar cambios"/>
+                                      binding="#{Indemnizacion_detalle.cmdBtn_guardar}" action="#{Indemnizacion_detalle.cmdBtn_guardar_action}" shortDesc="Guardar cambios"
+                                      rendered='#{bindings.EsSolicitudNueva.inputValue || ( roles_usuario.analistaIndemnizacion &amp;&amp; (bindings.IdEstado.inputValue=="250" || bindings.IdEstado.inputValue=="252")) || ( roles_usuario.profesionalCaja &amp;&amp; bindings.IdEstado.inputValue=="256")}'/>
                     <af:commandButton text="Cancelar" inlineStyle="font-weight:bold; font-size:large;" onclick="return confirmarCancelar();" action="#{Indemnizacion_detalle.cmdBtn_cancelar_action}"
-                                      immediate="true" id="cmdBtn_cancelar" shortDesc="Cancelar operación actual">
+                                      immediate="true" id="cmdBtn_cancelar" shortDesc="Cancelar operación actual"
+                                      rendered='#{bindings.EsSolicitudNueva.inputValue || ( roles_usuario.analistaIndemnizacion &amp;&amp; (bindings.IdEstado.inputValue=="250" || bindings.IdEstado.inputValue=="252")) || ( roles_usuario.profesionalCaja &amp;&amp; bindings.IdEstado.inputValue=="256")}'>
                       <af:resetActionListener/>
                     </af:commandButton>
+                    <af:commandButton text="Reporte de Liquidación" id="cmdBtn_verReporteDARHSJ_I3A" inlineStyle="font-weight:bold; font-size:large;"
+                                      onclick='return generarReporteDARHSJ_I_3A("#{bindings.Anio.inputValue}","#{bindings.CorrelativoAnio.inputValue}");'
+                                      rendered="#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; bindings.TotalPrestacion.inputValue != null}"/>
                     <af:commandButton text="Retornar" inlineStyle="font-weight:bold; font-size:large;" id="cmdBtn_retornar" binding="#{Indemnizacion_detalle.cmdBtn_retornar}"
                                       actionListener="#{bindings.Rollback.execute}" action="#{Indemnizacion_detalle.cmdBtn_retornar_action}" shortDesc="Retornar a la pantalla anterior"
                                       onclick="return confirmarRetornar();" immediate="true">
                       <af:resetActionListener/>
                     </af:commandButton>
-                    <af:commandLink onclick="return OpenDialogo(1);" id="cmdLink_trasladar_expediente"
-                                    rendered='#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; bindings.TotalPrestacion.inputValue != null &amp;&amp; ((bindings.NombreEstadoIndemnizacion.inputValue eq "GRABADO" &amp;&amp; roles_usuario.analistaIndemnizacion) || (bindings.NombreEstadoIndemnizacion.inputValue eq "TRASLADADO A CAJA" &amp;&amp; roles_usuario.profesionalCaja)) }'>
+                    <af:commandLink onclick="return OpenDialogo(1);" id="cmdLink_trasladar_solicitud"
+                                    rendered='#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; 
+bindings.TotalPrestacion.inputValue != null &amp;&amp; 
+((roles_usuario.analistaIndemnizacion &amp;&amp; (bindings.IdEstado.inputValue=="250" || bindings.IdEstado.inputValue=="252")) || (roles_usuario.auditorIndemnizacion &amp;&amp; bindings.IdEstado.inputValue=="251") || (roles_usuario.profesionalCaja &amp;&amp; bindings.IdEstado.inputValue=="256" &amp;&amp; bindings.NumCheque.inputValue!=null))}'
+                                    binding="#{Indemnizacion_detalle.cmdLink_trasladar_solicitud}">
                       <af:objectImage source="/imagenes/btn_trasladar.png"/>
                     </af:commandLink>
                     <f:facet name="separator">
@@ -469,7 +540,8 @@
                     <af:commandButton text="Form. DARHSJ I-1" id="cmdBtn_verReporteDARHSJI1" binding="#{Indemnizacion_detalle.cmdBtn_verReporteDARHSJI1}" inlineStyle="font-weight:bold;"
                                       onclick='return generarReporteDARHSJ_I_1("#{bindings.IdIndemnizacion.inputValue}");' rendered="false"/>-->
                   </af:panelHorizontal>
-                  <af:panelHorizontal id="pnlHoriz_indemCalculada" binding="#{Indemnizacion_detalle.pnlHoriz_indemCalculada}" halign="center" rendered="false">
+                  <af:panelHorizontal id="pnlHoriz_indemCalculada" binding="#{Indemnizacion_detalle.pnlHoriz_indemCalculada}" halign="center"
+                                      rendered="false">
                     <af:panelBox width="100%">
                       <af:panelList>
                         <af:panelHorizontal valign="baseline">
@@ -597,17 +669,16 @@
                       </af:panelList>
                     </af:panelBox>
                   </af:panelHorizontal>
-                  <af:panelHorizontal rendered="#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; ( roles_usuario.analistaIndemnizacion || roles_usuario.administrador) &amp;&amp; (bindings.NombreEstadoIndemnizacion eq 'GRABADO'?true:false)}"
+                  <af:panelHorizontal rendered="false"
                                       halign="center">
                     <af:commandButton text="Relación Laboral" id="cmdBtn_verReporteDARHSJ_I2" inlineStyle="font-weight:bold; font-size:large;"
                                       onclick='return generarReporteDARHSJ_I_2("#{bindings.RegistroEmpleado.inputValue}");' rendered="false"/>
                     <af:commandButton text="Calcular Indemnización" id="cmdBtn_calcularIndemnizacion" inlineStyle="font-weight:bold; font-size:large;"
-                                      action="#{Indemnizacion_detalle.cmdBtn_calcularIndemnizacion_action}" shortDesc="Calcular Indemnización"/>
+                                      action="#{Indemnizacion_detalle.cmdBtn_calcularIndemnizacion_action}" shortDesc="Calcular Indemnización"
+                                      binding="#{Indemnizacion_detalle.cmdBtn_calcularIndemnizacion}"/>
                     <af:commandButton text="Guardar Cálculo" id="cmdBtn_guardarCalculo" binding="#{Indemnizacion_detalle.cmdBtn_guardar_calculo}"
                                       action="#{Indemnizacion_detalle.cmdBtn_guardar_calculo_action}" inlineStyle="font-weight:bold; font-size:large;" disabled="true"
                                       onclick="return confirmarGuardar();" shortDesc="Guardar Cálculo"/>
-                    <af:commandButton text="Reporte de Liquidación de Indemnización" id="cmdBtn_verReporteDARHSJ_I3A" inlineStyle="font-weight:bold; font-size:large;"
-                                      onclick='return generarReporteDARHSJ_I_3A("#{bindings.Anio.inputValue}","#{bindings.CorrelativoAnio.inputValue}");'/>
                     <f:facet name="separator">
                       <af:objectSpacer height="10" width="10"/>
                     </f:facet>
@@ -656,212 +727,8 @@
                           <af:objectSpacer height="10" width="10"/>
                         </f:facet>
                       </af:panelHorizontal>-->
-                  <!-- <af:table value="#{bindings['Tble_Solicitudes_Renuncia'].collectionModel}" var="row" rows="#{bindings['Tble_Solicitudes_Renuncia'].rangeSize}"
-                                first="#{bindings['Tble_Solicitudes_Renuncia'].rangeStart}" emptyText="#{bindings['Tble_Solicitudes_Renuncia'].viewable ? 'No rows yet.' : 'Access Denied.'}"
-                                selectionState="#{bindings['Tble_Solicitudes_Renuncia'].collectionModel.selectedRow}"
-                                selectionListener="#{bindings['Tble_Solicitudes_Renuncia'].collectionModel.makeCurrent}" width="100%" banding="row" bandingInterval="1" id="tbl_solicitudes_renuncia"
-                                shortDesc="Listado de Solicitudes de Renuncias Autorizadas del Trabajador"
-                                rendered="#{ !bindings.EsSolicitudNueva.inputValue &amp;&amp; bindings.TipoRetiro.inputValue=='1'}">
-                        <f:facet name="selection">
-                          <af:tableSelectOne text="Select and">
-                            <af:commandButton text="Submit"/>
-                          </af:tableSelectOne>
-                        </f:facet>
-                        <af:column sortProperty="IdSolicitud" sortable="false" headerText="ID Solicitud" formatType="icon">
-                          <af:outputText value="#{row.IdSolicitud}">
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings['Tble_Solicitudes_Renuncia'].formats.IdSolicitud}"/>
-                          </af:outputText>
-                        </af:column>
-                        <af:column sortProperty="RegistroEmpleado" sortable="false" headerText="Registro de Personal" formatType="icon">
-                          <af:outputText value="#{row.RegistroEmpleado}">
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings['Tble_Solicitudes_Renuncia'].formats.RegistroEmpleado}"/>
-                          </af:outputText>
-                        </af:column>
-                        <af:column sortProperty="FechaSolicitud" sortable="false" headerText="Fecha Solicitud" formatType="icon">
-                          <af:outputText value="#{row.FechaSolicitud}">
-                            <f:convertDateTime pattern="dd/MM/yyyy"/>
-                          </af:outputText>
-                        </af:column>
-                        <af:column sortProperty="Nombrecompleto" sortable="false" headerText="Nombre Completo">
-                          <af:outputText value="#{row.Nombrecompleto}"/>
-                        </af:column>
-                        <af:column sortProperty="IdContrato" sortable="false" headerText="Num. Contrato" formatType="icon">
-                          <af:outputText value="#{row.IdContrato}">
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings['Tble_Solicitudes_Renuncia'].formats.IdContrato}"/>
-                          </af:outputText>
-                        </af:column>
-                        <af:column sortProperty="Observacion" sortable="false" headerText="Observación">
-                          <af:outputText value="#{row.Observacion}"/>
-                        </af:column>
-                        <af:column sortProperty="CreadoPor" sortable="false" headerText="Ingresado Por" formatType="icon">
-                          <af:outputText value="#{row.CreadoPor}"/>
-                        </af:column>
-                        <af:column sortProperty="FechaCreacion" sortable="false" headerText="Fecha Ingresado" formatType="icon">
-                          <af:outputText value="#{row.FechaCreacion}">
-                            <f:convertDateTime pattern="dd/MM/yyyy"/>
-                          </af:outputText>
-                        </af:column>
-                        <af:column sortProperty="IdPartida" sortable="false" headerText="Partida" formatType="icon">
-                          <af:outputText value="#{row.IdPartida}">
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings['Tble_Solicitudes_Renuncia'].formats.IdPartida}"/>
-                          </af:outputText>
-                        </af:column>
-                        <af:column sortProperty="IdPuesto" sortable="false" headerText="ID Puesto" formatType="icon">
-                          <af:outputText value="#{row.IdPuesto}">
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings['Tble_Solicitudes_Renuncia'].formats.IdPuesto}"/>
-                          </af:outputText>
-                        </af:column>
-                        <af:column sortProperty="NumeroPlaza" sortable="false" headerText="Num. Plaza" formatType="icon">
-                          <af:outputText value="#{row.NumeroPlaza}">
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings['Tble_Solicitudes_Renuncia'].formats.NumeroPlaza}"/>
-                          </af:outputText>
-                        </af:column>
-                        <f:facet name="header">
-                          <af:outputText value="LISTADO DE SOLICITUDES DE RENUNCIA AUTORIZADAS" inlineStyle="color:rgb(128,0,0);"/>
-                        </f:facet>
-                      </af:table>-->
-                  <!--<af:table value="#{bindings['Tble_Solicitudes_Despido'].collectionModel}" var="row" rows="#{bindings['Tble_Solicitudes_Despido'].rangeSize}"
-                                first="#{bindings['Tble_Solicitudes_Despido'].rangeStart}" emptyText="#{bindings['Tble_Solicitudes_Despido'].viewable ? 'No rows yet.' : 'Access Denied.'}"
-                                selectionState="#{bindings['Tble_Solicitudes_Despido'].collectionModel.selectedRow}"
-                                selectionListener="#{bindings['Tble_Solicitudes_Despido'].collectionModel.makeCurrent}" id="tbl_solicitudes_despido" banding="row" bandingInterval="1" width="100%"
-                                shortDesc="Listado de Solicitudes de Despido Autorizadas para el trabajador"
-                                rendered="#{ !bindings.EsSolicitudNueva.inputValue &amp;&amp; bindings.TipoRetiro.inputValue=='2'}">
-                        <f:facet name="selection">
-                          <af:tableSelectOne text="Select and">
-                            <af:commandButton text="Submit"/>
-                          </af:tableSelectOne>
-                        </f:facet>
-                        <af:column sortProperty="IdSolicitud" sortable="false" headerText="ID Solicitud" formatType="icon">
-                          <af:outputText value="#{row.IdSolicitud}">
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings['Tble_Solicitudes_Despido'].formats.IdSolicitud}"/>
-                          </af:outputText>
-                        </af:column>
-                        <af:column sortProperty="RegistroEmpleado" sortable="false" headerText="Registro de Personal" formatType="icon">
-                          <af:outputText value="#{row.RegistroEmpleado}">
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings['Tble_Solicitudes_Despido'].formats.RegistroEmpleado}"/>
-                          </af:outputText>
-                        </af:column>
-                        <af:column sortProperty="FechaSolicitud" sortable="false" headerText="Fecha Solicitud" formatType="icon">
-                          <af:outputText value="#{row.FechaSolicitud}">
-                            <f:convertDateTime pattern="dd/MM/yyyy"/>
-                          </af:outputText>
-                        </af:column>
-                        <af:column sortProperty="Nombrecompleto" sortable="false" headerText="Nombre Completo">
-                          <af:outputText value="#{row.Nombrecompleto}"/>
-                        </af:column>
-                        <af:column sortProperty="IdContrato" sortable="false" headerText="Num. Contrato" formatType="icon">
-                          <af:outputText value="#{row.IdContrato}">
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings['Tble_Solicitudes_Despido'].formats.IdContrato}"/>
-                          </af:outputText>
-                        </af:column>
-                        <af:column sortProperty="Observacion" sortable="false" headerText="Observación">
-                          <af:outputText value="#{row.Observacion}"/>
-                        </af:column>
-                        <af:column sortProperty="CreadoPor" sortable="false" headerText="Ingresado Por" formatType="icon">
-                          <af:outputText value="#{row.CreadoPor}"/>
-                        </af:column>
-                        <af:column sortProperty="FechaCreacion" sortable="false" headerText="Fecha Ingresado" formatType="icon">
-                          <af:outputText value="#{row.FechaCreacion}">
-                            <f:convertDateTime pattern="dd/MM/yyyy"/>
-                          </af:outputText>
-                        </af:column>
-                        <af:column sortProperty="IdPartida" sortable="false" headerText="Partida" formatType="icon">
-                          <af:outputText value="#{row.IdPartida}">
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings['Tble_Solicitudes_Despido'].formats.IdPartida}"/>
-                          </af:outputText>
-                        </af:column>
-                        <af:column sortProperty="IdPuesto" sortable="false" headerText="ID Puesto" formatType="icon">
-                          <af:outputText value="#{row.IdPuesto}">
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings['Tble_Solicitudes_Despido'].formats.IdPuesto}"/>
-                          </af:outputText>
-                        </af:column>
-                        <af:column sortProperty="NumeroPlaza" sortable="false" headerText="Num. Plaza" formatType="icon">
-                          <af:outputText value="#{row.NumeroPlaza}">
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings['Tble_Solicitudes_Despido'].formats.NumeroPlaza}"/>
-                          </af:outputText>
-                        </af:column>
-                        <f:facet name="header">
-                          <af:outputText value="LISTADO DE SOLICITUDES DE DESPIDO AUTORIZADAS" inlineStyle="color:rgb(128,0,0);"/>
-                        </f:facet>
-                      </af:table>-->
                 </af:panelForm>
               </af:panelBox>
-              <af:showOneTab rendered="false">
-                <af:showDetailItem text="Paso 1: Información General" id="showDetItem_solicitud" binding="#{Indemnizacion_detalle.showDetItem_solicitud}"/>
-                <!-- <af:showDetailItem text="Paso 3 - Gasto Funerario"
-                                   rendered="#{ bindings.IdTipoIndemnizacion.inputValue!=null &amp;&amp; bindings.IdTipoIndemnizacion eq '2' &amp;&amp; bindings.IdEstado.inputValue !=null &amp;&amp; (bindings.IdEstado eq '252' || bindings.IdEstado eq '253') }"
-                                   id="showDetItem_gasto_funerario">
-                  <af:panelBox text="Gasto Funerario" width="100%" inlineStyle="text-align:center;"
-                               rendered='#{ bindings.IdEstado.inputValue !=null &amp;&amp; (bindings.IdEstado.inputValue=="252" || bindings.IdEstado.inputValue=="253") }'>
-                    <af:panelForm inlineStyle="text-align:center;">
-                      <f:facet name="footer"/>
-                      <af:panelHorizontal halign="center">
-                        <af:panelLabelAndMessage label="Serie de la Factura:" inlineStyle="font-weight:bold;">
-                          <af:inputText value="#{bindings.SerieFacturaPost.inputValue}" columns="10" maximumLength="10" inlineStyle="text-align:center;"
-                                        readOnly="#{bindings.IdEstado eq '252'?false:true}" id="inptText_serieFacturaPost" binding="#{Indemnizacion_detalle.inptText_serieFacturaPost}"/>
-                        </af:panelLabelAndMessage>
-                        <af:panelLabelAndMessage label="Número de Factura:" inlineStyle="font-weight:bold;">
-                          <af:inputText value="#{bindings.NumeroFacturaPost.inputValue}" columns="10" maximumLength="10" inlineStyle="text-align:center;"
-                                        readOnly="#{bindings.IdEstado eq '252'?false:true}" id="inptText_numeroFactPost" binding="#{Indemnizacion_detalle.inptText_numeroFactPost}">
-                            <f:convertNumber groupingUsed="false" integerOnly="true"/>
-                          </af:inputText>
-                        </af:panelLabelAndMessage>
-                        <af:panelLabelAndMessage label="Fecha Factura:" inlineStyle="font-weight:bold;">
-                          <af:selectInputDate value="#{bindings.FechaFacturaPost.inputValue}" columns="8" inlineStyle="text-align:center;" maximumLength="10"
-                                              readOnly="#{bindings.IdEstado eq '252'?false:true}" id="slctInputDate_fechaFactPost" binding="#{Indemnizacion_detalle.slctInputDate_fechaFactPost}">
-                            <af:convertDateTime pattern="dd/MM/yyyy"/>
-                          </af:selectInputDate>
-                        </af:panelLabelAndMessage>
-                        <f:facet name="separator">
-                          <af:objectSpacer height="10" width="10"/>
-                        </f:facet>
-                      </af:panelHorizontal>
-                      <af:panelHorizontal halign="center">
-                        <af:panelLabelAndMessage label="Nombre Funeraria:" inlineStyle="font-weight:bold;">
-                          <af:inputText value="#{bindings.NombreFunerariaPost.inputValue}" columns="30" maximumLength="50" inlineStyle="text-align:center;"
-                                        readOnly="#{bindings.IdEstado eq '252'?false:true}" id="inptText_nombreFunerariaPost" binding="#{Indemnizacion_detalle.inptText_nombreFunerariaPost}"/>
-                        </af:panelLabelAndMessage>
-                        <af:panelLabelAndMessage label="Monto Factura (Q.):" inlineStyle="font-weight:bold;">
-                          <af:inputText value="#{bindings.MontoFacturaPost.inputValue}" columns="9" inlineStyle="text-align:right;" maximumLength="10"
-                                        readOnly="#{bindings.IdEstado eq '252'?false:true}" id="inptText_montoFacturaPost" binding="#{Indemnizacion_detalle.inptText_montoFacturaPost}">
-                            <f:convertNumber type="number" maxFractionDigits="2"/>
-                          </af:inputText>
-                        </af:panelLabelAndMessage>
-                        <f:facet name="separator">
-                          <af:objectSpacer height="10" width="10"/>
-                        </f:facet>
-                      </af:panelHorizontal>
-                      <af:inputHidden id="inptHidden_gastoFunerario" rendered="false" binding="#{Indemnizacion_detalle.inptHidden_gastoFunerario}"/>
-                    </af:panelForm>
-                  </af:panelBox>
-                  <af:messages/>
-                  <af:panelHorizontal halign="center">
-                    <af:commandButton text="Comprobar" id="cmdBtn_comprobar_gasto_funerario" action="#{Indemnizacion_detalle.cmdBtn_comprobar_gasto_funerario_action}"
-                                      disabled="#{bindings.IdEstado eq '252'?false:true}" inlineStyle="font-weight:bold;" binding="#{Indemnizacion_detalle.cmdBtn_comprobar_gasto_funerario}"
-                                      onclick="return validarGastoFunerario();"/>
-                    <af:commandButton text="Guardar" inlineStyle="font-weight:bold;" id="cmdBtn_guardar_gasto_funerario" action="#{Indemnizacion_detalle.cmdBtn_guardar_gasto_funerario_action}"
-                                      onclick="return confirmarGuardar();" actionListener="#{bindings.RefrescarIndemnizacion.execute}" binding="#{Indemnizacion_detalle.cmdBtn_guardar_gasto_funerario}"
-                                      disabled="true"/>
-                    <af:commandButton text="Cancelar" inlineStyle="font-weight:bold;" immediate="true" onclick="return confirmarCancelar();" actionListener="#{bindings.Rollback.execute}"
-                                      id="cmdBtn_cancelar_gasto_funerario" action="#{Indemnizacion_detalle.cmdBtn_cancelar_gasto_funerario_action}">
-                      <af:resetActionListener/>
-                    </af:commandButton>
-                    <af:commandButton text="Retornar" id="cmdBtn_retornar_gasto_funerario" inlineStyle="font-weight:bold;" actionListener="#{bindings.Rollback.execute}"
-                                      action="#{Indemnizacion_detalle.cmdBtn_retornar_gasto_funerario_action}" binding="#{Indemnizacion_detalle.cmdBtn_retornar_gasto_funerario}"
-                                      shortDesc="Retorna a la página de listado de solicitudes">
-                      <af:resetActionListener/>
-                    </af:commandButton>
-                    <af:commandLink onclick="return OpenDialogo(1);"
-                                    rendered="#{bindings.GastoFunerario.inputValue!=null &amp;&amp; bindings.IdEstado.inputValue !=null &amp;&amp; bindings.IdEstado eq '252'}"
-                                    id="cmdLink_trasladar_gasto_funerario" binding="#{Indemnizacion_detalle.cmdLink_trasladar_gasto_funerario}">
-                      <af:objectImage source="/imagenes/btn_trasladar.png"/>
-                    </af:commandLink>
-                    <f:facet name="separator">
-                      <af:objectSpacer height="10" width="10"/>
-                    </f:facet>
-                  </af:panelHorizontal>
-                </af:showDetailItem>-->
-              </af:showOneTab>
             </af:panelBox>
           </af:page>
         </af:form>

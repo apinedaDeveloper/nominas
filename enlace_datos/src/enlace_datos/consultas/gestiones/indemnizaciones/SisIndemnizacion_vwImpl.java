@@ -39,64 +39,84 @@ public class SisIndemnizacion_vwImpl extends ViewObjectImpl implements SisIndemn
         this.executeQuery();
     }
 
-    //Función que obtiene los expedientes de Pago de Indemnización por Retiro de los últimos 30 dias
+    //Recupera una solicitud a atrevés de su llave primaria
 
-    public void ObtenerSolicitudesIndemnizacion() {
-        this.setWhereClause("( TO_DATE(SYSDATE, 'dd/mm/yyyy' ) - TO_DATE(FECHA_CREACION, 'dd/mm/yyyy')) <= 30 AND ID_TIPO_PRESTACION=1");
+    public void RecuperarSolicitud02(Number pIdIndemnizacion) {
+        String str_querry = "";
+        if (pIdIndemnizacion != null && pIdIndemnizacion.intValue() > 0) {
+            str_querry = 
+                    " ID_INDEMNIZACION = " + pIdIndemnizacion + " AND ID_TIPO_PRESTACION=1";
+            this.setWhereClause(str_querry);
+        }
         this.executeQuery();
     }
-    
+
+    //Función que obtiene las solicitudes de Pago de Indemnización por Retiro de los últimos 30 dias
+
+    public void ObtenerSolicitudesIndemnizacion() {
+        //this.setWhereClause("( TO_DATE(SYSDATE, 'dd/mm/yyyy' ) - TO_DATE(FECHA_CREACION, 'dd/mm/yyyy')) <= 30 AND ID_TIPO_PRESTACION=1");
+        this.setWhereClause("ID_TIPO_PRESTACION=1");
+        this.executeQuery();
+    }
+
     //Función que obtiene los expedientes de Pago de Indemnización por Retiro para el rol de Profesional de Caja
-    
+
     public void ObtenerSolicitudesProfesionalCaja() {
         this.setWhereClause("NOMBRE_ESTADO_INDEMNIZACION IN ('TRASLADADO A CAJA','LIQUIDADO')  AND ID_TIPO_PRESTACION=1");
         this.executeQuery();
     }
 
+    //Función que obtiene los expedientes de Pago de Indemnización por Retiro para el rol de Auditor Interno
+
+    public void ObtenerSolicitudesAuditor() {
+        this.setWhereClause("NOMBRE_ESTADO_INDEMNIZACION IN ('TRASLADADO A AUDITORIA', 'TRASLADADO A CAJA', 'OBJETADO', 'LIQUIDADO')  AND ID_TIPO_PRESTACION=1");
+        this.executeQuery();
+    }
+
     //Función que obtiene el número de contratos dados de baja o finalizados del trabajdor fallecido
 
-    /*public String ObtenerNumeroContratosFinalizadosTrabajador(Number pRegistroEmpleado, 
+    /*public String ObtenerNumeroContratosFinalizadosTrabajador(Number pRegistroEmpleado,
                                                               Date pFechaFallecimiento) {
         Object vResultado;
         String strConsulta;
-        strConsulta = 
-                "select count(*) as cantidad from sis_contrato where registro_empleado=" + 
+        strConsulta =
+                "select count(*) as cantidad from sis_contrato where registro_empleado=" +
                 pRegistroEmpleado;
-        strConsulta += 
+        strConsulta +=
                 " and ( to_Date('" + utils.getFechaFormato("dd/MM/yyyy", pFechaFallecimiento);
-        strConsulta += 
+        strConsulta +=
                 "','dd/MM/yyyy') between FECHA_INICIO and FECHA_FIN) and estatus in (15,43)";
-        vResultado = 
+        vResultado =
                 utils_DB.getEjecutarQuerry(this.getDBTransaction(), strConsulta);
         return vResultado != null ? vResultado.toString() : "-1";
     }*/
 
     //Obtiene los contratos finalizados o dados de bajo del trabajador fallecido al momento del fallecimiento.
 
-    /*public String ObtenerContratosTrabajadorFallecido(Number pRegistroEmpleado, 
+    /*public String ObtenerContratosTrabajadorFallecido(Number pRegistroEmpleado,
                                                       Date pFechaFallecimiento) {
         String vQuerry;
         String vDetalleResultado = "";
         int contador = 0;
-        vQuerry = 
-                "select ID_CONTRATO, fecha_inicio, fecha_fin, sis_estado.nombre, fecha_creacion from sis_contrato\n" + 
-                "inner join sis_estado on sis_contrato.ESTATUS = sis_estado.ID_ESTADO\n" + 
-                "where registro_empleado = " + pRegistroEmpleado + 
-                " and (To_Date ('" + 
-                utils.getFechaFormato("dd/MM/yyyy", pFechaFallecimiento) + 
-                "', 'DD-MM-YYYY') between FECHA_INICIO and FECHA_FIN) and estatus in (15,43)\n" + 
+        vQuerry =
+                "select ID_CONTRATO, fecha_inicio, fecha_fin, sis_estado.nombre, fecha_creacion from sis_contrato\n" +
+                "inner join sis_estado on sis_contrato.ESTATUS = sis_estado.ID_ESTADO\n" +
+                "where registro_empleado = " + pRegistroEmpleado +
+                " and (To_Date ('" +
+                utils.getFechaFormato("dd/MM/yyyy", pFechaFallecimiento) +
+                "', 'DD-MM-YYYY') between FECHA_INICIO and FECHA_FIN) and estatus in (15,43)\n" +
                 "order by fecha_creacion desc";
         ResultSet vResultado;
         try {
-            vResultado = 
-                    utils_DB.getEjecutarQuerry(this.getDBTransaction(), vQuerry, 
+            vResultado =
+                    utils_DB.getEjecutarQuerry(this.getDBTransaction(), vQuerry,
                                                0);
             if (vResultado != null) {
                 while (vResultado.next()) {
                     if (contador > 0) {
                         vDetalleResultado += " ";
                     }
-                    vDetalleResultado += 
+                    vDetalleResultado +=
                             "Contrato No. " + vResultado.getString("ID_CONTRATO");
                     vDetalleResultado += ".";
                     contador++;
@@ -105,7 +125,7 @@ public class SisIndemnizacion_vwImpl extends ViewObjectImpl implements SisIndemn
                 System.out.println("No hay resultado");
             }
         } catch (Exception e) {
-            System.out.println("Ocurrió el siguiente error al intentar obtener los contratos del trabajador fallecido: " + 
+            System.out.println("Ocurrió el siguiente error al intentar obtener los contratos del trabajador fallecido: " +
                                e.getMessage());
         }
         return vDetalleResultado != null ? vDetalleResultado.toString() : "-1";

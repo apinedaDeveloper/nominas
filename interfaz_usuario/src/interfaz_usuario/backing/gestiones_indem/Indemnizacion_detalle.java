@@ -53,19 +53,14 @@ public class Indemnizacion_detalle {
     private HtmlBody body1;
     private CoreForm form1;
     private CorePage page1;
-    private CoreCommandButton cmdBtn_calcular_prestacion;
-    private CoreCommandButton cmdBtn_comprobar_gasto_funerario;
+    private CoreCommandButton cmdBtn_calcularIndemnizacion;
     private CoreCommandButton cmdBtn_guardar;
     private CoreCommandButton cmdBtn_guardar_calculo;
-    private CoreCommandButton cmdBtn_guardar_gasto_funerario;
     private CoreCommandButton cmdBtn_guardarRelacionLab;
     private CoreCommandButton cmdBtn_retornar;
-    private CoreCommandButton cmdBtn_retornar_calculo;
-    private CoreCommandButton cmdBtn_retornar_gasto_funerario;
     private CoreCommandButton cmdBtn_verReporteBasico;
     private CoreCommandButton cmdBtn_verReporteDARHSJI1;
     private CoreCommandLink cdmLink_buscarEmpl;
-    private CoreCommandLink cmdLink_trasladar_gasto_funerario;
     private CoreCommandLink cmdLink_trasladar_solicitud;
     private CoreCommandMenuItem cmdMenuItem;
     private CoreInputHidden inptHidden_aguinaldoCalculo;
@@ -126,6 +121,7 @@ public class Indemnizacion_detalle {
     private CoreShowDetailItem showDetItem_solicitud;
     private CoreTable tbl_listadoUltimosSueldos_calculo;
     private CoreTable tbl_relacionLaboral;
+    private CoreInputText inptText_numeroCheque;
 
     public void setHtml1(HtmlHtml html1) {
         this.html1 = html1;
@@ -462,11 +458,11 @@ public class Indemnizacion_detalle {
                     //JSFUtils.setExpressionValue(f, b2, utils.getNumberOracle(aux));
                     correcto = true;
                 } else {
-                    mensaje("Error al intentar obtener el ID de la solicitud autorizada, intente de nuevo por favor!!", 
+                    mensaje("Error al intentar obtener el ID de la solicitud autorizada, intente de nuevo por favor!!",
                             3);
                 }
             } else {
-                mensaje("Error al intentar obtener el ID de la solicitud autorizada del trabajador, intente de nuevo por favor!!", 
+                mensaje("Error al intentar obtener el ID de la solicitud autorizada del trabajador, intente de nuevo por favor!!",
                         3);
                 desplegarErrores(errors);
             }
@@ -482,14 +478,14 @@ public class Indemnizacion_detalle {
     /*private boolean commit(FacesContext f) {
         boolean correcto = false;
         OperationBinding operationBinding;
-        BindingContainer cont = 
+        BindingContainer cont =
             (BindingContainer)JSFUtils.resolveExpression(f, "#{bindings}");
         operationBinding = cont.getOperationBinding("Confirmar");
         operationBinding.execute(); //Ejecutamos el Commit
         if (operationBinding.getErrors().isEmpty()) {
             correcto = true;
         } else { //Hubo error al ejecutar el Commit
-            mensaje("¡¡No se pudo guardar porque ocurrió un error inesperado. Intente de nuevo por favor!!", 
+            mensaje("¡¡No se pudo guardar porque ocurrió un error inesperado. Intente de nuevo por favor!!",
                     3);
             desplegarErrores(operationBinding.getErrors()); //Despliega el detalle de los errores
             operationBinding = cont.getOperationBinding("Rollback");
@@ -600,29 +596,39 @@ public class Indemnizacion_detalle {
                         mensaje("!!La Fecha de Retiro es más reciente que la Fecha de Solicitud!!", 
                                 3);
                     } else {
-                        valido = true;
+                        continuar = true;
                     }
                 } else {
-                    valido = true;
+                    continuar = true;
                 }
+            }
+        }
+        if (continuar == true) {
+            //Verificamos si está habilitado el campo de entrada Número de Cheque
+            if (!this.getInptText_numeroCheque().isReadOnly()) {
+                //Se encuentra habilitado
+                Object aux = this.getInptText_numeroCheque().getValue();
+                if (aux != null && Long.parseLong(aux.toString()) > 0) {
+                    valido = true;
+                } else {
+                    mensaje("!!El Número de Cheque debe ser mayor de 0!!", 
+                            3);
+                }
+            } else {
+                valido = true;
             }
         }
         return valido;
     }
 
-    //Procedimiento que rellena los campos pendientes de un expediente nuevo antes de grabar.
+    //Procedimiento que rellena los campos pendientes de una solicitud nueva antes de grabar.
 
-    private boolean rellenarCamposPends_expNuevo(FacesContext f) {
+    private boolean rellenarCamposPends_solNueva(FacesContext f) {
         boolean correcto = false;
         String b1 = "#{bindings.Anio.inputValue}";
         String b2 = "#{bindings.CorrelativoAnio.inputValue}";
         String b3 = "#{bindings.IdEstado.inputValue}";
         String b4 = "#{bindings.IdTipoPrestacion.inputValue}";
-        //String b5 = "#{bindings.IdSolicitudAutorizadaRetiro.inputValue}";
-        //String b6 = "#{bindings.IdSolicitudAutorizadaFallec.inputValue}";
-        //String b7 = "#{bindings.IdSolicitudRetiro.inputValue}";
-        //String b8 = "ObtenerIDSolicitudAutorizadaRetiro";
-        //String b9 = "ObtenerIDSolicitudAutorizadaFallecimiento";
         try {
             Number anioActual = utils.getNumberOracle(utils.getAnioActual());
             //System.out.println("El año actual es: " + anioActual);
@@ -634,19 +640,6 @@ public class Indemnizacion_detalle {
                                         utils.getNumberOracle(correlativo));
             JSFUtils.setExpressionValue(f, b3, utils.getNumberOracle("250"));
             JSFUtils.setExpressionValue(f, b4, utils.getNumberOracle("1"));
-            /*Object tipo = JSFUtils.resolveExpression(f, b4); //Tipo de Gestión
-            if (tipo != null) {
-                if (Integer.parseInt(tipo.toString()) == 1) {
-                    //indemnizacion por retiro definitivo
-                    correcto = obtenerId_solicitudAutorizada(f, b8, b5, b7);
-                } else { //prestaciones post-mortem
-                    correcto = obtenerId_solicitudAutorizada(f, b9, b6, b7);
-                }
-            } else {
-                mensaje("No se pudo obtener el tipo de gestión, intente de nuevo por favor!!",
-                        3);
-            }*/
-            //correcto = obtenerId_solicitudRetiro(f);            
             correcto = true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -655,27 +648,86 @@ public class Indemnizacion_detalle {
         return correcto;
     }
 
+    //Función que procesa el guardar de una solicitud nueva
+
+    private boolean procesar_guardar_sol_nueva(FacesContext f) {
+        boolean exito = false;
+        if (rellenarCamposPends_solNueva(f)) {
+            procesarCalcularIndemnizacion();
+            if (JSFUtils.EjecutarAcccion2(f.getCurrentInstance(), 
+                                          "Confirmar")) {
+                if (rellenarCamposPends_calculoInd(f)) {
+                    exito = 
+                            JSFUtils.EjecutarAcccion2(f.getCurrentInstance(), "Confirmar");
+                }
+            }
+        }
+        return exito;
+    }
+
+    //Función que procesa el guardar de una solicitud existente
+
+    private boolean procesar_guardar_sol_existente(FacesContext f) {
+        boolean exito = false;
+        procesarCalcularIndemnizacion();
+        if (JSFUtils.EjecutarAcccion2(f.getCurrentInstance(), "Confirmar")) {
+            if (rellenarCamposPends_calculoInd(f)) {
+                if (JSFUtils.EjecutarAcccion2(f.getCurrentInstance(), 
+                                              "Confirmar")) {
+                    exito = true;
+                } else {
+                    mensaje("!!No se pudo guardar. Intente de nuevo por favor!!", 
+                            3);
+                }
+            }
+        } else {
+            mensaje("!!No se pudo guardar. Intente de nuevo por favor!!", 3);
+        }
+        return exito;
+    }
+
     //Procedimiento que procesa el botón guardar
 
-    private boolean procesar_guardar(FacesContext f, String bindEsNuevoExp) {
+    private boolean procesar_guardar(FacesContext f, String bindEsSolNueva) {
         boolean exito = false;
         if (validarInformacionIngresada()) {
-            Object esNuevoObj = JSFUtils.resolveExpression(f, bindEsNuevoExp);
-            if (esNuevoObj != null) {
-                boolean esNuevo = Boolean.parseBoolean(esNuevoObj.toString());
-                if (esNuevo) { //Expediente Nuevo
-                    if (rellenarCamposPends_expNuevo(f)) {
-                        //exito = commit(f);
-                        exito = 
-                                JSFUtils.EjecutarAcccion2(FacesContext.getCurrentInstance(), 
-                                                          "Confirmar");
+            Object auxObj = JSFUtils.resolveExpression(f, bindEsSolNueva);
+            if (auxObj != null) {
+                //Tiene algún valor
+                boolean esNuevo = Boolean.parseBoolean(auxObj.toString());
+                if (esNuevo) {
+                    //Es solicitud nueva
+                    exito = procesar_guardar_sol_nueva(f);
+                } else {
+                    //Es solicitud existente, verificamos el esatado
+                    String binding = "#{bindings.IdEstado.inputValue}";
+                    auxObj = JSFUtils.resolveExpression(f, binding);
+                    if (auxObj != null) {
+                        int idEstado = Integer.parseInt(auxObj.toString());
+                        if (idEstado == 250 || idEstado == 252) {
+                            //Estado grabado ú objetado
+                            exito = procesar_guardar_sol_existente(f);
+                        } else if (idEstado == 256) {
+                            //Estado liquidado
+                            if (JSFUtils.EjecutarAcccion2(f.getCurrentInstance(), 
+                                                          "Confirmar")) {
+                                exito = true;
+                            } else {
+                                mensaje("!!No se pudo guardar. Intente de nuevo por favor!!", 
+                                        3);
+                            }
+                        } else {
+                            mensaje("!!Estado incorrecto para grabar. Revise por favor!!", 
+                                    3);
+                        }
+                    } else {
+                        mensaje("!!No se pudo recuperar la información correctamente. Intente de nuevo!!", 
+                                3);
                     }
-                } else { //Expediente existente
-                    //exito = commit(f);
-                    exito = 
-                            JSFUtils.EjecutarAcccion2(FacesContext.getCurrentInstance(), 
-                                                      "Confirmar");
                 }
+            } else {
+                mensaje("!!No se pudo recuperar la información correctamente. Intente de nuevo!!", 
+                        3);
             }
         }
         return exito;
@@ -689,26 +741,9 @@ public class Indemnizacion_detalle {
             JSFUtils.setExpressionValue(f, binding, 
                                         Boolean.parseBoolean("false"));
             JSFUtils.EjecutarAcccion(f, "RefrescarIndemnizacion");
-            //JSFUtils.EjecutarAcccion(f, "Confirmar");
-            //JSFUtils.EjecutarAcccion(f, "setCurrentRowWithKey");
         }
         return null;
     }
-
-    /*FacesContext f = FacesContext.getCurrentInstance();
-    Object aux =
-        JSFUtils.resolveExpression(f, "#{bindings.EsSolicitudNueva.inputValue}");
-    if (aux != null && Boolean.parseBoolean(aux.toString()) == true) {
-        //Es solicitud nueva
-        JSFUtils.EjecutarAcccion(f, "Crear");
-        JSFUtils.EjecutarAcccion(f, "RecuperarMunicipio");
-    } else { //Es existente
-        JSFUtils.EjecutarAcccion(f, "RecuperarIndemnizacion");
-        JSFUtils.EjecutarAcccion(f, "RefrescarIndemnizacion");
-    }
-    habilitar_componentes_solicitud(false);
-    mensaje("Procedimiento cancelado correctamente.", 1);
-    return null;*/
 
     public String cmdBtn_cancelar_action() {
         FacesContext faces = FacesContext.getCurrentInstance();
@@ -719,8 +754,19 @@ public class Indemnizacion_detalle {
             //Es solicitud nueva
             JSFUtils.EjecutarAcccion(faces, "CrearSolicitud");
         }
-        this.getPnlHoriz_indemCalculada().setRendered(false);
+        /*this.getPnlHoriz_indemCalculada().setRendered(false);
         this.getCmdBtn_guardar_calculo().setDisabled(true);
+        this.getCmdBtn_calcularIndemnizacion().setDisabled(false);
+        this.getCdmLink_buscarEmpl().setDisabled(false);
+        this.getSlctInputDate_fechaRetiro().setDisabled(false);
+        this.getInptText_AniosServicio().setDisabled(false);
+        this.getInptText_MesesServicio().setDisabled(false);
+        this.getInptText_DiasServicio().setDisabled(false);
+        this.getSlctOneChoice_tipoRetiro().setDisabled(false);
+        this.getInptText_TotalSueldos().setDisabled(false);
+        this.getSlctInputDate_fechaSolicitud().setDisabled(false);
+        this.getCmdBtn_guardar().setDisabled(false);
+        this.getCmdLink_trasladar_solicitud().setDisabled(false);*/
         mensaje("Operación Cancelada Correctamente", 1);
         return null;
     }
@@ -820,7 +866,7 @@ public class Indemnizacion_detalle {
 
     //Rellena campos pendientes antes de guardar el cálculo
 
-    private boolean rellenarCamposPends_guardar_calculo(FacesContext f) {
+    private boolean rellenarCamposPends_calculoInd(FacesContext f) {
         boolean correcto = false;
         try {
             Object difObj, dif12Obj, aguiObj, bono14Obj, sueldoPromObj, totalIndemObj;
@@ -878,194 +924,29 @@ public class Indemnizacion_detalle {
     }
 
     public String cmdBtn_guardar_calculo_action() {
-        FacesContext f = FacesContext.getCurrentInstance();
-        if (rellenarCamposPends_guardar_calculo(f)) {
+        /*FacesContext f = FacesContext.getCurrentInstance();
+        if (rellenarCamposPends_calculoInd(f)) {
             //if (commit(f)) {
-            if (JSFUtils.EjecutarAcccion2(FacesContext.getCurrentInstance(), 
+            if (JSFUtils.EjecutarAcccion2(FacesContext.getCurrentInstance(),
                                           "Confirmar")) {
                 mensaje("¡¡Información Guardada Correctamente!!", 1);
                 JSFUtils.EjecutarAcccion(f, "RefrescarIndemnizacion");
-                //JSFUtils.EjecutarAcccion(f, "Confirmar");
-                this.getCmdBtn_guardar_calculo().setDisabled(true);
                 this.getPnlHoriz_indemCalculada().setRendered(false);
+                this.getCmdBtn_guardar_calculo().setDisabled(true);
+                this.getCmdBtn_calcularIndemnizacion().setDisabled(false);
+                this.getCdmLink_buscarEmpl().setDisabled(false);
+                this.getSlctInputDate_fechaRetiro().setDisabled(false);
+                this.getInptText_AniosServicio().setDisabled(false);
+                this.getInptText_MesesServicio().setDisabled(false);
+                this.getInptText_DiasServicio().setDisabled(false);
+                this.getSlctOneChoice_tipoRetiro().setDisabled(false);
+                this.getInptText_TotalSueldos().setDisabled(false);
+                this.getSlctInputDate_fechaSolicitud().setDisabled(false);
+                this.getCmdBtn_guardar().setDisabled(false);
+                this.getCmdLink_trasladar_solicitud().setDisabled(false);
             }
-        }
+        }*/
         return null;
-    }
-
-    //Realiza una comprobación básica del formulario
-
-    /*private boolean comprobarCamposDeTexto_gastoFunerario() {
-        boolean valido = false;
-        Object serieFactura, numeroFactura, fechaFactura, nombreFuneraria, montoFactura;
-        serieFactura = this.getInptText_serieFacturaPost().getValue();
-        if (serieFactura != null) {
-            serieFactura = serieFactura.toString().trim();
-            this.getInptText_serieFacturaPost().setValue(serieFactura);
-        }
-        numeroFactura = this.getInptText_numeroFactPost().getValue();
-        if (numeroFactura != null) {
-            numeroFactura = numeroFactura.toString().trim();
-            this.getInptText_numeroFactPost().setValue(numeroFactura);
-        }
-        fechaFactura = this.getSlctInputDate_fechaFactPost().getValue();
-        if (fechaFactura != null) {
-            fechaFactura = fechaFactura.toString().trim();
-        }
-        nombreFuneraria = this.getInptText_nombreFunerariaPost().getValue();
-        if (nombreFuneraria != null) {
-            nombreFuneraria = nombreFuneraria.toString().trim();
-            this.getInptText_nombreFunerariaPost().setValue(nombreFuneraria);
-        }
-        montoFactura = this.getInptText_montoFacturaPost().getValue();
-        //System.out.println("hola2");
-        if (montoFactura != null) {
-            //System.out.println("hola");
-            montoFactura = montoFactura.toString().trim();
-            this.getInptText_montoFacturaPost().setValue(montoFactura);
-        }
-        if (serieFactura == null) {
-            mensaje("Ingrese la serie de la factura para para continuar por favor!!",
-                    3);
-        } else if (numeroFactura == null) {
-            mensaje("Ingrese el número de factura para continuar por favor!!",
-                    3);
-        } else if (fechaFactura == null) {
-            mensaje("Ingrese la fecha de la factura para continuar por favor!!",
-                    3);
-        } else if (nombreFuneraria == null) {
-            mensaje("Ingrese el nombre de la funeraria para continuar por favor!!",
-                    3);
-        } else if (montoFactura == null) {
-            mensaje("Ingrese el monto de la factura para continuar por favor!!",
-                    3);
-        } else {
-            valido = true;
-        }
-        return valido;
-    }*/
-
-    //Habilita o deshabilita componentes del formulario al comprobar, guardar o cancelar el gasto funerario
-
-    /*private void habilitar_componentes_gasto_funerario(boolean deshabilitado) {
-        this.getShowDetItem_solicitud().setDisabled(deshabilitado);
-        this.getShowDetItem_calculo().setDisabled(deshabilitado);
-        this.getCmdBtn_comprobar_gasto_funerario().setDisabled(deshabilitado);
-        this.getCmdBtn_guardar_gasto_funerario().setDisabled(!deshabilitado);
-        this.getCmdLink_trasladar_gasto_funerario().setDisabled(deshabilitado);
-    }*/
-
-    //Comprueba los valores ingresados del gasto funerario detalladamente
-
-    /*private void comprobar_gasto_funerario_detallado(FacesContext f,
-                                                     double montoFactura,
-                                                     double montoMaximo) {
-        double totalPrest;
-        String b = "#{bindings.PostMortem.inputValue}";
-        //String b2 = "#{bindings.GastoFunerario.inputValue}";
-        //String b3 = "#{bindings.TotalPrestacion.inputValue}";
-        //Number n1 = utils.getNumberOracle(String.format("%.2f", montoFactura));
-        //Number n2 = utils.getNumberOracle(String.format("%.2f", montoMaximo));
-        Object postM = JSFUtils.resolveExpression(f, b);
-        if (montoFactura <= montoMaximo) {
-            //JSFUtils.setExpressionValue(f, b2, n1);
-            this.getInptHidden_gastoFunerario().setValue(montoFactura);
-            totalPrest = montoFactura + Double.parseDouble(postM.toString());
-        } else { //El gasto funerario será el monto máximo a cubrir
-            //JSFUtils.setExpressionValue(f, b2, n2);
-            this.getInptHidden_gastoFunerario().setValue(montoMaximo);
-            totalPrest = montoMaximo + Double.parseDouble(postM.toString());
-        }
-        //Number n3 = utils.getNumberOracle(totalPrest);
-        //JSFUtils.setExpressionValue(f, b3, n3);
-        this.getInptHidden_montoIndemnizacion().setValue(totalPrest);
-        mensaje("Gasto funerario comprobado con éxito", 1);
-        if (montoFactura > montoMaximo) {
-            Number n = utils.getNumberOracleFormato(montoMaximo);
-            mensaje("El monto máximo a cubrir va a ser de: Q." + n, 1);
-        }
-        habilitar_componentes_gasto_funerario(true);
-        JSFUtils.EjecutarAcccion(f, "RefrescarIndemnizacion");
-    }*/
-
-    //Comprueba los valores ingresado del gasto funerario
-
-    /*private void comprobar_gasto_funerario() {
-        String b1 = "#{bindings.SueldoPromedio.inputValue}";
-        String b2 = "#{bindings.MontoFacturaPost.inputValue}";
-        FacesContext f = FacesContext.getCurrentInstance();
-        Object aux = JSFUtils.resolveExpression(f, b1);
-        if (aux != null && Double.parseDouble(aux.toString()) > 0) {
-            double sueldoProm = Double.parseDouble(aux.toString());
-            double montoMax = sueldoProm - 412.50;
-            if (montoMax > 0) { //Se determinó el monto máximo a cubrir
-                aux = JSFUtils.resolveExpression(f, b2); //monto de la factura
-                if (aux != null && Double.parseDouble(aux.toString()) >= 160) {
-                    double montoFact = Double.parseDouble(aux.toString());
-                    comprobar_gasto_funerario_detallado(f, montoFact,
-                                                        montoMax);
-                } else {
-                    mensaje("El monto de la factura del gasto funerario debe ser de al menos de Q160.00.",
-                            3);
-                }
-            } else {
-                mensaje("El monto máximo a cubrir dió resultado 0 o negativo, verifique por favor.",
-                        3);
-            }
-        } else {
-            mensaje("Calcule primeramente el sueldo promedio para continuar por favor.",
-                    3);
-        }
-    }*/
-
-    /*public String cmdBtn_comprobar_gasto_funerario_action() {
-        if (comprobarCamposDeTexto_gastoFunerario()) {
-            comprobar_gasto_funerario();
-        }
-        return null;
-    }*/
-
-    //Rellena campos pendientes antes de guardar el gasto funerario
-
-    /*private void rellenarCamposPendientes_guardar_gasto_fun(FacesContext f) {
-        Number aux;
-        String b1 = "#{bindings.GastoFunerario.inputValue}";
-        String b2 = "#{bindings.TotalPrestacion.inputValue}";
-        Object gastoFunObj = this.getInptHidden_gastoFunerario().getValue();
-        if (gastoFunObj != null) {
-            aux = utils.getNumberOracle(String.format("%.2f", gastoFunObj));
-            JSFUtils.setExpressionValue(f, b1, aux);
-        }
-        Object totalObj = this.getInptHidden_montoIndemnizacion().getValue();
-        if (totalObj != null) {
-            aux = utils.getNumberOracle(String.format("%.2f", totalObj));
-            JSFUtils.setExpressionValue(f, b2, aux);
-        }
-    }*/
-
-    //Procesa el guardar gasto funerario.
-
-    /*private void procesar_guardar_gasto_funerario() {
-        FacesContext f = FacesContext.getCurrentInstance();
-        rellenarCamposPendientes_guardar_gasto_fun(f);
-        if (commit(f)) {
-            mensaje("Información grabada correctamente.", 1);
-            habilitar_componentes_gasto_funerario(false);
-            JSFUtils.EjecutarAcccion(f, "RefrescarIndemnizacion");
-        }
-    }*/
-
-    /*public String cmdBtn_guardar_gasto_funerario_action() {
-        procesar_guardar_gasto_funerario();
-        return null;
-    }*/
-
-    public void setCmdBtn_calcular_prestacion(CoreCommandButton cmdBtn_calcular_prestacion) {
-        this.cmdBtn_calcular_prestacion = cmdBtn_calcular_prestacion;
-    }
-
-    public CoreCommandButton getCmdBtn_calcular_prestacion() {
-        return cmdBtn_calcular_prestacion;
     }
 
     public void setOutputTxt_mensaje_calculo(CoreOutputText outputTxt_mensaje_calculo) {
@@ -1148,13 +1029,13 @@ public class Indemnizacion_detalle {
         return cmdLink_trasladar_solicitud;
     }
 
-    public void setCmdBtn_retornar_calculo(CoreCommandButton cmdBtn_retornar_calculo) {
+    /*public void setCmdBtn_retornar_calculo(CoreCommandButton cmdBtn_retornar_calculo) {
         this.cmdBtn_retornar_calculo = cmdBtn_retornar_calculo;
     }
 
     public CoreCommandButton getCmdBtn_retornar_calculo() {
         return cmdBtn_retornar_calculo;
-    }
+    }*/
 
     public String cmdBtn_retornar_calculo_action() {
         return "ir_a_listado_indemnizaciones";
@@ -1200,8 +1081,8 @@ public class Indemnizacion_detalle {
         return inptText_montoFacturaPost;
     }
 
-    public void setCmdBtn_comprobar_gasto_funerario(CoreCommandButton cmdBtn_comprobar_gasto_funerario) {
-        this.cmdBtn_comprobar_gasto_funerario = 
+    /*public void setCmdBtn_comprobar_gasto_funerario(CoreCommandButton cmdBtn_comprobar_gasto_funerario) {
+        this.cmdBtn_comprobar_gasto_funerario =
                 cmdBtn_comprobar_gasto_funerario;
     }
 
@@ -1215,13 +1096,13 @@ public class Indemnizacion_detalle {
 
     public CoreCommandButton getCmdBtn_guardar_gasto_funerario() {
         return cmdBtn_guardar_gasto_funerario;
-    }
+    }*/
 
     public String cmdBtn_retornar_gasto_funerario_action() {
         return "ir_a_listado_indemnizaciones";
     }
 
-    public void setCmdBtn_retornar_gasto_funerario(CoreCommandButton cmdBtn_retornar_gasto_funerario) {
+    /*public void setCmdBtn_retornar_gasto_funerario(CoreCommandButton cmdBtn_retornar_gasto_funerario) {
         this.cmdBtn_retornar_gasto_funerario = cmdBtn_retornar_gasto_funerario;
     }
 
@@ -1230,13 +1111,13 @@ public class Indemnizacion_detalle {
     }
 
     public void setCmdLink_trasladar_gasto_funerario(CoreCommandLink cmdLink_trasladar_gasto_funerario) {
-        this.cmdLink_trasladar_gasto_funerario = 
+        this.cmdLink_trasladar_gasto_funerario =
                 cmdLink_trasladar_gasto_funerario;
     }
 
     public CoreCommandLink getCmdLink_trasladar_gasto_funerario() {
         return cmdLink_trasladar_gasto_funerario;
-    }
+    }*/
 
     public void setCmdBtn_verReporteDARHSJI1(CoreCommandButton cmdBtn_verReporteDARHSJI1) {
         this.cmdBtn_verReporteDARHSJI1 = cmdBtn_verReporteDARHSJI1;
@@ -1387,7 +1268,9 @@ public class Indemnizacion_detalle {
         return slctInputDate_fechaRetiro;
     }
 
-    public String cmdBtn_calcularIndemnizacion_action() {
+    //Procedimiento que procesa el cálculo de la Indemnización a Pagar
+
+    private void procesarCalcularIndemnizacion() {
         Object aux = this.getInptText_TotalSueldos().getValue();
         if (aux != null && Double.parseDouble(aux.toString()) > 0) {
             Double totalSueldos = Double.parseDouble(aux.toString());
@@ -1395,63 +1278,85 @@ public class Indemnizacion_detalle {
             Double diferido12 = totalSueldos * .12;
             Double aguinaldo = (totalSueldos + diferido + diferido12) / 12;
             Double bono14 = aguinaldo;
-            Double totalPrestaciones = 
-                diferido + diferido12 + aguinaldo + bono14;
-            Double totalParaCalcSueldoProm = totalSueldos + totalPrestaciones;
+            Double totalPrest = diferido + diferido12 + aguinaldo + bono14;
+            Double totalParaCalcSueldoProm = totalSueldos + totalPrest;
             Double sueldoPromedio = totalParaCalcSueldoProm / 12;
-            //////almacena los valores calculados en los input hiddens creados para este propósito/////
+            ///almaceno los primeros valores calculados en input hiddens///
             this.getInptHidden_diferidoCalculo().setValue(diferido);
             this.getInptHidden_diferido12Calculo().setValue(diferido12);
             this.getInptHidden_aguinaldoCalculo().setValue(aguinaldo);
             this.getInptHidden_bono14Calculo().setValue(bono14);
             this.getInptHidden_sueldoPromedio().setValue(sueldoPromedio);
-            ///////////////////////////////////////////////////////////////////
+            ///Coloco los primeros valores calculados en pantalla///
             this.getOutputFormat_totalSueldos().setValue(totalSueldos);
             this.getOutputFormat_diferido_calc().setValue(diferido);
             this.getOutputFormat_diferido12_calc().setValue(diferido12);
             this.getOutputFormat_aguinaldo_calc().setValue(aguinaldo);
             this.getOutputFormat_bono14_calc().setValue(bono14);
-            this.getOutputFormat_totalPrestac_calc().setValue(totalPrestaciones);
+            this.getOutputFormat_totalPrestac_calc().setValue(totalPrest);
             this.getOutputFormat_totalParaCalc_calc().setValue(totalParaCalcSueldoProm);
             this.getOutputFormat_sueldoProm_calc().setValue(sueldoPromedio);
-            //////Ahora se calculará el monto por años meses y días laborados/////////////////
+            //Ahora se calculo el  monto de Indemnización por años meses y días laborados///
             Object aux2 = this.getInptText_AniosServicio().getValue();
             Object aux3 = this.getInptText_MesesServicio().getValue();
             Object aux4 = this.getInptText_DiasServicio().getValue();
             if (aux2 != null || aux3 != null || aux4 != null) {
-                int aniosLab = 0;
+                int aniosLaborados = 0;
                 if (aux2 != null && Integer.parseInt(aux2.toString()) > 0) {
-                    aniosLab = Integer.valueOf(aux2.toString()).intValue();
+                    aniosLaborados = 
+                            Integer.valueOf(aux2.toString()).intValue();
                 }
-                int mesesLab = 0;
+                int mesesLaborados = 0;
                 if (aux3 != null && Integer.parseInt(aux3.toString()) > 0) {
-                    mesesLab = Integer.valueOf(aux3.toString()).intValue();
+                    mesesLaborados = 
+                            Integer.valueOf(aux3.toString()).intValue();
                 }
-                int diasLab = 0;
+                int diasLaborados = 0;
                 if (aux4 != null && Integer.parseInt(aux4.toString()) > 0) {
-                    diasLab = Integer.valueOf(aux4.toString()).intValue();
+                    diasLaborados = 
+                            Integer.valueOf(aux4.toString()).intValue();
                 }
                 double sueldoPromRedon = 
                     Math.round(sueldoPromedio * 100.0) / 100.0;
-                double montoIndAnios = aniosLab * sueldoPromRedon;
-                double montoIndMeses = (mesesLab * sueldoPromRedon) / 12;
+                double montoIndAnios = aniosLaborados * sueldoPromRedon;
+                double montoIndMeses = (mesesLaborados * sueldoPromRedon) / 12;
                 montoIndMeses = Math.round(montoIndMeses * 100.0) / 100.0;
-                double montoIndDias = (diasLab * sueldoPromRedon) / 365;
+                double montoIndDias = (diasLaborados * sueldoPromRedon) / 365;
                 montoIndDias = Math.round(montoIndDias * 100.0) / 100.0;
                 double montoIndTotal = 
                     montoIndAnios + montoIndMeses + montoIndDias;
+                ///Coloco los siguientes valores calculados en pantalla///
                 this.getOutputFormat_montIndAnios_calc().setValue(montoIndAnios);
                 this.getOutputFormat_montIndMeses_calc().setValue(montoIndMeses);
                 this.getOutputFormat_montIndDias_calc().setValue(montoIndDias);
                 this.getOutputFormat_montIndTotal_calc().setValue(montoIndTotal);
+                ///almaceno valor calculado en input hiddens///
                 this.getInptHidden_montoIndemTotal().setValue(montoIndTotal);
             }
-            //////////////////////////////////////////////////////////////////
-            this.getPnlHoriz_indemCalculada().setRendered(true);
+            ////////////////////////////////////////////////////////////////
+            /*this.getPnlHoriz_indemCalculada().setRendered(true);
             this.getCmdBtn_guardar_calculo().setDisabled(false);
+            this.getCmdBtn_calcularIndemnizacion().setDisabled(true);
+            this.getCdmLink_buscarEmpl().setDisabled(true);
+            this.getSlctInputDate_fechaRetiro().setDisabled(true);
+            this.getInptText_AniosServicio().setDisabled(true);
+            this.getInptText_MesesServicio().setDisabled(true);
+            this.getInptText_DiasServicio().setDisabled(true);
+            this.getSlctOneChoice_tipoRetiro().setDisabled(true);
+            this.getInptText_TotalSueldos().setDisabled(true);
+            this.getSlctInputDate_fechaSolicitud().setDisabled(true);
+            this.getCmdBtn_guardar().setDisabled(true);
+            this.getCmdLink_trasladar_solicitud().setDisabled(true);*/
         } else {
-            mensaje("¡¡No hay Total de Sueldos para cálculo de Indemnización, verifique por favor!!", 
+            mensaje("¡¡No hay Total de Sueldos para cálculo de Indemnización!!", 
                     3);
+        }
+    }
+
+    public String cmdBtn_calcularIndemnizacion_action() {
+        //volvemos a validar la información ingresada por el usuario
+        if (validarInformacionIngresada()) {
+            procesarCalcularIndemnizacion();
         }
         return null;
     }
@@ -1634,5 +1539,21 @@ public class Indemnizacion_detalle {
 
     public CoreInputHidden getInptHidden_montoIndemTotal() {
         return inptHidden_montoIndemTotal;
+    }
+
+    public void setCmdBtn_calcularIndemnizacion(CoreCommandButton cmdBtn_calcularIndemnizacion) {
+        this.cmdBtn_calcularIndemnizacion = cmdBtn_calcularIndemnizacion;
+    }
+
+    public CoreCommandButton getCmdBtn_calcularIndemnizacion() {
+        return cmdBtn_calcularIndemnizacion;
+    }
+
+    public void setInptText_numeroCheque(CoreInputText inptText_numeroCheque) {
+        this.inptText_numeroCheque = inptText_numeroCheque;
+    }
+
+    public CoreInputText getInptText_numeroCheque() {
+        return inptText_numeroCheque;
     }
 }

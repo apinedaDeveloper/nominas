@@ -19,34 +19,35 @@ import oracle.jbo.server.TransactionEvent;
 // ---    Warning: Do not modify method signatures of generated methods.
 // ---------------------------------------------------------------------
 public class SisIndemnizacionImpl extends EntityImpl {
-    public static final int IDTIPOPRESTACION = 0;
-    public static final int ANIO = 1;
-    public static final int CORRELATIVOANIO = 2;
-    public static final int REGISTROEMPLEADO = 3;
-    public static final int IDSOLICITUD = 4;
-    public static final int ANIOSTIEMPOSERVICIO = 5;
-    public static final int MESESTIEMPOSERVICIO = 6;
-    public static final int DIASTIEMPOSERVICIO = 7;
-    public static final int IDBENEFICIARIOSOL = 8;
-    public static final int IDESTADO = 9;
-    public static final int TOTALSUELDOS = 10;
-    public static final int DIFERIDOCALC = 11;
-    public static final int DIFERIDO12CALC = 12;
-    public static final int AGUINALDOCALC = 13;
-    public static final int BONO14CALC = 14;
-    public static final int SUELDOPROMEDIO = 15;
-    public static final int TOTALPRESTACION = 16;
-    public static final int GASTOFUNERARIO = 17;
-    public static final int FECHARETIRO = 18;
-    public static final int FECHASOLICITUD = 19;
-    public static final int TIPORETIRO = 20;
-    public static final int CREADOPOR = 21;
-    public static final int FECHACREACION = 22;
-    public static final int MODIFICADOPOR = 23;
-    public static final int FECHAMOD = 24;
-    public static final int NUMCHEQUE = 25;
-    public static final int IDINDEMNIZACION = 26;
-    public static final int SISTIPOINDEMNIZACION = 27;
+    public static final int IDINDEMNIZACION = 0;
+    public static final int IDTIPOPRESTACION = 1;
+    public static final int ANIO = 2;
+    public static final int CORRELATIVOANIO = 3;
+    public static final int REGISTROEMPLEADO = 4;
+    public static final int IDSOLICITUD = 5;
+    public static final int ANIOSTIEMPOSERVICIO = 6;
+    public static final int MESESTIEMPOSERVICIO = 7;
+    public static final int DIASTIEMPOSERVICIO = 8;
+    public static final int IDBENEFICIARIOSOL = 9;
+    public static final int IDESTADO = 10;
+    public static final int TOTALSUELDOS = 11;
+    public static final int DIFERIDOCALC = 12;
+    public static final int DIFERIDO12CALC = 13;
+    public static final int AGUINALDOCALC = 14;
+    public static final int BONO14CALC = 15;
+    public static final int SUELDOPROMEDIO = 16;
+    public static final int TOTALPRESTACION = 17;
+    public static final int GASTOFUNERARIO = 18;
+    public static final int FECHARETIRO = 19;
+    public static final int FECHASOLICITUD = 20;
+    public static final int TIPORETIRO = 21;
+    public static final int NUMCHEQUE = 22;
+    public static final int IDPADRE = 23;
+    public static final int CREADOPOR = 24;
+    public static final int FECHACREACION = 25;
+    public static final int MODIFICADOPOR = 26;
+    public static final int FECHAMOD = 27;
+    public static final int SISTIPOINDEMNIZACION = 28;
     private static EntityDefImpl mDefinitionObject;
 
     /**This is the default constructor (do not remove)
@@ -345,6 +346,8 @@ public class SisIndemnizacionImpl extends EntityImpl {
     protected Object getAttrInvokeAccessor(int index, 
                                            AttributeDefImpl attrDef) throws Exception {
         switch (index) {
+        case IDINDEMNIZACION:
+            return getIdIndemnizacion();
         case IDTIPOPRESTACION:
             return getIdTipoPrestacion();
         case ANIO:
@@ -387,6 +390,10 @@ public class SisIndemnizacionImpl extends EntityImpl {
             return getFechaSolicitud();
         case TIPORETIRO:
             return getTipoRetiro();
+        case NUMCHEQUE:
+            return getNumCheque();
+        case IDPADRE:
+            return getIdPadre();
         case CREADOPOR:
             return getCreadoPor();
         case FECHACREACION:
@@ -395,10 +402,6 @@ public class SisIndemnizacionImpl extends EntityImpl {
             return getModificadoPor();
         case FECHAMOD:
             return getFechaMod();
-        case NUMCHEQUE:
-            return getNumCheque();
-        case IDINDEMNIZACION:
-            return getIdIndemnizacion();
         case SISTIPOINDEMNIZACION:
             return getSisTipoIndemnizacion();
         default:
@@ -411,6 +414,9 @@ public class SisIndemnizacionImpl extends EntityImpl {
     protected void setAttrInvokeAccessor(int index, Object value, 
                                          AttributeDefImpl attrDef) throws Exception {
         switch (index) {
+        case IDINDEMNIZACION:
+            setIdIndemnizacion((Number)value);
+            return;
         case IDTIPOPRESTACION:
             setIdTipoPrestacion((Number)value);
             return;
@@ -474,6 +480,12 @@ public class SisIndemnizacionImpl extends EntityImpl {
         case TIPORETIRO:
             setTipoRetiro((Number)value);
             return;
+        case NUMCHEQUE:
+            setNumCheque((Number)value);
+            return;
+        case IDPADRE:
+            setIdPadre((Number)value);
+            return;
         case CREADOPOR:
             setCreadoPor((String)value);
             return;
@@ -485,12 +497,6 @@ public class SisIndemnizacionImpl extends EntityImpl {
             return;
         case FECHAMOD:
             setFechaMod((Date)value);
-            return;
-        case NUMCHEQUE:
-            setNumCheque((Number)value);
-            return;
-        case IDINDEMNIZACION:
-            setIdIndemnizacion((Number)value);
             return;
         default:
             super.setAttrInvokeAccessor(index, value, attrDef);
@@ -611,10 +617,21 @@ public class SisIndemnizacionImpl extends EntityImpl {
         setAttributeInternal(IDINDEMNIZACION, value);
     }
 
+    /**Gets the attribute value for IdPadre, using the alias name IdPadre
+     */
+    public Number getIdPadre() {
+        return (Number)getAttributeInternal(IDPADRE);
+    }
+
+    /**Sets <code>value</code> as the attribute value for IdPadre
+     */
+    public void setIdPadre(Number value) {
+        setAttributeInternal(IDPADRE, value);
+    }
+
     /**Creates a Key object based on given key constituents
      */
-    public static Key createPrimaryKey(Number idTipoPrestacion, Number anio, 
-                                       Number correlativoAnio) {
-        return new Key(new Object[]{idTipoPrestacion, anio, correlativoAnio});
+    public static Key createPrimaryKey(Number idIndemnizacion) {
+        return new Key(new Object[]{idIndemnizacion});
     }
 }

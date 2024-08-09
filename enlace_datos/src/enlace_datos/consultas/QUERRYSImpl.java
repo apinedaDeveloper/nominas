@@ -212,6 +212,7 @@ import enlace_datos.consultas.gestiones.horas_extras.sis_det_tiempo_extra_vwImpl
 import enlace_datos.consultas.gestiones.horas_extras.sis_hora_extra_vwImpl;
 import enlace_datos.consultas.gestiones.horas_extras.sis_tiempo_extraordinario_vwImpl;
 import enlace_datos.consultas.gestiones.indemnizaciones.SisHistorialSalarialIndemnizacion_vwImpl;
+import enlace_datos.consultas.gestiones.indemnizaciones.SisHistorialTrasladosIndem_vwImpl;
 import enlace_datos.consultas.gestiones.indemnizaciones.SisIndemnizacion_vwImpl;
 import enlace_datos.consultas.gestiones.indemnizaciones.SisRelacionLaboral_vwImpl;
 import enlace_datos.consultas.gestiones.indemnizaciones.SisSolicitudesDespidoIndem_vwImpl;
@@ -3497,5 +3498,11 @@ return vResultado;
      */
     public sis_indemnizaciones_consulImpl getsis_indemnizaciones_consul() {
         return (sis_indemnizaciones_consulImpl)findViewObject("sis_indemnizaciones_consul");
+    }
+
+    /**Container's getter for SisHistorialTrasladosIndem_vw
+     */
+    public SisHistorialTrasladosIndem_vwImpl getSisHistorialTrasladosIndem_vw() {
+        return (SisHistorialTrasladosIndem_vwImpl)findViewObject("SisHistorialTrasladosIndem_vw");
     }
 }

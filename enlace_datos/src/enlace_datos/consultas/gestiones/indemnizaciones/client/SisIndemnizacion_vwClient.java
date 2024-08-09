@@ -16,6 +16,12 @@ public class SisIndemnizacion_vwClient extends ViewUsageImpl implements SisIndem
     }
 
 
+    public void ObtenerSolicitudesAuditor() {
+        Object _ret = 
+            getApplicationModuleProxy().riInvokeExportedMethod(this,"ObtenerSolicitudesAuditor",null,null);
+        return;
+    }
+
     public void ObtenerSolicitudesIndemnizacion() {
         Object _ret = 
             getApplicationModuleProxy().riInvokeExportedMethod(this,"ObtenerSolicitudesIndemnizacion",null,null);
@@ -32,6 +38,12 @@ public class SisIndemnizacion_vwClient extends ViewUsageImpl implements SisIndem
                                    Number pCorrelativoAnio) {
         Object _ret = 
             getApplicationModuleProxy().riInvokeExportedMethod(this,"RecuperarSolicitud",new String [] {"oracle.jbo.domain.Number","oracle.jbo.domain.Number","oracle.jbo.domain.Number"},new Object[] {pIdTipoPrestacion, pAnio, pCorrelativoAnio});
+        return;
+    }
+
+    public void RecuperarSolicitud02(Number pIdIndemnizacion) {
+        Object _ret = 
+            getApplicationModuleProxy().riInvokeExportedMethod(this,"RecuperarSolicitud02",new String [] {"oracle.jbo.domain.Number"},new Object[] {pIdIndemnizacion});
         return;
     }
 }

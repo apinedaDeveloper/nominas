@@ -51,6 +51,9 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
     public static final int OBSERVACIONEXPRETIRO = 35;
     public static final int TOTALPRESTACIONES = 36;
     public static final int TOTALPARACALCULOSUELDOPROM = 37;
+    public static final int INDEMANIOS = 38;
+    public static final int INDEMMESES = 39;
+    public static final int INDEMDIAS = 40;
 
     /**This is the default constructor (do not remove)
      */
@@ -151,6 +154,12 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
             return getTotalPrestaciones();
         case TOTALPARACALCULOSUELDOPROM:
             return getTotalParaCalculoSueldoProm();
+        case INDEMANIOS:
+            return getIndemAnios();
+        case INDEMMESES:
+            return getIndemMeses();
+        case INDEMDIAS:
+            return getIndemDias();
         default:
             return super.getAttrInvokeAccessor(index, attrDef);
         }
@@ -274,6 +283,15 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
             return;
         case TOTALPARACALCULOSUELDOPROM:
             setTotalParaCalculoSueldoProm((Number)value);
+            return;
+        case INDEMANIOS:
+            setIndemAnios((Number)value);
+            return;
+        case INDEMMESES:
+            setIndemMeses((Number)value);
+            return;
+        case INDEMDIAS:
+            setIndemDias((Number)value);
             return;
         default:
             super.setAttrInvokeAccessor(index, value, attrDef);
@@ -745,5 +763,41 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
      */
     public void setIdIndemnizacion(Number value) {
         setAttributeInternal(IDINDEMNIZACION, value);
+    }
+
+    /**Gets the attribute value for the calculated attribute IndemAnios
+     */
+    public Number getIndemAnios() {
+        return (Number) getAttributeInternal(INDEMANIOS);
+    }
+
+    /**Sets <code>value</code> as the attribute value for the calculated attribute IndemAnios
+     */
+    public void setIndemAnios(Number value) {
+        setAttributeInternal(INDEMANIOS, value);
+    }
+
+    /**Gets the attribute value for the calculated attribute IndemMeses
+     */
+    public Number getIndemMeses() {
+        return (Number) getAttributeInternal(INDEMMESES);
+    }
+
+    /**Sets <code>value</code> as the attribute value for the calculated attribute IndemMeses
+     */
+    public void setIndemMeses(Number value) {
+        setAttributeInternal(INDEMMESES, value);
+    }
+
+    /**Gets the attribute value for the calculated attribute IndemDias
+     */
+    public Number getIndemDias() {
+        return (Number) getAttributeInternal(INDEMDIAS);
+    }
+
+    /**Sets <code>value</code> as the attribute value for the calculated attribute IndemDias
+     */
+    public void setIndemDias(Number value) {
+        setAttributeInternal(INDEMDIAS, value);
     }
 }

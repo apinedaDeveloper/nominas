@@ -18,7 +18,8 @@ public class perfiles_usuario {
       "operador_caja", "consulta_histsal_lab", "caja_acreditamiento", 
       "consulta_ficha_empl", "auxiliar_sueldos", "plan_prestaciones", 
       "archivo_conta", "reclutamiento", "rentas", "curriculum", 
-      "rev_boleto_ornato", "analista_postmortem", "consul_curriculum", "coordinador_puestos", "analista_indemnizacion" };
+      "rev_boleto_ornato", "analista_postmortem", "consul_curriculum", 
+      "coordinador_puestos", "analista_indemnizacion", "auditor_indemnizacion" };
 
 
     public String[] getPerfiles() {
@@ -201,6 +202,10 @@ public class perfiles_usuario {
     
     public boolean isAnalistaIndemnizacion() {
         return isUsuarioEnRole(vPerfiles[42]);
+    }
+    
+    public boolean isAuditorIndemnizacion() {
+        return isUsuarioEnRole(vPerfiles[43]);
     }
 
 }
