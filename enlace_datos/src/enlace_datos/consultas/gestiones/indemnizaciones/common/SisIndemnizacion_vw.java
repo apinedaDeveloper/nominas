@@ -8,12 +8,10 @@ import oracle.jbo.domain.Number;
 public interface SisIndemnizacion_vw extends ViewObject {
     void ObtenerSolicitudesIndemnizacion();
 
-    void RecuperarSolicitud(Number pIdTipoPrestacion, Number pAnio, 
-                            Number pCorrelativoAnio);
 
     void ObtenerSolicitudesProfesionalCaja();
 
     void ObtenerSolicitudesAuditor();
 
-    void RecuperarSolicitud02(Number pIdIndemnizacion);
+    void RecuperarSolicitud(Number pIdIndemnizacion);
 }

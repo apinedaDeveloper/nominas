@@ -34,16 +34,9 @@ public class SisIndemnizacion_vwClient extends ViewUsageImpl implements SisIndem
         return;
     }
 
-    public void RecuperarSolicitud(Number pIdTipoPrestacion, Number pAnio, 
-                                   Number pCorrelativoAnio) {
+    public void RecuperarSolicitud(Number pIdIndemnizacion) {
         Object _ret = 
-            getApplicationModuleProxy().riInvokeExportedMethod(this,"RecuperarSolicitud",new String [] {"oracle.jbo.domain.Number","oracle.jbo.domain.Number","oracle.jbo.domain.Number"},new Object[] {pIdTipoPrestacion, pAnio, pCorrelativoAnio});
-        return;
-    }
-
-    public void RecuperarSolicitud02(Number pIdIndemnizacion) {
-        Object _ret = 
-            getApplicationModuleProxy().riInvokeExportedMethod(this,"RecuperarSolicitud02",new String [] {"oracle.jbo.domain.Number"},new Object[] {pIdIndemnizacion});
+            getApplicationModuleProxy().riInvokeExportedMethod(this,"RecuperarSolicitud",new String [] {"oracle.jbo.domain.Number"},new Object[] {pIdIndemnizacion});
         return;
     }
 }

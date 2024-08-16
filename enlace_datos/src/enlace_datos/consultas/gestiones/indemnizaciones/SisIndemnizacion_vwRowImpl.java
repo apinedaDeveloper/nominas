@@ -375,6 +375,9 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
     /**Sets <code>value</code> as attribute value for ANIOS_TIEMPO_SERVICIO using the alias name AniosTiempoServicio
      */
     public void setAniosTiempoServicio(Number value) {
+        if (value==null) {
+            value = new oracle.jbo.domain.Number(0);
+        }
         setAttributeInternal(ANIOSTIEMPOSERVICIO, value);
     }
 
@@ -387,6 +390,9 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
     /**Sets <code>value</code> as attribute value for MESES_TIEMPO_SERVICIO using the alias name MesesTiempoServicio
      */
     public void setMesesTiempoServicio(Number value) {
+        if (value==null) {
+            value = new oracle.jbo.domain.Number(0);
+        }
         setAttributeInternal(MESESTIEMPOSERVICIO, value);
     }
 
@@ -399,6 +405,9 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
     /**Sets <code>value</code> as attribute value for DIAS_TIEMPO_SERVICIO using the alias name DiasTiempoServicio
      */
     public void setDiasTiempoServicio(Number value) {
+        if (value==null) {
+            value = new oracle.jbo.domain.Number(0);
+        }
         setAttributeInternal(DIASTIEMPOSERVICIO, value);
     }
 

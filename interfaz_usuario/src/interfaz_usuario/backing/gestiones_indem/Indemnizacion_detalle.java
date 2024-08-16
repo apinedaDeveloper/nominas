@@ -427,7 +427,7 @@ public class Indemnizacion_detalle {
 
     //Función que obtiene el último correlativo de SIS_INDEMNIZACIÓN del año actual para Indemnización por Retiro Definitivo
 
-    private long obtenerUltimoCorrelativo_solicitud(Number anioActual) {
+    /*private long obtenerUltimoCorrelativo_solicitud(Number anioActual) {
         long correlativo = 0;
         interfaz_DB interfaz = new interfaz_DB();
         String consulta = "Select max(CORRELATIVO_ANIO) as valor ";
@@ -440,7 +440,7 @@ public class Indemnizacion_detalle {
             correlativo = Long.valueOf(varId.toString());
         }
         return correlativo;
-    }
+    }*/
 
     //Procedimiento que obtiene el ID de la solicitud de retiro definitivo y lo setea al binding respectivo
 
@@ -537,14 +537,13 @@ public class Indemnizacion_detalle {
             (Number)this.getInptText_TotalSueldos().getValue();
         if (registroPersonal == null || 
             registroPersonal.toString().compareTo("") == 0) {
-            mensaje("¡¡Ingrese trabajador para continuar, por favor!!", 3);
+            mensaje("¡¡Ingrese trabajador para continuar!!", 3);
         } else if (fechaRetiro == null) {
-            mensaje("!!Ingrese Fecha de Retiro para continuar por favor!!", 3);
+            mensaje("!!Ingrese Fecha de Retiro para continuar!!", 3);
         } else if ((aniosServicio == null || aniosServicio.intValue() <= 0) && 
                    (mesesServicio == null || mesesServicio.intValue() <= 0) && 
                    (diasServicio == null || diasServicio.intValue() <= 0)) {
-            mensaje("!!Ingrese el Tiempo de Servicio para continuar por favor!!", 
-                    3);
+            mensaje("!!Ingrese el Tiempo de Servicio para continuar!!", 3);
         } else if (aniosServicio != null && 
                    (aniosServicio.intValue() < 0 || aniosServicio.intValue() > 
                     10) && aniosServicio.intValue() != 12) {
@@ -580,16 +579,14 @@ public class Indemnizacion_detalle {
             continuar = true;
         }
         if (continuar == true) {
+            continuar = false;
             if (tipoRetiro == null) {
-                mensaje("!!Seleccione un Tipo de Retiro para continuar por favor!!", 
-                        3);
+                mensaje("!!Seleccione un Tipo de Retiro para continuar!!", 3);
             } else if (totalSueldos == null || 
                        totalSueldos.doubleValue() <= 0) {
-                mensaje("!!Ingrese Total de Sueldos para continuar por favor!!", 
-                        3);
+                mensaje("!!Ingrese Total de Sueldos para continuar!!", 3);
             } else if (fechaSolicitud == null) {
-                mensaje("!!Ingrese Fecha de Solicitud para continuar por favor!!", 
-                        3);
+                mensaje("!!Ingrese Fecha de Solicitud para continuar!!", 3);
             } else {
                 if (fechaSolicitud != null && fechaRetiro != null) {
                     if (fechaRetiro.dateValue().after(fechaSolicitud.dateValue())) {
@@ -611,8 +608,7 @@ public class Indemnizacion_detalle {
                 if (aux != null && Long.parseLong(aux.toString()) > 0) {
                     valido = true;
                 } else {
-                    mensaje("!!El Número de Cheque debe ser mayor de 0!!", 
-                            3);
+                    mensaje("!!El Número de Cheque debe ser mayor de 0!!", 3);
                 }
             } else {
                 valido = true;
@@ -625,21 +621,18 @@ public class Indemnizacion_detalle {
 
     private boolean rellenarCamposPends_solNueva(FacesContext f) {
         boolean correcto = false;
-        String b1 = "#{bindings.Anio.inputValue}";
-        String b2 = "#{bindings.CorrelativoAnio.inputValue}";
-        String b3 = "#{bindings.IdEstado.inputValue}";
-        String b4 = "#{bindings.IdTipoPrestacion.inputValue}";
+        String bind = "#{bindings.IdTipoPrestacion.inputValue}";
         try {
-            Number anioActual = utils.getNumberOracle(utils.getAnioActual());
+            //Number anioActual = utils.getNumberOracle(utils.getAnioActual());
             //System.out.println("El año actual es: " + anioActual);
             //obtenemos el correlativo de la solicitud dependiendo del año actual
-            long correlativo = 
-                obtenerUltimoCorrelativo_solicitud(anioActual) + 1;
-            JSFUtils.setExpressionValue(f, b1, anioActual);
-            JSFUtils.setExpressionValue(f, b2, 
-                                        utils.getNumberOracle(correlativo));
-            JSFUtils.setExpressionValue(f, b3, utils.getNumberOracle("250"));
-            JSFUtils.setExpressionValue(f, b4, utils.getNumberOracle("1"));
+            //long correlativo = 
+            //obtenerUltimoCorrelativo_solicitud(anioActual) + 1;
+            //JSFUtils.setExpressionValue(f, b1, anioActual);
+            //JSFUtils.setExpressionValue(f, b2, 
+            //                        utils.getNumberOracle(correlativo));
+            //JSFUtils.setExpressionValue(f, b3, utils.getNumberOracle("250"));
+            JSFUtils.setExpressionValue(f, bind, utils.getNumberOracle("1"));
             correcto = true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -652,36 +645,53 @@ public class Indemnizacion_detalle {
 
     private boolean procesar_guardar_sol_nueva(FacesContext f) {
         boolean exito = false;
-        if (rellenarCamposPends_solNueva(f)) {
-            procesarCalcularIndemnizacion();
-            if (JSFUtils.EjecutarAcccion2(f.getCurrentInstance(), 
-                                          "Confirmar")) {
-                if (rellenarCamposPends_calculoInd(f)) {
-                    exito = 
-                            JSFUtils.EjecutarAcccion2(f.getCurrentInstance(), "Confirmar");
+        if (calcularIndemnizacion(f)) {
+            String bind = "#{bindings.IdTipoPrestacion.inputValue}";
+            try {
+                JSFUtils.setExpressionValue(f, bind, 
+                                            utils.getNumberOracle("1"));
+                if (JSFUtils.EjecutarAcccion2(f.getCurrentInstance(), 
+                                              "Confirmar")) {
+                    exito = true;
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
+                mensaje("Ha ocurrido el siguiente error: " + e.getMessage(), 
+                        3);
             }
         }
         return exito;
     }
 
-    //Función que procesa el guardar de una solicitud existente
+    //Función que procesa el guardar una solicitud existente
 
     private boolean procesar_guardar_sol_existente(FacesContext f) {
         boolean exito = false;
-        procesarCalcularIndemnizacion();
-        if (JSFUtils.EjecutarAcccion2(f.getCurrentInstance(), "Confirmar")) {
-            if (rellenarCamposPends_calculoInd(f)) {
+        String bin = "#{bindings.IdEstado.inputValue}";
+        Object obj = JSFUtils.resolveExpression(f, bin);
+        if (obj != null) {
+            int idEstado = Integer.parseInt(obj.toString());
+            if (idEstado == 250 || idEstado == 252) {
+                //Estado grabado ú objetado
+                if (calcularIndemnizacion(f)) {
+                    if (JSFUtils.EjecutarAcccion2(f.getCurrentInstance(), 
+                                                  "Confirmar")) {
+                        exito = true;
+                    }
+                }
+            } else if (idEstado == 256) {
+                //Estado liquidado
                 if (JSFUtils.EjecutarAcccion2(f.getCurrentInstance(), 
                                               "Confirmar")) {
                     exito = true;
-                } else {
-                    mensaje("!!No se pudo guardar. Intente de nuevo por favor!!", 
-                            3);
                 }
+            } else {
+                mensaje("!!Estado incorrecto para grabar. Revise por favor!!", 
+                        3);
             }
         } else {
-            mensaje("!!No se pudo guardar. Intente de nuevo por favor!!", 3);
+            mensaje("!!No se pudo recuperar la información correctamente!!", 
+                    3);
         }
         return exito;
     }
@@ -699,31 +709,8 @@ public class Indemnizacion_detalle {
                     //Es solicitud nueva
                     exito = procesar_guardar_sol_nueva(f);
                 } else {
-                    //Es solicitud existente, verificamos el esatado
-                    String binding = "#{bindings.IdEstado.inputValue}";
-                    auxObj = JSFUtils.resolveExpression(f, binding);
-                    if (auxObj != null) {
-                        int idEstado = Integer.parseInt(auxObj.toString());
-                        if (idEstado == 250 || idEstado == 252) {
-                            //Estado grabado ú objetado
-                            exito = procesar_guardar_sol_existente(f);
-                        } else if (idEstado == 256) {
-                            //Estado liquidado
-                            if (JSFUtils.EjecutarAcccion2(f.getCurrentInstance(), 
-                                                          "Confirmar")) {
-                                exito = true;
-                            } else {
-                                mensaje("!!No se pudo guardar. Intente de nuevo por favor!!", 
-                                        3);
-                            }
-                        } else {
-                            mensaje("!!Estado incorrecto para grabar. Revise por favor!!", 
-                                    3);
-                        }
-                    } else {
-                        mensaje("!!No se pudo recuperar la información correctamente. Intente de nuevo!!", 
-                                3);
-                    }
+                    //Es solicitud existente
+                    exito = procesar_guardar_sol_existente(f);
                 }
             } else {
                 mensaje("!!No se pudo recuperar la información correctamente. Intente de nuevo!!", 
@@ -866,7 +853,7 @@ public class Indemnizacion_detalle {
 
     //Rellena campos pendientes antes de guardar el cálculo
 
-    private boolean rellenarCamposPends_calculoInd(FacesContext f) {
+    /*private boolean rellenarCamposPends_calculoInd(FacesContext f) {
         boolean correcto = false;
         try {
             Object difObj, dif12Obj, aguiObj, bono14Obj, sueldoPromObj, totalIndemObj;
@@ -880,37 +867,37 @@ public class Indemnizacion_detalle {
             ///////////////////////////////////////////////////
             difObj = this.getInptHidden_diferidoCalculo().getValue();
             if (difObj != null) {
-                diferido = 
+                diferido =
                         utils.getNumberOracle(String.format("%.2f", difObj));
                 JSFUtils.setExpressionValue(f, bindDif, diferido);
             }
             dif12Obj = this.getInptHidden_diferido12Calculo().getValue();
             if (dif12Obj != null) {
-                diferido12 = 
+                diferido12 =
                         utils.getNumberOracle(String.format("%.2f", dif12Obj));
                 JSFUtils.setExpressionValue(f, bindDif12, diferido12);
             }
             aguiObj = this.getInptHidden_aguinaldoCalculo().getValue();
             if (aguiObj != null) {
-                aguinaldo = 
+                aguinaldo =
                         utils.getNumberOracle(String.format("%.2f", aguiObj));
                 JSFUtils.setExpressionValue(f, bindAgui, aguinaldo);
             }
             bono14Obj = this.getInptHidden_bono14Calculo().getValue();
             if (bono14Obj != null) {
-                bono14 = 
+                bono14 =
                         utils.getNumberOracle(String.format("%.2f", bono14Obj));
                 JSFUtils.setExpressionValue(f, bindBono14, bono14);
             }
             sueldoPromObj = this.getInptHidden_sueldoPromedio().getValue();
             if (sueldoPromObj != null) {
-                sueldoProm = 
+                sueldoProm =
                         utils.getNumberOracle(String.format("%.2f", sueldoPromObj));
                 JSFUtils.setExpressionValue(f, bindSueldoProm, sueldoProm);
             }
             totalIndemObj = this.getInptHidden_montoIndemTotal().getValue();
             if (totalIndemObj != null) {
-                totalIndem = 
+                totalIndem =
                         utils.getNumberOracle(String.format("%.2f", totalIndemObj));
                 JSFUtils.setExpressionValue(f, bindTotalIndem, totalIndem);
             }
@@ -921,7 +908,7 @@ public class Indemnizacion_detalle {
             mensaje("Ha ocurrido el siguiente error: " + e.getMessage(), 3);
         }
         return correcto;
-    }
+    }*/
 
     public String cmdBtn_guardar_calculo_action() {
         /*FacesContext f = FacesContext.getCurrentInstance();
@@ -1268,11 +1255,13 @@ public class Indemnizacion_detalle {
         return slctInputDate_fechaRetiro;
     }
 
-    //Procedimiento que procesa el cálculo de la Indemnización a Pagar
+    //Función que realiza el cálculo de la indemnización a pagar en base a la información ingresado por el usuario
 
-    private void procesarCalcularIndemnizacion() {
+    private boolean calcularIndemnizacion(FacesContext f) {
+        boolean exito = false;
         Object aux = this.getInptText_TotalSueldos().getValue();
         if (aux != null && Double.parseDouble(aux.toString()) > 0) {
+            //Primero calculamos prestaciones y sueldo promedio
             Double totalSueldos = Double.parseDouble(aux.toString());
             Double diferido = totalSueldos / 12;
             Double diferido12 = totalSueldos * .12;
@@ -1281,83 +1270,85 @@ public class Indemnizacion_detalle {
             Double totalPrest = diferido + diferido12 + aguinaldo + bono14;
             Double totalParaCalcSueldoProm = totalSueldos + totalPrest;
             Double sueldoPromedio = totalParaCalcSueldoProm / 12;
-            ///almaceno los primeros valores calculados en input hiddens///
-            this.getInptHidden_diferidoCalculo().setValue(diferido);
-            this.getInptHidden_diferido12Calculo().setValue(diferido12);
-            this.getInptHidden_aguinaldoCalculo().setValue(aguinaldo);
-            this.getInptHidden_bono14Calculo().setValue(bono14);
-            this.getInptHidden_sueldoPromedio().setValue(sueldoPromedio);
+            ///seteamos los valores en sus bindings respectivos///
+            String bind = "#{bindings.DiferidoCalc.inputValue}";
+            Number num = 
+                utils.getNumberOracle(String.format("%.2f", diferido));
+            JSFUtils.setExpressionValue(f, bind, num);
+            bind = "#{bindings.Diferido12Calc.inputValue}";
+            num = utils.getNumberOracle(String.format("%.2f", diferido12));
+            JSFUtils.setExpressionValue(f, bind, num);
+            bind = "#{bindings.AguinaldoCalc.inputValue}";
+            num = utils.getNumberOracle(String.format("%.2f", aguinaldo));
+            JSFUtils.setExpressionValue(f, bind, num);
+            bind = "#{bindings.Bono14Calc.inputValue}";
+            num = utils.getNumberOracle(String.format("%.2f", bono14));
+            JSFUtils.setExpressionValue(f, bind, num);
+            bind = "#{bindings.SueldoPromedio.inputValue}";
+            num = utils.getNumberOracle(String.format("%.2f", sueldoPromedio));
+            JSFUtils.setExpressionValue(f, bind, num);
             ///Coloco los primeros valores calculados en pantalla///
-            this.getOutputFormat_totalSueldos().setValue(totalSueldos);
+            /*this.getOutputFormat_totalSueldos().setValue(totalSueldos);
             this.getOutputFormat_diferido_calc().setValue(diferido);
             this.getOutputFormat_diferido12_calc().setValue(diferido12);
             this.getOutputFormat_aguinaldo_calc().setValue(aguinaldo);
             this.getOutputFormat_bono14_calc().setValue(bono14);
             this.getOutputFormat_totalPrestac_calc().setValue(totalPrest);
             this.getOutputFormat_totalParaCalc_calc().setValue(totalParaCalcSueldoProm);
-            this.getOutputFormat_sueldoProm_calc().setValue(sueldoPromedio);
-            //Ahora se calculo el  monto de Indemnización por años meses y días laborados///
-            Object aux2 = this.getInptText_AniosServicio().getValue();
-            Object aux3 = this.getInptText_MesesServicio().getValue();
-            Object aux4 = this.getInptText_DiasServicio().getValue();
-            if (aux2 != null || aux3 != null || aux4 != null) {
-                int aniosLaborados = 0;
-                if (aux2 != null && Integer.parseInt(aux2.toString()) > 0) {
-                    aniosLaborados = 
-                            Integer.valueOf(aux2.toString()).intValue();
+            this.getOutputFormat_sueldoProm_calc().setValue(sueldoPromedio);*/
+            ///Ahora calculamos el monto total de Indemnización///
+            Object anios = this.getInptText_AniosServicio().getValue();
+            Object meses = this.getInptText_MesesServicio().getValue();
+            Object dias = this.getInptText_DiasServicio().getValue();
+            if (anios != null || meses != null || dias != null) {
+                int aniosLab = 0;
+                if (anios != null && Integer.parseInt(anios.toString()) > 0) {
+                    aniosLab = Integer.valueOf(anios.toString()).intValue();
                 }
-                int mesesLaborados = 0;
-                if (aux3 != null && Integer.parseInt(aux3.toString()) > 0) {
-                    mesesLaborados = 
-                            Integer.valueOf(aux3.toString()).intValue();
+                int mesesLab = 0;
+                if (meses != null && Integer.parseInt(meses.toString()) > 0) {
+                    mesesLab = Integer.valueOf(meses.toString()).intValue();
                 }
-                int diasLaborados = 0;
-                if (aux4 != null && Integer.parseInt(aux4.toString()) > 0) {
-                    diasLaborados = 
-                            Integer.valueOf(aux4.toString()).intValue();
+                int diasLab = 0;
+                if (dias != null && Integer.parseInt(dias.toString()) > 0) {
+                    diasLab = Integer.valueOf(dias.toString()).intValue();
                 }
                 double sueldoPromRedon = 
                     Math.round(sueldoPromedio * 100.0) / 100.0;
-                double montoIndAnios = aniosLaborados * sueldoPromRedon;
-                double montoIndMeses = (mesesLaborados * sueldoPromRedon) / 12;
+                double montoIndAnios = aniosLab * sueldoPromRedon;
+                double montoIndMeses = (mesesLab * sueldoPromRedon) / 12;
                 montoIndMeses = Math.round(montoIndMeses * 100.0) / 100.0;
-                double montoIndDias = (diasLaborados * sueldoPromRedon) / 365;
+                double montoIndDias = (diasLab * sueldoPromRedon) / 365;
                 montoIndDias = Math.round(montoIndDias * 100.0) / 100.0;
                 double montoIndTotal = 
                     montoIndAnios + montoIndMeses + montoIndDias;
                 ///Coloco los siguientes valores calculados en pantalla///
-                this.getOutputFormat_montIndAnios_calc().setValue(montoIndAnios);
+                /*this.getOutputFormat_montIndAnios_calc().setValue(montoIndAnios);
                 this.getOutputFormat_montIndMeses_calc().setValue(montoIndMeses);
                 this.getOutputFormat_montIndDias_calc().setValue(montoIndDias);
-                this.getOutputFormat_montIndTotal_calc().setValue(montoIndTotal);
-                ///almaceno valor calculado en input hiddens///
-                this.getInptHidden_montoIndemTotal().setValue(montoIndTotal);
+                this.getOutputFormat_montIndTotal_calc().setValue(montoIndTotal);*/
+                ///seteamos el valor calculado en su binding respectivo///
+                bind = "#{bindings.TotalPrestacion.inputValue}";
+                JSFUtils.setExpressionValue(f, bind, 
+                                            utils.getNumberOracle(String.format("%.2f", 
+                                                                                montoIndTotal)));
+                exito = true;
+            } else {
+                mensaje("¡¡No hay Tiempo de Servicio para cálculo de Indemnización!!", 
+                        3);
             }
-            ////////////////////////////////////////////////////////////////
-            /*this.getPnlHoriz_indemCalculada().setRendered(true);
-            this.getCmdBtn_guardar_calculo().setDisabled(false);
-            this.getCmdBtn_calcularIndemnizacion().setDisabled(true);
-            this.getCdmLink_buscarEmpl().setDisabled(true);
-            this.getSlctInputDate_fechaRetiro().setDisabled(true);
-            this.getInptText_AniosServicio().setDisabled(true);
-            this.getInptText_MesesServicio().setDisabled(true);
-            this.getInptText_DiasServicio().setDisabled(true);
-            this.getSlctOneChoice_tipoRetiro().setDisabled(true);
-            this.getInptText_TotalSueldos().setDisabled(true);
-            this.getSlctInputDate_fechaSolicitud().setDisabled(true);
-            this.getCmdBtn_guardar().setDisabled(true);
-            this.getCmdLink_trasladar_solicitud().setDisabled(true);*/
         } else {
             mensaje("¡¡No hay Total de Sueldos para cálculo de Indemnización!!", 
                     3);
         }
+        return exito;
     }
 
     public String cmdBtn_calcularIndemnizacion_action() {
         //volvemos a validar la información ingresada por el usuario
-        if (validarInformacionIngresada()) {
+        /* if (validarInformacionIngresada()) {
             procesarCalcularIndemnizacion();
-        }
+        }*/
         return null;
     }
 
