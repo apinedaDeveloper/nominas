@@ -40,20 +40,21 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
     public static final int FECHAMOD = 24;
     public static final int NUMCHEQUE = 25;
     public static final int IDINDEMNIZACION = 26;
-    public static final int TIPORETIRONOMBRE = 27;
-    public static final int NOMBRECOMPLETO = 28;
-    public static final int CUI = 29;
-    public static final int IDESTADOTRABAJADOR = 30;
-    public static final int NOMBREESTADOINDEMNIZACION = 31;
-    public static final int NOMBRETIPOINDEMNIZACION = 32;
-    public static final int NOMBREESTADOTRABAJADOR = 33;
-    public static final int FECHAEXPEDIENTERETIRO = 34;
-    public static final int OBSERVACIONEXPRETIRO = 35;
-    public static final int TOTALPRESTACIONES = 36;
-    public static final int TOTALPARACALCULOSUELDOPROM = 37;
-    public static final int INDEMANIOS = 38;
-    public static final int INDEMMESES = 39;
-    public static final int INDEMDIAS = 40;
+    public static final int PROGRAMA = 27;
+    public static final int TIPORETIRONOMBRE = 28;
+    public static final int NOMBRECOMPLETO = 29;
+    public static final int CUI = 30;
+    public static final int IDESTADOTRABAJADOR = 31;
+    public static final int NOMBREESTADOINDEMNIZACION = 32;
+    public static final int NOMBRETIPOINDEMNIZACION = 33;
+    public static final int NOMBREESTADOTRABAJADOR = 34;
+    public static final int FECHAEXPEDIENTERETIRO = 35;
+    public static final int OBSERVACIONEXPRETIRO = 36;
+    public static final int TOTALPRESTACIONES = 37;
+    public static final int TOTALPARACALCULOSUELDOPROM = 38;
+    public static final int INDEMANIOS = 39;
+    public static final int INDEMMESES = 40;
+    public static final int INDEMDIAS = 41;
 
     /**This is the default constructor (do not remove)
      */
@@ -132,6 +133,8 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
             return getNumCheque();
         case IDINDEMNIZACION:
             return getIdIndemnizacion();
+        case PROGRAMA:
+            return getPrograma();
         case TIPORETIRONOMBRE:
             return getTipoRetiroNombre();
         case NOMBRECOMPLETO:
@@ -250,6 +253,9 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
             return;
         case IDINDEMNIZACION:
             setIdIndemnizacion((Number)value);
+            return;
+        case PROGRAMA:
+            setPrograma((Number)value);
             return;
         case TIPORETIRONOMBRE:
             setTipoRetiroNombre((String)value);
@@ -808,5 +814,17 @@ public class SisIndemnizacion_vwRowImpl extends ViewRowImpl {
      */
     public void setIndemDias(Number value) {
         setAttributeInternal(INDEMDIAS, value);
+    }
+
+    /**Gets the attribute value for the calculated attribute Programa
+     */
+    public Number getPrograma() {
+        return (Number) getAttributeInternal(PROGRAMA);
+    }
+
+    /**Sets <code>value</code> as the attribute value for the calculated attribute Programa
+     */
+    public void setPrograma(Number value) {
+        setAttributeInternal(PROGRAMA, value);
     }
 }

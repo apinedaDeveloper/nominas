@@ -213,7 +213,9 @@ import enlace_datos.consultas.gestiones.horas_extras.sis_hora_extra_vwImpl;
 import enlace_datos.consultas.gestiones.horas_extras.sis_tiempo_extraordinario_vwImpl;
 import enlace_datos.consultas.gestiones.indemnizaciones.SisHistorialSalarialIndemnizacion_vwImpl;
 import enlace_datos.consultas.gestiones.indemnizaciones.SisHistorialTrasladosIndem_vwImpl;
+import enlace_datos.consultas.gestiones.indemnizaciones.SisIndemnizacionMixto_vwImpl;
 import enlace_datos.consultas.gestiones.indemnizaciones.SisIndemnizacion_vwImpl;
+import enlace_datos.consultas.gestiones.indemnizaciones.SisProgramasTrabajador_vwImpl;
 import enlace_datos.consultas.gestiones.indemnizaciones.SisRelacionLaboral_vwImpl;
 import enlace_datos.consultas.gestiones.indemnizaciones.SisSolicitudesDespidoIndem_vwImpl;
 import enlace_datos.consultas.gestiones.indemnizaciones.SisSolicitudesRenunciaIndem_vwImpl;
@@ -3504,5 +3506,17 @@ return vResultado;
      */
     public SisHistorialTrasladosIndem_vwImpl getSisHistorialTrasladosIndem_vw() {
         return (SisHistorialTrasladosIndem_vwImpl)findViewObject("SisHistorialTrasladosIndem_vw");
+    }
+
+    /**Container's getter for SisIndemnizacionMixto_vw
+     */
+    public SisIndemnizacionMixto_vwImpl getSisIndemnizacionMixto_vw() {
+        return (SisIndemnizacionMixto_vwImpl)findViewObject("SisIndemnizacionMixto_vw");
+    }
+
+    /**Container's getter for SisProgramasTrabajador_vw
+     */
+    public SisProgramasTrabajador_vwImpl getSisProgramasTrabajador_vw() {
+        return (SisProgramasTrabajador_vwImpl)findViewObject("SisProgramasTrabajador_vw");
     }
 }

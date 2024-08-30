@@ -254,7 +254,7 @@
               <af:panelGroup rendered="#{!bindings.EsSolicitudNueva.inputValue}" inlineStyle="text-align:center;" layout="vertical">
                 <af:outputFormatted value="INFORMACIÓN GENERAL DEL EXPEDIENTE" inlineStyle="font-weight:bold; color:rgb(0,0,128); font-size:medium;"/>
                 <af:objectSeparator/>
-                <af:panelHorizontal halign="center" inlineStyle="padding:2.0pt;">
+                <af:panelHorizontal halign="center">
                   <af:panelLabelAndMessage label="ID Interno:" inlineStyle="font-weight:bold;">
                     <af:outputText inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;" value="#{bindings.IdIndemnizacion.inputValue}">
                       <f:convertNumber groupingUsed="false"/>
@@ -311,17 +311,14 @@
                 </af:panelHorizontal>
               </af:panelGroup>
               <af:panelBox width="100%">
+                <af:panelHorizontal halign="center" rendered="#{bindings.EsSolicitudNueva.inputValue}">
+                  <af:outputFormatted value="NUEVO EXPEDIENTE" inlineStyle="font-size:medium; font-weight:bold; color:rgb(0,0,132);"/>
+                </af:panelHorizontal>
                 <af:panelForm>
-                  <af:panelHorizontal halign="center" rendered="#{bindings.EsSolicitudNueva.inputValue}">
-                    <af:outputFormatted value="NUEVO EXPEDIENTE" inlineStyle="font-size:medium; font-weight:bold; color:rgb(0,0,132);"/>
-                  </af:panelHorizontal>
                   <af:panelHorizontal halign="center">
                     <af:outputFormatted value="Las casillas con * son requeridos" inlineStyle="color:rgb(128,0,0); font-weight:bold; text-align:center;"/>
                   </af:panelHorizontal>
                   <af:panelHorizontal halign="center">
-                    <f:facet name="separator">
-                      <af:objectSpacer height="10" width="10"/>
-                    </f:facet>
                     <af:commandLink action="dialog:buscaEmpl" id="cdmLink_buscarEmpl" useWindow="true" windowHeight="500" windowWidth="800" shortDesc="Buscador de Trabajador" partialSubmit="true"
                                     immediate="true" returnListener="#{Indemnizacion_detalle.cdmLink_buscarEmpl_returnListener}" binding="#{Indemnizacion_detalle.cdmLink_buscarEmpl}"
                                     rendered='#{bindings.EsSolicitudNueva.inputValue || (bindings.NombreEstadoIndemnizacion.inputValue!=null &amp;&amp; bindings.NombreEstadoIndemnizacion.inputValue eq "GRABADO")}'>
@@ -340,7 +337,7 @@
                       </af:panelHorizontal>
                     </af:panelForm>
                     <af:outputText value="*" inlineStyle="font-weight:bold; color:rgb(128,0,0);"/>
-                    <af:outputText value="Nombre del Trabajador" inlineStyle="font-weight:bold;"/>
+                    <af:outputText value="Nombre del Trabajador:" inlineStyle="font-weight:bold;"/>
                     <af:panelForm width="125" inlineStyle="border-color:rgb(0,0,0); border-style:solid; border-width:thin;">
                       <af:panelHorizontal halign="center">
                         <af:inputText value="#{bindings.Nombrecompleto.inputValue}" binding="#{Indemnizacion_detalle.inptText_nombreCompleto}" id="inptText_nombreTrabajador"
@@ -359,6 +356,42 @@
                         <af:objectSpacer height="10" width="10"/>
                       </af:panelHorizontal>
                     </af:panelForm>
+                    <f:facet name="separator">
+                      <af:objectSpacer height="10" width="10"/>
+                    </f:facet>
+                  </af:panelHorizontal>
+                  <af:panelHorizontal halign="center" rendered="#{bindings.EsSolicitudNueva.inputValue}">
+                    <af:outputText value="Programas en los que laboró el ex-trabajador:" inlineStyle="font-weight:bold;"/>
+                    <af:panelForm inlineStyle="border-color:rgb(0,0,0); border-style:solid; border-width:thin;" width="75">
+                      <af:panelHorizontal halign="center">
+                        <af:inputText id="inptText_programasLaboro" binding="#{Indemnizacion_detalle.inptText_programasLaboro}" partialTriggers="cdmLink_buscarEmpl" readOnly="true"
+                                      inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);"/>
+                        <af:objectSpacer height="10" width="10"/>
+                        <af:objectSpacer height="10" width="10"/>
+                      </af:panelHorizontal>
+                    </af:panelForm>
+                    <f:facet name="separator">
+                      <af:objectSpacer height="10" width="10"/>
+                    </f:facet>
+                  </af:panelHorizontal>
+                  <af:panelHorizontal rendered="#{!bindings.EsSolicitudNueva.inputValue}" halign="center">
+                    <af:table value="#{bindings['SisProgramasTrabajador_vw'].collectionModel}" var="row" rows="#{bindings['SisProgramasTrabajador_vw'].rangeSize}"
+                              first="#{bindings['SisProgramasTrabajador_vw'].rangeStart}" emptyText="#{bindings['SisProgramasTrabajador_vw'].viewable ? 'No rows yet.' : 'Access Denied.'}"
+                              banding="row" bandingInterval="1" inlineStyle="text-align:left;">
+                      <f:facet name="header">
+                        <h:panelGroup>
+                          <af:outputFormatted value="PROGRAMAS EN LOS QUE LABORÓ" inlineStyle="padding:3.0pt;"/>
+                        </h:panelGroup>
+                      </f:facet>
+                      <af:column sortProperty="IdPrograma" sortable="true" headerText="Código" formatType="icon">
+                        <af:outputText value="#{row.IdPrograma}">
+                          <f:convertNumber groupingUsed="false" pattern="#{bindings['SisProgramasTrabajador_vw'].formats.IdPrograma}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Nombre" sortable="true" headerText="Nombre">
+                        <af:outputText value="#{row.Nombre}" inlineStyle="padding:3.0pt;"/>
+                      </af:column>
+                    </af:table>
                   </af:panelHorizontal>
                   <af:panelHorizontal halign="center">
                     <af:outputText value="*" inlineStyle="font-weight:bold; color:rgb(128,0,0);"/>
@@ -402,6 +435,19 @@
                       <af:selectItem label="DESPIDO" value="2"/>
                       <af:selectItem label="FINALIZACIÓN DE CONTRATO" value="3"/>
                     </af:selectOneChoice>
+                    <af:outputText value="*" inlineStyle="font-weight:bold; color:rgb(128,0,0);" rendered="false"/>
+                    <af:outputText value="Programa:" inlineStyle="font-weight:bold;" rendered="false"/>
+                    <af:selectOneChoice id="slctOneChoice_programa" binding="#{Indemnizacion_detalle.slctOneChoice_programa}" value="#{bindings.Programa.inputValue}"
+                                        readOnly='#{!(bindings.EsSolicitudNueva.inputValue || (roles_usuario.analistaIndemnizacion &amp;&amp; (bindings.idEstado.inputValue == "250" || bindings.idEstado.inputValue == "252")))}'
+                                        inlineStyle="font-weight:bold; color:rgb(0,0,128);" shortDesc="Programa de la Solicitud, por ejemplo: De Funcionamiento o Autofinanciable" rendered="false">
+                      <af:selectItem label="DE FUNCIONAMIENTO" value="1"/>
+                      <af:selectItem label="AUTOFINANCIABLE" value="2"/>
+                    </af:selectOneChoice>
+                    <f:facet name="separator">
+                      <af:objectSpacer height="10" width="10"/>
+                    </f:facet>
+                  </af:panelHorizontal>
+                  <af:panelHorizontal halign="center">
                     <af:outputText value="*" inlineStyle="font-weight:bold; color:rgb(128,0,0);"/>
                     <af:outputText value="Total de Sueldos (para cálculo de Indemnización):" inlineStyle="font-weight:bold;"/>
                     <af:inputText id="inptText_TotalSueldos" value="#{bindings.TotalSueldos.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);" columns="10"
@@ -419,289 +465,288 @@
                       <af:objectSpacer height="10" width="10"/>
                     </f:facet>
                   </af:panelHorizontal>
-                  <af:panelBox text="INDEMNIZACIÓN A LIQUIDAR" inlineStyle="color:rgb(0,0,128); font-size:medium; font-weight:bold; text-align:center; vertical-align:baseline;" width="100%"
-                               rendered="#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; bindings.TotalPrestacion.inputValue != null}">
-                    <af:panelHorizontal halign="center">
-                      <af:outputText value="Diferido:"/>
-                      <af:inputText readOnly="true" value="#{bindings.DiferidoCalc.inputValue}" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
-                        <f:convertNumber type="currency" maxFractionDigits="2"/>
-                      </af:inputText>
-                      <af:outputText value="Diferido 12%:"/>
-                      <af:inputText readOnly="true" value="#{bindings.Diferido12Calc.inputValue}" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
-                        <f:convertNumber type="currency" maxFractionDigits="2"/>
-                      </af:inputText>
-                      <f:facet name="separator">
-                        <af:objectSpacer height="10" width="10"/>
-                      </f:facet>
-                    </af:panelHorizontal>
-                    <af:panelHorizontal halign="center">
-                      <af:outputText value="Aguinaldo:"/>
-                      <af:inputText value="#{bindings.AguinaldoCalc.inputValue}" inlineStyle="font-size:medium; font-weight:bold; text-align:center;" readOnly="true">
-                        <f:convertNumber type="currency" maxFractionDigits="2"/>
-                      </af:inputText>
-                      <af:outputText value="Bono 14:"/>
-                      <af:inputText value="#{bindings.Bono14Calc.inputValue}" inlineStyle="font-size:medium; font-weight:bold; text-align:center;" readOnly="true">
-                        <f:convertNumber type="currency" maxFractionDigits="2"/>
-                      </af:inputText>
-                      <af:outputText value="Total Prestaciones:"/>
-                      <af:inputText value="#{bindings.TotalPrestaciones.inputValue}" inlineStyle="font-size:medium; font-weight:bold; text-align:center;" readOnly="true">
-                        <f:convertNumber type="currency" maxFractionDigits="2"/>
-                      </af:inputText>
-                      <f:facet name="separator">
-                        <af:objectSpacer height="10" width="10"/>
-                      </f:facet>
-                    </af:panelHorizontal>
-                    <af:panelHorizontal halign="center">
-                      <af:outputText value="Total para Cálculo de Sueldo Promedio:"/>
-                      <af:inputText value="#{bindings.TotalParaCalculoSueldoProm.inputValue}" readOnly="true" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
-                        <f:convertNumber type="currency" maxFractionDigits="2"/>
-                      </af:inputText>
-                      <af:outputText value="Sueldo Promedio:"/>
-                      <af:inputText value="#{bindings.SueldoPromedio.inputValue}" readOnly="true" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
-                        <f:convertNumber type="currency" maxFractionDigits="2"/>
-                      </af:inputText>
-                      <f:facet name="separator">
-                        <af:objectSpacer height="10" width="10"/>
-                      </f:facet>
-                    </af:panelHorizontal>
-                    <af:panelHorizontal halign="center">
-                      <af:outputText value="Sueldo Promedio * años:"/>
-                      <af:inputText value="#{bindings.IndemAnios.inputValue}" readOnly="true" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
-                        <f:convertNumber maxFractionDigits="2" type="currency"/>
-                      </af:inputText>
-                      <af:outputText value="(Sueldo Promedio * meses) / 12:"/>
-                      <af:inputText value="#{bindings.IndemMeses.inputValue}" readOnly="true" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
-                        <f:convertNumber maxFractionDigits="2" type="currency"/>
-                      </af:inputText>
-                      <f:facet name="separator">
-                        <af:objectSpacer height="10" width="10"/>
-                      </f:facet>
-                    </af:panelHorizontal>
-                    <af:panelHorizontal halign="center">
-                      <af:outputText value="(Sueldo Promedio * días) / 365:"/>
-                      <af:inputText value="#{bindings.IndemDias.inputValue}" readOnly="true" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
-                        <f:convertNumber maxFractionDigits="2" type="currency"/>
-                      </af:inputText>
-                      <af:outputText value="Total Indemnización:"/>
-                      <af:inputText value="#{bindings.TotalPrestacion.inputValue}" readOnly="true" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
-                        <f:convertNumber type="currency" maxFractionDigits="2"/>
-                      </af:inputText>
-                      <f:facet name="separator">
-                        <af:objectSpacer height="10" width="10"/>
-                      </f:facet>
-                    </af:panelHorizontal>
-                    <af:panelHorizontal halign="center"
-                                        rendered="#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; (bindings.IdEstado.inputValue==&quot;256&quot; || bindings.IdEstado.inputValue==&quot;257&quot;)}">
-                      <af:outputText value="Número de Cheque:" inlineStyle="font-weight:bold;"/>
-                      <af:inputText columns="10" value="#{bindings.NumCheque.inputValue}" maximumLength="10" inlineStyle="font-size:medium; font-weight:bold; text-align:center"
-                                    shortDesc="Número de Cheque"
-                                    readOnly='#{!(!bindings.EsSolicitudNueva.inputValue &amp;&amp; roles_usuario.profesionalCaja &amp;&amp; bindings.idEstado.inputValue=="256")}'
-                                    id="inptText_numeroCheque" binding="#{Indemnizacion_detalle.inptText_numeroCheque}">
-                        <f:convertNumber groupingUsed="false" pattern="##########"/>
-                      </af:inputText>
-                      <f:facet name="separator">
-                        <af:objectSpacer height="10" width="10"/>
-                      </f:facet>
-                    </af:panelHorizontal>
-                  </af:panelBox>
-                  <af:panelHorizontal halign="center">
-                    <af:commandButton text="Guardar" inlineStyle="font-weight:bold; font-size:large;" onclick="return confirmarGuardar();" id="cmdBtn_guardar"
-                                      binding="#{Indemnizacion_detalle.cmdBtn_guardar}" action="#{Indemnizacion_detalle.cmdBtn_guardar_action}" shortDesc="Guardar cambios"
-                                      rendered='#{bindings.EsSolicitudNueva.inputValue || ( roles_usuario.analistaIndemnizacion &amp;&amp; (bindings.IdEstado.inputValue=="250" || bindings.IdEstado.inputValue=="252")) || ( roles_usuario.profesionalCaja &amp;&amp; bindings.IdEstado.inputValue=="256")}'/>
-                    <af:commandButton text="Cancelar" inlineStyle="font-weight:bold; font-size:large;" onclick="return confirmarCancelar();" action="#{Indemnizacion_detalle.cmdBtn_cancelar_action}"
-                                      immediate="true" id="cmdBtn_cancelar" shortDesc="Cancelar operación actual"
-                                      rendered='#{bindings.EsSolicitudNueva.inputValue || ( roles_usuario.analistaIndemnizacion &amp;&amp; (bindings.IdEstado.inputValue=="250" || bindings.IdEstado.inputValue=="252")) || ( roles_usuario.profesionalCaja &amp;&amp; bindings.IdEstado.inputValue=="256")}'>
-                      <af:resetActionListener/>
-                    </af:commandButton>
-                    <af:commandButton text="Reporte de Liquidación" id="cmdBtn_verReporteDARHSJ_I3A" inlineStyle="font-weight:bold; font-size:large;"
-                                      onclick='return generarReporteDARHSJ_I_3A("#{bindings.Anio.inputValue}","#{bindings.CorrelativoAnio.inputValue}");'
-                                      rendered="#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; bindings.TotalPrestacion.inputValue != null}"/>
-                    <af:commandButton text="Retornar" inlineStyle="font-weight:bold; font-size:large;" id="cmdBtn_retornar" binding="#{Indemnizacion_detalle.cmdBtn_retornar}"
-                                      actionListener="#{bindings.Rollback.execute}" action="#{Indemnizacion_detalle.cmdBtn_retornar_action}" shortDesc="Retornar a la pantalla anterior"
-                                      onclick="return confirmarRetornar();" immediate="true">
-                      <af:resetActionListener/>
-                    </af:commandButton>
-                    <af:commandLink onclick="return OpenDialogo(1);" id="cmdLink_trasladar_solicitud"
-                                    rendered='#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; 
-bindings.TotalPrestacion.inputValue != null &amp;&amp; 
-((roles_usuario.analistaIndemnizacion &amp;&amp; (bindings.IdEstado.inputValue=="250" || bindings.IdEstado.inputValue=="252")) || (roles_usuario.auditorIndemnizacion &amp;&amp; bindings.IdEstado.inputValue=="251") || (roles_usuario.profesionalCaja &amp;&amp; bindings.IdEstado.inputValue=="256" &amp;&amp; bindings.NumCheque.inputValue!=null))}'
-                                    binding="#{Indemnizacion_detalle.cmdLink_trasladar_solicitud}">
-                      <af:objectImage source="/imagenes/btn_trasladar.png"/>
-                    </af:commandLink>
-                    <f:facet name="separator">
-                      <af:objectSpacer height="10" width="10"/>
-                    </f:facet>
-                    <!--<af:commandButton text="Generar Relación Laboral" inlineStyle="font-weight:bold; font-size:large;" id="cmdBtn_guardarRelacionLab"
+                </af:panelForm>
+                <af:showOneTab>
+                  <af:showDetailItem text="Indemnización General">
+                    <af:panelForm>
+                      <af:panelBox text="INDEMNIZACIÓN A LIQUIDAR" inlineStyle="color:rgb(0,0,128); font-size:medium; font-weight:bold; text-align:center; vertical-align:baseline;" width="100%"
+                                   rendered="#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; bindings.TotalPrestacion.inputValue != null}">
+                        <af:panelHorizontal halign="center">
+                          <af:outputText value="Diferido:"/>
+                          <af:inputText readOnly="true" value="#{bindings.DiferidoCalc.inputValue}" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
+                            <f:convertNumber type="currency" maxFractionDigits="2"/>
+                          </af:inputText>
+                          <af:outputText value="Diferido 12%:"/>
+                          <af:inputText readOnly="true" value="#{bindings.Diferido12Calc.inputValue}" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
+                            <f:convertNumber type="currency" maxFractionDigits="2"/>
+                          </af:inputText>
+                          <f:facet name="separator">
+                            <af:objectSpacer height="10" width="10"/>
+                          </f:facet>
+                        </af:panelHorizontal>
+                        <af:panelHorizontal halign="center">
+                          <af:outputText value="Aguinaldo:"/>
+                          <af:inputText value="#{bindings.AguinaldoCalc.inputValue}" inlineStyle="font-size:medium; font-weight:bold; text-align:center;" readOnly="true">
+                            <f:convertNumber type="currency" maxFractionDigits="2"/>
+                          </af:inputText>
+                          <af:outputText value="Bono 14:"/>
+                          <af:inputText value="#{bindings.Bono14Calc.inputValue}" inlineStyle="font-size:medium; font-weight:bold; text-align:center;" readOnly="true">
+                            <f:convertNumber type="currency" maxFractionDigits="2"/>
+                          </af:inputText>
+                          <af:outputText value="Total Prestaciones:"/>
+                          <af:inputText value="#{bindings.TotalPrestaciones.inputValue}" inlineStyle="font-size:medium; font-weight:bold; text-align:center;" readOnly="true">
+                            <f:convertNumber type="currency" maxFractionDigits="2"/>
+                          </af:inputText>
+                          <f:facet name="separator">
+                            <af:objectSpacer height="10" width="10"/>
+                          </f:facet>
+                        </af:panelHorizontal>
+                        <af:panelHorizontal halign="center">
+                          <af:outputText value="Total para Cálculo de Sueldo Promedio:"/>
+                          <af:inputText value="#{bindings.TotalParaCalculoSueldoProm.inputValue}" readOnly="true" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
+                            <f:convertNumber type="currency" maxFractionDigits="2"/>
+                          </af:inputText>
+                          <af:outputText value="Sueldo Promedio:"/>
+                          <af:inputText value="#{bindings.SueldoPromedio.inputValue}" readOnly="true" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
+                            <f:convertNumber type="currency" maxFractionDigits="2"/>
+                          </af:inputText>
+                          <f:facet name="separator">
+                            <af:objectSpacer height="10" width="10"/>
+                          </f:facet>
+                        </af:panelHorizontal>
+                        <af:panelHorizontal halign="center">
+                          <af:outputText value="Sueldo Promedio * años:"/>
+                          <af:inputText value="#{bindings.IndemAnios.inputValue}" readOnly="true" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
+                            <f:convertNumber maxFractionDigits="2" type="currency"/>
+                          </af:inputText>
+                          <af:outputText value="(Sueldo Promedio * meses) / 12:"/>
+                          <af:inputText value="#{bindings.IndemMeses.inputValue}" readOnly="true" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
+                            <f:convertNumber maxFractionDigits="2" type="currency"/>
+                          </af:inputText>
+                          <f:facet name="separator">
+                            <af:objectSpacer height="10" width="10"/>
+                          </f:facet>
+                        </af:panelHorizontal>
+                        <af:panelHorizontal halign="center">
+                          <af:outputText value="(Sueldo Promedio * días) / 365:"/>
+                          <af:inputText value="#{bindings.IndemDias.inputValue}" readOnly="true" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
+                            <f:convertNumber maxFractionDigits="2" type="currency"/>
+                          </af:inputText>
+                          <af:outputText value="Total Indemnización:"/>
+                          <af:inputText value="#{bindings.TotalPrestacion.inputValue}" readOnly="true" inlineStyle="font-size:medium; font-weight:bold; text-align:center;">
+                            <f:convertNumber type="currency" maxFractionDigits="2"/>
+                          </af:inputText>
+                          <f:facet name="separator">
+                            <af:objectSpacer height="10" width="10"/>
+                          </f:facet>
+                        </af:panelHorizontal>
+                        <af:panelHorizontal halign="center" rendered='#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; (bindings.IdEstado.inputValue=="256" || bindings.IdEstado.inputValue=="257")}'>
+                          <af:outputText value="Número de Cheque:" inlineStyle="font-weight:bold;"/>
+                          <af:inputText columns="10" value="#{bindings.NumCheque.inputValue}" maximumLength="10" inlineStyle="font-size:medium; font-weight:bold; text-align:center"
+                                        shortDesc="Número de Cheque"
+                                        readOnly='#{!(!bindings.EsSolicitudNueva.inputValue &amp;&amp; roles_usuario.profesionalCaja &amp;&amp; bindings.idEstado.inputValue=="256")}'
+                                        id="inptText_numeroCheque" binding="#{Indemnizacion_detalle.inptText_numeroCheque}">
+                            <f:convertNumber groupingUsed="false" pattern="##########"/>
+                          </af:inputText>
+                          <f:facet name="separator">
+                            <af:objectSpacer height="10" width="10"/>
+                          </f:facet>
+                        </af:panelHorizontal>
+                      </af:panelBox>
+                      <af:panelHorizontal halign="center">
+                        <af:commandButton text="Guardar" inlineStyle="font-weight:bold; font-size:large;" onclick="return confirmarGuardar();" id="cmdBtn_guardar"
+                                          binding="#{Indemnizacion_detalle.cmdBtn_guardar}" action="#{Indemnizacion_detalle.cmdBtn_guardar_action}" shortDesc="Guardar cambios"
+                                          rendered='#{bindings.EsSolicitudNueva.inputValue || ( roles_usuario.analistaIndemnizacion &amp;&amp; (bindings.IdEstado.inputValue=="250" || bindings.IdEstado.inputValue=="252")) || ( roles_usuario.profesionalCaja &amp;&amp; bindings.IdEstado.inputValue=="256")}'/>
+                        <af:commandButton text="Cancelar" inlineStyle="font-weight:bold; font-size:large;" onclick="return confirmarCancelar();"
+                                          action="#{Indemnizacion_detalle.cmdBtn_cancelar_action}" immediate="true" id="cmdBtn_cancelar" shortDesc="Cancelar operación actual"
+                                          rendered='#{bindings.EsSolicitudNueva.inputValue || ( roles_usuario.analistaIndemnizacion &amp;&amp; (bindings.IdEstado.inputValue=="250" || bindings.IdEstado.inputValue=="252")) || ( roles_usuario.profesionalCaja &amp;&amp; bindings.IdEstado.inputValue=="256")}'>
+                          <af:resetActionListener/>
+                        </af:commandButton>
+                        <af:commandButton text="Reporte de Liquidación" id="cmdBtn_verReporteDARHSJ_I3A" inlineStyle="font-weight:bold; font-size:large;"
+                                          onclick='return generarReporteDARHSJ_I_3A("#{bindings.Anio.inputValue}","#{bindings.CorrelativoAnio.inputValue}");'
+                                          rendered="#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; bindings.TotalPrestacion.inputValue != null}"/>
+                        <af:commandButton text="Retornar" inlineStyle="font-weight:bold; font-size:large;" id="cmdBtn_retornar" binding="#{Indemnizacion_detalle.cmdBtn_retornar}"
+                                          actionListener="#{bindings.Rollback.execute}" action="#{Indemnizacion_detalle.cmdBtn_retornar_action}" shortDesc="Retornar a la pantalla anterior"
+                                          onclick="return confirmarRetornar();" immediate="true">
+                          <af:resetActionListener/>
+                        </af:commandButton>
+                        <af:commandLink onclick="return OpenDialogo(1);" id="cmdLink_trasladar_solicitud"
+                                        rendered='#{!bindings.EsSolicitudNueva.inputValue &amp;&amp;  bindings.TotalPrestacion.inputValue != null &amp;&amp;  ((roles_usuario.analistaIndemnizacion &amp;&amp; (bindings.IdEstado.inputValue=="250" || bindings.IdEstado.inputValue=="252")) || (roles_usuario.auditorIndemnizacion &amp;&amp; bindings.IdEstado.inputValue=="251") || (roles_usuario.profesionalCaja &amp;&amp; bindings.IdEstado.inputValue=="256" &amp;&amp; bindings.NumCheque.inputValue!=null))}'
+                                        binding="#{Indemnizacion_detalle.cmdLink_trasladar_solicitud}">
+                          <af:objectImage source="/imagenes/btn_trasladar.png"/>
+                        </af:commandLink>
+                        <f:facet name="separator">
+                          <af:objectSpacer height="10" width="10"/>
+                        </f:facet>
+                        <!--<af:commandButton text="Generar Relación Laboral" inlineStyle="font-weight:bold; font-size:large;" id="cmdBtn_guardarRelacionLab"
                                       binding="#{Indemnizacion_detalle.cmdBtn_guardarRelacionLab}" action="#{Indemnizacion_detalle.cmdBtn_guardarRelacionLab_action}"
                                       rendered="#{ !bindings.EsSolicitudNueva.inputValue}"/>-->
-                    <!--<af:commandButton text="Ver Form. DARHSJ I-3 (M)" id="cmdBtn_verReporteDARHSJ_I3M" rendered="false" inlineStyle="font-weight:bold;"/>-->
-                    <!--<af:commandButton text="Reporte General" id="cmdBtn_verReporteBasico" binding="#{Indemnizacion_detalle.cmdBtn_verReporteBasico}" inlineStyle="font-weight:bold;"
+                        <!--<af:commandButton text="Ver Form. DARHSJ I-3 (M)" id="cmdBtn_verReporteDARHSJ_I3M" rendered="false" inlineStyle="font-weight:bold;"/>-->
+                        <!--<af:commandButton text="Reporte General" id="cmdBtn_verReporteBasico" binding="#{Indemnizacion_detalle.cmdBtn_verReporteBasico}" inlineStyle="font-weight:bold;"
                                       onclick='return generarReporte("#{bindings.IdIndemnizacion.inputValue}");' rendered="false"/>
                     <af:commandButton text="Form. DARHSJ I-1" id="cmdBtn_verReporteDARHSJI1" binding="#{Indemnizacion_detalle.cmdBtn_verReporteDARHSJI1}" inlineStyle="font-weight:bold;"
                                       onclick='return generarReporteDARHSJ_I_1("#{bindings.IdIndemnizacion.inputValue}");' rendered="false"/>-->
-                  </af:panelHorizontal>
-                  <af:panelHorizontal id="pnlHoriz_indemCalculada" binding="#{Indemnizacion_detalle.pnlHoriz_indemCalculada}" halign="center"
-                                      rendered="false">
-                    <af:panelBox width="100%">
-                      <af:panelList>
-                        <af:panelHorizontal valign="baseline">
-                          <af:outputText value="Total de Sueldos:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
-                          <af:outputFormatted id="outputFormat_totalSueldos" inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);"
-                                              binding="#{Indemnizacion_detalle.outputFormat_totalSueldos}">
-                            <f:convertNumber type="currency" maxFractionDigits="2"/>
-                          </af:outputFormatted>
-                          <f:facet name="separator">
-                            <af:objectSpacer height="10" width="10"/>
-                          </f:facet>
-                        </af:panelHorizontal>
-                        <af:panelHorizontal valign="baseline">
-                          <af:outputText value="Diferido:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
-                          <af:outputFormatted inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);" id="outputFormat_diferido_calc"
-                                              binding="#{Indemnizacion_detalle.outputFormat_diferido_calc}">
-                            <f:convertNumber type="currency" maxFractionDigits="2"/>
-                          </af:outputFormatted>
-                          <f:facet name="separator">
-                            <af:objectSpacer height="10" width="10"/>
-                          </f:facet>
-                        </af:panelHorizontal>
-                        <af:panelHorizontal valign="baseline">
-                          <af:outputText value="Diferido 12%:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
-                          <af:outputFormatted inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);" id="outputFormat_diferido12_calc"
-                                              binding="#{Indemnizacion_detalle.outputFormat_diferido12_calc}">
-                            <f:convertNumber type="currency" maxFractionDigits="2"/>
-                          </af:outputFormatted>
-                          <f:facet name="separator">
-                            <af:objectSpacer height="10" width="10"/>
-                          </f:facet>
-                        </af:panelHorizontal>
-                        <af:panelHorizontal valign="baseline">
-                          <af:outputText value="Aguinaldo:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
-                          <af:outputFormatted inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);" id="outputFormat_aguinaldo_calc"
-                                              binding="#{Indemnizacion_detalle.outputFormat_aguinaldo_calc}">
-                            <f:convertNumber type="currency" maxFractionDigits="2"/>
-                          </af:outputFormatted>
-                          <f:facet name="separator">
-                            <af:objectSpacer height="10" width="10"/>
-                          </f:facet>
-                        </af:panelHorizontal>
-                        <af:panelHorizontal valign="baseline">
-                          <af:outputText value="Bono 14:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
-                          <af:outputFormatted inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);" id="outputFormat_bono14_calc"
-                                              binding="#{Indemnizacion_detalle.outputFormat_bono14_calc}">
-                            <f:convertNumber type="currency" maxFractionDigits="2"/>
-                          </af:outputFormatted>
-                          <f:facet name="separator">
-                            <af:objectSpacer height="10" width="10"/>
-                          </f:facet>
-                        </af:panelHorizontal>
-                        <af:panelHorizontal valign="baseline">
-                          <af:outputText value="Total Prestaciones:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
-                          <af:outputFormatted inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);" id="outputFormat_totalPrestac_calc"
-                                              binding="#{Indemnizacion_detalle.outputFormat_totalPrestac_calc}">
-                            <f:convertNumber type="currency" maxFractionDigits="2"/>
-                          </af:outputFormatted>
-                          <f:facet name="separator">
-                            <af:objectSpacer height="10" width="10"/>
-                          </f:facet>
-                        </af:panelHorizontal>
-                        <af:panelHorizontal valign="baseline">
-                          <af:outputText value="Total para Cálculo de Sueldo Promedio:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
-                          <af:outputFormatted id="outputFormat_totalParaCalc_calc" inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);"
-                                              binding="#{Indemnizacion_detalle.outputFormat_totalParaCalc_calc}">
-                            <f:convertNumber type="currency" maxFractionDigits="2"/>
-                          </af:outputFormatted>
-                          <f:facet name="separator">
-                            <af:objectSpacer height="10" width="10"/>
-                          </f:facet>
-                        </af:panelHorizontal>
-                        <af:panelHorizontal valign="baseline">
-                          <af:outputText value="Sueldo Promedio:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
-                          <af:outputFormatted id="outputFormat_sueldoProm_calc" inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);"
-                                              binding="#{Indemnizacion_detalle.outputFormat_sueldoProm_calc}">
-                            <f:convertNumber type="currency" maxFractionDigits="2"/>
-                          </af:outputFormatted>
-                          <f:facet name="separator">
-                            <af:objectSpacer height="10" width="10"/>
-                          </f:facet>
-                        </af:panelHorizontal>
-                      </af:panelList>
-                      <af:panelList>
-                        <af:panelHorizontal valign="baseline">
-                          <af:outputText value="Sueldo Promedio * años:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
-                          <af:outputFormatted id="outputFormat_montIndAnios_calc" inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);"
-                                              binding="#{Indemnizacion_detalle.outputFormat_montIndAnios_calc}">
-                            <f:convertNumber type="currency" maxFractionDigits="2"/>
-                          </af:outputFormatted>
-                          <f:facet name="separator">
-                            <af:objectSpacer height="10" width="10"/>
-                          </f:facet>
-                        </af:panelHorizontal>
-                        <af:panelHorizontal valign="baseline">
-                          <af:outputText value="(Sueldo Promedio * meses) / 12:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
-                          <af:outputFormatted id="outputFormat_montIndMeses_calc" inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);"
-                                              binding="#{Indemnizacion_detalle.outputFormat_montIndMeses_calc}">
-                            <f:convertNumber type="currency" maxFractionDigits="2"/>
-                          </af:outputFormatted>
-                          <f:facet name="separator">
-                            <af:objectSpacer height="10" width="10"/>
-                          </f:facet>
-                        </af:panelHorizontal>
-                        <af:panelHorizontal valign="baseline">
-                          <af:outputText value="(Sueldo Promedio * días) / 365:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
-                          <af:outputFormatted id="outputFormat_montIndDias_calc" inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);"
-                                              binding="#{Indemnizacion_detalle.outputFormat_montIndDias_calc}">
-                            <f:convertNumber type="currency" maxFractionDigits="2"/>
-                          </af:outputFormatted>
-                          <f:facet name="separator">
-                            <af:objectSpacer height="10" width="10"/>
-                          </f:facet>
-                        </af:panelHorizontal>
-                        <af:panelHorizontal valign="baseline">
-                          <af:outputText value="Monto de Indemnización:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
-                          <af:outputFormatted id="outputFormat_montIndTotal_calc" inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);"
-                                              binding="#{Indemnizacion_detalle.outputFormat_montIndTotal_calc}">
-                            <f:convertNumber maxFractionDigits="2" type="currency"/>
-                          </af:outputFormatted>
-                          <f:facet name="separator">
-                            <af:objectSpacer height="10" width="10"/>
-                          </f:facet>
-                        </af:panelHorizontal>
-                      </af:panelList>
-                    </af:panelBox>
-                  </af:panelHorizontal>
-                  <af:panelHorizontal rendered="false"
-                                      halign="center">
-                    <af:commandButton text="Relación Laboral" id="cmdBtn_verReporteDARHSJ_I2" inlineStyle="font-weight:bold; font-size:large;"
-                                      onclick='return generarReporteDARHSJ_I_2("#{bindings.RegistroEmpleado.inputValue}");' rendered="false"/>
-                    <af:commandButton text="Calcular Indemnización" id="cmdBtn_calcularIndemnizacion" inlineStyle="font-weight:bold; font-size:large;"
-                                      action="#{Indemnizacion_detalle.cmdBtn_calcularIndemnizacion_action}" shortDesc="Calcular Indemnización"
-                                      binding="#{Indemnizacion_detalle.cmdBtn_calcularIndemnizacion}"/>
-                    <af:commandButton text="Guardar Cálculo" id="cmdBtn_guardarCalculo" binding="#{Indemnizacion_detalle.cmdBtn_guardar_calculo}"
-                                      action="#{Indemnizacion_detalle.cmdBtn_guardar_calculo_action}" inlineStyle="font-weight:bold; font-size:large;" disabled="true"
-                                      onclick="return confirmarGuardar();" shortDesc="Guardar Cálculo"/>
-                    <f:facet name="separator">
-                      <af:objectSpacer height="10" width="10"/>
-                    </f:facet>
-                  </af:panelHorizontal>
-                  <af:inputHidden id="inptHidden_diferidoCalculo" binding="#{Indemnizacion_detalle.inptHidden_diferidoCalculo}" rendered="false">
-                    <f:convertNumber type="number" maxFractionDigits="2" minIntegerDigits="1"/>
-                  </af:inputHidden>
-                  <af:inputHidden id="inptHidden_diferido12Calculo" binding="#{Indemnizacion_detalle.inptHidden_diferido12Calculo}" rendered="false">
-                    <f:convertNumber type="number" maxFractionDigits="2" minIntegerDigits="1"/>
-                  </af:inputHidden>
-                  <af:inputHidden id="inptHidden_aguinaldoCalculo" binding="#{Indemnizacion_detalle.inptHidden_aguinaldoCalculo}" rendered="false">
-                    <f:convertNumber type="number" maxFractionDigits="2" minIntegerDigits="1"/>
-                  </af:inputHidden>
-                  <af:inputHidden id="inptHidden_bono14Calculo" binding="#{Indemnizacion_detalle.inptHidden_bono14Calculo}" rendered="false">
-                    <f:convertNumber type="number" maxFractionDigits="2" minIntegerDigits="1"/>
-                  </af:inputHidden>
-                  <af:inputHidden id="inptHidden_sueldoPromedio" binding="#{Indemnizacion_detalle.inptHidden_sueldoPromedio}" rendered="false">
-                    <f:convertNumber type="number" maxFractionDigits="2" minIntegerDigits="1"/>
-                  </af:inputHidden>
-                  <af:inputHidden id="inptHidden_montoIndemTotal" binding="#{Indemnizacion_detalle.inptHidden_montoIndemTotal}" rendered="false">
-                    <f:convertNumber type="number" maxFractionDigits="2" minIntegerDigits="1"/>
-                  </af:inputHidden>
-                  <!--<af:panelHorizontal halign="center">
+                      </af:panelHorizontal>
+                      <!--<af:panelHorizontal rendered="false" halign="center">
+                        <af:commandButton text="Relación Laboral" id="cmdBtn_verReporteDARHSJ_I2" inlineStyle="font-weight:bold; font-size:large;"
+                                          onclick='return generarReporteDARHSJ_I_2("#{bindings.RegistroEmpleado.inputValue}");' rendered="false"/>
+                        <af:commandButton text="Calcular Indemnización" id="cmdBtn_calcularIndemnizacion" inlineStyle="font-weight:bold; font-size:large;"
+                                          action="#{Indemnizacion_detalle.cmdBtn_calcularIndemnizacion_action}" shortDesc="Calcular Indemnización"
+                                          binding="#{Indemnizacion_detalle.cmdBtn_calcularIndemnizacion}"/>
+                        <af:commandButton text="Guardar Cálculo" id="cmdBtn_guardarCalculo" binding="#{Indemnizacion_detalle.cmdBtn_guardar_calculo}"
+                                          action="#{Indemnizacion_detalle.cmdBtn_guardar_calculo_action}" inlineStyle="font-weight:bold; font-size:large;" disabled="true"
+                                          onclick="return confirmarGuardar();" shortDesc="Guardar Cálculo"/>
+                        <f:facet name="separator">
+                          <af:objectSpacer height="10" width="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>-->
+                      <!--<af:panelHorizontal id="pnlHoriz_indemCalculada" binding="#{Indemnizacion_detalle.pnlHoriz_indemCalculada}" halign="center" rendered="false">
+                        <af:panelBox width="100%">
+                          <af:panelList>
+                            <af:panelHorizontal valign="baseline">
+                              <af:outputText value="Total de Sueldos:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
+                              <af:outputFormatted id="outputFormat_totalSueldos" inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);"
+                                                  binding="#{Indemnizacion_detalle.outputFormat_totalSueldos}">
+                                <f:convertNumber type="currency" maxFractionDigits="2"/>
+                              </af:outputFormatted>
+                              <f:facet name="separator">
+                                <af:objectSpacer height="10" width="10"/>
+                              </f:facet>
+                            </af:panelHorizontal>
+                            <af:panelHorizontal valign="baseline">
+                              <af:outputText value="Diferido:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
+                              <af:outputFormatted inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);" id="outputFormat_diferido_calc"
+                                                  binding="#{Indemnizacion_detalle.outputFormat_diferido_calc}">
+                                <f:convertNumber type="currency" maxFractionDigits="2"/>
+                              </af:outputFormatted>
+                              <f:facet name="separator">
+                                <af:objectSpacer height="10" width="10"/>
+                              </f:facet>
+                            </af:panelHorizontal>
+                            <af:panelHorizontal valign="baseline">
+                              <af:outputText value="Diferido 12%:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
+                              <af:outputFormatted inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);" id="outputFormat_diferido12_calc"
+                                                  binding="#{Indemnizacion_detalle.outputFormat_diferido12_calc}">
+                                <f:convertNumber type="currency" maxFractionDigits="2"/>
+                              </af:outputFormatted>
+                              <f:facet name="separator">
+                                <af:objectSpacer height="10" width="10"/>
+                              </f:facet>
+                            </af:panelHorizontal>
+                            <af:panelHorizontal valign="baseline">
+                              <af:outputText value="Aguinaldo:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
+                              <af:outputFormatted inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);" id="outputFormat_aguinaldo_calc"
+                                                  binding="#{Indemnizacion_detalle.outputFormat_aguinaldo_calc}">
+                                <f:convertNumber type="currency" maxFractionDigits="2"/>
+                              </af:outputFormatted>
+                              <f:facet name="separator">
+                                <af:objectSpacer height="10" width="10"/>
+                              </f:facet>
+                            </af:panelHorizontal>
+                            <af:panelHorizontal valign="baseline">
+                              <af:outputText value="Bono 14:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
+                              <af:outputFormatted inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);" id="outputFormat_bono14_calc"
+                                                  binding="#{Indemnizacion_detalle.outputFormat_bono14_calc}">
+                                <f:convertNumber type="currency" maxFractionDigits="2"/>
+                              </af:outputFormatted>
+                              <f:facet name="separator">
+                                <af:objectSpacer height="10" width="10"/>
+                              </f:facet>
+                            </af:panelHorizontal>
+                            <af:panelHorizontal valign="baseline">
+                              <af:outputText value="Total Prestaciones:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
+                              <af:outputFormatted inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);" id="outputFormat_totalPrestac_calc"
+                                                  binding="#{Indemnizacion_detalle.outputFormat_totalPrestac_calc}">
+                                <f:convertNumber type="currency" maxFractionDigits="2"/>
+                              </af:outputFormatted>
+                              <f:facet name="separator">
+                                <af:objectSpacer height="10" width="10"/>
+                              </f:facet>
+                            </af:panelHorizontal>
+                            <af:panelHorizontal valign="baseline">
+                              <af:outputText value="Total para Cálculo de Sueldo Promedio:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
+                              <af:outputFormatted id="outputFormat_totalParaCalc_calc" inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);"
+                                                  binding="#{Indemnizacion_detalle.outputFormat_totalParaCalc_calc}">
+                                <f:convertNumber type="currency" maxFractionDigits="2"/>
+                              </af:outputFormatted>
+                              <f:facet name="separator">
+                                <af:objectSpacer height="10" width="10"/>
+                              </f:facet>
+                            </af:panelHorizontal>
+                            <af:panelHorizontal valign="baseline">
+                              <af:outputText value="Sueldo Promedio:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
+                              <af:outputFormatted id="outputFormat_sueldoProm_calc" inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);"
+                                                  binding="#{Indemnizacion_detalle.outputFormat_sueldoProm_calc}">
+                                <f:convertNumber type="currency" maxFractionDigits="2"/>
+                              </af:outputFormatted>
+                              <f:facet name="separator">
+                                <af:objectSpacer height="10" width="10"/>
+                              </f:facet>
+                            </af:panelHorizontal>
+                          </af:panelList>
+                          <af:panelList>
+                            <af:panelHorizontal valign="baseline">
+                              <af:outputText value="Sueldo Promedio * años:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
+                              <af:outputFormatted id="outputFormat_montIndAnios_calc" inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);"
+                                                  binding="#{Indemnizacion_detalle.outputFormat_montIndAnios_calc}">
+                                <f:convertNumber type="currency" maxFractionDigits="2"/>
+                              </af:outputFormatted>
+                              <f:facet name="separator">
+                                <af:objectSpacer height="10" width="10"/>
+                              </f:facet>
+                            </af:panelHorizontal>
+                            <af:panelHorizontal valign="baseline">
+                              <af:outputText value="(Sueldo Promedio * meses) / 12:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
+                              <af:outputFormatted id="outputFormat_montIndMeses_calc" inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);"
+                                                  binding="#{Indemnizacion_detalle.outputFormat_montIndMeses_calc}">
+                                <f:convertNumber type="currency" maxFractionDigits="2"/>
+                              </af:outputFormatted>
+                              <f:facet name="separator">
+                                <af:objectSpacer height="10" width="10"/>
+                              </f:facet>
+                            </af:panelHorizontal>
+                            <af:panelHorizontal valign="baseline">
+                              <af:outputText value="(Sueldo Promedio * días) / 365:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
+                              <af:outputFormatted id="outputFormat_montIndDias_calc" inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);"
+                                                  binding="#{Indemnizacion_detalle.outputFormat_montIndDias_calc}">
+                                <f:convertNumber type="currency" maxFractionDigits="2"/>
+                              </af:outputFormatted>
+                              <f:facet name="separator">
+                                <af:objectSpacer height="10" width="10"/>
+                              </f:facet>
+                            </af:panelHorizontal>
+                            <af:panelHorizontal valign="baseline">
+                              <af:outputText value="Monto de Indemnización:" inlineStyle="font-size:large; font-style:oblique; font-weight:bold;"/>
+                              <af:outputFormatted id="outputFormat_montIndTotal_calc" inlineStyle="font-size:large; font-style:italic; font-weight:bold; color:rgb(128,0,0);"
+                                                  binding="#{Indemnizacion_detalle.outputFormat_montIndTotal_calc}">
+                                <f:convertNumber maxFractionDigits="2" type="currency"/>
+                              </af:outputFormatted>
+                              <f:facet name="separator">
+                                <af:objectSpacer height="10" width="10"/>
+                              </f:facet>
+                            </af:panelHorizontal>
+                          </af:panelList>
+                        </af:panelBox>
+                      </af:panelHorizontal>-->
+                      <!--<af:inputHidden id="inptHidden_diferidoCalculo" binding="#{Indemnizacion_detalle.inptHidden_diferidoCalculo}" rendered="false">
+                        <f:convertNumber type="number" maxFractionDigits="2" minIntegerDigits="1"/>
+                      </af:inputHidden>
+                      <af:inputHidden id="inptHidden_diferido12Calculo" binding="#{Indemnizacion_detalle.inptHidden_diferido12Calculo}" rendered="false">
+                        <f:convertNumber type="number" maxFractionDigits="2" minIntegerDigits="1"/>
+                      </af:inputHidden>
+                      <af:inputHidden id="inptHidden_aguinaldoCalculo" binding="#{Indemnizacion_detalle.inptHidden_aguinaldoCalculo}" rendered="false">
+                        <f:convertNumber type="number" maxFractionDigits="2" minIntegerDigits="1"/>
+                      </af:inputHidden>
+                      <af:inputHidden id="inptHidden_bono14Calculo" binding="#{Indemnizacion_detalle.inptHidden_bono14Calculo}" rendered="false">
+                        <f:convertNumber type="number" maxFractionDigits="2" minIntegerDigits="1"/>
+                      </af:inputHidden>
+                      <af:inputHidden id="inptHidden_sueldoPromedio" binding="#{Indemnizacion_detalle.inptHidden_sueldoPromedio}" rendered="false">
+                        <f:convertNumber type="number" maxFractionDigits="2" minIntegerDigits="1"/>
+                      </af:inputHidden>
+                      <af:inputHidden id="inptHidden_montoIndemTotal" binding="#{Indemnizacion_detalle.inptHidden_montoIndemTotal}" rendered="false">
+                        <f:convertNumber type="number" maxFractionDigits="2" minIntegerDigits="1"/>
+                      </af:inputHidden>-->
+                      <!--<af:panelHorizontal halign="center">
                         <af:panelLabelAndMessage label="Tipo de Carrera Laboral:" inlineStyle="font-weight:bold;">
                           <af:selectOneChoice value="#{bindings.TipoCarreraLaboral.inputValue}" inlineStyle="font-weight:bold;" id="slctOneChoice_tipoCarreraLab"
                                               shortDesc="Tipo de Carrera Laboral del Trabajador Fallecido (Docente o Administrativo)" binding="#{Indemnizacion_detalle.slctOneChoice_tipoCarreraLab}"
@@ -727,7 +772,175 @@ bindings.TotalPrestacion.inputValue != null &amp;&amp;
                           <af:objectSpacer height="10" width="10"/>
                         </f:facet>
                       </af:panelHorizontal>-->
-                </af:panelForm>
+                    </af:panelForm>
+                  </af:showDetailItem>
+                  <af:showDetailItem text="Caso Mixto" rendered="#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; bindings.bindings.SisProgramasTrabajador_vw.estimatedRowCount > 1}">
+                    <af:panelForm>
+                      <f:facet name="footer"/>
+                      <af:panelHorizontal halign="center">
+                        <af:commandButton text="Crear" inlineStyle="font-weight:bold; font-size:large;" disabled="#{!bindings.CrearSolicitudMixto.enabled}"
+                                          actionListener="#{bindings.CrearSolicitudMixto.execute}" rendered="false"/>
+                        <af:panelForm>
+                          <af:panelHorizontal halign="center">
+                            <af:outputText value="*" inlineStyle="font-weight:bold; color:rgb(128,0,0);"/>
+                            <af:outputText value="Tiempo de Servicio para Cálculo de Indemnización:" inlineStyle="font-weight:bold;"/>
+                            <af:outputText value="Años:" inlineStyle="font-weight:bold;"/>
+                            <af:inputText value="#{bindings.AniosTiempoServicio2.inputValue}" required="#{bindings.AniosTiempoServicio2.mandatory}"
+                                          columns="#{bindings.AniosTiempoServicio2.displayWidth}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);">
+                              <af:validator binding="#{bindings.AniosTiempoServicio2.validator}"/>
+                              <f:convertNumber groupingUsed="false" pattern="#{bindings.AniosTiempoServicio2.format}"/>
+                            </af:inputText>
+                            <af:outputText value="Meses:" inlineStyle="font-weight:bold;"/>
+                            <af:inputText value="#{bindings.MesesTiempoServicio2.inputValue}" required="#{bindings.MesesTiempoServicio2.mandatory}"
+                                          columns="#{bindings.MesesTiempoServicio2.displayWidth}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);">
+                              <af:validator binding="#{bindings.MesesTiempoServicio2.validator}"/>
+                              <f:convertNumber groupingUsed="false" pattern="#{bindings.MesesTiempoServicio2.format}"/>
+                            </af:inputText>
+                            <af:outputText value="Días:" inlineStyle="font-weight:bold;"/>
+                            <af:inputText value="#{bindings.DiasTiempoServicio2.inputValue}" required="#{bindings.DiasTiempoServicio2.mandatory}" columns="#{bindings.DiasTiempoServicio2.displayWidth}"
+                                          inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);">
+                              <af:validator binding="#{bindings.DiasTiempoServicio2.validator}"/>
+                              <f:convertNumber groupingUsed="false" pattern="#{bindings.DiasTiempoServicio2.format}"/>
+                            </af:inputText>
+                            <f:facet name="separator">
+                              <af:objectSpacer height="10" width="10"/>
+                            </f:facet>
+                          </af:panelHorizontal>
+                          <af:panelHorizontal halign="center">
+                            <af:outputText value="*" inlineStyle="font-weight:bold; color:rgb(128,0,0);"/>
+                            <af:outputText value="Total de Sueldos para Cálculo de Indemnización:" inlineStyle="font-weight:bold;"/>
+                            <af:inputText value="#{bindings.TotalSueldos2.inputValue}" required="#{bindings.TotalSueldos2.mandatory}" columns="#{bindings.TotalSueldos2.displayWidth}"
+                                          inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);">
+                              <af:validator binding="#{bindings.TotalSueldos2.validator}"/>
+                              <f:convertNumber groupingUsed="false" pattern="#{bindings.TotalSueldos2.format}"/>
+                            </af:inputText>
+                            <f:facet name="separator">
+                              <af:objectSpacer height="10" width="10"/>
+                            </f:facet>
+                          </af:panelHorizontal>
+                          <af:inputText value="#{bindings.IdIndemnizacion2.inputValue}" label="#{bindings.IdIndemnizacion2.label}" required="#{bindings.IdIndemnizacion2.mandatory}"
+                                        columns="#{bindings.IdIndemnizacion2.displayWidth}" rendered="false">
+                            <af:validator binding="#{bindings.IdIndemnizacion2.validator}"/>
+                            <f:convertNumber groupingUsed="false" pattern="#{bindings.IdIndemnizacion2.format}"/>
+                          </af:inputText>
+                          <af:inputText value="#{bindings.IdTipoPrestacion2.inputValue}" label="#{bindings.IdTipoPrestacion2.label}" required="#{bindings.IdTipoPrestacion2.mandatory}"
+                                        columns="#{bindings.IdTipoPrestacion2.displayWidth}" rendered="false">
+                            <af:validator binding="#{bindings.IdTipoPrestacion2.validator}"/>
+                            <f:convertNumber groupingUsed="false" pattern="#{bindings.IdTipoPrestacion2.format}"/>
+                          </af:inputText>
+                          <af:inputText value="#{bindings.Anio2.inputValue}" label="#{bindings.Anio2.label}" required="#{bindings.Anio2.mandatory}" columns="#{bindings.Anio2.displayWidth}"
+                                        rendered="false">
+                            <af:validator binding="#{bindings.Anio2.validator}"/>
+                            <f:convertNumber groupingUsed="false" pattern="#{bindings.Anio2.format}"/>
+                          </af:inputText>
+                          <af:inputText value="#{bindings.CorrelativoAnio2.inputValue}" label="#{bindings.CorrelativoAnio2.label}" required="#{bindings.CorrelativoAnio2.mandatory}"
+                                        columns="#{bindings.CorrelativoAnio2.displayWidth}" rendered="false">
+                            <af:validator binding="#{bindings.CorrelativoAnio2.validator}"/>
+                            <f:convertNumber groupingUsed="false" pattern="#{bindings.CorrelativoAnio2.format}"/>
+                          </af:inputText>
+                          <af:inputText value="#{bindings.RegistroEmpleado2.inputValue}" label="#{bindings.RegistroEmpleado2.label}" required="#{bindings.RegistroEmpleado2.mandatory}"
+                                        columns="#{bindings.RegistroEmpleado2.displayWidth}" rendered="false">
+                            <af:validator binding="#{bindings.RegistroEmpleado2.validator}"/>
+                            <f:convertNumber groupingUsed="false" pattern="#{bindings.RegistroEmpleado2.format}"/>
+                          </af:inputText>
+                          <af:inputText value="#{bindings.IdSolicitud1.inputValue}" label="#{bindings.IdSolicitud1.label}" required="#{bindings.IdSolicitud1.mandatory}"
+                                        columns="#{bindings.IdSolicitud1.displayWidth}" rendered="false">
+                            <af:validator binding="#{bindings.IdSolicitud1.validator}"/>
+                            <f:convertNumber groupingUsed="false" pattern="#{bindings.IdSolicitud1.format}"/>
+                          </af:inputText>
+                          <af:inputText value="#{bindings.IdBeneficiarioSol1.inputValue}" label="#{bindings.IdBeneficiarioSol1.label}" required="#{bindings.IdBeneficiarioSol1.mandatory}"
+                                        columns="#{bindings.IdBeneficiarioSol1.displayWidth}" rendered="false">
+                            <af:validator binding="#{bindings.IdBeneficiarioSol1.validator}"/>
+                            <f:convertNumber groupingUsed="false" pattern="#{bindings.IdBeneficiarioSol1.format}"/>
+                          </af:inputText>
+                          <af:inputText value="#{bindings.IdEstado2.inputValue}" label="#{bindings.IdEstado2.label}" required="#{bindings.IdEstado2.mandatory}"
+                                        columns="#{bindings.IdEstado2.displayWidth}" rendered="false">
+                            <af:validator binding="#{bindings.IdEstado2.validator}"/>
+                            <f:convertNumber groupingUsed="false" pattern="#{bindings.IdEstado2.format}"/>
+                          </af:inputText>
+                          <af:inputText value="#{bindings.DiferidoCalc2.inputValue}" label="#{bindings.DiferidoCalc2.label}" required="#{bindings.DiferidoCalc2.mandatory}"
+                                        columns="#{bindings.DiferidoCalc2.displayWidth}" rendered="false">
+                            <af:validator binding="#{bindings.DiferidoCalc2.validator}"/>
+                            <f:convertNumber groupingUsed="false" pattern="#{bindings.DiferidoCalc2.format}"/>
+                          </af:inputText>
+                          <af:inputText value="#{bindings.Diferido12Calc2.inputValue}" label="#{bindings.Diferido12Calc2.label}" required="#{bindings.Diferido12Calc2.mandatory}"
+                                        columns="#{bindings.Diferido12Calc2.displayWidth}" rendered="false">
+                            <af:validator binding="#{bindings.Diferido12Calc2.validator}"/>
+                            <f:convertNumber groupingUsed="false" pattern="#{bindings.Diferido12Calc2.format}"/>
+                          </af:inputText>
+                          <af:inputText value="#{bindings.AguinaldoCalc2.inputValue}" label="#{bindings.AguinaldoCalc2.label}" required="#{bindings.AguinaldoCalc2.mandatory}"
+                                        columns="#{bindings.AguinaldoCalc2.displayWidth}" rendered="false">
+                            <af:validator binding="#{bindings.AguinaldoCalc2.validator}"/>
+                            <f:convertNumber groupingUsed="false" pattern="#{bindings.AguinaldoCalc2.format}"/>
+                          </af:inputText>
+                          <af:inputText value="#{bindings.Bono14Calc2.inputValue}" label="#{bindings.Bono14Calc2.label}" required="#{bindings.Bono14Calc2.mandatory}"
+                                        columns="#{bindings.Bono14Calc2.displayWidth}" rendered="false">
+                            <af:validator binding="#{bindings.Bono14Calc2.validator}"/>
+                            <f:convertNumber groupingUsed="false" pattern="#{bindings.Bono14Calc2.format}"/>
+                          </af:inputText>
+                          <af:inputText value="#{bindings.SueldoPromedio2.inputValue}" label="#{bindings.SueldoPromedio2.label}" required="#{bindings.SueldoPromedio2.mandatory}"
+                                        columns="#{bindings.SueldoPromedio2.displayWidth}" rendered="false">
+                            <af:validator binding="#{bindings.SueldoPromedio2.validator}"/>
+                            <f:convertNumber groupingUsed="false" pattern="#{bindings.SueldoPromedio2.format}"/>
+                          </af:inputText>
+                          <af:inputText value="#{bindings.TotalPrestacion2.inputValue}" label="#{bindings.TotalPrestacion2.label}" required="#{bindings.TotalPrestacion2.mandatory}"
+                                        columns="#{bindings.TotalPrestacion2.displayWidth}" rendered="false">
+                            <af:validator binding="#{bindings.TotalPrestacion2.validator}"/>
+                            <f:convertNumber groupingUsed="false" pattern="#{bindings.TotalPrestacion2.format}"/>
+                          </af:inputText>
+                          <af:inputText value="#{bindings.GastoFunerario1.inputValue}" label="#{bindings.GastoFunerario1.label}" required="#{bindings.GastoFunerario1.mandatory}"
+                                        columns="#{bindings.GastoFunerario1.displayWidth}" rendered="false">
+                            <af:validator binding="#{bindings.GastoFunerario1.validator}"/>
+                            <f:convertNumber groupingUsed="false" pattern="#{bindings.GastoFunerario1.format}"/>
+                          </af:inputText>
+                          <af:selectInputDate value="#{bindings.FechaRetiro2.inputValue}" label="#{bindings.FechaRetiro2.label}" required="#{bindings.FechaRetiro2.mandatory}" rendered="false">
+                            <af:validator binding="#{bindings.FechaRetiro2.validator}"/>
+                            <f:convertDateTime pattern="#{bindings.FechaRetiro2.format}"/>
+                          </af:selectInputDate>
+                          <af:selectInputDate value="#{bindings.FechaSolicitud2.inputValue}" label="#{bindings.FechaSolicitud2.label}" required="#{bindings.FechaSolicitud2.mandatory}"
+                                              rendered="false">
+                            <af:validator binding="#{bindings.FechaSolicitud2.validator}"/>
+                            <f:convertDateTime pattern="#{bindings.FechaSolicitud2.format}"/>
+                          </af:selectInputDate>
+                          <af:inputText value="#{bindings.TipoRetiro2.inputValue}" label="#{bindings.TipoRetiro2.label}" required="#{bindings.TipoRetiro2.mandatory}"
+                                        columns="#{bindings.TipoRetiro2.displayWidth}" rendered="false">
+                            <af:validator binding="#{bindings.TipoRetiro2.validator}"/>
+                            <f:convertNumber groupingUsed="false" pattern="#{bindings.TipoRetiro2.format}"/>
+                          </af:inputText>
+                          <af:inputText value="#{bindings.NumCheque2.inputValue}" label="#{bindings.NumCheque2.label}" required="#{bindings.NumCheque2.mandatory}"
+                                        columns="#{bindings.NumCheque2.displayWidth}" rendered="false">
+                            <af:validator binding="#{bindings.NumCheque2.validator}"/>
+                            <f:convertNumber groupingUsed="false" pattern="#{bindings.NumCheque2.format}"/>
+                          </af:inputText>
+                          <af:inputText value="#{bindings.IdPadre1.inputValue}" label="#{bindings.IdPadre1.label}" required="#{bindings.IdPadre1.mandatory}" columns="#{bindings.IdPadre1.displayWidth}"
+                                        rendered="false">
+                            <af:validator binding="#{bindings.IdPadre1.validator}"/>
+                            <f:convertNumber groupingUsed="false" pattern="#{bindings.IdPadre1.format}"/>
+                          </af:inputText>
+                          <af:inputText value="#{bindings.CreadoPor2.inputValue}" label="#{bindings.CreadoPor2.label}" required="#{bindings.CreadoPor2.mandatory}"
+                                        columns="#{bindings.CreadoPor2.displayWidth}" rendered="false">
+                            <af:validator binding="#{bindings.CreadoPor2.validator}"/>
+                          </af:inputText>
+                          <af:selectInputDate value="#{bindings.FechaCreacion2.inputValue}" label="#{bindings.FechaCreacion2.label}" required="#{bindings.FechaCreacion2.mandatory}" rendered="false">
+                            <af:validator binding="#{bindings.FechaCreacion2.validator}"/>
+                            <f:convertDateTime pattern="#{bindings.FechaCreacion2.format}"/>
+                          </af:selectInputDate>
+                          <af:inputText value="#{bindings.ModificadoPor1.inputValue}" label="#{bindings.ModificadoPor1.label}" required="#{bindings.ModificadoPor1.mandatory}"
+                                        columns="#{bindings.ModificadoPor1.displayWidth}" rendered="false">
+                            <af:validator binding="#{bindings.ModificadoPor1.validator}"/>
+                          </af:inputText>
+                          <af:selectInputDate value="#{bindings.FechaMod1.inputValue}" label="#{bindings.FechaMod1.label}" required="#{bindings.FechaMod1.mandatory}" rendered="false">
+                            <af:validator binding="#{bindings.FechaMod1.validator}"/>
+                            <f:convertDateTime pattern="#{bindings.FechaMod1.format}"/>
+                          </af:selectInputDate>
+                          <f:facet name="footer">
+                            <af:commandButton text="Guardar" inlineStyle="font-weight:bold; font-size:large;"/>
+                          </f:facet>
+                        </af:panelForm>
+                      </af:panelHorizontal>
+                    </af:panelForm>
+                  </af:showDetailItem>
+                </af:showOneTab>
               </af:panelBox>
             </af:panelBox>
           </af:page>

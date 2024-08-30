@@ -2,15 +2,15 @@
 <pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel" version="10.1.3.42.70" id="gestiones_indem_indemnizacion_detallePageDef" Package="interfaz_usuario.pageDefs">
   <executables>
     <!--<iterator id="SisHistorialSalarial_vwIterator" RangeSize="-1" Binds="SisHistorialSalarialIndemnizacion_vw" DataControl="QUERRYSDataControl" StateValidation="false" Refresh="ifNeeded"/>-->
-    <iterator id="SisHistorialTrasladosIndem_vwIterator" RangeSize="10" Binds="SisHistorialTrasladosIndem_vw" DataControl="QUERRYSDataControl"/>
+    <iterator id="SisHistorialTrasladosIndem_vwIterator" RangeSize="10" Binds="SisHistorialTrasladosIndem_vw" DataControl="QUERRYSDataControl" StateValidation="false"/>
     <iterator id="SisIndemnizacion_vwIterator" Binds="SisIndemnizacion_vw" RangeSize="10" DataControl="QUERRYSDataControl" StateValidation="false"/>
+    <iterator id="SisIndemnizacionMixto_vwIterator" Binds="SisIndemnizacionMixto_vw" RangeSize="10" DataControl="QUERRYSDataControl" StateValidation="false"/>
+    <iterator id="SisProgramasTrabajador_vwIterator" Binds="SisProgramasTrabajador_vw" RangeSize="10" DataControl="QUERRYSDataControl" StateValidation="false"/>
     <!--<iterator id="SisRelacionLaboral_vw1Iterator" Binds="SisRelacionLaboral_vw1" RangeSize="-1" DataControl="QUERRYSDataControl" StateValidation="false"/>-->
     <!--<iterator id="SisSolicitud_vwIterator" Binds="SisSolicitudVw" RangeSize="10" DataControl="QUERRYSDataControl" StateValidation="false"/>-->
     <!--<iterator id="SisSolicitudesDespidoIndem_vw1Iterator" Binds="SisSolicitudesDespidoIndem_vw1" RangeSize="10" DataControl="QUERRYSDataControl" StateValidation="false"/>-->
     <!--<iterator id="SisSolicitudesRenunciaIndem_vw1Iterator" RangeSize="10" Binds="SisSolicitudesRenunciaIndem_vw1" DataControl="QUERRYSDataControl" StateValidation="false"/>-->
     <variableIterator id="variables">
-      <variable Name="vIDSolicitudAutorizadaFallecimiento" Type="oracle.jbo.domain.Number" DefaultValue="${bindings.ObtenerIDSolicitudAutorizadaFallecimiento.result}" IsQueriable="false"
-                IsUpdateable="0"/>
       <variable Name="vIDSolicitudAutorizadaRetiro" Type="oracle.jbo.domain.Number" IsQueriable="false" IsUpdateable="0" DefaultValue="${bindings.ObtenerIDSolicitudAutorizadaRetiro.result}"/>
       <variable Name="vEsSolicitudNueva" Type="java.lang.Boolean" DefaultValue="${flujo_usuario.operacion == 1}"/>
     </variableIterator>
@@ -18,6 +18,8 @@
     <invokeAction Binds="CrearSolicitud" id="Invoke_CrearSolicitud" Refresh="renderModel" RefreshCondition="${!adfFacesContext.postback &amp;&amp; flujo_usuario.operacion==1}"/>
     <invokeAction Binds="RecuperarSolicitud" id="Invoke_RecuperarSolicitud" RefreshCondition="${!adfFacesContext.postback &amp;&amp; flujo_usuario.operacion==2}" Refresh="renderModel"/>
     <invokeAction Binds="RecuperarHistorialTraslados" id="Invoke_RecuperarHistTraslados" Refresh="renderModel" RefreshCondition="${bindings.IdIndemnizacion.inputValue!=null}"/>
+    <invokeAction id="Invoke_RecuperarProgramasLaboro" Binds="RecuperarProgramasLaboro" Refresh="renderModel" RefreshCondition="${bindings.RegistroEmpleado.inputValue!=null}"/>
+    <iterator id="SisAjusteIterator" Binds="SisAjuste" RangeSize="10" DataControl="QUERRYSDataControl" StateValidation="false"/>
     <!--<invokeAction id="Invoke_RecuperarSolicitudesRenuncia" Binds="RecuperarSolicitudesRenuncia" Refresh="renderModel" RefreshCondition="${bindings.RegistroEmpleado.inputValue!=null}"/>-->
     <!--<invokeAction id="Invoke_RecuperarSolicitudesDespido" Binds="RecuperarSolicitudesDespido" RefreshCondition="${bindings.RegistroEmpleado.inputValue!=null}" Refresh="renderModel"/>-->
   </executables>
@@ -142,6 +144,11 @@
         <Item Value="NumCheque"/>
       </AttrNames>
     </attributeValues>
+    <attributeValues IterBinding="SisIndemnizacion_vwIterator" id="Programa">
+      <AttrNames>
+        <Item Value="Programa"/>
+      </AttrNames>
+    </attributeValues>
     <attributeValues IterBinding="SisIndemnizacion_vwIterator" id="RegistroEmpleado">
       <AttrNames>
         <Item Value="RegistroEmpleado"/>
@@ -186,6 +193,12 @@
         <Item Value="Fecha"/>
         <Item Value="Comentario"/>
         <Item Value="NombreEstado"/>
+      </AttrNames>
+    </table>
+    <table id="SisProgramasTrabajador_vw" IterBinding="SisProgramasTrabajador_vwIterator">
+      <AttrNames>
+        <Item Value="IdPrograma"/>
+        <Item Value="Nombre"/>
       </AttrNames>
     </table>
     <!--<table id="Tble_Historial_Salarial" IterBinding="SisHistorialSalarial_vwIterator">
@@ -262,9 +275,15 @@
     <action id="Confirmar" InstanceName="QUERRYSDataControl" DataControl="QUERRYSDataControl" RequiresUpdateModel="true" Action="100"/>
     <action IterBinding="SisIndemnizacion_vwIterator" id="CrearSolicitud" InstanceName="QUERRYSDataControl.SisIndemnizacion_vw" DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
             Action="41"/>
+    <action IterBinding="SisIndemnizacionMixto_vwIterator" id="CrearSolicitudMixto" InstanceName="QUERRYSDataControl.SisIndemnizacionMixto_vw" DataControl="QUERRYSDataControl"
+            RequiresUpdateModel="true" Action="41"/>
     <action IterBinding="SisHistorialTrasladosIndem_vwIterator" id="RecuperarHistorialTraslados" InstanceName="QUERRYSDataControl.SisHistorialTrasladosIndem_vw" DataControl="QUERRYSDataControl"
             RequiresUpdateModel="true" Action="95">
       <NamedData NDName="pIdIndemnizacion" NDValue="${bindings.IdIndemnizacion.inputValue}" NDType="oracle.jbo.domain.Number"/>
+    </action>
+    <action IterBinding="SisProgramasTrabajador_vwIterator" id="RecuperarProgramasLaboro" InstanceName="QUERRYSDataControl.SisProgramasTrabajador_vw" DataControl="QUERRYSDataControl"
+            RequiresUpdateModel="true" Action="95">
+      <NamedData NDName="pRegistroEmpleado" NDValue="${bindings.RegistroEmpleado.inputValue}" NDType="oracle.jbo.domain.Number"/>
     </action>
     <action IterBinding="SisIndemnizacion_vwIterator" id="RefrescarIndemnizacion" InstanceName="QUERRYSDataControl.SisIndemnizacion_vw" DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
             Action="2"/>
@@ -276,14 +295,6 @@
     <!--<action IterBinding="SisSolicitudesRenunciaIndem_vw1Iterator" id="RecuperarSolicitudesRenuncia" InstanceName="QUERRYSDataControl.SisSolicitudesRenunciaIndem_vw1" DataControl="QUERRYSDataControl"
             RequiresUpdateModel="true" Action="95">
       <NamedData NDName="vRegistroPersonal" NDValue="${bindings.RegistroEmpleado.inputValue}" NDType="java.lang.String"/>
-    </action>-->
-    <!--<action IterBinding="SisHistorialSalarial_vwIterator" id="ObtenerHistorialSalarial" InstanceName="QUERRYSDataControl.SisHistorialSalarialIndemnizacion_vw" DataControl="QUERRYSDataControl"
-            RequiresUpdateModel="true" Action="95">
-      <NamedData NDName="pRegistroEmpl" NDValue="${bindings.RegistroEmpleado.inputValue}" NDType="java.lang.String"/>
-    </action>-->
-    <!--<action IterBinding="SisRelacionLaboral_vw1Iterator" id="ObtenerRelacionLaboral" InstanceName="QUERRYSDataControl.SisRelacionLaboral_vw1" DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
-            Action="95">
-      <NamedData NDName="pRegistroPersonal" NDValue="${bindings.RegistroEmpleado.inputValue}" NDType="java.lang.String"/>
     </action>-->
     <!--<action IterBinding="SisMunicipiosDirec_vwIterator" id="RecuperarMunicipio" InstanceName="QUERRYSDataControl.municipios_dep_by_mun" DataControl="QUERRYSDataControl" RequiresUpdateModel="true"
             Action="95">
@@ -317,13 +328,150 @@
                   ReturnName="QUERRYSDataControl.methodResults.QUERRYSDataControl_SisIndemnizacion_vw_ObtenerNumeroContratosFinalizadosTrabajador_result">
       <NamedData NDName="pRegistroEmpleado" NDValue="${bindings.RegistroEmpleado.inputValue}" NDType="oracle.jbo.domain.Number"/>
       <NamedData NDName="pFechaFallecimiento" NDValue="${bindings.FechaSolicitudAutorizado.inputValue}" NDType="oracle.jbo.domain.Date"/>
-    </methodAction>
-    <methodAction IterBinding="SisHistorialSalarial_vwIterator" id="obtenerTotalSueldos" MethodName="obtener_total_sueldos" RequiresUpdateModel="true" Action="999" IsViewObjectMethod="true"
-                  DataControl="QUERRYSDataControl" InstanceName="QUERRYSDataControl.SisHistorialSalarialIndemnizacion_vw"
-                  ReturnName="QUERRYSDataControl.methodResults.QUERRYSDataControl_SisHistorialSalarialIndemnizacion_vw_obtener_total_sueldos_result"/>-->
+    </methodAction>-->
     <methodAction IterBinding="SisIndemnizacion_vwIterator" id="RecuperarSolicitud" MethodName="RecuperarSolicitud" RequiresUpdateModel="true" Action="999" IsViewObjectMethod="true"
                   DataControl="QUERRYSDataControl" InstanceName="QUERRYSDataControl.SisIndemnizacion_vw">
       <NamedData NDName="pIdIndemnizacion" NDValue="${processScope.INDEM_idIndemnizacion}" NDType="oracle.jbo.domain.Number"/>
     </methodAction>
+    <attributeValues id="IdIndemnizacion2" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="IdIndemnizacion"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="IdTipoPrestacion2" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="IdTipoPrestacion"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Anio2" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="Anio"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="CorrelativoAnio2" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="CorrelativoAnio"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="RegistroEmpleado2" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="RegistroEmpleado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="IdSolicitud1" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="IdSolicitud"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="AniosTiempoServicio2" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="AniosTiempoServicio"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="MesesTiempoServicio2" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="MesesTiempoServicio"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="DiasTiempoServicio2" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="DiasTiempoServicio"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="IdBeneficiarioSol1" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="IdBeneficiarioSol"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="IdEstado2" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="IdEstado"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="TotalSueldos2" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="TotalSueldos"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="DiferidoCalc2" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="DiferidoCalc"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Diferido12Calc2" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="Diferido12Calc"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="AguinaldoCalc2" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="AguinaldoCalc"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Bono14Calc2" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="Bono14Calc"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="SueldoPromedio2" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="SueldoPromedio"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="TotalPrestacion2" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="TotalPrestacion"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="GastoFunerario1" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="GastoFunerario"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="FechaRetiro2" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="FechaRetiro"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="FechaSolicitud2" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="FechaSolicitud"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="TipoRetiro2" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="TipoRetiro"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="NumCheque2" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="NumCheque"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="IdPadre1" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="IdPadre"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="CreadoPor2" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="CreadoPor"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="FechaCreacion2" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="FechaCreacion"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="ModificadoPor1" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="ModificadoPor"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="FechaMod1" IterBinding="SisIndemnizacionMixto_vwIterator">
+      <AttrNames>
+        <Item Value="FechaMod"/>
+      </AttrNames>
+    </attributeValues>
   </bindings>
 </pageDefinition>

@@ -16,12 +16,6 @@ public class SisIndemnizacion_vwClient extends ViewUsageImpl implements SisIndem
     }
 
 
-    public void ObtenerSolicitudesAuditor() {
-        Object _ret = 
-            getApplicationModuleProxy().riInvokeExportedMethod(this,"ObtenerSolicitudesAuditor",null,null);
-        return;
-    }
-
     public void ObtenerSolicitudesIndemnizacion() {
         Object _ret = 
             getApplicationModuleProxy().riInvokeExportedMethod(this,"ObtenerSolicitudesIndemnizacion",null,null);
@@ -31,6 +25,12 @@ public class SisIndemnizacion_vwClient extends ViewUsageImpl implements SisIndem
     public void ObtenerSolicitudesProfesionalCaja() {
         Object _ret = 
             getApplicationModuleProxy().riInvokeExportedMethod(this,"ObtenerSolicitudesProfesionalCaja",null,null);
+        return;
+    }
+
+    public void ObtenerSolicitudesAuditor() {
+        Object _ret = 
+            getApplicationModuleProxy().riInvokeExportedMethod(this,"ObtenerSolicitudesAuditor",null,null);
         return;
     }
 

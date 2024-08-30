@@ -40,13 +40,14 @@ public class SisIndemnizacionImpl extends EntityImpl {
     public static final int FECHARETIRO = 19;
     public static final int FECHASOLICITUD = 20;
     public static final int TIPORETIRO = 21;
-    public static final int NUMCHEQUE = 22;
-    public static final int IDPADRE = 23;
-    public static final int CREADOPOR = 24;
-    public static final int FECHACREACION = 25;
-    public static final int MODIFICADOPOR = 26;
-    public static final int FECHAMOD = 27;
-    public static final int SISTIPOINDEMNIZACION = 28;
+    public static final int PROGRAMA = 22;
+    public static final int NUMCHEQUE = 23;
+    public static final int IDPADRE = 24;
+    public static final int CREADOPOR = 25;
+    public static final int FECHACREACION = 26;
+    public static final int MODIFICADOPOR = 27;
+    public static final int FECHAMOD = 28;
+    public static final int SISTIPOINDEMNIZACION = 29;
     private static EntityDefImpl mDefinitionObject;
 
     /**This is the default constructor (do not remove)
@@ -59,8 +60,7 @@ public class SisIndemnizacionImpl extends EntityImpl {
      */
     public static synchronized EntityDefImpl getDefinitionObject() {
         if (mDefinitionObject == null) {
-            mDefinitionObject = 
-                    (EntityDefImpl)EntityDefImpl.findDefObject("enlace_datos.entidades.gestiones.indemnizaciones.SisIndemnizacion");
+            mDefinitionObject = (EntityDefImpl)EntityDefImpl.findDefObject("enlace_datos.entidades.gestiones.indemnizaciones.SisIndemnizacion");
         }
         return mDefinitionObject;
     }
@@ -390,6 +390,8 @@ public class SisIndemnizacionImpl extends EntityImpl {
             return getFechaSolicitud();
         case TIPORETIRO:
             return getTipoRetiro();
+        case PROGRAMA:
+            return getPrograma();
         case NUMCHEQUE:
             return getNumCheque();
         case IDPADRE:
@@ -479,6 +481,9 @@ public class SisIndemnizacionImpl extends EntityImpl {
             return;
         case TIPORETIRO:
             setTipoRetiro((Number)value);
+            return;
+        case PROGRAMA:
+            setPrograma((Number)value);
             return;
         case NUMCHEQUE:
             setNumCheque((Number)value);
@@ -638,9 +643,21 @@ public class SisIndemnizacionImpl extends EntityImpl {
         setAttributeInternal(IDPADRE, value);
     }
 
+    /**Gets the attribute value for Programa, using the alias name Programa
+     */
+    public Number getPrograma() {
+        return (Number)getAttributeInternal(PROGRAMA);
+    }
+
+    /**Sets <code>value</code> as the attribute value for Programa
+     */
+    public void setPrograma(Number value) {
+        setAttributeInternal(PROGRAMA, value);
+    }
+
     /**Creates a Key object based on given key constituents
      */
     public static Key createPrimaryKey(Number idIndemnizacion) {
-        return new Key(new Object[] { idIndemnizacion });
+        return new Key(new Object[]{idIndemnizacion});
     }
 }
