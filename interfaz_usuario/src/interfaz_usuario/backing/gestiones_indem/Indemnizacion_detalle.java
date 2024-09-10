@@ -128,6 +128,9 @@ public class Indemnizacion_detalle {
     private CoreInputText inptText_programasLaboro;
     private CoreSelectOneChoice slctOneChoice_programa;
     private CoreCommandButton cmdBtn_guardar_auto;
+    private CoreInputText inptText_AniosServicio_02;
+    private CoreInputText inptText_MesesServicio_02;
+    private CoreInputText inptText_DiasServicio_02;
 
     public void setHtml1(HtmlHtml html1) {
         this.html1 = html1;
@@ -529,6 +532,85 @@ public class Indemnizacion_detalle {
         return retirado;
     }*/
 
+    //Valida el tiempo de Servicio, ya sea del formulario principal o formulario secundario
+
+    private boolean validarTiempoDeServicio(int formulario) {
+        boolean valido = false; //valor inicial
+        boolean continuar = false;
+        Number aniosServicio = null;
+        Number mesesServicio = null;
+        Number diasServicio = null;
+        if (formulario == 1) {
+            //Se refiere a la validación del tiempo de servicio del formulario principal
+            aniosServicio = 
+                    (Number)this.getInptText_AniosServicio().getValue();
+            mesesServicio = 
+                    (Number)this.getInptText_MesesServicio().getValue();
+            diasServicio = (Number)this.getInptText_DiasServicio().getValue();
+        } else {
+            //Se refiere a la validación del tiempo de servicio del fomulario secundario
+            aniosServicio = 
+                    (Number)this.getInptText_AniosServicio_02().getValue();
+            mesesServicio = 
+                    (Number)this.getInptText_MesesServicio_02().getValue();
+            diasServicio = 
+                    (Number)this.getInptText_DiasServicio_02().getValue();
+        }
+        if (aniosServicio == null) {
+            aniosServicio = new Number(0);
+        }
+        if (mesesServicio == null) {
+            mesesServicio = new Number(0);
+        }
+        if (diasServicio == null) {
+            diasServicio = new Number(0);
+        }
+        int anios = aniosServicio.intValue();
+        int meses = mesesServicio.intValue();
+        int dias = diasServicio.intValue();
+        if ((anios < 0 || anios > 10) && anios != 12) {
+            mensaje("!!Años de Servicio para Cálculo de Indemnización Inválido. Debe ser entre 0 y 10, ó 12!!", 
+                    3);
+        } else if (meses != 0) {
+            if (anios == 10 || anios == 12) {
+                mensaje("!!Meses de Servicio para Cálculo de Indemnización Inválido. Debe de ser 0 cuando los Años de Servicio es 10 ó 12!!", 
+                        3);
+            } else if (meses < 0 || meses > 11) {
+                mensaje("!!Meses de Servicio para Cálculo de Indemnización Inválido. Debe ser entre 0 y 11!!", 
+                        3);
+            } else {
+                continuar = true;
+            }
+        } else {
+            continuar = true;
+        }
+        if (continuar == true ) {
+            continuar = false;
+            if ( dias != 0 )  { 
+                if (anios == 10 || anios == 12) {
+                    mensaje("!!Días de Servicio para Cálculo de Indemnización Inválido. Debe de ser 0 cuando los Años de Servicio es 10 ó 12!!", 
+                            3);
+                } else if (dias < 0 || dias > 29) {
+                    mensaje("!!Días de Servicio para Cálculo de Indemnización Inválido. Debe ser entre 0 y 29!!", 
+                            3);
+                } else {
+                    continuar = true;
+                }
+            } else {
+                continuar = true;
+            }
+        }
+        if (continuar == true ) {
+            if (anios <= 0 && meses <= 0 && dias <= 0) {
+                mensaje("!!Ingrese el Tiempo de Servicio para Cálculo de Indemnización para continuar!!", 
+                        3);
+            } else {
+                valido = true;
+            }
+        }
+        return valido;
+    }
+
     //Valida la información ingresada en el formulario Principal
 
     private boolean validarInformacionFormPrinc() {
@@ -540,12 +622,12 @@ public class Indemnizacion_detalle {
             (oracle.jbo.domain.Date)this.getSlctInputDate_fechaRetiro().getValue();
         oracle.jbo.domain.Date fechaSolicitud = 
             (oracle.jbo.domain.Date)this.getSlctInputDate_fechaSolicitud().getValue();
-        Number aniosServicio = 
+        /*Number aniosServicio =
             (Number)this.getInptText_AniosServicio().getValue();
-        Number mesesServicio = 
+        Number mesesServicio =
             (Number)this.getInptText_MesesServicio().getValue();
-        Number diasServicio = 
-            (Number)this.getInptText_DiasServicio().getValue();
+        Number diasServicio =
+            (Number)this.getInptText_DiasServicio().getValue();*/
         Object tipoRetiro = this.getSlctOneChoice_tipoRetiro().getValue();
         Object programa = this.getSlctOneChoice_programa().getValue();
         Number totalSueldos = 
@@ -555,50 +637,54 @@ public class Indemnizacion_detalle {
             mensaje("¡¡Ingrese trabajador para continuar!!", 3);
         } else if (fechaRetiro == null) {
             mensaje("!!Ingrese Fecha de Retiro para continuar!!", 3);
-        } else if ((aniosServicio == null || aniosServicio.intValue() <= 0) && 
-                   (mesesServicio == null || mesesServicio.intValue() <= 0) && 
+        } else if (validarTiempoDeServicio(1)) {
+            //el tiempo de servicio es válido
+            continuar = true;
+        }
+        /*else if ((aniosServicio == null || aniosServicio.intValue() <= 0) &&
+                   (mesesServicio == null || mesesServicio.intValue() <= 0) &&
                    (diasServicio == null || diasServicio.intValue() <= 0)) {
             mensaje("!!Ingrese el Tiempo de Servicio para continuar!!", 3);
-        } else if (aniosServicio != null && 
-                   (aniosServicio.intValue() < 0 || aniosServicio.intValue() > 
+        } else if (aniosServicio != null &&
+                   (aniosServicio.intValue() < 0 || aniosServicio.intValue() >
                     10) && aniosServicio.intValue() != 12) {
-            mensaje("!!Los Años de Servicio para Cálculo de Indemnización debe ser entre 0 y 10, ó 12!!", 
+            mensaje("!!Los Años de Servicio para Cálculo de Indemnización debe ser entre 0 y 10, ó 12!!",
                     3);
         } else {
             continuar = true;
         }
-        if (continuar == true && mesesServicio != null && 
+        if (continuar == true && mesesServicio != null &&
             mesesServicio.intValue() != 0) {
             continuar = false;
-            if (aniosServicio != null && 
-                (aniosServicio.intValue() == 10 || aniosServicio.intValue() == 
+            if (aniosServicio != null &&
+                (aniosServicio.intValue() == 10 || aniosServicio.intValue() ==
                  12)) {
-                mensaje("!!Los Meses de Servicio para Cálculo de Indemnización debe de ser 0 cuando los Años de Servicio es 10 ó 12!!", 
+                mensaje("!!Los Meses de Servicio para Cálculo de Indemnización debe de ser 0 cuando los Años de Servicio es 10 ó 12!!",
                         3);
-            } else if (mesesServicio.intValue() < 0 || 
+            } else if (mesesServicio.intValue() < 0 ||
                        mesesServicio.intValue() > 11) {
-                mensaje("!!Los Meses de Servicio para Cálculo de Indemnización debe ser entre 0 y 11!!", 
+                mensaje("!!Los Meses de Servicio para Cálculo de Indemnización debe ser entre 0 y 11!!",
                         3);
             } else {
                 continuar = true;
             }
         }
-        if (continuar == true && diasServicio != null && 
+        if (continuar == true && diasServicio != null &&
             diasServicio.intValue() != 0) {
             continuar = false;
-            if (aniosServicio != null && 
-                (aniosServicio.intValue() == 10 || aniosServicio.intValue() == 
+            if (aniosServicio != null &&
+                (aniosServicio.intValue() == 10 || aniosServicio.intValue() ==
                  12)) {
-                mensaje("!!Los Días de Servicio para Cálculo de Indemnización debe de ser 0 cuando los Años de Servicio es 10 ó 12!!", 
+                mensaje("!!Los Días de Servicio para Cálculo de Indemnización debe de ser 0 cuando los Años de Servicio es 10 ó 12!!",
                         3);
-            } else if (diasServicio.intValue() < 0 || 
+            } else if (diasServicio.intValue() < 0 ||
                        diasServicio.intValue() > 29) {
-                mensaje("!!Los Días de Servicio para Cálculo de Indemnización debe ser entre 0 y 29!!", 
+                mensaje("!!Los Días de Servicio para Cálculo de Indemnización debe ser entre 0 y 29!!",
                         3);
             } else {
                 continuar = true;
             }
-        }
+        }*/
         if (continuar == true) {
             continuar = false;
             if (tipoRetiro == null) {
@@ -1330,34 +1416,6 @@ public class Indemnizacion_detalle {
         return exito;
     }
 
-    public String cmdBtn_calcularIndemnizacion_action() {
-        //volvemos a validar la información ingresada por el usuario
-        /* if (validarInformacionFormPrinc()) {
-            procesarCalcularIndemnizacion();
-        }*/
-        return null;
-    }
-
-    /*public String cmdBtn_calcular_action() {
-        String b1 = "#{bindings.AniosTiempoServicio.inputValue}";
-        String b2 = "#{bindings.MesesTiempoServicio.inputValue}";
-        String b3 = "#{bindings.DiasTiempoServicio.inputValue}";
-        FacesContext f = FacesContext.getCurrentInstance();
-        Object aniosObj = JSFUtils.resolveExpression(f, b1);
-        Object mesesObj = JSFUtils.resolveExpression(f, b2);
-        Object diasObj = JSFUtils.resolveExpression(f, b3);
-        if (aniosObj != null && mesesObj != null && diasObj != null) {
-            int anios = Integer.valueOf(aniosObj.toString()).intValue();
-            int meses = Integer.valueOf(mesesObj.toString()).intValue();
-            int dias = Integer.valueOf(diasObj.toString()).intValue();
-            calcular_indemnizacion(anios, meses, dias, f);
-        } else {
-            mensaje("No se pudo obtener el tiempo de servicio del trabajador. Intente de nuevo por favor!!",
-                    3);
-        }
-        return null;
-    }*/
-
     public void setInptText_TotalSueldos(CoreInputText inptText_TotalSueldos) {
         this.inptText_TotalSueldos = inptText_TotalSueldos;
     }
@@ -1559,7 +1617,27 @@ public class Indemnizacion_detalle {
     }
 
     public String cmdBtn_guardar_auto_action() {
-        // Add event code here...
+        //Primero validamos la información del formulario principal
+        if (validarInformacionFormPrinc()) {
+            if (validarInformacionFormSec()) {
+                System.out.println("La información ingresada es correcta.");
+            }
+            /*Object auxObj = JSFUtils.resolveExpression(f, bindEsSolNueva);
+             if (auxObj != null) {
+                 //Tiene algún valor
+                 boolean esNuevo = Boolean.parseBoolean(auxObj.toString());
+                 if (esNuevo) {
+                     //Es solicitud nueva
+                     exito = procesar_guardar_sol_nueva(f);
+                 } else {
+                     //Es solicitud existente
+                     exito = procesar_guardar_sol_existente(f);
+                 }
+             } else {
+                 mensaje("!!No se pudo recuperar la información correctamente. Intente de nuevo!!",
+                         3);
+             }*/
+        }
         return null;
     }
 
@@ -1670,27 +1748,30 @@ public class Indemnizacion_detalle {
     }
 
     public String cmdBtn_cancelar_auto_action() {
-        //Primero validamos la información del formulario principal
-        if (validarInformacionFormPrinc()) {
-            if (validarInformacionFormSec()) {
-                System.out.println("La información ingresada es correcta.");
-            }
-            /*Object auxObj = JSFUtils.resolveExpression(f, bindEsSolNueva);
-            if (auxObj != null) {
-                //Tiene algún valor
-                boolean esNuevo = Boolean.parseBoolean(auxObj.toString());
-                if (esNuevo) {
-                    //Es solicitud nueva
-                    exito = procesar_guardar_sol_nueva(f);
-                } else {
-                    //Es solicitud existente
-                    exito = procesar_guardar_sol_existente(f);
-                }
-            } else {
-                mensaje("!!No se pudo recuperar la información correctamente. Intente de nuevo!!",
-                        3);
-            }*/
-        }
         return null;
+    }
+
+    public void setInptText_AniosServicio_02(CoreInputText inptText_AniosServicio_02) {
+        this.inptText_AniosServicio_02 = inptText_AniosServicio_02;
+    }
+
+    public CoreInputText getInptText_AniosServicio_02() {
+        return inptText_AniosServicio_02;
+    }
+
+    public void setInptText_MesesServicio_02(CoreInputText inptText_MesesServicio_02) {
+        this.inptText_MesesServicio_02 = inptText_MesesServicio_02;
+    }
+
+    public CoreInputText getInptText_MesesServicio_02() {
+        return inptText_MesesServicio_02;
+    }
+
+    public void setInptText_DiasServicio_02(CoreInputText inptText_DiasServicio_02) {
+        this.inptText_DiasServicio_02 = inptText_DiasServicio_02;
+    }
+
+    public CoreInputText getInptText_DiasServicio_02() {
+        return inptText_DiasServicio_02;
     }
 }
