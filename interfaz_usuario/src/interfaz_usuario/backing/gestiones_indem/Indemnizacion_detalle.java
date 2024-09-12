@@ -131,6 +131,9 @@ public class Indemnizacion_detalle {
     private CoreInputText inptText_AniosServicio_02;
     private CoreInputText inptText_MesesServicio_02;
     private CoreInputText inptText_DiasServicio_02;
+    private CorePanelForm pnlForm_autofinanciable;
+    private CoreCommandButton cmdBtn_crear_autofin;
+    private CoreInputText inptText_TotalSueldos02;
 
     public void setHtml1(HtmlHtml html1) {
         this.html1 = html1;
@@ -622,12 +625,6 @@ public class Indemnizacion_detalle {
             (oracle.jbo.domain.Date)this.getSlctInputDate_fechaRetiro().getValue();
         oracle.jbo.domain.Date fechaSolicitud = 
             (oracle.jbo.domain.Date)this.getSlctInputDate_fechaSolicitud().getValue();
-        /*Number aniosServicio =
-            (Number)this.getInptText_AniosServicio().getValue();
-        Number mesesServicio =
-            (Number)this.getInptText_MesesServicio().getValue();
-        Number diasServicio =
-            (Number)this.getInptText_DiasServicio().getValue();*/
         Object tipoRetiro = this.getSlctOneChoice_tipoRetiro().getValue();
         Object programa = this.getSlctOneChoice_programa().getValue();
         Number totalSueldos = 
@@ -641,50 +638,6 @@ public class Indemnizacion_detalle {
             //el tiempo de servicio es válido
             continuar = true;
         }
-        /*else if ((aniosServicio == null || aniosServicio.intValue() <= 0) &&
-                   (mesesServicio == null || mesesServicio.intValue() <= 0) &&
-                   (diasServicio == null || diasServicio.intValue() <= 0)) {
-            mensaje("!!Ingrese el Tiempo de Servicio para continuar!!", 3);
-        } else if (aniosServicio != null &&
-                   (aniosServicio.intValue() < 0 || aniosServicio.intValue() >
-                    10) && aniosServicio.intValue() != 12) {
-            mensaje("!!Los Años de Servicio para Cálculo de Indemnización debe ser entre 0 y 10, ó 12!!",
-                    3);
-        } else {
-            continuar = true;
-        }
-        if (continuar == true && mesesServicio != null &&
-            mesesServicio.intValue() != 0) {
-            continuar = false;
-            if (aniosServicio != null &&
-                (aniosServicio.intValue() == 10 || aniosServicio.intValue() ==
-                 12)) {
-                mensaje("!!Los Meses de Servicio para Cálculo de Indemnización debe de ser 0 cuando los Años de Servicio es 10 ó 12!!",
-                        3);
-            } else if (mesesServicio.intValue() < 0 ||
-                       mesesServicio.intValue() > 11) {
-                mensaje("!!Los Meses de Servicio para Cálculo de Indemnización debe ser entre 0 y 11!!",
-                        3);
-            } else {
-                continuar = true;
-            }
-        }
-        if (continuar == true && diasServicio != null &&
-            diasServicio.intValue() != 0) {
-            continuar = false;
-            if (aniosServicio != null &&
-                (aniosServicio.intValue() == 10 || aniosServicio.intValue() ==
-                 12)) {
-                mensaje("!!Los Días de Servicio para Cálculo de Indemnización debe de ser 0 cuando los Años de Servicio es 10 ó 12!!",
-                        3);
-            } else if (diasServicio.intValue() < 0 ||
-                       diasServicio.intValue() > 29) {
-                mensaje("!!Los Días de Servicio para Cálculo de Indemnización debe ser entre 0 y 29!!",
-                        3);
-            } else {
-                continuar = true;
-            }
-        }*/
         if (continuar == true) {
             continuar = false;
             if (tipoRetiro == null) {
@@ -1615,6 +1568,29 @@ public class Indemnizacion_detalle {
     public CoreCommandButton getCmdBtn_guardar_auto() {
         return cmdBtn_guardar_auto;
     }
+    
+    //Valida la información ingresada en el formulario Secundario
+
+    private boolean validarInformacionFormSec() {
+        boolean valido = false;
+        boolean continuar = false;
+        Number totalSueldos = 
+            (Number)this.getInptText_TotalSueldos02().getValue();
+        if (validarTiempoDeServicio(2)) {
+            //el tiempo de servicio es válido
+            continuar = true;
+        }
+        if (continuar == true) {
+            continuar = false;
+            if (totalSueldos == null || 
+                       totalSueldos.doubleValue() <= 0) {
+                mensaje("!!Ingrese Total de Sueldos para continuar!!", 3);
+            } else {
+                continuar = true;
+            }
+        }
+        return valido;
+    }
 
     public String cmdBtn_guardar_auto_action() {
         //Primero validamos la información del formulario principal
@@ -1639,112 +1615,6 @@ public class Indemnizacion_detalle {
              }*/
         }
         return null;
-    }
-
-    //Valida la información ingresada en el formulario Secundario
-
-    private boolean validarInformacionFormSec() {
-        boolean valido = false;
-        boolean continuar = false;
-        /*Object registroPersonal =
-            this.getInptText_registroEmpleado().getValue();
-        oracle.jbo.domain.Date fechaRetiro =
-            (oracle.jbo.domain.Date)this.getSlctInputDate_fechaRetiro().getValue();
-        oracle.jbo.domain.Date fechaSolicitud =
-            (oracle.jbo.domain.Date)this.getSlctInputDate_fechaSolicitud().getValue();*/
-        Number aniosServicio = 
-            (Number)this.getInptText_AniosServicio().getValue();
-        Number mesesServicio = 
-            (Number)this.getInptText_MesesServicio().getValue();
-        Number diasServicio = 
-            (Number)this.getInptText_DiasServicio().getValue();
-        Object tipoRetiro = this.getSlctOneChoice_tipoRetiro().getValue();
-        Object programa = this.getSlctOneChoice_programa().getValue();
-        Number totalSueldos = 
-            (Number)this.getInptText_TotalSueldos().getValue();
-        /*if (registroPersonal == null ||
-            registroPersonal.toString().compareTo("") == 0) {
-            mensaje("¡¡Ingrese trabajador para continuar!!", 3);
-        } else if (fechaRetiro == null) {
-            mensaje("!!Ingrese Fecha de Retiro para continuar!!", 3);
-        } else*/
-        if ((aniosServicio == null || aniosServicio.intValue() <= 0) && 
-            (mesesServicio == null || mesesServicio.intValue() <= 0) && 
-            (diasServicio == null || diasServicio.intValue() <= 0)) {
-            mensaje("!!Ingrese el Tiempo de Servicio para continuar!!", 3);
-        } else if (aniosServicio != null && 
-                   (aniosServicio.intValue() < 0 || aniosServicio.intValue() > 
-                    10) && aniosServicio.intValue() != 12) {
-            mensaje("!!Años de Servicio para Cálculo de Indemnización Inválido (Debe ser entre 0 y 10 o 12)!!", 
-                    3);
-        } else if (aniosServicio != null && 
-                   (aniosServicio.intValue() == 10 || aniosServicio.intValue() == 
-                    12)) {
-            if (mesesServicio != null && mesesServicio.intValue() > 0) {
-                mensaje("!!Meses de Servicio Inválido cuando Años de Servicio es 10 o 12 (Debe de ser 0)!!", 
-                        3);
-            } else if (diasServicio != null && diasServicio.intValue() > 0) {
-                mensaje("!!Días de Servicio Inválido cuando Años de Servicio es 10 o 12 (Debe de ser 0)!!", 
-                        3);
-            } else {
-                continuar = true;
-            }
-        } else if (mesesServicio != null && mesesServicio.intValue() >= 0 && 
-                   mesesServicio.intValue() <= 11) {
-            if (diasServicio != null && diasServicio.intValue() >= 0 && 
-                diasServicio.intValue() <= 29) {
-                continuar = true;
-            } else if (diasServicio != null) {
-                mensaje("!!Días de Servicio para Cálculo de Indemnización Inválido (debe ser entre 0 y 29)!!", 
-                        3);
-            } else {
-                continuar = true;
-            }
-        } else if (mesesServicio != null) {
-            mensaje("!!Meses de Servicio para Cálculo de Indemnización Inválido (debe ser entre 0 y 11)!!", 
-                    3);
-        } else {
-            continuar = true;
-        }
-        if (continuar == true) {
-            continuar = false;
-            if (tipoRetiro == null) {
-                mensaje("!!Seleccione un Tipo de Retiro para continuar!!", 3);
-            } else if (programa == null) {
-                mensaje("!!Seleccione un Programa para continuar!!", 3);
-            } else if (totalSueldos == null || 
-                       totalSueldos.doubleValue() <= 0) {
-                mensaje("!!Ingrese Total de Sueldos para continuar!!", 3);
-            } /*else if (fechaSolicitud == null) {
-                mensaje("!!Ingrese Fecha de Solicitud para continuar!!", 3);
-            } */ else {
-                /*if (fechaSolicitud != null && fechaRetiro != null) {
-                    if (fechaRetiro.dateValue().after(fechaSolicitud.dateValue())) {
-                        mensaje("!!La Fecha de Retiro es más reciente que la Fecha de Solicitud!!",
-                                3);
-                    } else {
-                        continuar = true;
-                    }
-                } else {*/
-                continuar = true;
-                //}
-            }
-        }
-        if (continuar == true) {
-            //Verificamos si está habilitado el campo de entrada Número de Cheque
-            if (!this.getInptText_numeroCheque().isReadOnly()) {
-                //Se encuentra habilitado
-                Object aux = this.getInptText_numeroCheque().getValue();
-                if (aux != null && Long.parseLong(aux.toString()) > 0) {
-                    valido = true;
-                } else {
-                    mensaje("!!El Número de Cheque debe ser mayor de 0!!", 3);
-                }
-            } else {
-                valido = true;
-            }
-        }
-        return valido;
     }
 
     public String cmdBtn_cancelar_auto_action() {
@@ -1773,5 +1643,35 @@ public class Indemnizacion_detalle {
 
     public CoreInputText getInptText_DiasServicio_02() {
         return inptText_DiasServicio_02;
+    }
+
+    public void setPnlForm_autofinanciable(CorePanelForm pnlForm_autofinanciable) {
+        this.pnlForm_autofinanciable = pnlForm_autofinanciable;
+    }
+
+    public CorePanelForm getPnlForm_autofinanciable() {
+        return pnlForm_autofinanciable;
+    }
+
+    public void setCmdBtn_crear_autofin(CoreCommandButton cmdBtn_crear_autofin) {
+        this.cmdBtn_crear_autofin = cmdBtn_crear_autofin;
+    }
+
+    public CoreCommandButton getCmdBtn_crear_autofin() {
+        return cmdBtn_crear_autofin;
+    }
+
+    public String cmdBtn_crear_autofin_action() {
+        mensaje("Nuevo formulario para Programa Autofinanciable creado correctamente.", 1);
+        this.getPnlForm_autofinanciable().setRendered(true);
+        return null;
+    }
+
+    public void setInptText_TotalSueldos02(CoreInputText inptText_TotalSueldos02) {
+        this.inptText_TotalSueldos02 = inptText_TotalSueldos02;
+    }
+
+    public CoreInputText getInptText_TotalSueldos02() {
+        return inptText_TotalSueldos02;
     }
 }
