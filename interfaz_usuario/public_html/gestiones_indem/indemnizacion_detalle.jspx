@@ -231,7 +231,8 @@
             <!--Ventana de diálogo para los cambios de estado del expediente-->
             <jsp:include page="../util/dialog_autoriza.txt"/>
           </f:verbatim>
-          <af:page value="#{modeloMenu.modeloBD}" var="node" id="page1" title="Indemnización por Retiro Definitivo">
+          <af:page value="#{modeloMenu.modeloBD}" var="node" id="page1"
+                   title="Indemnización por Retiro Definitivo">
             <f:facet name="nodeStamp">
               <af:commandMenuItem text="#{node.label}" action="#{node.getOutcome}" actionListener="#{modeloMenu.listener_menu}" disabled="#{node.readOnly}" rendered="#{node.shown}"/>
             </f:facet>
@@ -272,7 +273,7 @@
                   </af:panelLabelAndMessage>
                   <af:panelLabelAndMessage inlineStyle="font-weight:bold;" label="Fecha Ingresado:">
                     <af:outputText value="#{bindings.FechaCreacion.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;">
-                      <f:convertDateTime dateStyle="default" pattern="dd/MM/yyyy"/>
+                      <f:convertDateTime pattern="dd/MM/yyyy"/>
                     </af:outputText>
                   </af:panelLabelAndMessage>
                   <f:facet name="separator">
@@ -321,7 +322,7 @@
                   <af:panelHorizontal halign="center">
                     <af:commandLink action="dialog:buscaEmpl" id="cdmLink_buscarEmpl" useWindow="true" windowHeight="500" windowWidth="800" shortDesc="Buscador de Trabajador" partialSubmit="true"
                                     immediate="true" returnListener="#{Indemnizacion_detalle.cdmLink_buscarEmpl_returnListener}" binding="#{Indemnizacion_detalle.cdmLink_buscarEmpl}"
-                                    rendered='#{bindings.EsSolicitudNueva.inputValue || (bindings.NombreEstadoIndemnizacion.inputValue!=null &amp;&amp; bindings.NombreEstadoIndemnizacion.inputValue eq "GRABADO")}'>
+                                    rendered='#{bindings.EsSolicitudNueva.inputValue || (bindings.IdIndemnizacion.inputValue!=null &amp;&amp; bindings.IdIndemnizacion.inputValue eq "GRABADO")}'>
                       <af:goButton text="Buscar Trabajador" inlineStyle="font-weight:bold; color:rgb(0,0,132); font-size:large;"/>
                     </af:commandLink>
                     <af:outputText inlineStyle="font-weight:bold; color:rgb(128,0,0);" value="*"/>
@@ -361,7 +362,7 @@
                     </f:facet>
                   </af:panelHorizontal>
                   <af:panelHorizontal halign="center" rendered="#{bindings.EsSolicitudNueva.inputValue}">
-                    <af:outputText value="Programas en los que laboró el ex-trabajador:" inlineStyle="font-weight:bold;"/>
+                    <af:outputText value="Programas en los que laboró:" inlineStyle="font-weight:bold;"/>
                     <af:panelForm inlineStyle="border-color:rgb(0,0,0); border-style:solid; border-width:thin;" width="75">
                       <af:panelHorizontal halign="center">
                         <af:inputText id="inptText_programasLaboro" binding="#{Indemnizacion_detalle.inptText_programasLaboro}" partialTriggers="cdmLink_buscarEmpl" readOnly="true"
@@ -370,28 +371,20 @@
                         <af:objectSpacer height="10" width="10"/>
                       </af:panelHorizontal>
                     </af:panelForm>
+                    <af:outputText value="Tipo de Caso:" inlineStyle="font-weight:bold;"/>
+                    <af:panelForm inlineStyle="border-color:rgb(0,0,0); border-style:solid; border-width:thin;" width="75">
+                      <af:panelHorizontal halign="center">
+                        <af:inputText inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);" partialTriggers="cdmLink_buscarEmpl" readOnly="true"
+                                      shortDesc="Tipo de Caso de Expediente" id="inptText_tipoCasoExp" binding="#{Indemnizacion_detalle.inptText_tipoCasoExp}"/>
+                        <af:objectSpacer height="10" width="10"/>
+                        <af:objectSpacer height="10" width="10"/>
+                      </af:panelHorizontal>
+                    </af:panelForm>
                     <f:facet name="separator">
                       <af:objectSpacer height="10" width="10"/>
                     </f:facet>
-                  </af:panelHorizontal>
-                  <af:panelHorizontal rendered="#{!bindings.EsSolicitudNueva.inputValue}" halign="center">
-                    <af:table value="#{bindings['SisProgramasTrabajador_vw'].collectionModel}" var="row" rows="#{bindings['SisProgramasTrabajador_vw'].rangeSize}"
-                              first="#{bindings['SisProgramasTrabajador_vw'].rangeStart}" emptyText="#{bindings['SisProgramasTrabajador_vw'].viewable ? 'No rows yet.' : 'Access Denied.'}"
-                              banding="row" bandingInterval="1" inlineStyle="text-align:left;" rendered="false">
-                      <f:facet name="header">
-                        <h:panelGroup>
-                          <af:outputFormatted value="PROGRAMAS EN LOS QUE LABORÓ" inlineStyle="padding:3.0pt;"/>
-                        </h:panelGroup>
-                      </f:facet>
-                      <af:column sortProperty="IdPrograma" sortable="true" headerText="Código" formatType="icon">
-                        <af:outputText value="#{row.IdPrograma}">
-                          <f:convertNumber groupingUsed="false" pattern="#{bindings['SisProgramasTrabajador_vw'].formats.IdPrograma}"/>
-                        </af:outputText>
-                      </af:column>
-                      <af:column sortProperty="Nombre" sortable="true" headerText="Nombre">
-                        <af:outputText value="#{row.Nombre}" inlineStyle="padding:3.0pt;"/>
-                      </af:column>
-                    </af:table>
+                    <af:inputText rendered="false" id="inptText_idTipoCasoExp" binding="#{Indemnizacion_detalle.inptText_idTipoCasoExp}" partialTriggers="cdmLink_buscarEmpl"
+                                  shortDesc="Id del tipo de caso del expediente" value="#{bindings.Programa.inputValue}"/>
                   </af:panelHorizontal>
                   <af:panelHorizontal halign="center">
                     <af:outputText value="*" inlineStyle="font-weight:bold; color:rgb(128,0,0);"/>
@@ -435,14 +428,16 @@
                       <af:selectItem label="DESPIDO" value="2"/>
                       <af:selectItem label="FINALIZACIÓN DE CONTRATO" value="3"/>
                     </af:selectOneChoice>
-                    <af:outputText value="*" inlineStyle="font-weight:bold; color:rgb(128,0,0);" rendered="false"/>
-                    <af:outputText value="Programa:" inlineStyle="font-weight:bold;" rendered="false"/>
+                    <!--<af:outputText value="*" inlineStyle="font-weight:bold; color:rgb(128,0,0);"/>
+                    <af:outputText value="Régimen:" inlineStyle="font-weight:bold;"/>
                     <af:selectOneChoice id="slctOneChoice_programa" binding="#{Indemnizacion_detalle.slctOneChoice_programa}" value="#{bindings.Programa.inputValue}"
                                         readOnly='#{!(bindings.EsSolicitudNueva.inputValue || (roles_usuario.analistaIndemnizacion &amp;&amp; (bindings.idEstado.inputValue == "250" || bindings.idEstado.inputValue == "252")))}'
-                                        inlineStyle="font-weight:bold; color:rgb(0,0,128);" shortDesc="Programa de la Solicitud, por ejemplo: De Funcionamiento o Autofinanciable" rendered="false">
-                      <af:selectItem label="DE FUNCIONAMIENTO" value="1"/>
-                      <af:selectItem label="AUTOFINANCIABLE" value="2"/>
-                    </af:selectOneChoice>
+                                        inlineStyle="font-weight:bold; color:rgb(0,0,128);" shortDesc="Programa de la Solicitud, por ejemplo: De Funcionamiento o Autofinanciable">
+                      <af:selectItem/>
+                      <af:selectItem label="ORDINARIO" value="1"/>
+                      <af:selectItem label="ESPECIAL" value="2"/>
+                      <af:selectItem label="MIXTO" value="3"/>
+                    </af:selectOneChoice>-->
                     <f:facet name="separator">
                       <af:objectSpacer height="10" width="10"/>
                     </f:facet>
@@ -549,13 +544,39 @@
                       </f:facet>
                     </af:panelHorizontal>
                   </af:panelBox>
+                  <af:panelHorizontal rendered="#{!bindings.EsSolicitudNueva.inputValue}" halign="center">
+                    <af:table value="#{bindings['SisProgramasTrabajador_vw'].collectionModel}" var="row" rows="#{bindings['SisProgramasTrabajador_vw'].rangeSize}"
+                              first="#{bindings['SisProgramasTrabajador_vw'].rangeStart}" emptyText="#{bindings['SisProgramasTrabajador_vw'].viewable ? 'No rows yet.' : 'Access Denied.'}"
+                              banding="row" bandingInterval="1" inlineStyle="text-align:left;">
+                      <f:facet name="header">
+                        <h:panelGroup>
+                          <af:outputFormatted value="PROGRAMAS EN LOS QUE LABORÓ" inlineStyle="padding:3.0pt;"/>
+                        </h:panelGroup>
+                      </f:facet>
+                      <af:column sortProperty="IdPrograma" sortable="true" headerText="Código" formatType="icon">
+                        <af:outputText value="#{row.IdPrograma}">
+                          <f:convertNumber groupingUsed="false" pattern="#{bindings['SisProgramasTrabajador_vw'].formats.IdPrograma}"/>
+                        </af:outputText>
+                      </af:column>
+                      <af:column sortProperty="Nombre" sortable="true" headerText="Nombre">
+                        <af:outputText value="#{row.Nombre}" inlineStyle="padding:3.0pt;"/>
+                      </af:column>
+                    </af:table>
+                    <af:outputText value="Tipo de Caso Expediente:" inlineStyle="font-weight:bold;"/>
+                    <af:inputText value="#{bindings.Programa.inputValue eq '1'?&quot;Régimen Ordinario&quot;:bindings.Programa.inputValue eq '2'?&quot;Régimen Especial&quot;:bindings.Programa.inputValue eq '3'?&quot;Régimen Mixto (Ordinario y Especial)&quot;:&quot;No Definido&quot;}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);" readOnly="true"/>
+                    <f:facet name="separator">
+                      <af:objectSpacer height="10" width="10"/>
+                    </f:facet>
+                  </af:panelHorizontal>
                   <af:panelHorizontal halign="center">
                     <af:commandButton text="Guardar" inlineStyle="font-weight:bold; font-size:large;" onclick="return confirmarGuardar();" id="cmdBtn_guardar"
                                       binding="#{Indemnizacion_detalle.cmdBtn_guardar}" action="#{Indemnizacion_detalle.cmdBtn_guardar_action}" shortDesc="Guardar cambios formulario padre"
-                                      rendered='#{bindings.EsSolicitudNueva.inputValue || ( roles_usuario.analistaIndemnizacion &amp;&amp; (bindings.IdEstado.inputValue=="250" || bindings.IdEstado.inputValue=="252")) || ( roles_usuario.profesionalCaja &amp;&amp; bindings.IdEstado.inputValue=="256")}'/>
+                                      rendered='#{bindings.EsSolicitudNueva.inputValue || ( roles_usuario.analistaIndemnizacion &amp;&amp; (bindings.IdEstado.inputValue=="250" || bindings.IdEstado.inputValue=="252")) || ( roles_usuario.profesionalCaja &amp;&amp; bindings.IdEstado.inputValue=="256")}'
+                                      disabled="#{bindings.IdIndemnizacion2.inputValue!=null}"/>
                     <af:commandButton text="Cancelar" inlineStyle="font-weight:bold; font-size:large;" onclick="return confirmarCancelar();" action="#{Indemnizacion_detalle.cmdBtn_cancelar_action}"
                                       immediate="true" id="cmdBtn_cancelar" shortDesc="Cancelar operación actual"
-                                      rendered='#{bindings.EsSolicitudNueva.inputValue || ( roles_usuario.analistaIndemnizacion &amp;&amp; (bindings.IdEstado.inputValue=="250" || bindings.IdEstado.inputValue=="252")) || ( roles_usuario.profesionalCaja &amp;&amp; bindings.IdEstado.inputValue=="256")}'>
+                                      rendered='#{bindings.EsSolicitudNueva.inputValue || ( roles_usuario.analistaIndemnizacion &amp;&amp; (bindings.IdEstado.inputValue=="250" || bindings.IdEstado.inputValue=="252")) || ( roles_usuario.profesionalCaja &amp;&amp; bindings.IdEstado.inputValue=="256")}'
+                                      binding="#{Indemnizacion_detalle.cmdBtn_cancelar}">
                       <af:resetActionListener/>
                     </af:commandButton>
                     <af:commandButton text="Reporte de Liquidación" id="cmdBtn_verReporteDARHSJ_I3A" inlineStyle="font-weight:bold; font-size:large;"
@@ -583,6 +604,94 @@
                     <af:commandButton text="Form. DARHSJ I-1" id="cmdBtn_verReporteDARHSJI1" binding="#{Indemnizacion_detalle.cmdBtn_verReporteDARHSJI1}" inlineStyle="font-weight:bold;"
                                       onclick='return generarReporteDARHSJ_I_1("#{bindings.IdIndemnizacion.inputValue}");' rendered="false"/>-->
                   </af:panelHorizontal>
+                  <af:panelBox text="AUTOFINANCIABLE" width="100%" inlineStyle="color:rgb(0,0,128); font-size:medium; font-weight:bold;"
+                               rendered="#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; bindings.bindings.SisProgramasTrabajador_vw.estimatedRowCount > 1}">
+                    <af:commandButton text="Crear" inlineStyle="font-weight:bold; font-size:large;" disabled="#{!bindings.CrearSolicitudMixto.enabled}"
+                                      actionListener="#{bindings.CrearSolicitudMixto.execute}" id="cmdBtn_crear_autofin" binding="#{Indemnizacion_detalle.cmdBtn_crear_autofin}"
+                                      action="#{Indemnizacion_detalle.cmdBtn_crear_autofin_action}"
+                                      rendered="#{!bindings.EsSolicitudNuevaAuto.inputValue &amp;&amp; bindings.IdIndemnizacion2.inputValue==null}"/>
+                    <!--<af:panelGroup layout="vertical" inlineStyle="text-align:center;">
+                      <af:outputFormatted value="INFORMACIÓN GENERAL DEL EXPEDIENTE AUTOFINANCIABLE" inlineStyle="font-weight:bold; color:rgb(0,0,128); font-size:medium;"/>
+                      <af:objectSeparator/>
+                      <af:panelHorizontal halign="center">
+                        <af:panelLabelAndMessage label="ID Interno:" inlineStyle="font-weight:bold;">
+                          <af:outputText value="#{bindings.IdIndemnizacion2.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;">
+                            <f:convertNumber groupingUsed="false"/>
+                          </af:outputText>
+                        </af:panelLabelAndMessage>
+                        <af:panelLabelAndMessage label="No. de Expediente:" inlineStyle="font-weight:bold;">
+                          <af:outputText value="#{bindings.CorrelativoAnio2.inputValue}-#{bindings.Anio2.inputValue}-#{bindings.RegistroEmpleado2.inputValue}"
+                                         inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;"/>
+                        </af:panelLabelAndMessage>
+                        <af:panelLabelAndMessage label="Estado Actual:" inlineStyle="font-weight:bold;">
+                          <af:outputText inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;"/>
+                        </af:panelLabelAndMessage>
+                        <af:panelLabelAndMessage label="Ingresado Por:" inlineStyle="font-weight:bold;">
+                          <af:outputText value="#{bindings.CreadoPor2.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;"/>
+                        </af:panelLabelAndMessage>
+                        <af:panelLabelAndMessage label="Fecha Ingresado:" inlineStyle="font-weight:bold;">
+                          <af:outputText value="#{bindings.FechaCreacion2.inputValue}" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128); font-size:small;">
+                            <f:convertDateTime pattern="dd/MM/yyyy"/>
+                          </af:outputText>
+                        </af:panelLabelAndMessage>
+                        <f:facet name="separator">
+                          <af:objectSpacer height="10" width="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                    </af:panelGroup>-->
+                    <af:panelForm rendered="false" id="pnlForm_autofinanciable" binding="#{Indemnizacion_detalle.pnlForm_autofinanciable}">
+                      <af:panelHorizontal halign="center">
+                        <af:outputText value="*" inlineStyle="font-weight:bold; color:rgb(128,0,0);"/>
+                        <af:outputText value="Tiempo de Servicio para Cálculo de Indemnización:" inlineStyle="font-weight:bold;"/>
+                        <af:outputText value="Años:" inlineStyle="font-weight:bold;"/>
+                        <af:inputText value="#{bindings.AniosTiempoServicio2.inputValue}" required="false" columns="3" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);"
+                                      id="inptText_AniosServicio_02" binding="#{Indemnizacion_detalle.inptText_AniosServicio_02}" maximumLength="2" shortDesc="Años de Servicio (Máximo 12)">
+                          <af:validator binding="#{bindings.AniosTiempoServicio2.validator}"/>
+                          <f:convertNumber groupingUsed="false" pattern="#{bindings.AniosTiempoServicio2.format}"/>
+                        </af:inputText>
+                        <af:outputText value="Meses:" inlineStyle="font-weight:bold;"/>
+                        <af:inputText value="#{bindings.MesesTiempoServicio2.inputValue}" required="false" columns="3" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);"
+                                      id="inptText_MesesServicio_02" binding="#{Indemnizacion_detalle.inptText_MesesServicio_02}" maximumLength="2" shortDesc="Meses de Servicio (Máximo 11)">
+                          <af:validator binding="#{bindings.MesesTiempoServicio2.validator}"/>
+                          <f:convertNumber groupingUsed="false" pattern="#{bindings.MesesTiempoServicio2.format}"/>
+                        </af:inputText>
+                        <af:outputText value="Días:" inlineStyle="font-weight:bold;"/>
+                        <af:inputText value="#{bindings.DiasTiempoServicio2.inputValue}" required="false" columns="3" inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);"
+                                      id="inptText_DiasServicio_02" binding="#{Indemnizacion_detalle.inptText_DiasServicio_02}" maximumLength="2" shortDesc="Días de Servicio (Máximo 29)">
+                          <af:validator binding="#{bindings.DiasTiempoServicio2.validator}"/>
+                          <f:convertNumber groupingUsed="false" pattern="#{bindings.DiasTiempoServicio2.format}"/>
+                        </af:inputText>
+                        <f:facet name="separator">
+                          <af:objectSpacer height="10" width="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                      <af:panelHorizontal halign="center">
+                        <af:outputText value="*" inlineStyle="font-weight:bold; color:rgb(128,0,0);"/>
+                        <af:outputText value="Total de Sueldos para Cálculo de Indemnización:" inlineStyle="font-weight:bold;"/>
+                        <af:inputText value="#{bindings.TotalSueldos2.inputValue}" required="#{bindings.TotalSueldos2.mandatory}" columns="#{bindings.TotalSueldos2.displayWidth}"
+                                      inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);" id="inptText_TotalSueldos02" binding="#{Indemnizacion_detalle.inptText_TotalSueldos02}">
+                          <af:validator binding="#{bindings.TotalSueldos2.validator}"/>
+                          <f:convertNumber groupingUsed="false" pattern="#{bindings.TotalSueldos2.format}"/>
+                        </af:inputText>
+                        <f:facet name="separator">
+                          <af:objectSpacer height="10" width="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                      <af:panelHorizontal halign="center">
+                        <af:commandButton text="Guardar" inlineStyle="font-weight:bold; font-size:large;" id="cmdBtn_guardar_auto" onclick="return confirmarGuardar();"
+                                          shortDesc="Guardar cambios formulario hijo" binding="#{Indemnizacion_detalle.cmdBtn_guardar_auto}"
+                                          action="#{Indemnizacion_detalle.cmdBtn_guardar_auto_action}"/>
+                        <af:commandButton text="Cancelar" inlineStyle="font-weight:bold; font-size:large;" id="cmdBtn_cancelar_auto" shortDesc="Cancelar operación actual"
+                                          onclick="return confirmarCancelar();" immediate="true" action="#{Indemnizacion_detalle.cmdBtn_cancelar_auto_action}"
+                                          binding="#{Indemnizacion_detalle.cmdBtn_cancelar_auto}">
+                          <af:resetActionListener/>
+                        </af:commandButton>
+                        <f:facet name="separator">
+                          <af:objectSpacer height="10" width="10"/>
+                        </f:facet>
+                      </af:panelHorizontal>
+                    </af:panelForm>
+                  </af:panelBox>
                   <!--<af:panelHorizontal id="pnlHoriz_indemCalculada" binding="#{Indemnizacion_detalle.pnlHoriz_indemCalculada}" halign="center" rendered="false">
                         <af:panelBox width="100%">
                           <af:panelList>
@@ -737,186 +846,6 @@
                           <af:objectSpacer height="10" width="10"/>
                         </f:facet>
                       </af:panelHorizontal>-->
-                  <af:panelBox text="AUTOFINANCIABLE" width="100%" inlineStyle="color:rgb(0,0,128); font-size:medium; font-weight:bold; vertical-align:baseline;"
-                               rendered="#{!bindings.EsSolicitudNueva.inputValue &amp;&amp; bindings.bindings.SisProgramasTrabajador_vw.estimatedRowCount > 1}">
-                    <af:commandButton text="Crear" inlineStyle="font-weight:bold; font-size:large;" disabled="#{!bindings.CrearSolicitudMixto.enabled}"
-                                      actionListener="#{bindings.CrearSolicitudMixto.execute}" id="cmdBtn_crear_autofin" binding="#{Indemnizacion_detalle.cmdBtn_crear_autofin}"
-                                      action="#{Indemnizacion_detalle.cmdBtn_crear_autofin_action}"/>
-                    <af:panelForm rendered="false" id="pnlForm_autofinanciable" binding="#{Indemnizacion_detalle.pnlForm_autofinanciable}">
-                      <af:panelHorizontal halign="center">
-                        <af:outputText value="*" inlineStyle="font-weight:bold; color:rgb(128,0,0);"/>
-                        <af:outputText value="Tiempo de Servicio para Cálculo de Indemnización:" inlineStyle="font-weight:bold;"/>
-                        <af:outputText value="Años:" inlineStyle="font-weight:bold;"/>
-                        <af:inputText value="#{bindings.AniosTiempoServicio2.inputValue}" required="false" columns="3"
-                                      inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);" id="inptText_AniosServicio_02"
-                                      binding="#{Indemnizacion_detalle.inptText_AniosServicio_02}" maximumLength="2" shortDesc="Años de Servicio (Máximo 12)">
-                          <af:validator binding="#{bindings.AniosTiempoServicio2.validator}"/>
-                          <f:convertNumber groupingUsed="false" pattern="#{bindings.AniosTiempoServicio2.format}"/>
-                        </af:inputText>
-                        <af:outputText value="Meses:" inlineStyle="font-weight:bold;"/>
-                        <af:inputText value="#{bindings.MesesTiempoServicio2.inputValue}" required="false" columns="3"
-                                      inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);" id="inptText_MesesServicio_02"
-                                      binding="#{Indemnizacion_detalle.inptText_MesesServicio_02}" maximumLength="2" shortDesc="Meses de Servicio (Máximo 11)">
-                          <af:validator binding="#{bindings.MesesTiempoServicio2.validator}"/>
-                          <f:convertNumber groupingUsed="false" pattern="#{bindings.MesesTiempoServicio2.format}"/>
-                        </af:inputText>
-                        <af:outputText value="Días:" inlineStyle="font-weight:bold;"/>
-                        <af:inputText value="#{bindings.DiasTiempoServicio2.inputValue}" required="false" columns="3"
-                                      inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);" id="inptText_DiasServicio_02" binding="#{Indemnizacion_detalle.inptText_DiasServicio_02}"
-                                      maximumLength="2" shortDesc="Días de Servicio (Máximo 29)">
-                          <af:validator binding="#{bindings.DiasTiempoServicio2.validator}"/>
-                          <f:convertNumber groupingUsed="false" pattern="#{bindings.DiasTiempoServicio2.format}"/>
-                        </af:inputText>
-                        <f:facet name="separator">
-                          <af:objectSpacer height="10" width="10"/>
-                        </f:facet>
-                      </af:panelHorizontal>
-                      <af:panelHorizontal halign="center">
-                        <af:outputText value="*" inlineStyle="font-weight:bold; color:rgb(128,0,0);"/>
-                        <af:outputText value="Total de Sueldos para Cálculo de Indemnización:" inlineStyle="font-weight:bold;"/>
-                        <af:inputText value="#{bindings.TotalSueldos2.inputValue}" required="#{bindings.TotalSueldos2.mandatory}" columns="#{bindings.TotalSueldos2.displayWidth}"
-                                      inlineStyle="font-weight:bold; text-align:center; color:rgb(0,0,128);" id="inptText_TotalSueldos02" binding="#{Indemnizacion_detalle.inptText_TotalSueldos02}">
-                          <af:validator binding="#{bindings.TotalSueldos2.validator}"/>
-                          <f:convertNumber groupingUsed="false" pattern="#{bindings.TotalSueldos2.format}"/>
-                        </af:inputText>
-                        <f:facet name="separator">
-                          <af:objectSpacer height="10" width="10"/>
-                        </f:facet>
-                      </af:panelHorizontal>
-                      <af:panelHorizontal halign="center">
-                        <af:commandButton text="Guardar" inlineStyle="font-weight:bold; font-size:large;" id="cmdBtn_guardar_auto" onclick="return confirmarGuardar();"
-                                          shortDesc="Guardar cambios formulario hijo" binding="#{Indemnizacion_detalle.cmdBtn_guardar_auto}"
-                                          action="#{Indemnizacion_detalle.cmdBtn_guardar_auto_action}"/>
-                        <af:commandButton text="Cancelar" inlineStyle="font-weight:bold; font-size:large;" id="cmdBtn_cancelar_auto" shortDesc="Cancelar operación actual"
-                                          onclick="return confirmarCancelar();" immediate="true" action="#{Indemnizacion_detalle.cmdBtn_cancelar_auto_action}">
-                          <af:resetActionListener/>
-                        </af:commandButton>
-                        <f:facet name="separator">
-                          <af:objectSpacer height="10" width="10"/>
-                        </f:facet>
-                      </af:panelHorizontal>
-                      <af:panelHorizontal halign="center" rendered="false">
-                        <af:panelForm>
-                          <af:inputText value="#{bindings.IdIndemnizacion2.inputValue}" label="#{bindings.IdIndemnizacion2.label}" required="#{bindings.IdIndemnizacion2.mandatory}"
-                                        columns="#{bindings.IdIndemnizacion2.displayWidth}" rendered="false">
-                            <af:validator binding="#{bindings.IdIndemnizacion2.validator}"/>
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings.IdIndemnizacion2.format}"/>
-                          </af:inputText>
-                          <af:inputText value="#{bindings.IdTipoPrestacion2.inputValue}" label="#{bindings.IdTipoPrestacion2.label}" required="#{bindings.IdTipoPrestacion2.mandatory}"
-                                        columns="#{bindings.IdTipoPrestacion2.displayWidth}" rendered="false">
-                            <af:validator binding="#{bindings.IdTipoPrestacion2.validator}"/>
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings.IdTipoPrestacion2.format}"/>
-                          </af:inputText>
-                          <af:inputText value="#{bindings.Anio2.inputValue}" label="#{bindings.Anio2.label}" required="#{bindings.Anio2.mandatory}" columns="#{bindings.Anio2.displayWidth}"
-                                        rendered="false">
-                            <af:validator binding="#{bindings.Anio2.validator}"/>
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings.Anio2.format}"/>
-                          </af:inputText>
-                          <af:inputText value="#{bindings.CorrelativoAnio2.inputValue}" label="#{bindings.CorrelativoAnio2.label}" required="#{bindings.CorrelativoAnio2.mandatory}"
-                                        columns="#{bindings.CorrelativoAnio2.displayWidth}" rendered="false">
-                            <af:validator binding="#{bindings.CorrelativoAnio2.validator}"/>
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings.CorrelativoAnio2.format}"/>
-                          </af:inputText>
-                          <af:inputText value="#{bindings.RegistroEmpleado2.inputValue}" label="#{bindings.RegistroEmpleado2.label}" required="#{bindings.RegistroEmpleado2.mandatory}"
-                                        columns="#{bindings.RegistroEmpleado2.displayWidth}" rendered="false">
-                            <af:validator binding="#{bindings.RegistroEmpleado2.validator}"/>
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings.RegistroEmpleado2.format}"/>
-                          </af:inputText>
-                          <af:inputText value="#{bindings.IdSolicitud1.inputValue}" label="#{bindings.IdSolicitud1.label}" required="#{bindings.IdSolicitud1.mandatory}"
-                                        columns="#{bindings.IdSolicitud1.displayWidth}" rendered="false">
-                            <af:validator binding="#{bindings.IdSolicitud1.validator}"/>
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings.IdSolicitud1.format}"/>
-                          </af:inputText>
-                          <af:inputText value="#{bindings.IdBeneficiarioSol1.inputValue}" label="#{bindings.IdBeneficiarioSol1.label}" required="#{bindings.IdBeneficiarioSol1.mandatory}"
-                                        columns="#{bindings.IdBeneficiarioSol1.displayWidth}" rendered="false">
-                            <af:validator binding="#{bindings.IdBeneficiarioSol1.validator}"/>
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings.IdBeneficiarioSol1.format}"/>
-                          </af:inputText>
-                          <af:inputText value="#{bindings.IdEstado2.inputValue}" label="#{bindings.IdEstado2.label}" required="#{bindings.IdEstado2.mandatory}"
-                                        columns="#{bindings.IdEstado2.displayWidth}" rendered="false">
-                            <af:validator binding="#{bindings.IdEstado2.validator}"/>
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings.IdEstado2.format}"/>
-                          </af:inputText>
-                          <af:inputText value="#{bindings.DiferidoCalc2.inputValue}" label="#{bindings.DiferidoCalc2.label}" required="#{bindings.DiferidoCalc2.mandatory}"
-                                        columns="#{bindings.DiferidoCalc2.displayWidth}" rendered="false">
-                            <af:validator binding="#{bindings.DiferidoCalc2.validator}"/>
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings.DiferidoCalc2.format}"/>
-                          </af:inputText>
-                          <af:inputText value="#{bindings.Diferido12Calc2.inputValue}" label="#{bindings.Diferido12Calc2.label}" required="#{bindings.Diferido12Calc2.mandatory}"
-                                        columns="#{bindings.Diferido12Calc2.displayWidth}" rendered="false">
-                            <af:validator binding="#{bindings.Diferido12Calc2.validator}"/>
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings.Diferido12Calc2.format}"/>
-                          </af:inputText>
-                          <af:inputText value="#{bindings.AguinaldoCalc2.inputValue}" label="#{bindings.AguinaldoCalc2.label}" required="#{bindings.AguinaldoCalc2.mandatory}"
-                                        columns="#{bindings.AguinaldoCalc2.displayWidth}" rendered="false">
-                            <af:validator binding="#{bindings.AguinaldoCalc2.validator}"/>
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings.AguinaldoCalc2.format}"/>
-                          </af:inputText>
-                          <af:inputText value="#{bindings.Bono14Calc2.inputValue}" label="#{bindings.Bono14Calc2.label}" required="#{bindings.Bono14Calc2.mandatory}"
-                                        columns="#{bindings.Bono14Calc2.displayWidth}" rendered="false">
-                            <af:validator binding="#{bindings.Bono14Calc2.validator}"/>
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings.Bono14Calc2.format}"/>
-                          </af:inputText>
-                          <af:inputText value="#{bindings.SueldoPromedio2.inputValue}" label="#{bindings.SueldoPromedio2.label}" required="#{bindings.SueldoPromedio2.mandatory}"
-                                        columns="#{bindings.SueldoPromedio2.displayWidth}" rendered="false">
-                            <af:validator binding="#{bindings.SueldoPromedio2.validator}"/>
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings.SueldoPromedio2.format}"/>
-                          </af:inputText>
-                          <af:inputText value="#{bindings.TotalPrestacion2.inputValue}" label="#{bindings.TotalPrestacion2.label}" required="#{bindings.TotalPrestacion2.mandatory}"
-                                        columns="#{bindings.TotalPrestacion2.displayWidth}" rendered="false">
-                            <af:validator binding="#{bindings.TotalPrestacion2.validator}"/>
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings.TotalPrestacion2.format}"/>
-                          </af:inputText>
-                          <af:inputText value="#{bindings.GastoFunerario1.inputValue}" label="#{bindings.GastoFunerario1.label}" required="#{bindings.GastoFunerario1.mandatory}"
-                                        columns="#{bindings.GastoFunerario1.displayWidth}" rendered="false">
-                            <af:validator binding="#{bindings.GastoFunerario1.validator}"/>
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings.GastoFunerario1.format}"/>
-                          </af:inputText>
-                          <af:selectInputDate value="#{bindings.FechaRetiro2.inputValue}" label="#{bindings.FechaRetiro2.label}" required="#{bindings.FechaRetiro2.mandatory}" rendered="false">
-                            <af:validator binding="#{bindings.FechaRetiro2.validator}"/>
-                            <f:convertDateTime pattern="#{bindings.FechaRetiro2.format}"/>
-                          </af:selectInputDate>
-                          <af:selectInputDate value="#{bindings.FechaSolicitud2.inputValue}" label="#{bindings.FechaSolicitud2.label}" required="#{bindings.FechaSolicitud2.mandatory}"
-                                              rendered="false">
-                            <af:validator binding="#{bindings.FechaSolicitud2.validator}"/>
-                            <f:convertDateTime pattern="#{bindings.FechaSolicitud2.format}"/>
-                          </af:selectInputDate>
-                          <af:inputText value="#{bindings.TipoRetiro2.inputValue}" label="#{bindings.TipoRetiro2.label}" required="#{bindings.TipoRetiro2.mandatory}"
-                                        columns="#{bindings.TipoRetiro2.displayWidth}" rendered="false">
-                            <af:validator binding="#{bindings.TipoRetiro2.validator}"/>
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings.TipoRetiro2.format}"/>
-                          </af:inputText>
-                          <af:inputText value="#{bindings.NumCheque2.inputValue}" label="#{bindings.NumCheque2.label}" required="#{bindings.NumCheque2.mandatory}"
-                                        columns="#{bindings.NumCheque2.displayWidth}" rendered="false">
-                            <af:validator binding="#{bindings.NumCheque2.validator}"/>
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings.NumCheque2.format}"/>
-                          </af:inputText>
-                          <af:inputText value="#{bindings.IdPadre1.inputValue}" label="#{bindings.IdPadre1.label}" required="#{bindings.IdPadre1.mandatory}" columns="#{bindings.IdPadre1.displayWidth}"
-                                        rendered="false">
-                            <af:validator binding="#{bindings.IdPadre1.validator}"/>
-                            <f:convertNumber groupingUsed="false" pattern="#{bindings.IdPadre1.format}"/>
-                          </af:inputText>
-                          <af:inputText value="#{bindings.CreadoPor2.inputValue}" label="#{bindings.CreadoPor2.label}" required="#{bindings.CreadoPor2.mandatory}"
-                                        columns="#{bindings.CreadoPor2.displayWidth}" rendered="false">
-                            <af:validator binding="#{bindings.CreadoPor2.validator}"/>
-                          </af:inputText>
-                          <af:selectInputDate value="#{bindings.FechaCreacion2.inputValue}" label="#{bindings.FechaCreacion2.label}" required="#{bindings.FechaCreacion2.mandatory}" rendered="false">
-                            <af:validator binding="#{bindings.FechaCreacion2.validator}"/>
-                            <f:convertDateTime pattern="#{bindings.FechaCreacion2.format}"/>
-                          </af:selectInputDate>
-                          <af:inputText value="#{bindings.ModificadoPor1.inputValue}" label="#{bindings.ModificadoPor1.label}" required="#{bindings.ModificadoPor1.mandatory}"
-                                        columns="#{bindings.ModificadoPor1.displayWidth}" rendered="false">
-                            <af:validator binding="#{bindings.ModificadoPor1.validator}"/>
-                          </af:inputText>
-                          <af:selectInputDate value="#{bindings.FechaMod1.inputValue}" label="#{bindings.FechaMod1.label}" required="#{bindings.FechaMod1.mandatory}" rendered="false">
-                            <af:validator binding="#{bindings.FechaMod1.validator}"/>
-                            <f:convertDateTime pattern="#{bindings.FechaMod1.format}"/>
-                          </af:selectInputDate>
-                          <f:facet name="footer"/>
-                        </af:panelForm>
-                      </af:panelHorizontal>
-                    </af:panelForm>
-                  </af:panelBox>
                 </af:panelForm>
               </af:panelBox>
             </af:panelBox>

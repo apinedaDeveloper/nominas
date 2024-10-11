@@ -26,7 +26,9 @@ public class SisPostMortem_vwImpl extends ViewObjectImpl implements SisPostMorte
     //Recupera las solicitudes de prestaciones post mortem para el rol de Profesional de Caja
     
     public void RecuperarSolicitudesProfesionalCaja() {
-        this.setWhereClause("NOMBRE_ESTADO_INDEMNIZACION IN ('TRASLADADO A CAJA','LIQUIDADO')  AND ID_TIPO_PRESTACION=2");
+        //this.setWhereClause("NOMBRE_ESTADO_INDEMNIZACION IN ('TRASLADADO A CAJA','LIQUIDADO')  AND ID_TIPO_PRESTACION=2");
+        this.setWhereClause("ID_ESTADO IN (256, 257)  AND ID_TIPO_PRESTACION=2");
+        //256=TRASLADADO A CAJA Y 257=LIQUIDADO
         this.executeQuery();
     }
 

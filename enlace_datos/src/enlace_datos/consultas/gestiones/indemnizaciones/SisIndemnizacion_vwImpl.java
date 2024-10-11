@@ -23,21 +23,6 @@ public class SisIndemnizacion_vwImpl extends ViewObjectImpl implements SisIndemn
      */
     public SisIndemnizacion_vwImpl() {
     }
-    //Recupera una solicitud a atrevés de su llave primaria
-
-    /*public void RecuperarSolicitud(Number pIdTipoPrestacion, Number pAnio, 
-                                   Number pCorrelativoAnio) {
-        String str_querry = "";
-        if (pIdTipoPrestacion != null && pIdTipoPrestacion.intValue() > 0 && 
-            pAnio != null && pAnio.intValue() > 0 && 
-            pCorrelativoAnio != null && pCorrelativoAnio.intValue() > 0) {
-            str_querry = 
-                    " ID_TIPO_PRESTACION = " + pIdTipoPrestacion + " AND ANIO = " + 
-                    pAnio + " AND CORRELATIVO_ANIO = " + pCorrelativoAnio;
-            this.setWhereClause(str_querry);
-        }
-        this.executeQuery();
-    }*/
 
     //Recupera una solicitud a atrevés de su llave primaria
 
@@ -55,15 +40,17 @@ public class SisIndemnizacion_vwImpl extends ViewObjectImpl implements SisIndemn
 
     public void ObtenerSolicitudesIndemnizacion() {
         //this.setWhereClause("( TO_DATE(SYSDATE, 'dd/mm/yyyy' ) - TO_DATE(FECHA_CREACION, 'dd/mm/yyyy')) <= 30 AND ID_TIPO_PRESTACION=1");
-        this.setWhereClause("ID_TIPO_PRESTACION=1");
+        this.setWhereClause("ID_TIPO_PRESTACION=1 AND ID_PADRE IS NULL");
         this.setOrderByClause("ID_INDEMNIZACION DESC");
         this.executeQuery();
     }
 
-    //Función que obtiene los expedientes de Pago de Indemnización por Retiro para el rol de Profesional de Caja
+    //Función que obtiene las solicitudes de Pago de Indemnización por Retiro para el rol de Profesional de Caja
 
     public void ObtenerSolicitudesProfesionalCaja() {
-        this.setWhereClause("NOMBRE_ESTADO_INDEMNIZACION IN ('TRASLADADO A CAJA','LIQUIDADO')  AND ID_TIPO_PRESTACION=1");
+        //this.setWhereClause("NOMBRE_ESTADO_INDEMNIZACION IN ('TRASLADADO A CAJA','LIQUIDADO')  AND ID_TIPO_PRESTACION=1");
+        this.setWhereClause("ID_ESTADO IN (256, 257)  AND ID_TIPO_PRESTACION=1 AND ID_PADRE IS NULL");
+        //256=TRASLADADO A CAJA Y 257=LIQUIDADO
         this.setOrderByClause("ID_INDEMNIZACION DESC");
         this.executeQuery();
     }
@@ -71,7 +58,9 @@ public class SisIndemnizacion_vwImpl extends ViewObjectImpl implements SisIndemn
     //Función que obtiene los expedientes de Pago de Indemnización por Retiro para el rol de Auditor Interno
 
     public void ObtenerSolicitudesAuditor() {
-        this.setWhereClause("NOMBRE_ESTADO_INDEMNIZACION IN ('TRASLADADO A AUDITORIA', 'TRASLADADO A CAJA', 'OBJETADO', 'LIQUIDADO')  AND ID_TIPO_PRESTACION=1");
+        //this.setWhereClause("NOMBRE_ESTADO_INDEMNIZACION IN ('TRASLADADO A AUDITORIA', 'TRASLADADO A CAJA', 'OBJETADO', 'LIQUIDADO')  AND ID_TIPO_PRESTACION=1");
+        this.setWhereClause("ID_ESTADO IN (251, 256, 257)  AND ID_TIPO_PRESTACION=1 AND ID_PADRE IS NULL");
+        //251=TRASLADADO A AUDITORIA, 256=TRASLADADO A CAJA Y 257=LIQUIDADO
         this.setOrderByClause("ID_INDEMNIZACION DESC");
         this.executeQuery();
     }
